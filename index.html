@@ -11,7 +11,7 @@
     <!-- Primary SEO Meta Tags -->
     <title>ZevSafe — 100% Offline Folder & File Encryption</title>
     <meta name="description" content="Securely lock folders using bank-grade client-side encryption. Runs entirely in your browser using AES-256-GCM. Your files and passwords never leave your device.">
-    <meta name="keywords" content="client-side encryption, zero-knowledge, offline folder locker, AES-256-GCM, PBKDF2, air-gapped, serverless encryption, local-first web app">
+    <meta name="keywords" content="browser-based folder encryption, client-side file encryption, zero-knowledge file locker, offline folder locker, in-browser AES-256 encryption, serverless file encryption, air-gapped folder lock, PBKDF2 key derivation web app, AES-GCM folder protection, local-first file tools, how to encrypt a folder without uploading it, secure folder tool no installation, safe offline file vault free">
 
     <!-- Open Graph / Facebook (For cleaner links when sharing on social/Discord) -->
     <meta property="og:type" content="website">
@@ -321,8 +321,26 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registered.', reg.scope))
+                    .then(reg => {
+                        console.log('Service Worker registered.', reg.scope);
+                        
+                        // Check for service worker updates immediately when network status changes to online
+                        window.addEventListener('online', () => {
+                            console.log('Network online. Checking for service worker updates...');
+                            reg.update().catch(err => console.error('SW update failed:', err));
+                        });
+                    })
                     .catch(err => console.error('Service Worker registration failed:', err));
+            });
+
+            // Listen for service worker activation changes and reload the page automatically
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    console.log('New Service Worker activated. Reloading page...');
+                    window.location.reload();
+                }
             });
         }
     </script>
