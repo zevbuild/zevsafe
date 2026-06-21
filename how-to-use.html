@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ZevSafe How To Use — Learn how to encrypt and decrypt folders with ZevSafe, the free offline AES-256-GCM encryption portal by zevbuild.">
+    <meta name="theme-color" content="#0f172a">
+    <title>How To Use — ZevSafe by zevbuild</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+    </style>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Page-specific overrides ── */
+        .guide-container {
+            width: 100%;
+            max-width: 860px;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            z-index: 1;
+            padding-bottom: 3rem;
+        }
+
+        /* Back nav */
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover { color: var(--text-main); }
+
+        .badge {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.3rem 0.9rem;
+            border-radius: 30px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Page header */
+        .page-header {
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-family: var(--font-header);
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #f8fafc 30%, #c084fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            margin-bottom: 0.75rem;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            max-width: 580px;
+            margin: 0 auto;
+        }
+
+        /* Section titles */
+        .section-title {
+            font-family: var(--font-header);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.07);
+            margin-left: 0.5rem;
+        }
+
+        /* Step cards */
+        .steps-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .step {
+            display: flex;
+            gap: 1.25rem;
+            align-items: flex-start;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            padding: 1.4rem 1.6rem;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: border-color 0.25s ease, transform 0.25s ease;
+        }
+
+        .step:hover {
+            border-color: rgba(139, 92, 246, 0.25);
+            transform: translateX(4px);
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .step-number.purple {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1.5px solid rgba(139, 92, 246, 0.5);
+            color: #a78bfa;
+        }
+
+        .step-number.green {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1.5px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .step-content h3 {
+            font-size: 0.98rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .step-content p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .step-content code {
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+            padding: 0.1rem 0.5rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+        }
+
+        /* Crypto breakdown card */
+        .crypto-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .crypto-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        .crypto-table th,
+        .crypto-table td {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .crypto-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .crypto-table td:first-child {
+            color: var(--text-muted);
+            width: 40%;
+        }
+
+        .crypto-table td:last-child {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .crypto-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Tip/warning boxes */
+        .tip-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .tip-grid { grid-template-columns: 1fr; }
+            .page-header h1 { font-size: 1.9rem; }
+        }
+
+        .tip-box {
+            border-radius: 14px;
+            padding: 1.2rem 1.3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .tip-box.green {
+            background: rgba(16, 185, 129, 0.07);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .tip-box.red {
+            background: rgba(239, 68, 68, 0.07);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .tip-box.yellow {
+            background: rgba(245, 158, 11, 0.07);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .tip-box.blue {
+            background: rgba(99, 102, 241, 0.07);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .tip-box-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tip-box-title.green { color: #34d399; }
+        .tip-box-title.red   { color: #f87171; }
+        .tip-box-title.yellow { color: #fbbf24; }
+        .tip-box-title.blue  { color: #818cf8; }
+
+        .tip-box p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* FAQ */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: border-color 0.25s ease;
+        }
+
+        .faq-item:hover {
+            border-color: rgba(255, 255, 255, 0.13);
+        }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 0.92rem;
+            font-weight: 600;
+            padding: 1.1rem 1.4rem;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            transition: color 0.2s ease;
+        }
+
+        .faq-question:hover { color: #c4b5fd; }
+
+        .faq-arrow {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .faq-item.open .faq-arrow {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 0 1.4rem 1.1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 0.9rem;
+        }
+
+        .faq-item.open .faq-answer {
+            display: block;
+        }
+
+        /* CTA at bottom */
+        .cta-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(16, 185, 129, 0.08));
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .cta-card h2 {
+            font-family: var(--font-header);
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+
+        .cta-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            max-width: 440px;
+            line-height: 1.6;
+        }
+
+        .btn-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: #fff;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 0.85rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35);
+            transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-cta:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(139, 92, 246, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation"></div>
+
+    <div class="guide-container">
+
+        <!-- Nav bar -->
+        <nav class="nav-bar">
+            <a href="index.html" class="back-link">← Back to ZevSafe</a>
+            <span class="badge">Documentation</span>
+        </nav>
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="logo" aria-hidden="true">📖</div>
+            <h1>How To Use ZevSafe</h1>
+            <p>A simple, step-by-step guide to encrypting and decrypting your folders with military-grade AES-256-GCM security — all inside your browser.</p>
+        </header>
+
+        <!-- ENCRYPT SECTION -->
+        <section>
+            <h2 class="section-title">🔐 Encrypting a Folder</h2>
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-number purple">1</div>
+                    <div class="step-content">
+                        <h3>Open ZevSafe</h3>
+                        <p>Open <code>index.html</code> in any modern browser (Chrome, Edge, Firefox, Safari). No installation needed. Works 100% offline after the page loads.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number purple">2</div>
+                    <div class="step-content">
+                        <h3>Select Your Folder</h3>
+                        <p>On the left panel, either <strong>drag & drop</strong> your entire folder onto the drop zone, or click <strong>"Browse Folder"</strong> to pick it from your file system. All files inside will be included automatically — even nested subfolders.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number purple">3</div>
+                    <div class="step-content">
+                        <h3>Set a Strong Password</h3>
+                        <p>Type a password in the <strong>Password</strong> field. Watch the <strong>strength meter</strong> — aim for at least <strong>Strong</strong> (mix uppercase, numbers, and symbols). Re-enter it in <strong>Confirm Password</strong>. Use the 👁 button to reveal what you typed.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number purple">4</div>
+                    <div class="step-content">
+                        <h3>Click "Encrypt & Download"</h3>
+                        <p>ZevSafe will compress your folder into a ZIP, derive an AES-256-GCM key from your password using PBKDF2, encrypt everything, and automatically download a single <code>yourfolder.enc</code> file. The progress bar and live log show each step.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number purple">5</div>
+                    <div class="step-content">
+                        <h3>Store Your .enc File Safely</h3>
+                        <p>Save the <code>.enc</code> file on your USB drive, SD card, or cloud storage. <strong>Remember your password — there is no recovery option.</strong> The file is useless without it.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DECRYPT SECTION -->
+        <section>
+            <h2 class="section-title">🔓 Decrypting a Vault</h2>
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-number green">1</div>
+                    <div class="step-content">
+                        <h3>Open ZevSafe</h3>
+                        <p>Open <code>index.html</code> in your browser. You can do this on <strong>any computer, phone, or tablet</strong> — no account or special software needed.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number green">2</div>
+                    <div class="step-content">
+                        <h3>Load Your .enc File</h3>
+                        <p>On the right panel, drag & drop your <code>.enc</code> vault file, or click <strong>"Select .enc File"</strong>. Make sure the file has not been renamed or modified — any changes will cause decryption to fail.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number green">3</div>
+                    <div class="step-content">
+                        <h3>Enter Your Password</h3>
+                        <p>Type the exact same password you used when encrypting. AES-GCM automatically verifies authenticity — a wrong password will immediately show an error without decrypting anything.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number green">4</div>
+                    <div class="step-content">
+                        <h3>Click "Decrypt & Download"</h3>
+                        <p>ZevSafe will verify your password, decrypt the vault, and download a <code>yourfolder_decrypted.zip</code> file containing all your original files with their folder structure preserved.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number green">5</div>
+                    <div class="step-content">
+                        <h3>Extract the ZIP</h3>
+                        <p>Right-click the downloaded <code>.zip</code> file and choose <strong>Extract All</strong> (Windows) or double-click (macOS) to restore your original folder structure.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CRYPTO DETAILS -->
+        <section>
+            <h2 class="section-title">🛡️ How the Encryption Works</h2>
+            <div class="crypto-card">
+                <table class="crypto-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value &amp; Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cipher</td>
+                            <td>AES-256-GCM (Authenticated Encryption)</td>
+                        </tr>
+                        <tr>
+                            <td>Key Derivation</td>
+                            <td>PBKDF2 — SHA-256, 100,000 iterations</td>
+                        </tr>
+                        <tr>
+                            <td>Salt</td>
+                            <td>16 bytes — random per encryption (stored in file header)</td>
+                        </tr>
+                        <tr>
+                            <td>IV / Nonce</td>
+                            <td>12 bytes — random per encryption (stored in file header)</td>
+                        </tr>
+                        <tr>
+                            <td>Authentication Tag</td>
+                            <td>128-bit GCM tag — detects any tampering automatically</td>
+                        </tr>
+                        <tr>
+                            <td>Compression</td>
+                            <td>DEFLATE level 6 (via JSZip) before encryption</td>
+                        </tr>
+                        <tr>
+                            <td>Vault file format</td>
+                            <td>Salt (16B) + IV (12B) + Ciphertext + GCM Tag</td>
+                        </tr>
+                        <tr>
+                            <td>Entropy source</td>
+                            <td>window.crypto.getRandomValues() — browser's CSPRNG</td>
+                        </tr>
+                        <tr>
+                            <td>Crypto engine</td>
+                            <td>Web Crypto API — native browser, no external library</td>
+                        </tr>
+                        <tr>
+                            <td>Network usage</td>
+                            <td>Zero — 100% offline after initial page load</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TIPS & WARNINGS -->
+        <section>
+            <h2 class="section-title">💡 Tips &amp; Warnings</h2>
+            <div class="tip-grid">
+                <div class="tip-box green">
+                    <div class="tip-box-title green">✅ Use a Passphrase</div>
+                    <p>A long passphrase (e.g. <em>"blue-tiger-rain-42!"</em>) is far stronger than a short complex password. Aim for 16+ characters.</p>
+                </div>
+                <div class="tip-box red">
+                    <div class="tip-box-title red">❌ No Password Recovery</div>
+                    <p>There is absolutely no backdoor, reset, or recovery. Losing your password means losing your data permanently.</p>
+                </div>
+                <div class="tip-box yellow">
+                    <div class="tip-box-title yellow">⚠️ Keep a Backup</div>
+                    <p>Always keep the original files somewhere safe until you verify decryption works correctly. Test decrypt before deleting originals.</p>
+                </div>
+                <div class="tip-box blue">
+                    <div class="tip-box-title blue">🔒 Offline is Safer</div>
+                    <p>For maximum security, download ZevSafe and use it without internet. Your files and password never leave your RAM.</p>
+                </div>
+                <div class="tip-box green">
+                    <div class="tip-box-title green">✅ Works on SD Cards</div>
+                    <p>ZevSafe is perfect for encrypting folders on USB drives and SD cards. The .enc file is portable — open it anywhere.</p>
+                </div>
+                <div class="tip-box red">
+                    <div class="tip-box-title red">❌ Don't Rename .enc</div>
+                    <p>Renaming the .enc file is fine, but never modify its contents. Even 1 changed byte will cause decryption to fail.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section>
+            <h2 class="section-title">❓ Frequently Asked Questions</h2>
+            <div class="faq-list">
+                <div class="faq-item" id="faq-1">
+                    <button class="faq-question" onclick="toggleFaq('faq-1')">
+                        Can ZevSafe be trusted? Is it really offline?
+                        <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        Yes. ZevSafe makes <strong>zero network requests</strong>. All encryption and decryption happens inside your browser using the browser's built-in Web Crypto API. You can verify this by opening DevTools → Network tab while using the app — you'll see no requests. For maximum trust, clone the repository and open it locally.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-2">
+                    <button class="faq-question" onclick="toggleFaq('faq-2')">
+                        What browsers are supported?
+                        <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        Any modern browser that supports the Web Crypto API: <strong>Chrome 37+, Edge 12+, Firefox 34+, Safari 11+, Opera 24+</strong>. This covers 99%+ of devices including Android and iOS. Internet Explorer is not supported.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-3">
+                    <button class="faq-question" onclick="toggleFaq('faq-3')">
+                        How large can the folder be?
+                        <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        ZevSafe processes everything in your browser's RAM. In practice, folders up to <strong>2–4 GB</strong> work on most modern devices (8GB+ RAM). For very large folders (like a full 32GB SD card), consider splitting them into smaller sub-folders and encrypting separately.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-4">
+                    <button class="faq-question" onclick="toggleFaq('faq-4')">
+                        Can I decrypt the .enc file on a phone or tablet?
+                        <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        Yes! Open ZevSafe in any browser on Android or iOS and use the Decrypt panel. Safari on iOS and Chrome on Android both fully support the Web Crypto API. Just open the .enc file using your phone's file picker.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-5">
+                    <button class="faq-question" onclick="toggleFaq('faq-5')">
+                        Is the decrypted .zip the same as my original folder?
+                        <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        Yes, all files and subfolder structure are preserved exactly. The ZIP is a transparent container — just extract it and your original files are restored byte-for-byte.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-6">
+                    <button class="faq-question" onclick="toggleFaq('faq-6')">
+                        What happens if I enter the wrong password?
+                        <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        AES-GCM's built-in authentication tag will fail and decryption is immediately rejected — you'll see an error message in the log. No partial or corrupted data is ever produced. This is one of GCM mode's major advantages over older modes like CBC.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-7">
+                    <button class="faq-question" onclick="toggleFaq('faq-7')">
+                        Can I use ZevSafe for encrypting an entire SD card?
+                        <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        ZevSafe encrypts at the <strong>folder level</strong>, not at the raw disk level. For a 32GB SD card, we recommend organizing your data into logical folders and encrypting each one separately. This also gives you the flexibility to decrypt only the folder you need, rather than the entire card at once.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <div class="cta-card">
+            <div style="font-size:2.5rem;">🔒</div>
+            <h2>Ready to Secure Your Files?</h2>
+            <p>Go back to ZevSafe and start encrypting. Your data stays on your device — always.</p>
+            <a href="index.html" class="btn-cta">🔐 Open ZevSafe</a>
+        </div>
+
+        <footer>
+            <p>🔒 ZevSafe — 100% Client-Side &amp; Offline</p>
+            <p class="footer-sub">AES-256-GCM · PBKDF2-SHA256 · Web Crypto API · <a href="https://github.com/zevbuild" style="color:inherit;opacity:0.7;" target="_blank">zevbuild</a></p>
+        </footer>
+
+    </div>
+
+    <script>
+        function toggleFaq(id) {
+            const item = document.getElementById(id);
+            item.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
