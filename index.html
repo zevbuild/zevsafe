@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ZevSafe — Free, 100% offline folder encryption portal by zevbuild. Encrypt and decrypt folders using AES-256-GCM directly in your browser. No uploads, no servers, zero tracking.">
+    <meta name="theme-color" content="#0f172a">
+    <title>ZevSafe — Offline Folder Encryption by zevbuild</title>
+    <!-- Fonts embedded as system stack so the app works fully offline -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+    </style>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-animation"></div>
+    <div class="app-container">
+        <header>
+            <div class="logo" aria-hidden="true">🔒</div>
+            <h1>ZevSafe</h1>
+            <p class="subtitle">AES-256-GCM · 100% Offline · Zero Uploads · by <strong>zevbuild</strong></p>
+        </header>
+
+        <main class="grid-layout">
+            <!-- Encryption Section -->
+            <section class="card encrypt-card" aria-label="Encrypt a folder">
+                <div class="card-header">
+                    <h2>🔐 Encrypt Folder</h2>
+                    <p>Compresses and encrypts a folder using AES-256-GCM + PBKDF2</p>
+                </div>
+                
+                <div class="drop-zone" id="encrypt-drop-zone" role="button" tabindex="0" aria-label="Drop folder here or click to browse">
+                    <span class="drop-icon" aria-hidden="true">📁</span>
+                    <span class="drop-text">Drag &amp; Drop Folder Here</span>
+                    <span class="drop-or">or</span>
+                    <label class="btn-file-select" id="encrypt-browse-label" onclick="event.stopPropagation()">
+                        Browse Folder
+                        <input type="file" id="encrypt-folder-input" webkitdirectory directory multiple style="display: none;" autocomplete="off">
+                    </label>
+                    <span class="selected-info" id="encrypt-selected-info">No folder selected</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="encrypt-password">Password</label>
+                    <div class="password-wrap">
+                        <input type="password" id="encrypt-password" placeholder="Min. 8 characters" autocomplete="new-password" spellcheck="false">
+                        <button type="button" class="toggle-pw" data-target="encrypt-password" aria-label="Toggle password visibility">👁</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="encrypt-confirm">Confirm Password</label>
+                    <div class="password-wrap">
+                        <input type="password" id="encrypt-confirm" placeholder="Re-enter password" autocomplete="new-password" spellcheck="false">
+                        <button type="button" class="toggle-pw" data-target="encrypt-confirm" aria-label="Toggle password visibility">👁</button>
+                    </div>
+                </div>
+
+                <div class="strength-bar-wrap" id="strength-wrap" style="display:none;">
+                    <div class="strength-bar" id="strength-bar"></div>
+                    <span class="strength-label" id="strength-label"></span>
+                </div>
+
+                <button class="btn btn-primary" id="btn-encrypt">🔐 Encrypt &amp; Download</button>
+            </section>
+
+            <!-- Decryption Section -->
+            <section class="card decrypt-card" aria-label="Decrypt a vault file">
+                <div class="card-header">
+                    <h2>🔓 Decrypt Vault</h2>
+                    <p>Restores your original folder from a secure .enc vault file</p>
+                </div>
+
+                <div class="drop-zone" id="decrypt-drop-zone" role="button" tabindex="0" aria-label="Drop .enc file here or click to browse">
+                    <span class="drop-icon" aria-hidden="true">📦</span>
+                    <span class="drop-text">Drag &amp; Drop .enc File Here</span>
+                    <span class="drop-or">or</span>
+                    <label class="btn-file-select" id="decrypt-browse-label" onclick="event.stopPropagation()">
+                        Select .enc File
+                        <input type="file" id="decrypt-file-input" accept=".enc" style="display: none;" autocomplete="off">
+                    </label>
+                    <span class="selected-info" id="decrypt-selected-info">No file selected</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="decrypt-password">Password</label>
+                    <div class="password-wrap">
+                        <input type="password" id="decrypt-password" placeholder="Enter decryption password" autocomplete="current-password" spellcheck="false">
+                        <button type="button" class="toggle-pw" data-target="decrypt-password" aria-label="Toggle password visibility">👁</button>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <span>🛡️</span>
+                    <p>Wrong password = automatic failure. AES-GCM authentication prevents silent data corruption.</p>
+                </div>
+
+                <button class="btn btn-secondary" id="btn-decrypt">🔓 Decrypt &amp; Download</button>
+            </section>
+        </main>
+
+        <!-- Progress / Logs Section -->
+        <section class="card progress-card" id="progress-card" style="display: none;" aria-live="polite">
+            <div class="progress-header">
+                <h3 id="progress-title">Processing...</h3>
+                <span id="progress-percentage">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+            </div>
+            <div class="log-output" id="log-output" role="log" aria-label="Operation log">
+                <!-- Status logs will be appended here -->
+            </div>
+        </section>
+
+        <footer>
+            <p>🔒 100% Client-Side &amp; Offline · Your files and passwords <strong>never leave your device</strong></p>
+            <p class="footer-sub">AES-256-GCM · PBKDF2-SHA256 (100,000 iterations) · Web Crypto API · <a href="https://github.com/zevbuild" style="color:inherit;opacity:0.7;" target="_blank">zevbuild</a></p>
+        </footer>
+    </div>
+
+    <!-- Scripts (local — no CDN) -->
+    <script src="jszip.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

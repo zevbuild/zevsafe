@@ -1,0 +1,509 @@
+/* ============================================
+   DESIGN TOKENS & THEME VARIABLES
+   ============================================ */
+:root {
+    --bg-dark: #0f172a;
+    --bg-card: rgba(30, 41, 59, 0.45);
+    --border-card: rgba(255, 255, 255, 0.08);
+    --primary: #8b5cf6;
+    --primary-hover: #7c3aed;
+    --secondary: #10b981;
+    --secondary-hover: #059669;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --shadow-premium: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    --font-header: 'Outfit', 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --radius-card: 20px;
+    --radius-input: 12px;
+}
+
+/* ============================================
+   RESET & GLOBAL
+   ============================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* fix: prevent clipping on tall content */
+    position: relative;
+    overflow-x: hidden;
+    padding: 2rem 1rem;
+}
+
+/* ============================================
+   ANIMATED BACKGROUND
+   ============================================ */
+.background-animation {
+    position: fixed; /* fixed so it doesn't scroll */
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background:
+        radial-gradient(circle at 30% 30%, rgba(139, 92, 246, 0.15), transparent 40%),
+        radial-gradient(circle at 70% 70%, rgba(16, 185, 129, 0.1), transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.05), transparent 60%);
+    animation: rotateBg 40s linear infinite;
+    z-index: -1;
+    pointer-events: none;
+}
+
+@keyframes rotateBg {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+.app-container {
+    width: 100%;
+    max-width: 1020px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    z-index: 1;
+    padding-bottom: 2rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+header {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.logo {
+    font-size: 3.2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    filter: drop-shadow(0 0 14px rgba(139, 92, 246, 0.5));
+    animation: pulse 3s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.1); }
+}
+
+header h1 {
+    font-family: var(--font-header);
+    font-size: 2.9rem;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    background: linear-gradient(135deg, #f8fafc 30%, #c084fc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent; /* standard fallback */
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+/* ============================================
+   GRID LAYOUT
+   ============================================ */
+.grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 768px) {
+    .grid-layout {
+        grid-template-columns: 1fr;
+    }
+    header h1 {
+        font-size: 2.2rem;
+    }
+}
+
+/* ============================================
+   CARDS (Glassmorphism)
+   ============================================ */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-card);
+    padding: 2.25rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-premium);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 28px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+.card-header h2 {
+    font-family: var(--font-header);
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.card-header p {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* ============================================
+   DRAG-AND-DROP ZONE
+   ============================================ */
+.drop-zone {
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 2.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.drop-zone:hover,
+.drop-zone:focus {
+    border-color: rgba(139, 92, 246, 0.5);
+    background: rgba(139, 92, 246, 0.04);
+    outline: none;
+}
+
+.drop-zone.drag-over {
+    border-color: var(--primary);
+    background: rgba(139, 92, 246, 0.1);
+    transform: scale(1.01);
+}
+
+.drop-icon {
+    font-size: 2.5rem;
+    pointer-events: none;
+}
+
+.drop-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-main);
+    pointer-events: none;
+}
+
+.drop-or {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.btn-file-select {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--text-main);
+    padding: 0.5rem 1.3rem;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    display: inline-block;
+}
+
+.btn-file-select:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.selected-info {
+    font-size: 0.8rem;
+    color: var(--secondary);
+    font-weight: 500;
+    text-align: center;
+    word-break: break-all;
+    margin-top: 0.2rem;
+    min-height: 1.1rem;
+    pointer-events: none;
+}
+
+/* ============================================
+   FORM GROUPS & INPUTS
+   ============================================ */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+}
+
+/* Password wrapper for show/hide toggle */
+.password-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrap input {
+    flex: 1;
+    padding-right: 2.8rem; /* space for toggle button */
+}
+
+.toggle-pw {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1;
+    padding: 0;
+    transition: opacity 0.2s;
+    opacity: 0.6;
+}
+
+.toggle-pw:hover {
+    opacity: 1;
+}
+
+.form-group input {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-input);
+    font-size: 0.95rem;
+    font-family: var(--font-body);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    width: 100%;
+}
+
+.form-group input::placeholder {
+    color: rgba(148, 163, 184, 0.5);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* ============================================
+   PASSWORD STRENGTH BAR
+   ============================================ */
+.strength-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.strength-bar {
+    flex: 1;
+    height: 5px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    transition: background 0.4s ease, width 0.4s ease;
+}
+
+.strength-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: right;
+}
+
+/* ============================================
+   INFO BOX
+   ============================================ */
+.info-box {
+    display: flex;
+    gap: 0.75rem;
+    background: rgba(16, 185, 129, 0.07);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    align-items: flex-start;
+}
+
+.info-box span {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.info-box p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn {
+    width: 100%;
+    padding: 0.95rem 1.5rem;
+    border-radius: var(--radius-input);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font-body);
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: 0.01em;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(139, 92, 246, 0.45);
+}
+
+.btn-secondary {
+    background: var(--secondary);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--secondary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: none;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   PROGRESS & LOG PANEL
+   ============================================ */
+.progress-card {
+    background: rgba(15, 23, 42, 0.7);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.progress-header h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+#progress-percentage {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1.05rem;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 10px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 10px;
+    transition: width 0.35s ease;
+}
+
+.log-output {
+    background: rgba(5, 10, 25, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 1rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.78rem;
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.log-output::-webkit-scrollbar { width: 5px; }
+.log-output::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.4); border-radius: 5px; }
+
+.log-entry { line-height: 1.5; }
+.log-info    { color: var(--text-muted); }
+.log-success { color: var(--secondary); font-weight: 600; }
+.log-error   { color: var(--danger); font-weight: 700; }
+.log-warn    { color: var(--warning); }
+
+/* ============================================
+   FOOTER
+   ============================================ */
+footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.footer-sub {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    letter-spacing: 0.03em;
+}
