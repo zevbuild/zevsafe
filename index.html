@@ -6,9 +6,18 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="ZevSafe — Free, 100% offline folder encryption portal by zevbuild. AES-256-GCM encryption directly in your browser.">
     <meta name="theme-color" content="#08091a">
-    <title>ZevSafe — Offline Folder Encryption by zevbuild</title>
+    
+    <!-- Primary SEO Meta Tags -->
+    <title>ZevSafe — 100% Offline Folder & File Encryption</title>
+    <meta name="description" content="Securely lock folders using bank-grade client-side encryption. Runs entirely in your browser using AES-256-GCM. Your files and passwords never leave your device.">
+    <meta name="keywords" content="client-side encryption, zero-knowledge, offline folder locker, AES-256-GCM, PBKDF2, air-gapped, serverless encryption, local-first web app">
+
+    <!-- Open Graph / Facebook (For cleaner links when sharing on social/Discord) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://zevsafe.pages.dev/">
+    <meta property="og:title" content="ZevSafe — Zero-Knowledge Offline Folder Encryption">
+    <meta property="og:description" content="Compress and encrypt entire folders into portable vaults right inside your browser. No server tracking, no data collection.">
     <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');</style>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -46,7 +55,7 @@
                 <span class="gradient-text">Nobody else can.</span>
             </h1>
             <p class="hero-sub phone-hide">
-                Bank-grade client-side encryption. Runs entirely in your browser — your data and passwords never leave your device.
+                AES-256 Military-Grade Folder Encryption. Runs entirely in your browser — your data and passwords never leave your device.
             </p>
             <div class="hero-tech-line phone-hide">
                 🔐 AES-256-GCM &nbsp;·&nbsp; 🔑 PBKDF2 &nbsp;·&nbsp; 📁 Full Folders &nbsp;·&nbsp; ✈️ Air-Gapped
@@ -84,7 +93,7 @@
                     <!-- Desktop: drop zone -->
                     <div class="drop-zone" id="encrypt-drop-zone" role="button" tabindex="0"
                          aria-label="Drop folder here or click to browse">
-                        <div class="drop-zone-inner">
+                        <div class="drop-zone-inner" id="encrypt-dz-inner">
                             <div class="drop-icon-wrap">
                                 <span class="drop-icon">📁</span>
                                 <div class="drop-ring"></div>
@@ -99,41 +108,16 @@
                             <!-- Mobile-friendly file input (multiple files) -->
                             <input type="file" id="encrypt-folder-input" multiple style="display:none;" autocomplete="off">
                         </div>
-                        <p class="drop-selected" id="encrypt-selected-info">No folder selected</p>
-                    </div>
-
-                    <!-- Embedded Explorer Pane for Desktop -->
-                    <div class="explorer-pane" id="encrypt-explorer-pane" style="display: none;">
-                        <div class="explorer-header">
-                            <span class="explorer-folder-name" id="encrypt-explorer-root-name">folder</span>
-                            <button class="explorer-close-btn" id="btn-close-encrypt-explorer" title="Close Explorer">✕</button>
-                        </div>
-                        <div class="explorer-body">
-                            <!-- File Tree (left side) -->
-                            <div class="explorer-tree" id="encrypt-explorer-tree"></div>
-                            
-                            <!-- Text Editor (right side) -->
-                            <div class="explorer-editor" id="encrypt-explorer-editor" style="display: none;">
-                                <div class="editor-mini-toolbar">
-                                    <button class="tb-mini-btn" data-cmd="bold" title="Bold"><b>B</b></button>
-                                    <button class="tb-mini-btn" data-cmd="italic" title="Italic"><i>I</i></button>
-                                    <button class="tb-mini-btn" data-cmd="underline" title="Underline"><u>U</u></button>
-                                    <span class="tb-mini-divider"></span>
-                                    <button class="tb-mini-btn" id="tb-enc-h1">H1</button>
-                                    <button class="tb-mini-btn" id="tb-enc-h2">H2</button>
-                                    <span class="tb-mini-divider"></span>
-                                    <button class="tb-mini-btn" data-cmd="insertUnorderedList" title="Bullet List">•</button>
-                                    <button class="tb-mini-btn" data-cmd="insertOrderedList" title="Numbered List">1.</button>
-                                    <span class="tb-mini-divider"></span>
-                                    <button class="tb-mini-btn" id="tb-enc-link" title="Link">🔗</button>
-                                    <button class="tb-mini-btn" id="tb-enc-table" title="Table">📊</button>
-                                    <span class="tb-mini-divider"></span>
-                                    <button class="tb-mini-btn" data-cmd="undo" title="Undo">⟲</button>
-                                    <button class="tb-mini-btn" data-cmd="redo" title="Redo">⟳</button>
-                                </div>
-                                <div class="editor-mini-content" id="encrypt-editor-content" contenteditable="true" placeholder="Select a file to edit..."></div>
+                        <!-- Uploaded files summary widget -->
+                        <div class="selected-files-widget" id="encrypt-selected-widget" style="display: none;" onclick="event.stopPropagation()">
+                            <span class="sf-icon">📁</span>
+                            <div class="sf-info">
+                                <span class="sf-name" id="encrypt-selected-name">folder_name</span>
+                                <span class="sf-meta" id="encrypt-selected-meta">0 files · 0 KB</span>
                             </div>
+                            <button class="sf-clear-btn" id="btn-clear-encrypt" title="Clear selection">✕</button>
                         </div>
+                        <p class="drop-selected" id="encrypt-selected-info">No folder selected</p>
                     </div>
 
                     <div class="field-group">
@@ -183,7 +167,7 @@
                     <!-- Desktop: drop zone -->
                     <div class="drop-zone" id="decrypt-drop-zone" role="button" tabindex="0"
                          aria-label="Drop .enc file here or click to browse">
-                        <div class="drop-zone-inner">
+                        <div class="drop-zone-inner" id="decrypt-dz-inner">
                             <div class="drop-icon-wrap">
                                 <span class="drop-icon">📦</span>
                                 <div class="drop-ring drop-ring--teal"></div>
@@ -198,41 +182,16 @@
                             <!-- Mobile-friendly decrypt file input -->
                             <input type="file" id="decrypt-file-input" accept=".enc" style="display:none;" autocomplete="off">
                         </div>
-                        <p class="drop-selected" id="decrypt-selected-info">No file selected</p>
-                    </div>
-
-                    <!-- Embedded Explorer Pane for Decrypt Card -->
-                    <div class="explorer-pane" id="decrypt-explorer-pane" style="display: none;">
-                        <div class="explorer-header">
-                            <span class="explorer-folder-name" id="decrypt-explorer-root-name">decrypted_vault</span>
-                            <button class="explorer-close-btn" id="btn-close-decrypt-explorer" title="Close Explorer">✕</button>
-                        </div>
-                        <div class="explorer-body">
-                            <!-- File Tree (left side) -->
-                            <div class="explorer-tree" id="decrypt-explorer-tree"></div>
-                            
-                            <!-- Text Editor (right side) -->
-                            <div class="explorer-editor" id="decrypt-explorer-editor" style="display: none;">
-                                <div class="editor-mini-toolbar">
-                                    <button class="tb-mini-btn" data-cmd="bold" title="Bold"><b>B</b></button>
-                                    <button class="tb-mini-btn" data-cmd="italic" title="Italic"><i>I</i></button>
-                                    <button class="tb-mini-btn" data-cmd="underline" title="Underline"><u>U</u></button>
-                                    <span class="tb-mini-divider"></span>
-                                    <button class="tb-mini-btn" id="tb-dec-h1">H1</button>
-                                    <button class="tb-mini-btn" id="tb-dec-h2">H2</button>
-                                    <span class="tb-mini-divider"></span>
-                                    <button class="tb-mini-btn" data-cmd="insertUnorderedList" title="Bullet List">•</button>
-                                    <button class="tb-mini-btn" data-cmd="insertOrderedList" title="Numbered List">1.</button>
-                                    <span class="tb-mini-divider"></span>
-                                    <button class="tb-mini-btn" id="tb-dec-link" title="Link">🔗</button>
-                                    <button class="tb-mini-btn" id="tb-dec-table" title="Table">📊</button>
-                                    <span class="tb-mini-divider"></span>
-                                    <button class="tb-mini-btn" data-cmd="undo" title="Undo">⟲</button>
-                                    <button class="tb-mini-btn" data-cmd="redo" title="Redo">⟳</button>
-                                </div>
-                                <div class="editor-mini-content" id="decrypt-editor-content" contenteditable="true" placeholder="Select a file to edit..."></div>
+                        <!-- Decrypt file summary widget -->
+                        <div class="selected-files-widget" id="decrypt-selected-widget" style="display: none;" onclick="event.stopPropagation()">
+                            <span class="sf-icon">📦</span>
+                            <div class="sf-info">
+                                <span class="sf-name" id="decrypt-selected-name">vault_name.enc</span>
+                                <span class="sf-meta" id="decrypt-selected-meta">0 KB</span>
                             </div>
+                            <button class="sf-clear-btn" id="btn-clear-decrypt" title="Clear selection">✕</button>
                         </div>
+                        <p class="drop-selected" id="decrypt-selected-info">No file selected</p>
                     </div>
 
                     <div class="field-group">
@@ -358,5 +317,14 @@
 
     <script src="jszip.min.js"></script>
     <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered.', reg.scope))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>

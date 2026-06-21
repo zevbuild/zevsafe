@@ -1300,243 +1300,7 @@ body {
     --teal-light:   #0d9488;
 }
 
-/* =====================================================
-   DESKTOP EXPANDED CARD
-   ===================================================== */
-@media (min-width: 821px) {
-    .vault-card {
-        transition: grid-column 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .vault-card--expanded {
-        grid-column: span 2;
-    }
-}
 
-/* =====================================================
-   EMBEDDED EXPLORER & EDITOR PANES
-   ===================================================== */
-.explorer-pane {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    animation: fadeIn 0.25s ease-out;
-}
-
-.explorer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.explorer-folder-name {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 80%;
-}
-
-.explorer-close-btn {
-    background: none;
-    border: none;
-    color: var(--text-3);
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    transition: var(--transition);
-}
-
-.explorer-close-btn:hover {
-    color: var(--danger);
-    background: rgba(244, 63, 94, 0.1);
-}
-
-.explorer-body {
-    display: flex;
-    gap: 1rem;
-    height: 380px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: rgba(0,0,0,0.25);
-    overflow: hidden;
-}
-
-.light-theme .explorer-body {
-    background: rgba(255, 255, 255, 0.5);
-}
-
-/* LEFT COLUMN: FILE TREE */
-.explorer-tree {
-    width: 35%;
-    min-width: 140px;
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-    padding: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.explorer-tree::-webkit-scrollbar {
-    width: 4px;
-}
-.explorer-tree::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.06);
-    border-radius: 4px;
-}
-
-.tree-node {
-    display: flex;
-    flex-direction: column;
-}
-
-.tree-node-content {
-    display: flex;
-    align-items: center;
-    padding: 0.4rem 0.5rem;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: 0.82rem;
-    color: var(--text-2);
-    font-weight: 500;
-    gap: 0.4rem;
-    user-select: none;
-    transition: var(--transition);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.tree-node-content:hover {
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--text);
-}
-
-.light-theme .tree-node-content:hover {
-    background: rgba(0, 0, 0, 0.04);
-}
-
-.tree-node-content.active {
-    background: rgba(139, 92, 246, 0.12);
-    color: var(--purple-light);
-    font-weight: 600;
-}
-
-.tree-node-children {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    padding-left: 0.85rem;
-    border-left: 1px dashed rgba(255, 255, 255, 0.06);
-    margin-left: 0.5rem;
-    margin-top: 0.15rem;
-}
-
-.light-theme .tree-node-children {
-    border-left-color: rgba(0, 0, 0, 0.05);
-}
-
-.tree-arrow {
-    font-size: 0.55rem;
-    transition: transform 0.2s ease;
-    opacity: 0.5;
-    width: 10px;
-    text-align: center;
-}
-
-.tree-arrow.collapsed {
-    transform: rotate(-90deg);
-}
-
-/* RIGHT COLUMN: RICH TEXT MINI EDITOR */
-.explorer-editor {
-    width: 65%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    height: 100%;
-}
-
-.editor-mini-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem;
-    background: var(--surface-2);
-    border-bottom: 1px solid var(--border);
-}
-
-.tb-mini-btn {
-    background: none;
-    border: none;
-    color: var(--text-2);
-    font-family: var(--font-body);
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 0.3rem 0.5rem;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.tb-mini-btn:hover {
-    background: rgba(255,255,255,0.06);
-    color: var(--text);
-}
-
-.light-theme .tb-mini-btn:hover {
-    background: rgba(0,0,0,0.04);
-}
-
-.tb-mini-divider {
-    width: 1px;
-    height: 14px;
-    background: var(--border);
-    margin: 0 0.2rem;
-}
-
-.editor-mini-content {
-    flex: 1;
-    padding: 1.2rem;
-    background: transparent;
-    overflow-y: auto;
-    outline: none;
-    font-size: 0.92rem;
-    line-height: 1.6;
-    color: var(--text);
-}
-
-.editor-mini-content:empty::before {
-    content: attr(placeholder);
-    color: var(--text-3);
-    pointer-events: none;
-}
-
-/* Editor tags */
-.editor-mini-content h1 { font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 800; }
-.editor-mini-content h2 { font-family: var(--font-display); font-size: 1.3rem; margin-top: 1.2rem; margin-bottom: 0.6rem; font-weight: 700; }
-.editor-mini-content p { margin-bottom: 0.8rem; }
-.editor-mini-content ul, .editor-mini-content ol { margin-left: 1.2rem; margin-bottom: 0.8rem; }
-.editor-mini-content code { background: rgba(139,92,246,0.1); color: var(--purple-light); padding: 0.1rem 0.3rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; }
-.editor-mini-content pre { background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.8rem; overflow-x: auto; margin-bottom: 0.8rem; }
-.editor-mini-content pre code { background: none; color: inherit; padding: 0; font-size: 0.82rem; }
-.editor-mini-content a { color: var(--teal-light); text-decoration: underline; }
-.editor-mini-content table { width: 100%; border-collapse: collapse; margin-bottom: 0.8rem; }
-.editor-mini-content table th, .editor-mini-content table td { border: 1px solid var(--border); padding: 0.4rem 0.6rem; font-size: 0.82rem; text-align: left; }
-.editor-mini-content table th { background: rgba(255,255,255,0.03); font-weight: 600; }
-.light-theme .editor-mini-content table th { background: rgba(0,0,0,0.02); }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
 
 /* =====================================================
    PASSWORD SAVE MODAL
@@ -1721,5 +1485,91 @@ body {
 .pw-modal-btn--primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(109,40,217,0.45);
+}
+
+/* =====================================================
+   SELECTED FILES WIDGET (dashboard control for uploads)
+   ===================================================== */
+.selected-files-widget {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    width: 100%;
+    max-width: 320px;
+    animation: widgetFadeIn 0.2s ease;
+    z-index: 5;
+    pointer-events: auto;
+}
+
+@keyframes widgetFadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.light-theme .selected-files-widget {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.sf-icon {
+    font-size: 1.8rem;
+    filter: drop-shadow(0 0 8px rgba(139,92,246,0.3));
+    flex-shrink: 0;
+}
+
+.vault-card--decrypt .sf-icon {
+    filter: drop-shadow(0 0 8px rgba(20,184,166,0.3));
+}
+
+.sf-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+    text-align: left;
+    min-width: 0; /* allows text truncation */
+}
+
+.sf-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sf-meta {
+    font-size: 0.75rem;
+    color: var(--text-2);
+    font-weight: 500;
+}
+
+.sf-clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-3);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    width: 24px; height: 24px;
+    flex-shrink: 0;
+}
+
+.sf-clear-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--danger);
+}
+
+.light-theme .sf-clear-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
 }
 

@@ -9,12 +9,24 @@ const encryptPassword     = document.getElementById('encrypt-password');
 const encryptConfirm      = document.getElementById('encrypt-confirm');
 const btnEncrypt          = document.getElementById('btn-encrypt');
 
+const encryptDzInner      = document.getElementById('encrypt-dz-inner');
+const encryptSelectedWidget = document.getElementById('encrypt-selected-widget');
+const encryptSelectedName = document.getElementById('encrypt-selected-name');
+const encryptSelectedMeta = document.getElementById('encrypt-selected-meta');
+const btnClearEncrypt     = document.getElementById('btn-clear-encrypt');
+
 const decryptDropZone     = document.getElementById('decrypt-drop-zone');
 const decryptFileInput    = document.getElementById('decrypt-file-input');      // mobile input
 const decryptFileInputDz  = document.getElementById('decrypt-file-input-dz');  // desktop drop-zone input
 const decryptSelectedInfo = document.getElementById('decrypt-selected-info');
 const decryptPassword     = document.getElementById('decrypt-password');
 const btnDecrypt          = document.getElementById('btn-decrypt');
+
+const decryptDzInner      = document.getElementById('decrypt-dz-inner');
+const decryptSelectedWidget = document.getElementById('decrypt-selected-widget');
+const decryptSelectedName = document.getElementById('decrypt-selected-name');
+const decryptSelectedMeta = document.getElementById('decrypt-selected-meta');
+const btnClearDecrypt     = document.getElementById('btn-clear-decrypt');
 
 const progressCard        = document.getElementById('progress-card');
 const progressTitle       = document.getElementById('progress-title');
@@ -347,16 +359,39 @@ function setupDragAndDrop(dropZone, fileInput, onFilesSelected, requireFolder = 
 setupDragAndDrop(encryptDropZone, encryptFolderInput, (files, folderName) => {
     selectedEncryptFiles      = files;
     selectedEncryptFolderName = folderName;
-    encryptSelectedInfo.textContent = `✅ ${folderName} — ${files.length} file(s)`;
-    log(`Folder "${folderName}" selected (${files.length} files).`, 'info');
+    
+    let totalSize = 0;
+    for (const f of files) {
+        totalSize += f.size;
+    }
+    
+    if (encryptDzInner && encryptSelectedWidget) {
+        encryptDzInner.style.display = 'none';
+        encryptSelectedWidget.style.display = 'flex';
+        encryptSelectedName.textContent = folderName;
+        encryptSelectedMeta.textContent = `${files.length} file(s) · ${formatBytes(totalSize)}`;
+    }
+    
+    encryptSelectedInfo.style.display = 'none';
+    log(`Folder "${folderName}" selected (${files.length} files, ${formatBytes(totalSize)}).`, 'info');
     showProgress();
+    
+
 }, true);
 
 setupDragAndDrop(decryptDropZone, decryptFileInput, (files) => {
     if (files.length > 0) {
         selectedDecryptFile = files[0];
-        decryptSelectedInfo.textContent = `✅ ${selectedDecryptFile.name}`;
-        log(`Vault file "${selectedDecryptFile.name}" selected.`, 'info');
+        
+        if (decryptDzInner && decryptSelectedWidget) {
+            decryptDzInner.style.display = 'none';
+            decryptSelectedWidget.style.display = 'flex';
+            decryptSelectedName.textContent = selectedDecryptFile.name;
+            decryptSelectedMeta.textContent = formatBytes(selectedDecryptFile.size);
+        }
+        
+        decryptSelectedInfo.style.display = 'none';
+        log(`Vault file "${selectedDecryptFile.name}" selected (${formatBytes(selectedDecryptFile.size)}).`, 'info');
         showProgress();
     }
 });
@@ -547,6 +582,18 @@ btnEncrypt.addEventListener('click', async () => {
         log(`✅ Vault created: "${filename}" (${(combined.byteLength / 1024).toFixed(1)} KB)`, 'success');
         updateProgress('✅ Encryption complete!', 100);
         showPasswordSavePrompt(password);
+        
+        // Reset encrypt selected widget
+        selectedEncryptFiles = [];
+        selectedEncryptFolderName = '';
+        if (encryptDzInner && encryptSelectedWidget) {
+            encryptDzInner.style.display = '';
+            encryptSelectedWidget.style.display = 'none';
+        }
+        encryptSelectedInfo.style.display = '';
+        encryptSelectedInfo.textContent = 'No folder selected';
+        
+
 
     } catch (err) {
         log(`❌ Encryption failed: ${err.message}`, 'error');
@@ -616,14 +663,25 @@ btnDecrypt.addEventListener('click', async () => {
         updateProgress('Extracting ZIP...', 80);
 
         // Step 4: Load the decrypted ZIP and re-download it
-        await JSZip.loadAsync(decryptedBuffer); // validates ZIP structure
+        const zip = await JSZip.loadAsync(decryptedBuffer); // validates ZIP structure
 
-        const decryptedBlob = new Blob([decryptedBuffer], { type: 'application/zip' });
         const folderName    = selectedDecryptFile.name.replace(/\.enc$/i, '');
+        const decryptedBlob = new Blob([decryptedBuffer], { type: 'application/zip' });
         triggerDownload(decryptedBlob, `${folderName}_decrypted.zip`);
 
         log(`✅ Saved: "${folderName}_decrypted.zip" — extract it to restore your files.`, 'success');
         updateProgress('✅ Decryption complete!', 100);
+
+
+        
+        // Reset decrypt selected widget
+        selectedDecryptFile = null;
+        if (decryptDzInner && decryptSelectedWidget) {
+            decryptDzInner.style.display = '';
+            decryptSelectedWidget.style.display = 'none';
+        }
+        decryptSelectedInfo.style.display = '';
+        decryptSelectedInfo.textContent = 'No file selected';
 
     } catch (err) {
         // AES-GCM throws OperationError for wrong password or tampered data
@@ -654,364 +712,7 @@ function initThemeEngine() {
 // Run theme check immediately
 initThemeEngine();
 
-// ============================================
-// EMBEDDED CARD EXPLORER ENGINE
-// ============================================
-class CardExplorer {
-    constructor(type) {
-        this.type = type; // 'encrypt' or 'decrypt'
-        this.treeData = null;
-        this.fileCache = {};
-        this.activePath = null;
-        this.collapsedFolders = new Set();
-        
-        this.paneEl = document.getElementById(`${type}-explorer-pane`);
-        this.dropZoneEl = document.getElementById(`${type}-drop-zone`);
-        this.treeEl = document.getElementById(`${type}-explorer-tree`);
-        this.editorEl = document.getElementById(`${type}-explorer-editor`);
-        this.editorContentEl = document.getElementById(`${type}-editor-content`);
-        this.rootNameEl = document.getElementById(`${type}-explorer-root-name`);
-        this.cardEl = document.querySelector(`.vault-card--${type}`);
-    }
-    
-    load(files, rootName) {
-        this.treeData = this.buildTree(files, rootName);
-        this.fileCache = {};
-        this.activePath = null;
-        this.collapsedFolders.clear();
-        
-        if (this.rootNameEl) this.rootNameEl.textContent = rootName;
-        
-        if (this.dropZoneEl) this.dropZoneEl.style.display = 'none';
-        if (this.paneEl) this.paneEl.style.display = 'flex';
-        
-        // Expand card across the desktop grid
-        if (window.innerWidth > 820 && this.cardEl) {
-            this.cardEl.classList.add('vault-card--expanded');
-        }
-        
-        this.render();
-    }
-    
-    unload() {
-        this.treeData = null;
-        this.fileCache = {};
-        this.activePath = null;
-        
-        if (this.dropZoneEl) this.dropZoneEl.style.display = '';
-        if (this.paneEl) this.paneEl.style.display = 'none';
-        if (this.editorEl) this.editorEl.style.display = 'none';
-        
-        if (this.cardEl) {
-            this.cardEl.classList.remove('vault-card--expanded');
-        }
-    }
-    
-    buildTree(files, rootName) {
-        const root = {
-            name: rootName,
-            type: 'folder',
-            path: rootName,
-            children: {}
-        };
-        
-        let hasMyBrain = false;
-        
-        files.forEach(file => {
-            const path = file.relativeDir || file.webkitRelativePath || file.name;
-            const cleanPath = path.replace(/^\.\//, '').replace(/^\//, '');
-            
-            if (cleanPath.includes('My Brain/')) {
-                hasMyBrain = true;
-            }
-            
-            this.addPathToTree(root, cleanPath, file);
-        });
-        
-        // Automatically append "My Brain" normal folder with templates if missing
-        if (!hasMyBrain) {
-            const welcomePath = `My Brain/Welcome.txt`;
-            const draftsPath = `My Brain/Drafts.txt`;
-            
-            this.fileCache[welcomePath] = "🧠 Welcome to your Brain Vault!\n\nThis is a normal folder called 'My Brain' created inside the folder system.\nUse this folder to write notes, ideas, drafts, and quick thoughts.";
-            this.fileCache[draftsPath] = "💡 Quick Ideas & Drafts\n\n- Write your first idea here...";
-            
-            this.addPathToTree(root, welcomePath, null);
-            this.addPathToTree(root, draftsPath, null);
-        }
-        
-        return root;
-    }
-    
-    addPathToTree(root, path, file) {
-        const parts = path.split('/');
-        let current = root;
-        
-        for (let i = 0; i < parts.length; i++) {
-            const part = parts[i];
-            if (!part) continue;
-            
-            const isLast = i === parts.length - 1;
-            const currentPath = parts.slice(0, i + 1).join('/');
-            
-            if (isLast) {
-                current.children[part] = {
-                    name: part,
-                    type: 'file',
-                    path: currentPath,
-                    fileObject: file
-                };
-            } else {
-                if (!current.children[part]) {
-                    current.children[part] = {
-                        name: part,
-                        type: 'folder',
-                        path: currentPath,
-                        children: {}
-                    };
-                }
-                current = current.children[part];
-            }
-        }
-    }
-    
-    render() {
-        if (!this.treeEl || !this.treeData) return;
-        
-        const renderNode = (node, depth = 0) => {
-            const isFolder = node.type === 'folder';
-            if (isFolder) {
-                const collapsed = this.collapsedFolders.has(node.path);
-                let childrenHtml = '';
-                for (const key in node.children) {
-                    childrenHtml += renderNode(node.children[key], depth + 1);
-                }
-                
-                const arrowClass = collapsed ? 'tree-arrow collapsed' : 'tree-arrow';
-                const childrenStyle = collapsed ? 'style="display:none;"' : '';
-                
-                return `
-                    <div class="tree-node">
-                        <div class="tree-node-content" style="padding-left: ${depth * 8 + 4}px" onclick="window.${this.type}Explorer.toggleFolder('${node.path}')">
-                            <span class="${arrowClass}">▼</span>
-                            <span>📁</span>
-                            <span class="tree-node-name" title="${node.name}">${node.name}</span>
-                        </div>
-                        <div class="tree-node-children" ${childrenStyle}>
-                            ${childrenHtml}
-                        </div>
-                    </div>
-                `;
-            } else {
-                const isEditable = /\.(txt|md|js|css|html|json|xml|ini|bat|sh|ps1)$/i.test(node.name) || !node.fileObject;
-                const activeClass = this.activePath === node.path ? 'tree-node-content active' : 'tree-node-content';
-                const icon = isEditable ? '📄' : '📦';
-                
-                return `
-                    <div class="tree-node">
-                        <div class="${activeClass}" style="padding-left: ${depth * 8 + 14}px" onclick="window.${this.type}Explorer.selectFile('${node.path}', ${isEditable})">
-                            <span>${icon}</span>
-                            <span class="tree-node-name" title="${node.name}">${node.name}</span>
-                        </div>
-                    </div>
-                `;
-            }
-        };
-        
-        let html = '';
-        for (const key in this.treeData.children) {
-            html += renderNode(this.treeData.children[key], 0);
-        }
-        this.treeEl.innerHTML = html || '<div style="font-size:0.8rem;color:var(--text-3);padding:0.5rem;text-align:center;">Empty</div>';
-    }
-    
-    toggleFolder(path) {
-        if (this.collapsedFolders.has(path)) {
-            this.collapsedFolders.delete(path);
-        } else {
-            this.collapsedFolders.add(path);
-        }
-        this.render();
-    }
-    
-    async selectFile(path, isEditable) {
-        if (!isEditable) {
-            alert("⚠️ Binary file contents cannot be edited in the browser.");
-            return;
-        }
-        
-        this.activePath = path;
-        this.render();
-        
-        if (this.editorEl) this.editorEl.style.display = 'flex';
-        
-        let content = '';
-        if (this.fileCache[path] !== undefined) {
-            content = this.fileCache[path];
-        } else {
-            const fileObj = this.findFileByPath(this.treeData, path);
-            if (fileObj && fileObj.fileObject) {
-                content = await this.readFileAsText(fileObj.fileObject);
-                this.fileCache[path] = content;
-            }
-        }
-        
-        if (this.editorContentEl) {
-            this.editorContentEl.innerHTML = this.convertTextToHtml(content);
-        }
-    }
-    
-    findFileByPath(root, path) {
-        const parts = path.split('/');
-        let current = root;
-        for (let i = 0; i < parts.length; i++) {
-            const part = parts[i];
-            if (current.children && current.children[part]) {
-                current = current.children[part];
-            } else {
-                return null;
-            }
-        }
-        return current;
-    }
-    
-    readFileAsText(file) {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result || '');
-            reader.onerror = () => resolve('');
-            reader.readAsText(file);
-        });
-    }
-    
-    convertTextToHtml(text) {
-        if (!text) return '';
-        if (text.trim().startsWith('<') && text.trim().endsWith('>')) {
-            return text;
-        }
-        return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/\n/g, '<br>');
-    }
-    
-    convertHtmlToText(html) {
-        if (!html) return '';
-        let temp = document.createElement('div');
-        temp.innerHTML = html;
-        temp.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
-        temp.querySelectorAll('p').forEach(p => p.appendChild(document.createTextNode('\n')));
-        return temp.textContent || temp.innerText || '';
-    }
-    
-    saveActiveFile() {
-        if (this.activePath && this.editorContentEl) {
-            this.fileCache[this.activePath] = this.convertHtmlToText(this.editorContentEl.innerHTML);
-        }
-    }
-    
-    async getFilesForZip() {
-        this.saveActiveFile();
-        
-        const fileList = [];
-        const traverse = async (node) => {
-            if (node.type === 'file') {
-                let data;
-                if (this.fileCache[node.path] !== undefined) {
-                    data = new Blob([this.fileCache[node.path]], { type: 'text/plain' });
-                } else if (node.fileObject) {
-                    data = node.fileObject;
-                }
-                
-                if (data) {
-                    fileList.push({
-                        path: node.path,
-                        data: data
-                    });
-                }
-            } else if (node.type === 'folder' && node.children) {
-                for (const key in node.children) {
-                    await traverse(node.children[key]);
-                }
-            }
-        };
-        
-        if (this.treeData) {
-            await traverse(this.treeData);
-        }
-        return fileList;
-    }
-}
 
-// ============================================
-// EXPLORER WORKSPACE SETUP
-// ============================================
-window.encryptExplorer = new CardExplorer('encrypt');
-window.decryptExplorer = new CardExplorer('decrypt');
-
-// Connect file change logic to explorers on desktop
-function bindEditorToolbar(type) {
-    const toolbar = document.querySelector(`#${type}-explorer-pane .editor-mini-toolbar`);
-    const editor = document.getElementById(`${type}-editor-content`);
-    
-    if (!toolbar || !editor) return;
-    
-    toolbar.addEventListener('click', (e) => {
-        const btn = e.target.closest('.tb-mini-btn');
-        if (!btn) return;
-        
-        const cmd = btn.dataset.cmd;
-        if (cmd) {
-            document.execCommand(cmd, false, null);
-            window[`${type}Explorer`]?.saveActiveFile();
-        }
-    });
-    
-    editor.addEventListener('input', () => {
-        window[`${type}Explorer`]?.saveActiveFile();
-    });
-    
-    document.getElementById(`tb-${type}-h1`)?.addEventListener('click', () => {
-        document.execCommand('formatBlock', false, 'H1');
-        window[`${type}Explorer`]?.saveActiveFile();
-    });
-    
-    document.getElementById(`tb-${type}-h2`)?.addEventListener('click', () => {
-        document.execCommand('formatBlock', false, 'H2');
-        window[`${type}Explorer`]?.saveActiveFile();
-    });
-    
-    document.getElementById(`tb-${type}-link`)?.addEventListener('click', () => {
-        const url = prompt('Enter link URL:', 'https://');
-        if (url) {
-            document.execCommand('createLink', false, url);
-            window[`${type}Explorer`]?.saveActiveFile();
-        }
-    });
-    
-    document.getElementById(`tb-${type}-table`)?.addEventListener('click', () => {
-        const rows = parseInt(prompt('Enter rows:', '3') || '0');
-        const cols = parseInt(prompt('Enter columns:', '3') || '0');
-        if (rows > 0 && cols > 0) {
-            let table = '<table>';
-            for (let r = 0; r < rows; r++) {
-                table += '<tr>';
-                for (let c = 0; c < cols; c++) {
-                    table += r === 0 ? '<th>Header</th>' : '<td>Cell</td>';
-                }
-                table += '</tr>';
-            }
-            table += '</table><p><br></p>';
-            document.execCommand('insertHTML', false, table);
-            window[`${type}Explorer`]?.saveActiveFile();
-        }
-    });
-}
-
-// Call toolbar binding for both explorers to initialize if they exist
-bindEditorToolbar('encrypt');
-bindEditorToolbar('decrypt');
 
 // ============================================
 // PASSWORD PRESERVATION FLOW
@@ -1089,5 +790,45 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Could not save to password manager. Please copy manually.');
         }
     });
+
+    // Wire up upload widget clear buttons
+    const btnClearEncrypt = document.getElementById('btn-clear-encrypt');
+    const btnClearDecrypt = document.getElementById('btn-clear-decrypt');
+    
+    btnClearEncrypt?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedEncryptFiles = [];
+        selectedEncryptFolderName = '';
+        if (encryptDzInner && encryptSelectedWidget) {
+            encryptDzInner.style.display = '';
+            encryptSelectedWidget.style.display = 'none';
+        }
+        encryptSelectedInfo.style.display = '';
+        encryptSelectedInfo.textContent = 'No folder selected';
+        log('Folder selection cleared.', 'info');
+    });
+
+    btnClearDecrypt?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedDecryptFile = null;
+        if (decryptDzInner && decryptSelectedWidget) {
+            decryptDzInner.style.display = '';
+            decryptSelectedWidget.style.display = 'none';
+        }
+        decryptSelectedInfo.style.display = '';
+        decryptSelectedInfo.textContent = 'No file selected';
+        log('Vault file selection cleared.', 'info');
+    });
+
+
 });
+
+function formatBytes(bytes, decimals = 1) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
 

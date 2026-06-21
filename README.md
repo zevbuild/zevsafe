@@ -2,7 +2,7 @@
 
 > **by [zevbuild](https://github.com/zevbuild) · Encrypt and decrypt entire folders directly in your browser — no server, no uploads, 100% private.**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-8b5cf6?style=for-the-badge&logo=github)](https://zevbuild.github.io/zevsafe)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Cloudflare%20Pages-8b5cf6?style=for-the-badge&logo=cloudflare)](https://zevsafe.pages.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)](LICENSE)
 [![Security: AES-256-GCM](https://img.shields.io/badge/Security-AES--256--GCM-ef4444?style=for-the-badge)](#cryptography)
 [![100% Offline](https://img.shields.io/badge/Mode-100%25%20Offline-f59e0b?style=for-the-badge)](#)
@@ -32,8 +32,9 @@
 | 💪 **Password Strength Meter** | Real-time visual feedback on password strength |
 | 👁 **Show/Hide Password** | Toggle visibility on all password fields |
 | 🌐 **100% Offline** | Zero network requests — your files never leave your device |
+| ✈️ **SW Offline Caching** | Service Worker caches all resources for 100% offline future loading |
 | 📦 **Single Portable Output** | Produces one compact `.enc` vault file |
-| 🔓 **Cross-Platform** | Works in any modern browser on Windows, Mac, Linux, Android |
+| 🔓 **Cross-Platform** | Works in any modern browser on Windows, Mac, Linux, Android, and iOS |
 
 ---
 
@@ -82,17 +83,17 @@
 ## 📖 Usage Guide
 
 ### 🔐 Encrypt a Folder
-1. Open **ZevSafe** in your browser
-2. Drag & drop your folder into the **Encrypt** panel (or click "Browse Folder")
-3. Enter a strong password (8+ characters) and confirm it
-4. Click **Encrypt & Download** → downloads `yourfolder.enc`
+1. Open **ZevSafe** in your browser.
+2. Drag & drop your folder into the **Encrypt Folder** panel (or click "Browse Folder").
+3. Enter a strong password (8+ characters) and confirm it.
+4. Click **Encrypt & Download** → downloads `yourfolder.enc`.
 
 ### 🔓 Decrypt a Vault
-1. Open **ZevSafe** in your browser
-2. Drag & drop your `.enc` file into the **Decrypt** panel
-3. Enter your original password
-4. Click **Decrypt & Download** → downloads `yourfolder_decrypted.zip`
-5. Extract the ZIP to restore all your original files
+1. Open **ZevSafe** in your browser.
+2. Drag & drop your `.enc` file into the **Decrypt Folder** panel (or click "Select .enc File").
+3. Enter your original password.
+4. Click **Decrypt & Download** → decrypts the vault and downloads `yourfolder_decrypted.zip`.
+5. Extract the ZIP to restore your original files.
 
 ---
 
@@ -145,7 +146,7 @@ python -m http.server 8080
 - **Password strength matters.** Use a long passphrase (16+ characters). The encryption is only as strong as your password.
 - **No password recovery.** There is no backdoor, no reset. Lose your password → data is permanently unrecoverable.
 - **Memory safety.** All crypto runs in the browser's native sandbox. Decrypted data exists only in RAM and is never written to disk until you download it.
-- **Verify the source.** Always use ZevSafe from the official GitHub Pages URL or a locally cloned copy you trust.
+- **Verify the source.** Always use ZevSafe from the official Cloudflare Pages URL (https://zevsafe.pages.dev) or a locally cloned copy you trust.
 
 ---
 

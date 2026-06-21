@@ -4,8 +4,20 @@
 - `[x]` Create styling sheets `styles.css` with premium dark glassmorphism styling
 - `[x]` Implement JSZip and Web Crypto API core logic in `app.js`
 - `[x]` Write `mybrain/WEB_APP_DESIGN.md` documenting web app cryptography
-- `[x]` Verify encryption and decryption workflows locally in the browser
-- `[x]` Add mobile-friendly files input for browsers without folder upload support (iOS/Android Safari/Chrome)
+- `[x]` Document detailed encryption & decryption workflows in `how-to-use.html`
+- `[x]` Add "Download ZIP" button in `index.html` for Decrypt Explorer
+- `[x]` Modify `app.js` to support loading folders into Encrypt Explorer
+- `[x]` Modify `app.js` to support loading decrypted ZIP structures into Decrypt Explorer
+- `[x]` Modify `app.js` to package edited files in `btnEncrypt`
+- `[x]` Modify `app.js` to handle HTML tag preservation in `saveActiveFile()`
+- `[x]` Remove explorer pane HTML markup in `index.html`
+- `[x]` Remove CardExplorer class, setups, and toolbar bindings in `app.js`
+- `[x]` Revert btnEncrypt and btnDecrypt explorer load/unload logic in `app.js`
+- `[x]` Remove explorer event listeners in `app.js` (close and download buttons)
+- `[x]` Remove explorer styles in `styles.css`
+- `[x]` Update `README.md` to remove references to workspace explorer
+- `[x]` Revert `how-to-use.html` steps to omit explorer descriptions
+- `[x]` Verify the simplified portal works cleanly in the browser
 - `[x]` Dynamically update drop zone text to "Tap to select" on touch devices
 - `[x]` Remove redundant bottom nav bar and device banner to declutter vertical space
 - `[x]` Hide hero header on phone screens to maximize screen real estate and prevent excessive scrolling

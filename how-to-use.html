@@ -3,9 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ZevSafe How To Use — Learn how to encrypt and decrypt folders with AES-256-GCM, by zevbuild.">
     <meta name="theme-color" content="#08091a">
-    <title>How To Use — ZevSafe by zevbuild</title>
+
+    <!-- Primary SEO Meta Tags -->
+    <title>How To Use ZevSafe — Offline Folder Encryption Guide</title>
+    <meta name="description" content="Learn how to encrypt and decrypt folders offline with AES-256-GCM. Read the step-by-step user guide for ZevSafe offline encryption portal.">
+    <meta name="keywords" content="client-side encryption, zero-knowledge, offline folder locker, AES-256-GCM, PBKDF2, air-gapped, serverless encryption, local-first web app, user guide">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://zevsafe.pages.dev/how-to-use.html">
+    <meta property="og:title" content="How To Use ZevSafe — Step-by-Step Offline Encryption Guide">
+    <meta property="og:description" content="Detailed guide on how to secure folders locally using AES-256-GCM encryption inside your browser.">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
     </style>
@@ -327,6 +336,50 @@
             transform: translateY(-2px);
             box-shadow: 0 12px 40px -4px rgba(109,40,217,0.65);
         }
+
+        .guide-body-h3 {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--purple-light);
+        }
+        .guide-body-h3--teal {
+            color: var(--teal-light);
+        }
+        .guide-body-p {
+            font-size: 0.86rem;
+            color: var(--text-2);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        .guide-body-ul {
+            font-size: 0.84rem;
+            color: var(--text-2);
+            line-height: 1.7;
+            margin-left: 1.3rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .guide-byte-map {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-2);
+            text-align: center;
+            margin-top: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        .light-theme .guide-byte-map {
+            background: rgba(0, 0, 0, 0.02);
+            color: var(--text);
+        }
     </style>
 </head>
 <body>
@@ -469,6 +522,54 @@
             </div>
         </section>
 
+        <!-- DETAILED CRYPTOGRAPHY WORKFLOW -->
+        <section class="guide-section">
+            <h2 class="guide-section-label">⚙️ Under The Hood: Cryptographic Pipeline</h2>
+            <div class="crypto-card" style="overflow-x: visible;">
+                <h3 class="guide-body-h3" style="margin-top: 0;">1. Key Derivation Pipeline (PBKDF2-SHA256)</h3>
+                <p class="guide-body-p">
+                    Raw passwords are never used directly as keys. To prevent dictionary attacks and brute-forcing, ZevSafe employs a secure key stretching pipeline:
+                </p>
+                <ul class="guide-body-ul">
+                    <li><strong>Salt Generation (16 Bytes):</strong> A unique, random 128-bit salt is generated for each operation using the browser's cryptographically secure pseudo-random number generator (CSPRNG), <code>window.crypto.getRandomValues()</code>. This makes rainbow tables and pre-computed attacks completely useless.</li>
+                    <li><strong>PBKDF2 Stretching:</strong> The password and salt are processed through the Password-Based Key Derivation Function 2 (PBKDF2) using <code>SHA-256</code> as the underlying hash function.</li>
+                    <li><strong>100,000 Iterations:</strong> The key derivation runs for exactly 100,000 iterations. This heavy stretching introduces a significant computational delay for attackers, making brute-force cracking mathematically infeasible.</li>
+                    <li><strong>Key Derivation:</strong> The stretched result is derived as a 256-bit symmetric cryptographic key ready for AES encryption.</li>
+                </ul>
+
+                <h3 class="guide-body-h3 guide-body-h3--teal">2. Step-by-Step Encryption Flow</h3>
+                <p class="guide-body-p">
+                    When you drop a folder and click "Encrypt &amp; Download", the browser executes the following sequence:
+                </p>
+                <ul class="guide-body-ul">
+                    <li><strong>Step 2.1: Folder Compression (JSZip):</strong> The selected folder structure is compressed in-memory into a single ZIP binary stream using the DEFLATE algorithm (compression level 6). This hides original filenames and directory layout structure inside the compressed payload.</li>
+                    <li><strong>Step 2.2: Header Variables:</strong> The CSPRNG generates a random 16-byte Salt and a 12-byte Initialization Vector (IV/Nonce).</li>
+                    <li><strong>Step 2.3: Key Stretching:</strong> The browser derives a 256-bit key from the password and Salt using PBKDF2-SHA256 (100k iterations) via <code>crypto.subtle.deriveKey()</code>.</li>
+                    <li><strong>Step 2.4: AES-256-GCM ciphering:</strong> The ZIP binary stream is encrypted using AES-GCM-256 with the derived key and the 12-byte IV. During this operation, a 16-byte (128-bit) GCM authentication tag is generated to ensure integrity.</li>
+                    <li><strong>Step 2.5: Packaging:</strong> The outputs are packed into a single binary array using a specific layout:
+                        <div class="guide-byte-map">
+                            [ Salt (16 Bytes) ] &nbsp;+&nbsp; [ IV (12 Bytes) ] &nbsp;+&nbsp; [ Ciphertext (Variable) ] &nbsp;+&nbsp; [ GCM Tag (16 Bytes) ]
+                        </div>
+                    </li>
+                    <li><strong>Step 2.6: Disk Write:</strong> The packed array is downloaded as a single <code>.enc</code> file directly via browser local memory.</li>
+                </ul>
+
+                <h3 class="guide-body-h3" style="color: var(--text);">3. Step-by-Step Decryption Flow</h3>
+                <p class="guide-body-p">
+                    When you upload a <code>.enc</code> file and click "Decrypt &amp; Download", the reverse sequence takes place:
+                </p>
+                <ul class="guide-body-ul">
+                    <li><strong>Step 3.1: Parsing Headers:</strong> The browser reads the raw binary array of the <code>.enc</code> file. It extracts the first 16 bytes as the Salt, the next 12 bytes (bytes 16–27) as the IV, and the rest as the ciphertext payload (which implicitly contains the 16-byte GCM tag appended at the end).</li>
+                    <li><strong>Step 3.2: Re-deriving the Key:</strong> The user-provided password and the extracted 16-byte Salt are passed to <code>crypto.subtle.deriveKey()</code> to re-derive the 256-bit AES-GCM key using the exact same PBKDF2 parameters (100k iterations, SHA-256).</li>
+                    <li><strong>Step 3.3: Cryptographic Decryption &amp; Integrity Check:</strong> The browser calls <code>crypto.subtle.decrypt()</code> using the re-derived key and the extracted 12-byte IV. The Web Crypto engine automatically calculates the authentication tag and compares it to the GCM tag appended to the ciphertext.
+                        <br><em>Note: If even a single byte has been modified, or if the password is incorrect, the tags will not match. The operation throws an <code>OperationError</code> and immediately aborts, preventing tampered data or wrong passwords from corrupting memory.</em>
+                    </li>
+                    <li><strong>Step 3.4: ZIP Extraction:</strong> Upon successful decryption, the resulting clean binary ZIP payload is read by JSZip, which extracts the original folder layout, subfolders, and files exactly as they were.</li>
+                    <li><strong>Step 3.5: Delivery:</strong> The files are packed as a zip archive and downloaded as <code>*_decrypted.zip</code>.</li>
+                </ul>
+            </div>
+        </section>
+
         <!-- TIPS -->
         <section class="guide-section">
             <h2 class="guide-section-label">💡 Tips &amp; Warnings</h2>
@@ -562,6 +663,14 @@
     <script>
         function toggleFaq(id) {
             document.getElementById(id).classList.toggle('open');
+        }
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered.', reg.scope))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
         }
     </script>
 </body>
