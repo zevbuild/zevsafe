@@ -2,135 +2,360 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ZevSafe — Free, 100% offline folder encryption portal by zevbuild. Encrypt and decrypt folders using AES-256-GCM directly in your browser. No uploads, no servers, zero tracking.">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="ZevSafe — Free, 100% offline folder encryption portal by zevbuild. AES-256-GCM encryption directly in your browser.">
+    <meta name="theme-color" content="#08091a">
     <title>ZevSafe — Offline Folder Encryption by zevbuild</title>
-    <!-- Fonts embedded as system stack so the app works fully offline -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
-    </style>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');</style>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
-    <div class="background-animation"></div>
-    <div class="app-container">
-        <header>
-            <div class="logo" aria-hidden="true">🔒</div>
-            <h1>ZevSafe</h1>
-            <p class="subtitle">AES-256-GCM · 100% Offline · Zero Uploads · by <strong>zevbuild</strong></p>
-        </header>
+    <!-- Ambient background -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="noise"></div>
 
-        <!-- Top Nav -->
-        <nav class="top-nav">
-            <span class="nav-brand">🔒 ZevSafe</span>
-            <a href="how-to-use.html" class="nav-link">📖 How To Use</a>
+
+    <div class="app-shell">
+
+        <!-- ── NAVBAR ── -->
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <span class="brand-icon">🔒</span>
+                <span class="brand-name">ZevSafe</span>
+            </div>
+            <div class="navbar-links">
+                <a href="how-to-use.html" class="nav-pill">📖 Guide</a>
+                <a href="https://github.com/zevbuild" target="_blank" class="nav-pill nav-pill-ghost">GitHub ↗</a>
+            </div>
         </nav>
 
-        <main class="grid-layout">
-            <!-- Encryption Section -->
-            <section class="card encrypt-card" aria-label="Encrypt a folder">
-                <div class="card-header">
-                    <h2>🔐 Encrypt Folder</h2>
-                    <p>Compresses and encrypts a folder using AES-256-GCM + PBKDF2</p>
-                </div>
-                
-                <div class="drop-zone" id="encrypt-drop-zone" role="button" tabindex="0" aria-label="Drop folder here or click to browse">
-                    <span class="drop-icon" aria-hidden="true">📁</span>
-                    <span class="drop-text">Drag &amp; Drop Folder Here</span>
-                    <span class="drop-or">or</span>
-                    <label class="btn-file-select" id="encrypt-browse-label" onclick="event.stopPropagation()">
-                        Browse Folder
-                        <input type="file" id="encrypt-folder-input" webkitdirectory directory multiple style="display: none;" autocomplete="off">
-                    </label>
-                    <span class="selected-info" id="encrypt-selected-info">No folder selected</span>
-                </div>
+        <!-- ── HERO ── -->
+        <header class="hero">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                Zero-Knowledge · Zero-Tracking · 100% Offline
+            </div>
+            <h1 class="hero-title">
+                Lock your files.<br>
+                <span class="gradient-text">Nobody else can.</span>
+            </h1>
+            <p class="hero-sub phone-hide">
+                Bank-grade client-side encryption. Runs entirely in your browser — your data and passwords never leave your device.
+            </p>
+            <div class="hero-tech-line phone-hide">
+                🔐 AES-256-GCM &nbsp;·&nbsp; 🔑 PBKDF2 &nbsp;·&nbsp; 📁 Full Folders &nbsp;·&nbsp; ✈️ Air-Gapped
+            </div>
+        </header>
 
-                <div class="form-group">
-                    <label for="encrypt-password">Password</label>
-                    <div class="password-wrap">
-                        <input type="password" id="encrypt-password" placeholder="Min. 8 characters" autocomplete="new-password" spellcheck="false">
-                        <button type="button" class="toggle-pw" data-target="encrypt-password" aria-label="Toggle password visibility">👁</button>
+        <!-- ── MOBILE TAB BAR (visible on phone only) ── -->
+        <div class="mobile-tabs" id="mobile-tabs" role="tablist" aria-label="Encrypt or Decrypt">
+            <button class="mobile-tab mobile-tab--active" id="tab-encrypt"
+                    role="tab" aria-selected="true" aria-controls="encrypt-section"
+                    onclick="switchTab('encrypt')">
+                <span class="mobile-tab-icon">🔐</span>
+                <span class="mobile-tab-label">Encrypt</span>
+            </button>
+            <button class="mobile-tab" id="tab-decrypt"
+                    role="tab" aria-selected="false" aria-controls="decrypt-section"
+                    onclick="switchTab('decrypt')">
+                <span class="mobile-tab-icon">🔓</span>
+                <span class="mobile-tab-label">Decrypt</span>
+            </button>
+        </div>
+
+        <!-- ── MAIN CARDS ── -->
+        <main class="cards-grid" id="cards-grid">
+
+            <!-- ENCRYPT CARD -->
+            <section class="vault-card vault-card--encrypt" id="encrypt-section"
+                     role="tabpanel" aria-labelledby="tab-encrypt">
+                <div class="card-glow card-glow--purple"></div>
+                <div class="card-inner">
+                    <div class="card-tag card-tag--purple">ENCRYPT</div>
+                    <h2 class="card-title">🔐 Lock a Folder</h2>
+                    <p class="card-desc">Compress &amp; encrypt an entire folder into a single portable vault file.</p>
+
+                    <!-- Desktop: drop zone -->
+                    <div class="drop-zone" id="encrypt-drop-zone" role="button" tabindex="0"
+                         aria-label="Drop folder here or click to browse">
+                        <div class="drop-zone-inner">
+                            <div class="drop-icon-wrap">
+                                <span class="drop-icon">📁</span>
+                                <div class="drop-ring"></div>
+                            </div>
+                            <p class="drop-primary">Drop folder here</p>
+                            <p class="drop-secondary">or</p>
+                            <label class="btn-browse" onclick="event.stopPropagation()">
+                                Browse Folder
+                                <input type="file" id="encrypt-folder-input-dz" webkitdirectory directory multiple
+                                       style="display:none;" autocomplete="off">
+                            </label>
+                            <!-- Mobile-friendly file input (multiple files) -->
+                            <input type="file" id="encrypt-folder-input" multiple style="display:none;" autocomplete="off">
+                        </div>
+                        <p class="drop-selected" id="encrypt-selected-info">No folder selected</p>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="encrypt-confirm">Confirm Password</label>
-                    <div class="password-wrap">
-                        <input type="password" id="encrypt-confirm" placeholder="Re-enter password" autocomplete="new-password" spellcheck="false">
-                        <button type="button" class="toggle-pw" data-target="encrypt-confirm" aria-label="Toggle password visibility">👁</button>
+                    <!-- Embedded Explorer Pane for Desktop -->
+                    <div class="explorer-pane" id="encrypt-explorer-pane" style="display: none;">
+                        <div class="explorer-header">
+                            <span class="explorer-folder-name" id="encrypt-explorer-root-name">folder</span>
+                            <button class="explorer-close-btn" id="btn-close-encrypt-explorer" title="Close Explorer">✕</button>
+                        </div>
+                        <div class="explorer-body">
+                            <!-- File Tree (left side) -->
+                            <div class="explorer-tree" id="encrypt-explorer-tree"></div>
+                            
+                            <!-- Text Editor (right side) -->
+                            <div class="explorer-editor" id="encrypt-explorer-editor" style="display: none;">
+                                <div class="editor-mini-toolbar">
+                                    <button class="tb-mini-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+                                    <button class="tb-mini-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+                                    <button class="tb-mini-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+                                    <span class="tb-mini-divider"></span>
+                                    <button class="tb-mini-btn" id="tb-enc-h1">H1</button>
+                                    <button class="tb-mini-btn" id="tb-enc-h2">H2</button>
+                                    <span class="tb-mini-divider"></span>
+                                    <button class="tb-mini-btn" data-cmd="insertUnorderedList" title="Bullet List">•</button>
+                                    <button class="tb-mini-btn" data-cmd="insertOrderedList" title="Numbered List">1.</button>
+                                    <span class="tb-mini-divider"></span>
+                                    <button class="tb-mini-btn" id="tb-enc-link" title="Link">🔗</button>
+                                    <button class="tb-mini-btn" id="tb-enc-table" title="Table">📊</button>
+                                    <span class="tb-mini-divider"></span>
+                                    <button class="tb-mini-btn" data-cmd="undo" title="Undo">⟲</button>
+                                    <button class="tb-mini-btn" data-cmd="redo" title="Redo">⟳</button>
+                                </div>
+                                <div class="editor-mini-content" id="encrypt-editor-content" contenteditable="true" placeholder="Select a file to edit..."></div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="strength-bar-wrap" id="strength-wrap" style="display:none;">
-                    <div class="strength-bar" id="strength-bar"></div>
-                    <span class="strength-label" id="strength-label"></span>
-                </div>
+                    <div class="field-group">
+                        <label class="field-label" for="encrypt-password">Password</label>
+                        <div class="field-wrap">
+                            <span class="field-icon">🔑</span>
+                            <input class="field-input" type="password" id="encrypt-password"
+                                   placeholder="Min. 8 characters" autocomplete="new-password" spellcheck="false"
+                                   inputmode="text">
+                            <button class="toggle-pw" type="button" data-target="encrypt-password" aria-label="Show/hide">👁</button>
+                        </div>
+                        <div class="strength-wrap" id="strength-wrap" style="display:none;">
+                            <div class="strength-track">
+                                <div class="strength-fill" id="strength-bar"></div>
+                            </div>
+                            <span class="strength-label" id="strength-label"></span>
+                        </div>
+                    </div>
 
-                <button class="btn btn-primary" id="btn-encrypt">🔐 Encrypt &amp; Download</button>
+                    <div class="field-group">
+                        <label class="field-label" for="encrypt-confirm">Confirm Password</label>
+                        <div class="field-wrap">
+                            <span class="field-icon">✅</span>
+                            <input class="field-input" type="password" id="encrypt-confirm"
+                                   placeholder="Re-enter password" autocomplete="new-password" spellcheck="false"
+                                   inputmode="text">
+                            <button class="toggle-pw" type="button" data-target="encrypt-confirm" aria-label="Show/hide">👁</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn--purple" id="btn-encrypt">
+                        <span class="btn-shimmer"></span>
+                        <span class="btn-content">🔐 Encrypt &amp; Download</span>
+                    </button>
+                </div>
             </section>
 
-            <!-- Decryption Section -->
-            <section class="card decrypt-card" aria-label="Decrypt a vault file">
-                <div class="card-header">
-                    <h2>🔓 Decrypt Vault</h2>
-                    <p>Restores your original folder from a secure .enc vault file</p>
-                </div>
+            <!-- DECRYPT CARD -->
+            <section class="vault-card vault-card--decrypt" id="decrypt-section"
+                     role="tabpanel" aria-labelledby="tab-decrypt">
+                <div class="card-glow card-glow--teal"></div>
+                <div class="card-inner">
+                    <div class="card-tag card-tag--teal">DECRYPT</div>
+                    <h2 class="card-title">🔓 Unlock a Vault</h2>
+                    <p class="card-desc">Restore your original folder from a <code>.enc</code> vault file with your password.</p>
 
-                <div class="drop-zone" id="decrypt-drop-zone" role="button" tabindex="0" aria-label="Drop .enc file here or click to browse">
-                    <span class="drop-icon" aria-hidden="true">📦</span>
-                    <span class="drop-text">Drag &amp; Drop .enc File Here</span>
-                    <span class="drop-or">or</span>
-                    <label class="btn-file-select" id="decrypt-browse-label" onclick="event.stopPropagation()">
-                        Select .enc File
-                        <input type="file" id="decrypt-file-input" accept=".enc" style="display: none;" autocomplete="off">
-                    </label>
-                    <span class="selected-info" id="decrypt-selected-info">No file selected</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="decrypt-password">Password</label>
-                    <div class="password-wrap">
-                        <input type="password" id="decrypt-password" placeholder="Enter decryption password" autocomplete="current-password" spellcheck="false">
-                        <button type="button" class="toggle-pw" data-target="decrypt-password" aria-label="Toggle password visibility">👁</button>
+                    <!-- Desktop: drop zone -->
+                    <div class="drop-zone" id="decrypt-drop-zone" role="button" tabindex="0"
+                         aria-label="Drop .enc file here or click to browse">
+                        <div class="drop-zone-inner">
+                            <div class="drop-icon-wrap">
+                                <span class="drop-icon">📦</span>
+                                <div class="drop-ring drop-ring--teal"></div>
+                            </div>
+                            <p class="drop-primary">Drop .enc file here</p>
+                            <p class="drop-secondary">or</p>
+                            <label class="btn-browse btn-browse--teal" onclick="event.stopPropagation()">
+                                Select .enc File
+                                <input type="file" id="decrypt-file-input-dz" accept=".enc"
+                                       style="display:none;" autocomplete="off">
+                            </label>
+                            <!-- Mobile-friendly decrypt file input -->
+                            <input type="file" id="decrypt-file-input" accept=".enc" style="display:none;" autocomplete="off">
+                        </div>
+                        <p class="drop-selected" id="decrypt-selected-info">No file selected</p>
                     </div>
-                </div>
 
-                <div class="info-box">
-                    <span>🛡️</span>
-                    <p>Wrong password = automatic failure. AES-GCM authentication prevents silent data corruption.</p>
-                </div>
+                    <!-- Embedded Explorer Pane for Decrypt Card -->
+                    <div class="explorer-pane" id="decrypt-explorer-pane" style="display: none;">
+                        <div class="explorer-header">
+                            <span class="explorer-folder-name" id="decrypt-explorer-root-name">decrypted_vault</span>
+                            <button class="explorer-close-btn" id="btn-close-decrypt-explorer" title="Close Explorer">✕</button>
+                        </div>
+                        <div class="explorer-body">
+                            <!-- File Tree (left side) -->
+                            <div class="explorer-tree" id="decrypt-explorer-tree"></div>
+                            
+                            <!-- Text Editor (right side) -->
+                            <div class="explorer-editor" id="decrypt-explorer-editor" style="display: none;">
+                                <div class="editor-mini-toolbar">
+                                    <button class="tb-mini-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+                                    <button class="tb-mini-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+                                    <button class="tb-mini-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+                                    <span class="tb-mini-divider"></span>
+                                    <button class="tb-mini-btn" id="tb-dec-h1">H1</button>
+                                    <button class="tb-mini-btn" id="tb-dec-h2">H2</button>
+                                    <span class="tb-mini-divider"></span>
+                                    <button class="tb-mini-btn" data-cmd="insertUnorderedList" title="Bullet List">•</button>
+                                    <button class="tb-mini-btn" data-cmd="insertOrderedList" title="Numbered List">1.</button>
+                                    <span class="tb-mini-divider"></span>
+                                    <button class="tb-mini-btn" id="tb-dec-link" title="Link">🔗</button>
+                                    <button class="tb-mini-btn" id="tb-dec-table" title="Table">📊</button>
+                                    <span class="tb-mini-divider"></span>
+                                    <button class="tb-mini-btn" data-cmd="undo" title="Undo">⟲</button>
+                                    <button class="tb-mini-btn" data-cmd="redo" title="Redo">⟳</button>
+                                </div>
+                                <div class="editor-mini-content" id="decrypt-editor-content" contenteditable="true" placeholder="Select a file to edit..."></div>
+                            </div>
+                        </div>
+                    </div>
 
-                <button class="btn btn-secondary" id="btn-decrypt">🔓 Decrypt &amp; Download</button>
+                    <div class="field-group">
+                        <label class="field-label" for="decrypt-password">Password</label>
+                        <div class="field-wrap">
+                            <span class="field-icon">🔑</span>
+                            <input class="field-input" type="password" id="decrypt-password"
+                                   placeholder="Enter vault password" autocomplete="current-password" spellcheck="false"
+                                   inputmode="text">
+                            <button class="toggle-pw" type="button" data-target="decrypt-password" aria-label="Show/hide">👁</button>
+                        </div>
+                    </div>
+
+                    <div class="alert-box">
+                        <span class="alert-icon">🛡️</span>
+                        <p>Wrong password triggers immediate rejection. AES-GCM authentication prevents silent corruption.</p>
+                    </div>
+
+                    <button class="btn btn--teal" id="btn-decrypt">
+                        <span class="btn-shimmer"></span>
+                        <span class="btn-content">🔓 Decrypt &amp; Download</span>
+                    </button>
+                </div>
             </section>
         </main>
 
-        <!-- Progress / Logs Section -->
-        <section class="card progress-card" id="progress-card" style="display: none;" aria-live="polite">
-            <div class="progress-header">
-                <h3 id="progress-title">Processing...</h3>
-                <span id="progress-percentage">0%</span>
-            </div>
-            <div class="progress-bar-container">
-                <div class="progress-bar-fill" id="progress-bar-fill"></div>
-            </div>
-            <div class="log-output" id="log-output" role="log" aria-label="Operation log">
-                <!-- Status logs will be appended here -->
+        <!-- ── PROGRESS PANEL ── -->
+        <section class="progress-panel" id="progress-card" style="display:none;" aria-live="polite">
+            <div class="progress-panel-inner">
+                <div class="progress-top">
+                    <div class="progress-status">
+                        <span class="status-dot" id="status-dot"></span>
+                        <h3 class="progress-title" id="progress-title">Processing…</h3>
+                    </div>
+                    <span class="progress-pct" id="progress-percentage">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-bar-fill"></div>
+                </div>
+                <div class="log-console" id="log-output" role="log" aria-label="Operation log"></div>
             </div>
         </section>
 
-        <footer>
-            <p>🔒 100% Client-Side &amp; Offline · Your files and passwords <strong>never leave your device</strong></p>
-            <p class="footer-sub">
-                AES-256-GCM · PBKDF2-SHA256 (100,000 iterations) · Web Crypto API ·
-                <a href="https://github.com/zevbuild" style="color:inherit;opacity:0.7;" target="_blank">zevbuild</a>
-                &nbsp;·&nbsp;
-                <a href="how-to-use.html" style="color:inherit;opacity:0.7;">How To Use</a>
-            </p>
+        <!-- ── HOW IT WORKS ── -->
+        <section class="how-section">
+            <h2 class="section-heading">How It Works</h2>
+            <div class="how-steps">
+                <div class="how-step">
+                    <div class="how-num">01</div>
+                    <div class="how-body">
+                        <h3>Compress</h3>
+                        <p>Folder zipped in-memory with DEFLATE — nothing written to disk.</p>
+                    </div>
+                </div>
+                <div class="how-arrow">→</div>
+                <div class="how-step">
+                    <div class="how-num">02</div>
+                    <div class="how-body">
+                        <h3>Derive Key</h3>
+                        <p>PBKDF2-SHA256 · 100,000 iterations turns password into 256-bit key.</p>
+                    </div>
+                </div>
+                <div class="how-arrow">→</div>
+                <div class="how-step">
+                    <div class="how-num">03</div>
+                    <div class="how-body">
+                        <h3>Encrypt</h3>
+                        <p>AES-256-GCM encrypts and authenticates — tamper-proof.</p>
+                    </div>
+                </div>
+                <div class="how-arrow">→</div>
+                <div class="how-step">
+                    <div class="how-num">04</div>
+                    <div class="how-body">
+                        <h3>Download</h3>
+                        <p>One portable <code>.enc</code> file — open anywhere with ZevSafe.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── FOOTER ── -->
+        <footer class="site-footer">
+            <div class="footer-brand">🔒 ZevSafe</div>
+            <p class="footer-tagline">Your files stay on your device. Always.</p>
+            <div class="footer-links">
+                <a href="how-to-use.html">How To Use</a>
+                <span>·</span>
+                <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
+                <span>·</span>
+                <span>AES-256-GCM</span>
+            </div>
+            <p class="footer-copy">Built by <strong>zevbuild</strong> · MIT License</p>
         </footer>
+
     </div>
 
-    <!-- Scripts (local — no CDN) -->
+    <!-- Password Save Prompt Modal -->
+    <div class="pw-modal-overlay" id="pw-save-modal" style="display: none;">
+        <div class="pw-modal">
+            <div class="pw-modal-header">
+                <span class="pw-modal-icon">🔐</span>
+                <h3>Save Vault Password</h3>
+            </div>
+            <div class="pw-modal-body">
+                <div class="pw-modal-warning">
+                    ⚠️ <strong>Important:</strong> If you lose this password, decryption will not be possible. There is no password recovery.
+                </div>
+                <div class="pw-display-group">
+                    <label for="pw-save-display">Your Password</label>
+                    <div class="pw-display-wrapper">
+                        <input type="text" id="pw-save-display" readonly autocomplete="off" spellcheck="false">
+                        <button id="btn-copy-pw" title="Copy password">📋 Copy</button>
+                    </div>
+                </div>
+            </div>
+            <div class="pw-modal-footer">
+                <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-close-pw-modal">Dismiss</button>
+                <button class="pw-modal-btn pw-modal-btn--primary" id="btn-save-pw-manager">💾 Save Password</button>
+            </div>
+        </div>
+    </div>
+
     <script src="jszip.min.js"></script>
     <script src="app.js"></script>
 </body>

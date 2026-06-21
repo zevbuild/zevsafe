@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+    <defs>
+        <linearGradient id="brand-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8b5cf6" />
+            <stop offset="100%" stop-color="#14b8a6" />
+        </linearGradient>
+    </defs>
+    <!-- Padlock Shackle -->
+    <path d="M192,200 v-50 c0-35.3,28.7-64,64-64 s64,28.7,64,64 v50" fill="none" stroke="#f1f5f9" stroke-width="36" stroke-linecap="round"/>
+    
+    <!-- Shield Padlock Body -->
+    <path d="M120,180 h272 v110 c0,76 -136,150 -136,150 s-136,-74 -136,-150 Z" fill="url(#brand-gradient)" />
+    
+    <!-- Inner Z Cutout -->
+    <path d="M200,245 h112 l-112,110 h112" fill="none" stroke="#08091a" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
