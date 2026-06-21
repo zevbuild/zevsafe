@@ -8,7 +8,7 @@
     <!-- Primary SEO Meta Tags -->
     <title>How To Use ZevSafe — Offline Folder Encryption Guide</title>
     <meta name="description" content="Learn how to encrypt and decrypt folders offline with AES-256-GCM. Read the step-by-step user guide for ZevSafe offline encryption portal.">
-    <meta name="keywords" content="browser-based folder encryption, client-side file encryption, zero-knowledge file locker, offline folder locker, in-browser AES-256 encryption, serverless file encryption, air-gapped folder lock, PBKDF2 key derivation web app, AES-GCM folder protection, local-first file tools, how to encrypt a folder without uploading it, secure folder tool no installation, safe offline file vault free, user guide">
+    <meta name="keywords" content="browser-based folder encryption, client-side file encryption, zero-knowledge file locker, offline folder locker, in-browser AES-256 encryption, serverless file encryption, air-gapped folder lock, PBKDF2 key derivation web app, AES-GCM folder protection, local-first file tools, how to encrypt a folder without uploading it, secure folder tool no installation, safe offline file vault free, user guide, maximum encryption file size, folder size limit, browser memory limits">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -614,8 +614,18 @@
                     <div class="faq-body"><strong>Chrome 37+, Edge 12+, Firefox 34+, Safari 11+, Opera 24+</strong> — covering 99%+ of devices including Android and iOS. Internet Explorer is not supported.</div>
                 </div>
                 <div class="faq-item" id="f3">
-                    <button class="faq-btn" onclick="toggleFaq('f3')">How large can the folder be?<span class="faq-chevron">▼</span></button>
-                    <div class="faq-body">ZevSafe processes files in your browser's RAM. Folders up to <strong>2–4 GB</strong> work well on modern devices. For very large data (like a full 32GB SD card), split into smaller sub-folders and encrypt each one separately.</div>
+                    <button class="faq-btn" onclick="toggleFaq('f3')">What is the maximum file size I can encrypt or decrypt?<span class="faq-chevron">▼</span></button>
+                    <div class="faq-body">
+                        ZevSafe executes all operations locally in your browser's sandboxed RAM.
+                        <br><br>
+                        <strong>Desktop Limits:</strong> Folders up to <strong>1.5 GB to 2.5 GB</strong> work smoothly.
+                        <br>
+                        <strong>Mobile Limits (iOS/Android):</strong> Folders up to <strong>300 MB to 500 MB</strong> are recommended due to strict mobile browser memory caps.
+                        <br><br>
+                        <strong>Why is there a limit?</strong> The browser requires RAM to temporarily hold the original files, the in-memory zipped stream, and the encrypted array buffer during processing. If this exceeds your browser tab's heap allocation limits, the tab will crash.
+                        <br><br>
+                        <strong>For very large files (e.g. 10GB+):</strong> You can divide them into smaller sub-folders, or use the command-line PowerShell scripts (<code>encrypt.ps1</code> / <code>decrypt.ps1</code>) provided in the root folder. These stream bytes directly from your hard drive, allowing you to encrypt folders of any size without RAM limits.
+                    </div>
                 </div>
                 <div class="faq-item" id="f4">
                     <button class="faq-btn" onclick="toggleFaq('f4')">Can I decrypt on a phone or tablet?<span class="faq-chevron">▼</span></button>
