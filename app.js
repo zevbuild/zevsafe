@@ -233,7 +233,7 @@ function readEntryAsync(entry, pathPrefix) {
     });
 }
 
-function setupDragAndDrop(dropZone, fileInput, onFilesSelected) {
+function setupDragAndDrop(dropZone, fileInput, onFilesSelected, requireFolder = false) {
     // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
         dropZone.addEventListener(ev, e => {
@@ -253,6 +253,20 @@ function setupDragAndDrop(dropZone, fileInput, onFilesSelected) {
     // Handle drop
     dropZone.addEventListener('drop', async (e) => {
         const dt = e.dataTransfer;
+
+        // Restrict drops to folders only if requireFolder is true and it's not a mobile browser
+        if (requireFolder && !isMobile()) {
+            if (dt.items && dt.items.length > 0) {
+                const entry = dt.items[0].webkitGetAsEntry();
+                if (!entry || !entry.isDirectory) {
+                    alert('⚠️ Only folder uploads are supported. Please drag and drop a folder.');
+                    return;
+                }
+            } else if (dt.files.length > 0 && !dt.files[0].webkitRelativePath) {
+                alert('⚠️ Only folder uploads are supported. Please drag and drop a folder.');
+                return;
+            }
+        }
 
         if (dt.items && dt.items.length > 0) {
             const rootName = dt.items[0].webkitGetAsEntry()?.name || 'files';
@@ -336,7 +350,7 @@ setupDragAndDrop(encryptDropZone, encryptFolderInput, (files, folderName) => {
     encryptSelectedInfo.textContent = `✅ ${folderName} — ${files.length} file(s)`;
     log(`Folder "${folderName}" selected (${files.length} files).`, 'info');
     showProgress();
-});
+}, true);
 
 setupDragAndDrop(decryptDropZone, decryptFileInput, (files) => {
     if (files.length > 0) {
