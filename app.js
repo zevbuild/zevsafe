@@ -45,6 +45,30 @@ let selectedEncryptFiles      = [];
 let selectedEncryptFolderName = '';
 let selectedDecryptFile       = null;
 
+// ── V2 STATE ──────────────────────────────────
+let v2KeyfileEncrypt = null;  // File object for encryption keyfile
+let v2KeyfileDecrypt = null;  // File object for decryption keyfile
+
+// ============================================
+// V2 CONSTANTS — Magic header bytes for format detection
+// ============================================
+// v1 format: [Salt(16) | IV(12) | Ciphertext]  (no magic prefix)
+// v2 format: [Magic(4)=ZV2\0 | Version(1)=0x02 | Flags(1) | Salt(32) | IV(12) | Ciphertext]
+// Flags bit 0 (0x01): keyfile was used
+const V2_MAGIC        = new Uint8Array([0x5A, 0x56, 0x32, 0x00]); // 'ZV2\0'
+const V2_VERSION_BYTE = 0x02;
+const V2_FLAG_KEYFILE = 0x01;
+// Offsets within a v2 file
+const V2_OFFSET_VERSION  = 4;   // 1 byte
+const V2_OFFSET_FLAGS    = 5;   // 1 byte
+const V2_OFFSET_SALT     = 6;   // 32 bytes
+const V2_OFFSET_IV       = 38;  // 12 bytes
+const V2_OFFSET_CIPHER   = 50;  // rest
+const V2_HEADER_SIZE     = 50;  // bytes before ciphertext
+const PASSWORD_RECOVERY_WARNING = 'If you lose this password or required keyfile, decryption will not be possible. Encrypted files or folders may be permanently inaccessible.';
+
+let lastPasswordRecoveryRecord = null;
+
 // ============================================
 // DEVICE DETECTION & ADAPTIVE UI
 // ============================================
@@ -463,15 +487,442 @@ function triggerDownload(blob, filename) {
     revokeAfterDelay(url); // fix: revoke blob URL to avoid memory leak
 }
 
+function sanitizeFilenamePart(value, fallback = 'zevsafe-vault') {
+    const cleaned = String(value || '')
+        .trim()
+        .replace(/[<>:"/\\|?*\x00-\x1F]/g, '-')
+        .replace(/\s+/g, '_')
+        .replace(/-+/g, '-')
+        .replace(/^[-_.]+|[-_.]+$/g, '');
+    return cleaned || fallback;
+}
+
+function bytesToHex(bytes) {
+    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function buildPasswordRecoveryText(record) {
+    const generatedAt = new Date().toLocaleString();
+    const keyfileLine = record.keyfileRequired
+        ? `Required keyfile: ${record.keyfileName || 'Selected keyfile'}\nKeyfile SHA-256 fingerprint: ${record.keyfileFingerprint || 'Unavailable'}\n`
+        : 'Required keyfile: None\n';
+
+    return [
+        'ZevSafe Password Recovery Sheet',
+        '================================',
+        '',
+        'WARNING',
+        PASSWORD_RECOVERY_WARNING,
+        'There is no password recovery, reset, or backdoor.',
+        '',
+        'Vault Details',
+        '-------------',
+        `Encrypted folder/project: ${record.folderName}`,
+        `Vault file: ${record.vaultFilename}`,
+        `Vault format: ${record.version}`,
+        `Created: ${generatedAt}`,
+        '',
+        'Password / Encryption Key',
+        '-------------------------',
+        record.password,
+        '',
+        'Second Factor',
+        '-------------',
+        keyfileLine.trimEnd(),
+        '',
+        'Storage Instructions',
+        '--------------------',
+        'Print this sheet or store it offline in a secure place.',
+        'Keep it separate from the encrypted vault file.',
+        'Anyone with this password and required keyfile can decrypt the vault.',
+        ''
+    ].join('\n');
+}
+
+function downloadPasswordRecoverySheet(record = lastPasswordRecoveryRecord) {
+    if (!record || !record.password) {
+        alert('No password recovery details are available yet. Encrypt a folder first.');
+        return;
+    }
+
+    const text = buildPasswordRecoveryText(record);
+    const folderName = sanitizeFilenamePart(record.folderName || record.vaultFilename);
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    triggerDownload(blob, `${folderName}_password_recovery_sheet.txt`);
+    log(`Password recovery sheet downloaded for "${record.folderName}".`, 'success');
+}
+
+function printPasswordRecoverySheet(record = lastPasswordRecoveryRecord) {
+    if (!record || !record.password) {
+        alert('No password recovery details are available yet. Encrypt a folder first.');
+        return;
+    }
+
+    const text = buildPasswordRecoveryText(record);
+    const iframe = document.createElement('iframe');
+    iframe.title = 'ZevSafe password recovery print sheet';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.style.visibility = 'hidden';
+    document.body.appendChild(iframe);
+
+    const printWindow = iframe.contentWindow;
+    const printDocument = printWindow.document;
+    printDocument.open();
+    printDocument.write(`<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ZevSafe Password Recovery Sheet</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #111827; margin: 32px; line-height: 1.45; }
+        pre { white-space: pre-wrap; word-break: break-word; font: 14px/1.5 Consolas, monospace; }
+        .warning { border: 2px solid #be123c; padding: 12px; margin-bottom: 18px; color: #be123c; font-weight: 700; }
+        @media print { body { margin: 18mm; } .warning { break-inside: avoid; } }
+    </style>
+</head>
+<body>
+    <div class="warning">${escapeHtml(PASSWORD_RECOVERY_WARNING)}</div>
+    <pre>${escapeHtml(text)}</pre>
+</body>
+</html>`);
+    printDocument.close();
+
+    setTimeout(() => {
+        try {
+            printWindow.focus();
+            printWindow.print();
+            log(`Password recovery sheet opened for printing for "${record.folderName}".`, 'success');
+        } catch (err) {
+            alert('Printing failed. Use Download Sheet and print the downloaded text file.');
+            console.error('[ZevSafe Print Recovery Sheet]', err);
+        } finally {
+            setTimeout(() => {
+                if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+            }, 1000);
+        }
+    }, 150);
+}
+
+// ============================================
+// PROGRESS TRACKER — Real-Time Stage System
+// ============================================
+//
+// Provides visual progress for: Compress → Encrypt/Decrypt → Save
+//
+// Design rules:
+//  • Compression % is REAL    — from JSZip meta.percent callback
+//  • Crypto % is ANIMATED     — smooth fill during blocking AES call
+//  • Sizes & timing are REAL  — from actual byte counts + performance.now()
+//  • No passwords, keys, or sensitive data are ever exposed in the UI
+//
+const ProgressTracker = (() => {
+    // ── DOM refs (grabbed lazily, safe since this runs after DOMContentLoaded) ──
+    const $ = id => document.getElementById(id);
+
+    // Pill state constants
+    const STATE = { IDLE: 'idle', ACTIVE: 'active', DONE: 'done', ERROR: 'error' };
+
+    // Internal timing
+    let _opStart    = 0;  // whole operation start (performance.now)
+    let _stageStart = 0;  // current stage start
+    let _rafId      = null; // requestAnimationFrame handle for animated fill
+    let _opMode     = 'encrypt'; // 'encrypt' | 'decrypt'
+
+    // ── Helpers ──────────────────────────────────────────────────
+
+    /** Format elapsed milliseconds as "1.23s" or "123ms" */
+    function _fmtTime(ms) {
+        return ms >= 1000 ? `${(ms / 1000).toFixed(2)}s` : `${Math.round(ms)}ms`;
+    }
+
+    /** Set a stage pill state: idle | active | done | error */
+    function _setPillState(pillId, state, pct = '—') {
+        const pill = $(pillId);
+        if (!pill) return;
+        pill.dataset.state = state;
+        const pctEl = pill.querySelector('.stage-pill-pct');
+        if (pctEl) pctEl.textContent = pct;
+    }
+
+    /** Set a stage connector as filled (active) or not */
+    function _setConnector(connId, active) {
+        const conn = $(connId);
+        if (conn) conn.classList.toggle('stage-connector--active', active);
+    }
+
+    /** Update a detail card's sub-bar fill */
+    function _setSubBar(barId, pct) {
+        const bar = $(barId);
+        if (bar) bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+    }
+
+    /** Set a badge text + class */
+    function _setBadge(badgeId, text, cls = '') {
+        const el = $(badgeId);
+        if (!el) return;
+        el.textContent = text;
+        el.className = `sd-badge${cls ? ' ' + cls : ''}`;
+    }
+
+    /** Show a detail card */
+    function _showDetail(detailId) {
+        const el = $(detailId);
+        if (el) el.style.display = '';
+        const details = $('stage-details');
+        if (details) details.style.display = '';
+    }
+
+    /** Cancel any running requestAnimationFrame animation */
+    function _stopRaf() {
+        if (_rafId !== null) {
+            cancelAnimationFrame(_rafId);
+            _rafId = null;
+        }
+    }
+
+    /**
+     * Animate a sub-bar from `from` to `to` over `durationMs`.
+     * Uses requestAnimationFrame — does NOT block the main thread.
+     */
+    function _animateBar(barId, from, to, durationMs, onDone) {
+        _stopRaf();
+        const startTime = performance.now();
+        const range = to - from;
+
+        function tick(now) {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / durationMs, 1);
+            // Ease-out cubic for smooth deceleration
+            const eased = 1 - Math.pow(1 - t, 3);
+            _setSubBar(barId, from + range * eased);
+            if (t < 1) {
+                _rafId = requestAnimationFrame(tick);
+            } else {
+                _rafId = null;
+                if (onDone) onDone();
+            }
+        }
+        _rafId = requestAnimationFrame(tick);
+    }
+
+    // ── Public API ────────────────────────────────────────────────
+
+    /**
+     * Call before starting any operation.
+     * Resets all stage pills and detail cards.
+     * @param {'encrypt'|'decrypt'} mode
+     */
+    function reset(mode = 'encrypt') {
+        _opStart    = performance.now();
+        _stageStart = _opStart;
+        _opMode     = mode;
+        _stopRaf();
+
+        // Reset all pills
+        ['stage-compress', 'stage-crypto', 'stage-save'].forEach(id => {
+            _setPillState(id, STATE.IDLE, '—');
+        });
+        _setConnector('stage-conn-1', false);
+        _setConnector('stage-conn-2', false);
+
+        // Reset crypto pill label/icon based on mode
+        const cryptoLabel = $('stage-crypto-label');
+        const cryptoIcon  = $('stage-crypto-icon');
+        if (cryptoLabel) cryptoLabel.textContent = mode === 'encrypt' ? 'Encrypt' : 'Decrypt';
+        if (cryptoIcon)  cryptoIcon.textContent  = mode === 'encrypt' ? '🔐' : '🔓';
+
+        // Reset detail card labels
+        const sdCryptoTitle = $('sd-crypto-title');
+        const sdCryptoIcon  = $('sd-crypto-icon');
+        const sdSaveTitle   = $('sd-save-title');
+        if (sdCryptoTitle) sdCryptoTitle.textContent = mode === 'encrypt' ? 'Encryption' : 'Decryption';
+        if (sdCryptoIcon)  sdCryptoIcon.textContent  = mode === 'encrypt' ? '🔐' : '🔓';
+        if (sdSaveTitle)   sdSaveTitle.textContent   = mode === 'encrypt' ? 'Output Vault' : 'Decrypted Output';
+
+        // Hide all detail cards
+        ['detail-compress', 'detail-crypto', 'detail-save'].forEach(id => {
+            const el = $(id);
+            if (el) el.style.display = 'none';
+        });
+        const detailsWrap = $('stage-details');
+        if (detailsWrap) detailsWrap.style.display = 'none';
+
+        // Reset metrics
+        [
+            'sd-original-size','sd-compressed-size','sd-ratio','sd-compress-time',
+            'sd-crypto-size','sd-crypto-time','sd-output-name','sd-output-size','sd-total-time','sd-vault-version'
+        ].forEach(id => { const el = $(id); if (el) el.textContent = '—'; });
+
+        $('sd-auth-tag') && ($('sd-auth-tag').textContent = 'Pending');
+        _setSubBar('sd-compress-bar', 0);
+        _setSubBar('sd-crypto-bar', 0);
+        _setBadge('sd-compress-status', 'In Progress', 'sd-badge--active');
+        _setBadge('sd-crypto-status',   'In Progress', 'sd-badge--active');
+        _setBadge('sd-save-status',     'Waiting');
+    }
+
+    /**
+     * Compression stage — real progress from JSZip meta.percent callback.
+     * Call this inside the JSZip generateAsync progress callback.
+     * @param {number} percent   0–100 real value from JSZip
+     * @param {number} origBytes total original file bytes (sum of input files)
+     */
+    function onCompressProgress(percent, origBytes) {
+        const elapsed = performance.now() - _stageStart;
+
+        // Activate pill on first call
+        if (percent > 0 && percent < 100) {
+            _setPillState('stage-compress', STATE.ACTIVE, `${Math.round(percent)}%`);
+        }
+
+        // Show compress detail card
+        _showDetail('detail-compress');
+
+        // Update metrics
+        const origEl = $('sd-original-size');
+        if (origEl && origBytes > 0) origEl.textContent = formatBytes(origBytes);
+
+        const timeEl = $('sd-compress-time');
+        if (timeEl) timeEl.textContent = _fmtTime(elapsed);
+
+        // Update sub-bar with real value
+        _setSubBar('sd-compress-bar', percent);
+
+        // Update pill pct
+        _setPillState('stage-compress', STATE.ACTIVE, `${Math.round(percent)}%`);
+    }
+
+    /**
+     * Compression complete.
+     * @param {number} origBytes      total original bytes
+     * @param {number} compressedBytes  compressed ZIP bytes
+     */
+    function onCompressDone(origBytes, compressedBytes) {
+        const elapsed = performance.now() - _stageStart;
+
+        _stopRaf();
+        _setSubBar('sd-compress-bar', 100);
+        _setPillState('stage-compress', STATE.DONE, '✓');
+        _setConnector('stage-conn-1', true);
+        _setBadge('sd-compress-status', 'Done ✓', 'sd-badge--done');
+
+        // Real metrics
+        const ratio = origBytes > 0 ? ((1 - compressedBytes / origBytes) * 100).toFixed(1) : '0';
+        $('sd-original-size')   && ($('sd-original-size').textContent   = formatBytes(origBytes));
+        $('sd-compressed-size') && ($('sd-compressed-size').textContent = formatBytes(compressedBytes));
+        $('sd-ratio')           && ($('sd-ratio').textContent           = `${ratio}% smaller`);
+        $('sd-compress-time')   && ($('sd-compress-time').textContent   = _fmtTime(elapsed));
+
+        // Reset stage timer for crypto
+        _stageStart = performance.now();
+    }
+
+    /**
+     * Crypto stage begin.
+     * Since AES-GCM has no progress callback, we animate the bar
+     * from 0% toward ~90% over `estimatedMs` ms, then hold.
+     * When done, onCryptoDone() fills it to 100%.
+     * @param {number} dataBytes    bytes being processed (zipBuffer size)
+     * @param {number} estimatedMs  estimated time for the operation (rough guess)
+     */
+    function onCryptoStart(dataBytes, estimatedMs = 3000) {
+        _setPillState('stage-crypto', STATE.ACTIVE, '…');
+        _showDetail('detail-crypto');
+
+        $('sd-crypto-size') && ($('sd-crypto-size').textContent = formatBytes(dataBytes));
+        $('sd-auth-tag')    && ($('sd-auth-tag').textContent    = 'Processing…');
+        _setBadge('sd-crypto-status', 'Processing', 'sd-badge--active');
+
+        // Animate sub-bar to 90% over estimatedMs (we stop short of 100 until done)
+        _animateBar('sd-crypto-bar', 0, 90, estimatedMs);
+
+        // Reset stage timer
+        _stageStart = performance.now();
+    }
+
+    /**
+     * Crypto stage complete.
+     * @param {boolean} authPassed   true = AES-GCM tag verified (decrypt only)
+     * @param {string}  version      'v1' | 'v2' | '' (encrypt, not applicable)
+     */
+    function onCryptoDone(authPassed = true, version = '') {
+        const elapsed = performance.now() - _stageStart;
+
+        _stopRaf();
+        _setSubBar('sd-crypto-bar', 100);
+        _setPillState('stage-crypto', authPassed ? STATE.DONE : STATE.ERROR, authPassed ? '✓' : '✗');
+        _setConnector('stage-conn-2', authPassed);
+
+        if (authPassed) {
+            _setBadge('sd-crypto-status', 'Done ✓', 'sd-badge--done');
+            $('sd-auth-tag') && ($('sd-auth-tag').textContent = _opMode === 'decrypt' ? '✅ Verified' : '✅ Applied');
+        } else {
+            _setBadge('sd-crypto-status', 'Failed ✗', 'sd-badge--error');
+            $('sd-auth-tag') && ($('sd-auth-tag').textContent = '❌ Failed');
+        }
+
+        $('sd-crypto-time') && ($('sd-crypto-time').textContent = _fmtTime(elapsed));
+        _stageStart = performance.now();
+    }
+
+    /**
+     * Save/output stage complete.
+     * @param {string}  filename   output filename
+     * @param {number}  sizeBytes  output file size in bytes
+     * @param {string}  version    vault format version ('v1' | 'v2')
+     */
+    function onSaveDone(filename, sizeBytes, version) {
+        const totalElapsed = performance.now() - _opStart;
+
+        _setPillState('stage-save', STATE.DONE, '✓');
+        _showDetail('detail-save');
+        _setBadge('sd-save-status', 'Done ✓', 'sd-badge--done');
+
+        $('sd-output-name')  && ($('sd-output-name').textContent  = filename);
+        $('sd-output-size')  && ($('sd-output-size').textContent  = formatBytes(sizeBytes));
+        $('sd-total-time')   && ($('sd-total-time').textContent   = _fmtTime(totalElapsed));
+        $('sd-vault-version')&& ($('sd-vault-version').textContent= version || '—');
+    }
+
+    /**
+     * Mark an error state on the current active stage pill.
+     * @param {'compress'|'crypto'|'save'} stage
+     */
+    function onError(stage) {
+        _stopRaf();
+        const pillMap = { compress: 'stage-compress', crypto: 'stage-crypto', save: 'stage-save' };
+        if (pillMap[stage]) _setPillState(pillMap[stage], STATE.ERROR, '✗');
+    }
+
+    // Expose public methods
+    return { reset, onCompressProgress, onCompressDone, onCryptoStart, onCryptoDone, onSaveDone, onError };
+})();
+
+
 // ============================================
 // CRYPTOGRAPHIC UTILITIES (Web Crypto API)
 // ============================================
 
 /**
- * Derives an AES-256-GCM key from a password and salt using PBKDF2-SHA256.
+ * ZevSafe v1 key derivation — PBKDF2-SHA256, 100,000 iterations, 16-byte salt.
+ * Preserved exactly — DO NOT MODIFY — needed for backward-compat decryption.
  * @param {string} password
  * @param {Uint8Array} salt  - 16-byte random salt
- * @returns {CryptoKey}
+ * @returns {Promise<CryptoKey>}
  */
 async function deriveKey(password, salt) {
     const enc = new TextEncoder();
@@ -498,7 +949,116 @@ async function deriveKey(password, salt) {
 }
 
 // ============================================
-// ENCRYPTION WORKFLOW
+// V2 CRYPTOGRAPHIC UTILITIES
+// ============================================
+
+/**
+ * ZevSafe v2 key derivation — PBKDF2-SHA512, 600,000 iterations, 32-byte salt.
+ * Significantly stronger than v1. Produces a raw 256-bit key bytes array
+ * so we can optionally XOR-mix a keyfile hash before importing to AES-GCM.
+ * @param {string} password
+ * @param {Uint8Array} salt - 32-byte random salt
+ * @returns {Promise<Uint8Array>} - 32 raw key bytes
+ */
+async function deriveKeyV2Raw(password, salt) {
+    const enc = new TextEncoder();
+    const keyMaterial = await window.crypto.subtle.importKey(
+        'raw',
+        enc.encode(password),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveBits']
+    );
+    const keyBits = await window.crypto.subtle.deriveBits(
+        {
+            name: 'PBKDF2',
+            salt: salt,
+            iterations: 600000,
+            hash: 'SHA-512'
+        },
+        keyMaterial,
+        256  // 32 bytes
+    );
+    return new Uint8Array(keyBits);
+}
+
+/**
+ * Read a File as an ArrayBuffer and return its SHA-256 hash as Uint8Array.
+ * Used to derive a 32-byte keyfile factor.
+ * @param {File} file
+ * @returns {Promise<Uint8Array>} 32-byte SHA-256 digest
+ */
+async function hashKeyfile(file) {
+    const buf = await file.arrayBuffer();
+    const digest = await window.crypto.subtle.digest('SHA-256', buf);
+    return new Uint8Array(digest);
+}
+
+/**
+ * XOR two equal-length Uint8Arrays together.
+ * Used to mix the keyfile hash into the derived password key bytes.
+ * @param {Uint8Array} a
+ * @param {Uint8Array} b
+ * @returns {Uint8Array}
+ */
+function xorBytes(a, b) {
+    const result = new Uint8Array(a.length);
+    for (let i = 0; i < a.length; i++) result[i] = a[i] ^ b[i];
+    return result;
+}
+
+/**
+ * Import raw 32 key bytes into an AES-GCM CryptoKey for encrypt/decrypt.
+ * @param {Uint8Array} rawBytes - exactly 32 bytes
+ * @returns {Promise<CryptoKey>}
+ */
+async function importAesKey(rawBytes) {
+    return window.crypto.subtle.importKey(
+        'raw',
+        rawBytes,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+    );
+}
+
+/**
+ * Full ZevSafe v2 key derivation pipeline.
+ * 1. Derive 32 raw key bytes via PBKDF2-SHA512/600k
+ * 2. If keyfileBytes provided, XOR-mix SHA-256(keyfile) into key bytes
+ * 3. Import final bytes as AES-GCM-256 CryptoKey
+ * @param {string} password
+ * @param {Uint8Array} salt - 32-byte salt
+ * @param {Uint8Array|null} keyfileBytes - optional keyfile hash (32 bytes)
+ * @returns {Promise<CryptoKey>}
+ */
+async function deriveKeyV2(password, salt, keyfileBytes = null) {
+    let rawKey = await deriveKeyV2Raw(password, salt);
+    if (keyfileBytes && keyfileBytes.length === 32) {
+        rawKey = xorBytes(rawKey, keyfileBytes);
+    }
+    return importAesKey(rawKey);
+}
+
+/**
+ * Detect whether a file buffer is a v2-format vault.
+ * Checks for the 4-byte magic header: 0x5A 0x56 0x32 0x00 ('ZV2\0')
+ * @param {ArrayBuffer} buffer
+ * @returns {boolean}
+ */
+function isV2Format(buffer) {
+    if (buffer.byteLength < V2_HEADER_SIZE + 1) return false;
+    const view = new Uint8Array(buffer, 0, 4);
+    return (
+        view[0] === V2_MAGIC[0] &&
+        view[1] === V2_MAGIC[1] &&
+        view[2] === V2_MAGIC[2] &&
+        view[3] === V2_MAGIC[3]
+    );
+}
+
+// ============================================
+// ENCRYPTION WORKFLOW  (v1 + v2)
 // ============================================
 
 btnEncrypt.addEventListener('click', async () => {
@@ -523,11 +1083,29 @@ btnEncrypt.addEventListener('click', async () => {
         return;
     }
 
+    // Detect whether v2 mode is active
+    const v2Toggle = document.getElementById('v2-mode-toggle');
+    const useV2    = v2Toggle ? v2Toggle.checked : false;
+    const recoveryRecord = {
+        folderName: selectedEncryptFolderName || 'ZevSafe vault',
+        vaultFilename: '',
+        version: useV2 ? 'v2 enhanced' : 'v1 standard',
+        password,
+        keyfileRequired: false,
+        keyfileName: '',
+        keyfileFingerprint: ''
+    };
+
     btnEncrypt.disabled = true;
     clearLogs();
     resetProgress();
-    log(`Starting encryption of "${selectedEncryptFolderName}" (${selectedEncryptFiles.length} files)...`, 'info');
+    ProgressTracker.reset('encrypt');  // ← stage tracker init
+    log(`Starting ${useV2 ? 'v2 (Enhanced)' : 'v1 (Standard)'} encryption of "${selectedEncryptFolderName}" (${selectedEncryptFiles.length} files)...`, 'info');
+    if (useV2) log('🔒 v2 mode: PBKDF2-SHA512 · 600,000 iterations · 32-byte salt' + (v2KeyfileEncrypt ? ' · Keyfile active' : ''), 'info');
     updateProgress('Compressing folder...', 0);
+
+    // Pre-calculate total original size for tracker
+    const _origTotalBytes = selectedEncryptFiles.reduce((sum, f) => sum + f.size, 0);
 
     try {
         // Step 1: Package folder into a ZIP archive in browser memory
@@ -543,57 +1121,124 @@ btnEncrypt.addEventListener('click', async () => {
             compressionOptions: { level: 6 }
         }, (meta) => {
             updateProgress(`Compressing: ${meta.percent.toFixed(0)}%`, meta.percent * 0.6);
+            ProgressTracker.onCompressProgress(meta.percent, _origTotalBytes);  // ← real % + real size
         });
 
         log(`Compression complete. ZIP size: ${(zipBlob.size / 1024).toFixed(1)} KB`, 'info');
+        ProgressTracker.onCompressDone(_origTotalBytes, zipBlob.size);  // ← real sizes
         updateProgress('Deriving encryption key...', 62);
 
-        // Step 2: Generate cryptographically random Salt (16 bytes) and IV (12 bytes)
-        const salt = window.crypto.getRandomValues(new Uint8Array(16));
-        const iv   = window.crypto.getRandomValues(new Uint8Array(12));
+        const zipBuffer = await zipBlob.arrayBuffer();
+        let encBlob, filename;
 
-        // Step 3: Derive AES-GCM-256 key from password via PBKDF2
-        const key = await deriveKey(password, salt);
+        if (useV2) {
+            // ── V2 ENCRYPTION PATH ──────────────────────────────────────────
+            // V2 format: [Magic(4) | Version(1) | Flags(1) | Salt(32) | IV(12) | Ciphertext]
 
-        log('Encrypting with AES-256-GCM...', 'info');
-        updateProgress('Encrypting data...', 78);
+            const salt  = window.crypto.getRandomValues(new Uint8Array(32));  // 32-byte salt
+            const iv    = window.crypto.getRandomValues(new Uint8Array(12));
+            let   flags = 0x00;
 
-        // Step 4: Encrypt the ZIP bytes
-        const zipBuffer  = await zipBlob.arrayBuffer();
-        const ciphertext = await window.crypto.subtle.encrypt(
-            { name: 'AES-GCM', iv: iv },
-            key,
-            zipBuffer
-        );
+            // Hash keyfile if provided
+            let keyfileHash = null;
+            if (v2KeyfileEncrypt) {
+                log('🗝️ Hashing keyfile (SHA-256)...', 'info');
+                keyfileHash = await hashKeyfile(v2KeyfileEncrypt);
+                recoveryRecord.keyfileRequired = true;
+                recoveryRecord.keyfileName = v2KeyfileEncrypt.name;
+                recoveryRecord.keyfileFingerprint = bytesToHex(keyfileHash);
+                flags |= V2_FLAG_KEYFILE;
+                log('Keyfile hash mixed into key material.', 'info');
+            }
 
-        updateProgress('Building vault file...', 95);
+            log('Deriving key: PBKDF2-SHA512, 600,000 iterations...', 'info');
+            updateProgress('Deriving v2 key (stronger)...', 65);
+            const key = await deriveKeyV2(password, salt, keyfileHash);
 
-        // Step 5: Assemble output: [Salt (16)] + [IV (12)] + [Ciphertext]
-        const combined = new Uint8Array(16 + 12 + ciphertext.byteLength);
-        combined.set(salt, 0);
-        combined.set(iv,   16);
-        combined.set(new Uint8Array(ciphertext), 28);
+            log('Encrypting with AES-256-GCM (v2)...', 'info');
+            updateProgress('Encrypting data...', 80);
+            // Estimate ~3s for v2 key derivation already done; AES on zipBuffer.byteLength
+            const _v2EncEstimate = Math.max(500, zipBuffer.byteLength / (50 * 1024 * 1024) * 1000);
+            ProgressTracker.onCryptoStart(zipBuffer.byteLength, _v2EncEstimate);  // ← animated
 
-        // Step 6: Download as .enc file
-        const encBlob  = new Blob([combined], { type: 'application/octet-stream' });
-        const filename = `${selectedEncryptFolderName}.enc`;
-        triggerDownload(encBlob, filename);
+            const ciphertext = await window.crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                zipBuffer
+            );
+            ProgressTracker.onCryptoDone(true, 'v2');  // ← real completion
 
-        log(`✅ Vault created: "${filename}" (${(combined.byteLength / 1024).toFixed(1)} KB)`, 'success');
+            updateProgress('Building v2 vault file...', 95);
+
+            // Assemble v2 binary: Magic(4) | Version(1) | Flags(1) | Salt(32) | IV(12) | CT
+            const combined = new Uint8Array(V2_HEADER_SIZE + ciphertext.byteLength);
+            combined.set(V2_MAGIC,                     0);   // bytes 0–3
+            combined[V2_OFFSET_VERSION] = V2_VERSION_BYTE;   // byte  4
+            combined[V2_OFFSET_FLAGS]   = flags;              // byte  5
+            combined.set(salt,                         V2_OFFSET_SALT);  // bytes 6–37
+            combined.set(iv,                           V2_OFFSET_IV);    // bytes 38–49
+            combined.set(new Uint8Array(ciphertext),   V2_OFFSET_CIPHER);// bytes 50+
+
+            encBlob  = new Blob([combined], { type: 'application/octet-stream' });
+            filename = `${selectedEncryptFolderName}.enc`;
+            recoveryRecord.vaultFilename = filename;
+            triggerDownload(encBlob, filename);
+            ProgressTracker.onSaveDone(filename, combined.byteLength, 'v2');  // ← real output stats
+
+            log(`✅ v2 Vault created: "${filename}" (${formatBytes(combined.byteLength)})`, 'success');
+            if (flags & V2_FLAG_KEYFILE) log('🗝️ This vault requires BOTH the password AND the keyfile to decrypt.', 'warn');
+
+        } else {
+            // ── V1 ENCRYPTION PATH (unchanged) ───────────────────────────────
+            // V1 format: [Salt(16) | IV(12) | Ciphertext]  — no magic header
+
+            const salt = window.crypto.getRandomValues(new Uint8Array(16));
+            const iv   = window.crypto.getRandomValues(new Uint8Array(12));
+
+            const key = await deriveKey(password, salt);
+
+            log('Encrypting with AES-256-GCM...', 'info');
+            updateProgress('Encrypting data...', 78);
+            const _v1EncEstimate = Math.max(300, zipBuffer.byteLength / (80 * 1024 * 1024) * 1000);
+            ProgressTracker.onCryptoStart(zipBuffer.byteLength, _v1EncEstimate);  // ← animated
+
+            const ciphertext = await window.crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                zipBuffer
+            );
+            ProgressTracker.onCryptoDone(true, 'v1');  // ← real completion
+
+            updateProgress('Building vault file...', 95);
+
+            const combined = new Uint8Array(16 + 12 + ciphertext.byteLength);
+            combined.set(salt, 0);
+            combined.set(iv,   16);
+            combined.set(new Uint8Array(ciphertext), 28);
+
+            encBlob  = new Blob([combined], { type: 'application/octet-stream' });
+            filename = `${selectedEncryptFolderName}.enc`;
+            recoveryRecord.vaultFilename = filename;
+            triggerDownload(encBlob, filename);
+            ProgressTracker.onSaveDone(filename, combined.byteLength, 'v1');  // ← real output stats
+
+            log(`✅ Vault created: "${filename}" (${formatBytes(combined.byteLength)})`, 'success');
+        }
+
         updateProgress('✅ Encryption complete!', 100);
-        showPasswordSavePrompt(password);
-        
+        showPasswordSavePrompt(recoveryRecord);
+
         // Reset encrypt selected widget
         selectedEncryptFiles = [];
         selectedEncryptFolderName = '';
+        v2KeyfileEncrypt = null;
+        updateKeyfileBadge('encrypt', null);
         if (encryptDzInner && encryptSelectedWidget) {
             encryptDzInner.style.display = '';
             encryptSelectedWidget.style.display = 'none';
         }
         encryptSelectedInfo.style.display = '';
         encryptSelectedInfo.textContent = 'No folder selected';
-        
-
 
     } catch (err) {
         log(`❌ Encryption failed: ${err.message}`, 'error');
@@ -605,7 +1250,7 @@ btnEncrypt.addEventListener('click', async () => {
 });
 
 // ============================================
-// DECRYPTION WORKFLOW
+// DECRYPTION WORKFLOW  (auto-detects v1 / v2)
 // ============================================
 
 btnDecrypt.addEventListener('click', async () => {
@@ -623,59 +1268,118 @@ btnDecrypt.addEventListener('click', async () => {
     btnDecrypt.disabled = true;
     clearLogs();
     resetProgress();
+    ProgressTracker.reset('decrypt');  // ← stage tracker init
     log(`Reading vault file "${selectedDecryptFile.name}"...`, 'info');
     updateProgress('Reading vault file...', 5);
 
     try {
         const arrayBuffer = await selectedDecryptFile.arrayBuffer();
 
-        // Minimum size check: Salt(16) + IV(12) + GCM tag(16) = 44 bytes minimum
+        // Minimum size check
         if (arrayBuffer.byteLength < 44) {
             throw new Error('File is too small to be a valid vault — may be corrupted or not a .enc file.');
         }
 
-        log('Parsing cryptographic parameters from file header...', 'info');
-        updateProgress('Parsing header...', 20);
+        updateProgress('Detecting vault version...', 15);
 
-        // Step 1: Extract Salt (bytes 0–15), IV (bytes 16–27), Ciphertext (bytes 28+)
-        const salt       = new Uint8Array(arrayBuffer, 0, 16);
-        const iv         = new Uint8Array(arrayBuffer, 16, 12);
-        const ciphertext = new Uint8Array(arrayBuffer, 28);
+        // ── AUTO-DETECT VERSION ──────────────────────────────────────────────
+        const vaultIsV2 = isV2Format(arrayBuffer);
+        log(`Vault format: ${vaultIsV2 ? 'v2 (Enhanced)' : 'v1 (Standard)'}`, 'info');
 
-        log('Deriving key from password (PBKDF2, 100k iterations)...', 'info');
-        updateProgress('Deriving key...', 40);
+        let decryptedBuffer;
 
-        // Step 2: Re-derive the same key using the stored salt + provided password
-        const key = await deriveKey(password, salt);
+        if (vaultIsV2) {
+            // ── V2 DECRYPTION PATH ───────────────────────────────────────────
+            if (arrayBuffer.byteLength < V2_HEADER_SIZE + 1) {
+                throw new Error('v2 vault header is incomplete — file may be corrupted.');
+            }
 
-        log('Decrypting with AES-256-GCM...', 'info');
-        updateProgress('Decrypting data...', 60);
+            const view    = new Uint8Array(arrayBuffer);
+            const version = view[V2_OFFSET_VERSION];
+            const flags   = view[V2_OFFSET_FLAGS];
+            const hasKeyfile = (flags & V2_FLAG_KEYFILE) !== 0;
 
-        // Step 3: Decrypt — GCM authentication tag is verified automatically here.
-        //         If password is wrong, this line throws DOMException: OperationError.
-        const decryptedBuffer = await window.crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv: iv },
-            key,
-            ciphertext
-        );
+            log(`v2 header — version: 0x0${version}, flags: 0x0${flags}${hasKeyfile ? ' (keyfile required)' : ''}`, 'info');
+
+            if (hasKeyfile && !v2KeyfileDecrypt) {
+                throw new Error('This v2 vault was encrypted with a keyfile. Please select the keyfile and try again.');
+            }
+
+            const salt       = new Uint8Array(arrayBuffer, V2_OFFSET_SALT, 32);
+            const iv         = new Uint8Array(arrayBuffer, V2_OFFSET_IV,   12);
+            const ciphertext = new Uint8Array(arrayBuffer, V2_OFFSET_CIPHER);
+
+            log('Deriving v2 key: PBKDF2-SHA512, 600,000 iterations...', 'info');
+            updateProgress('Deriving v2 key (this is stronger, takes ~3s)...', 35);
+
+            let keyfileHash = null;
+            if (hasKeyfile) {
+                log('🗝️ Hashing keyfile for key derivation...', 'info');
+                keyfileHash = await hashKeyfile(v2KeyfileDecrypt);
+            }
+
+            const key = await deriveKeyV2(password, salt, keyfileHash);
+
+            log('Decrypting with AES-256-GCM (v2)...', 'info');
+            updateProgress('Decrypting data...', 65);
+            const _v2DecEstimate = Math.max(500, ciphertext.byteLength / (50 * 1024 * 1024) * 1000);
+            ProgressTracker.onCryptoStart(ciphertext.byteLength, _v2DecEstimate);  // ← animated
+
+            // GCM tag verification is automatic — throws OperationError if wrong
+            decryptedBuffer = await window.crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                ciphertext
+            );
+            ProgressTracker.onCryptoDone(true, 'v2');  // ← auth tag verified!
+
+        } else {
+            // ── V1 DECRYPTION PATH (unchanged) ──────────────────────────────
+            // V1 format: [Salt(16) | IV(12) | Ciphertext]
+            log('Parsing v1 cryptographic header...', 'info');
+            updateProgress('Parsing header...', 20);
+
+            const salt       = new Uint8Array(arrayBuffer, 0, 16);
+            const iv         = new Uint8Array(arrayBuffer, 16, 12);
+            const ciphertext = new Uint8Array(arrayBuffer, 28);
+
+            log('Deriving key from password (PBKDF2-SHA256, 100k iterations)...', 'info');
+            updateProgress('Deriving key...', 40);
+
+            const key = await deriveKey(password, salt);
+
+            log('Decrypting with AES-256-GCM...', 'info');
+            updateProgress('Decrypting data...', 60);
+            const _v1DecEstimate = Math.max(300, ciphertext.byteLength / (80 * 1024 * 1024) * 1000);
+            ProgressTracker.onCryptoStart(ciphertext.byteLength, _v1DecEstimate);  // ← animated
+
+            // GCM auth tag verified automatically — throws OperationError if wrong
+            decryptedBuffer = await window.crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                ciphertext
+            );
+            ProgressTracker.onCryptoDone(true, 'v1');  // ← auth tag verified!
+        }
 
         log('✅ Authenticated! Extracting folder archive...', 'success');
         updateProgress('Extracting ZIP...', 80);
 
-        // Step 4: Load the decrypted ZIP and re-download it
-        const zip = await JSZip.loadAsync(decryptedBuffer); // validates ZIP structure
+        // Validate ZIP structure and trigger download
+        await JSZip.loadAsync(decryptedBuffer);
 
         const folderName    = selectedDecryptFile.name.replace(/\.enc$/i, '');
         const decryptedBlob = new Blob([decryptedBuffer], { type: 'application/zip' });
         triggerDownload(decryptedBlob, `${folderName}_decrypted.zip`);
+        ProgressTracker.onSaveDone(`${folderName}_decrypted.zip`, decryptedBuffer.byteLength, vaultIsV2 ? 'v2' : 'v1');  // ← real output
 
         log(`✅ Saved: "${folderName}_decrypted.zip" — extract it to restore your files.`, 'success');
         updateProgress('✅ Decryption complete!', 100);
 
-
-        
         // Reset decrypt selected widget
         selectedDecryptFile = null;
+        v2KeyfileDecrypt = null;
+        updateKeyfileBadge('decrypt', null);
         if (decryptDzInner && decryptSelectedWidget) {
             decryptDzInner.style.display = '';
             decryptSelectedWidget.style.display = 'none';
@@ -686,8 +1390,11 @@ btnDecrypt.addEventListener('click', async () => {
     } catch (err) {
         // AES-GCM throws OperationError for wrong password or tampered data
         if (err.name === 'OperationError') {
-            log('❌ Decryption failed: Wrong password or the file has been tampered with.', 'error');
+            ProgressTracker.onCryptoDone(false);  // ← auth tag FAILED — shows ❌
+            ProgressTracker.onError('crypto');
+            log('❌ Decryption failed: Wrong password, wrong keyfile, or the file has been tampered with.', 'error');
         } else {
+            ProgressTracker.onError('crypto');
             log(`❌ Error: ${err.message}`, 'error');
         }
         updateProgress('Failed', 0);
@@ -718,14 +1425,45 @@ initThemeEngine();
 // PASSWORD PRESERVATION FLOW
 // ============================================
 
-function showPasswordSavePrompt(password) {
+function showPasswordSavePrompt(recordOrPassword) {
     const modal = document.getElementById('pw-save-modal');
     const displayInput = document.getElementById('pw-save-display');
     const btnSavePwManager = document.getElementById('btn-save-pw-manager');
+    const vaultSummary = document.getElementById('pw-vault-summary');
     
     if (!modal || !displayInput) return;
-    
-    displayInput.value = password;
+
+    const record = typeof recordOrPassword === 'string'
+        ? {
+            folderName: selectedEncryptFolderName || 'ZevSafe vault',
+            vaultFilename: selectedEncryptFolderName ? `${selectedEncryptFolderName}.enc` : 'ZevSafe vault',
+            version: 'unknown',
+            password: recordOrPassword,
+            keyfileRequired: false,
+            keyfileName: '',
+            keyfileFingerprint: ''
+        }
+        : recordOrPassword;
+
+    lastPasswordRecoveryRecord = record;
+    displayInput.value = record.password;
+    if (vaultSummary) {
+        while (vaultSummary.firstChild) {
+            vaultSummary.removeChild(vaultSummary.firstChild);
+        }
+        [
+            ['Folder', record.folderName],
+            ['Vault', record.vaultFilename || `${record.folderName}.enc`],
+            ['Keyfile', record.keyfileRequired ? `${record.keyfileName || 'Required'} required` : 'Not required']
+        ].forEach(([label, value]) => {
+            const row = document.createElement('div');
+            const labelEl = document.createElement('strong');
+            labelEl.textContent = `${label}: `;
+            row.appendChild(labelEl);
+            row.appendChild(document.createTextNode(value));
+            vaultSummary.appendChild(row);
+        });
+    }
     
     // Check if Credential Management API is supported and in a secure context
     if (window.PasswordCredential && navigator.credentials) {
@@ -748,6 +1486,8 @@ function closePwModal() {
 document.addEventListener('DOMContentLoaded', () => {
     const btnClosePwModal = document.getElementById('btn-close-pw-modal');
     const btnCopyPw = document.getElementById('btn-copy-pw');
+    const btnPrintPwSheet = document.getElementById('btn-print-pw-sheet');
+    const btnDownloadPwSheet = document.getElementById('btn-download-pw-sheet');
     const btnSavePwManager = document.getElementById('btn-save-pw-manager');
     const pwSaveModal = document.getElementById('pw-save-modal');
     
@@ -760,7 +1500,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     btnCopyPw?.addEventListener('click', async () => {
-        const passwordVal = document.getElementById('pw-save-display')?.value || '';
+        const passwordVal = lastPasswordRecoveryRecord?.password || document.getElementById('pw-save-display')?.value || '';
         try {
             await navigator.clipboard.writeText(passwordVal);
             btnCopyPw.textContent = '✅ Copied!';
@@ -771,19 +1511,28 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Failed to copy password. Please select and copy manually.');
         }
     });
+
+    btnDownloadPwSheet?.addEventListener('click', () => {
+        downloadPasswordRecoverySheet();
+    });
+
+    btnPrintPwSheet?.addEventListener('click', () => {
+        printPasswordRecoverySheet();
+    });
     
     btnSavePwManager?.addEventListener('click', async () => {
-        const passwordVal = document.getElementById('pw-save-display')?.value || '';
+        const passwordVal = lastPasswordRecoveryRecord?.password || document.getElementById('pw-save-display')?.value || '';
         if (!passwordVal) return;
         
         try {
+            const credentialId = lastPasswordRecoveryRecord?.vaultFilename || lastPasswordRecoveryRecord?.folderName || 'zevsafe-vault';
             const credential = new PasswordCredential({
-                id: 'zevsafe-vault',
+                id: credentialId,
                 password: passwordVal,
-                name: 'ZevSafe Vault Key'
+                name: `ZevSafe Vault Key - ${credentialId}`
             });
             await navigator.credentials.store(credential);
-            log('Password manager prompted successfully.', 'success');
+            log(`Password manager prompted for "${credentialId}".`, 'success');
             closePwModal();
         } catch (err) {
             console.error('Credential storage failed:', err);
@@ -832,3 +1581,90 @@ function formatBytes(bytes, decimals = 1) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+
+// ============================================
+// V2 UI — MODE TOGGLE, KEYFILE WIRING
+// ============================================
+
+/**
+ * Update the keyfile badge display next to the keyfile input button.
+ * @param {'encrypt'|'decrypt'} side
+ * @param {File|null} file
+ */
+function updateKeyfileBadge(side, file) {
+    const badge = document.getElementById(`v2-keyfile-badge-${side}`);
+    const clearBtn = document.getElementById(`v2-keyfile-clear-${side}`);
+    if (!badge) return;
+    if (file) {
+        badge.textContent = `🗝️ ${file.name}`;
+        badge.style.display = 'inline-flex';
+        if (clearBtn) clearBtn.style.display = 'flex';
+    } else {
+        badge.textContent = '';
+        badge.style.display = 'none';
+        if (clearBtn) clearBtn.style.display = 'none';
+    }
+}
+
+/**
+ * Wire up all v2 UI interactions once DOM is available.
+ * Called from DOMContentLoaded (already set up below) or immediately
+ * if DOM is already loaded.
+ */
+function initV2UI() {
+    // ── V2 mode toggle ───────────────────────────────────────────────────
+    const v2Toggle   = document.getElementById('v2-mode-toggle');
+    const v2Panel    = document.getElementById('v2-options-panel');
+
+    if (v2Toggle && v2Panel) {
+        v2Toggle.addEventListener('change', () => {
+            v2Panel.style.display = v2Toggle.checked ? 'block' : 'none';
+            if (!v2Toggle.checked) {
+                // Clear keyfile when v2 mode is disabled
+                v2KeyfileEncrypt = null;
+                updateKeyfileBadge('encrypt', null);
+            }
+        });
+    }
+
+    // ── Encrypt keyfile picker ────────────────────────────────────────────
+    const encKeyfileInput = document.getElementById('v2-keyfile-input-encrypt');
+    if (encKeyfileInput) {
+        encKeyfileInput.addEventListener('change', () => {
+            v2KeyfileEncrypt = encKeyfileInput.files[0] || null;
+            updateKeyfileBadge('encrypt', v2KeyfileEncrypt);
+            encKeyfileInput.value = '';
+            if (v2KeyfileEncrypt) log(`🗝️ Keyfile selected: "${v2KeyfileEncrypt.name}" (${formatBytes(v2KeyfileEncrypt.size)})`, 'info');
+        });
+    }
+
+    // ── Decrypt keyfile picker ────────────────────────────────────────────
+    const decKeyfileInput = document.getElementById('v2-keyfile-input-decrypt');
+    if (decKeyfileInput) {
+        decKeyfileInput.addEventListener('change', () => {
+            v2KeyfileDecrypt = decKeyfileInput.files[0] || null;
+            updateKeyfileBadge('decrypt', v2KeyfileDecrypt);
+            decKeyfileInput.value = '';
+            if (v2KeyfileDecrypt) log(`🗝️ Keyfile selected: "${v2KeyfileDecrypt.name}" (${formatBytes(v2KeyfileDecrypt.size)})`, 'info');
+        });
+    }
+
+    // ── Clear buttons ─────────────────────────────────────────────────────
+    document.getElementById('v2-keyfile-clear-encrypt')?.addEventListener('click', () => {
+        v2KeyfileEncrypt = null;
+        updateKeyfileBadge('encrypt', null);
+        log('Keyfile cleared.', 'info');
+    });
+    document.getElementById('v2-keyfile-clear-decrypt')?.addEventListener('click', () => {
+        v2KeyfileDecrypt = null;
+        updateKeyfileBadge('decrypt', null);
+        log('Keyfile cleared.', 'info');
+    });
+}
+
+// Run v2 UI init
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initV2UI);
+} else {
+    initV2UI();
+}

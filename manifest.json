@@ -1,0 +1,51 @@
+{
+    "name": "ZevSafe — Offline File Encryption",
+    "short_name": "ZevSafe",
+    "description": "100% client-side AES-256-GCM folder encryption. Your files and passwords never leave your device.",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#08091a",
+    "theme_color": "#08091a",
+    "lang": "en-US",
+    "categories": ["security", "utilities", "productivity"],
+    "icons": [
+        {
+            "src": "./favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "./icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Encrypt Files",
+            "short_name": "Encrypt",
+            "description": "Open ZevSafe and encrypt a folder",
+            "url": "./index.html#encrypt",
+            "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Decrypt Files",
+            "short_name": "Decrypt",
+            "description": "Open ZevSafe and decrypt a vault",
+            "url": "./index.html#decrypt",
+            "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }]
+        }
+    ],
+    "prefer_related_applications": false
+}

@@ -643,6 +643,19 @@ body {
     line-height: 1.6;
 }
 
+.alert-box--danger {
+    background: rgba(244, 63, 94, 0.08);
+    border-color: rgba(244, 63, 94, 0.22);
+}
+
+.alert-box--danger p {
+    color: #fda4af;
+}
+
+.light-theme .alert-box--danger p {
+    color: #be123c;
+}
+
 /* ── BUTTONS ────────────────────────────────────────── */
 .btn {
     position: relative;
@@ -1378,6 +1391,25 @@ body {
     color: #e11d48;
 }
 
+.pw-vault-summary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1rem;
+    color: var(--text-2);
+    font-size: 0.83rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.pw-vault-summary strong {
+    color: var(--text);
+}
+
+.light-theme .pw-vault-summary {
+    background: rgba(0, 0, 0, 0.025);
+}
+
 .pw-display-group {
     display: flex;
     flex-direction: column;
@@ -1442,9 +1474,16 @@ body {
     background: rgba(0, 0, 0, 0.06);
 }
 
+.pw-modal-note {
+    color: var(--text-3);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
 .pw-modal-footer {
     display: flex;
     justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 0.75rem;
     margin-top: 0.5rem;
 }
@@ -1573,3 +1612,622 @@ body {
     background: rgba(0, 0, 0, 0.05);
 }
 
+
+/* =====================================================
+   ZEVSAFE V2 — ENHANCED MODE UI COMPONENTS
+   ===================================================== */
+
+/* ── V2 Toggle Row ──────────────────────────────────── */
+.v2-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: rgba(139, 92, 246, 0.06);
+    border: 1px solid rgba(139, 92, 246, 0.18);
+    margin-top: 4px;
+    transition: background 0.2s;
+}
+.v2-toggle-row:hover {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.v2-toggle-label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+}
+.v2-toggle-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.v2-toggle-hint {
+    font-size: 0.72rem;
+    color: var(--text-3);
+    font-family: var(--font-body);
+    letter-spacing: 0.01em;
+}
+
+/* ── V2 Badge Pill ──────────────────────────────────── */
+.v2-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 7px;
+    border-radius: var(--radius-pill);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+    color: #fff;
+    flex-shrink: 0;
+}
+
+/* ── Toggle Switch ──────────────────────────────────── */
+.toggle-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.toggle-switch input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+}
+.toggle-track {
+    width: 44px;
+    height: 24px;
+    border-radius: var(--radius-pill);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
+    position: relative;
+    transition: background 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+.toggle-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.55);
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), background 0.25s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.toggle-switch input:checked ~ .toggle-track {
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    border-color: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb {
+    transform: translateX(20px);
+    background: #fff;
+}
+.toggle-switch input:focus-visible ~ .toggle-track {
+    outline: 2px solid var(--purple-light);
+    outline-offset: 2px;
+}
+
+/* ── V2 Options Panel ───────────────────────────────── */
+.v2-panel {
+    border-radius: var(--radius-md);
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: panelFadeIn 0.22s ease;
+}
+@keyframes panelFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.v2-panel-header {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--purple-light);
+    letter-spacing: 0.02em;
+}
+.v2-panel-desc {
+    font-size: 0.76rem;
+    color: var(--text-2);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.v2-warning {
+    font-size: 0.73rem;
+    color: var(--warn);
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    line-height: 1.4;
+}
+
+/* ── V2 Decrypt Keyfile Section ─────────────────────── */
+.v2-decrypt-keyfile {
+    border-radius: var(--radius-md);
+    background: rgba(20, 184, 166, 0.04);
+    border: 1px solid rgba(20, 184, 166, 0.15);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.v2-decrypt-keyfile .v2-panel-header {
+    color: var(--teal-light);
+}
+
+/* ── Keyfile Row & Buttons ──────────────────────────── */
+.v2-keyfile-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-keyfile {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    background: rgba(139, 92, 246, 0.12);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--purple-light);
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+    user-select: none;
+}
+.btn-keyfile:hover {
+    background: rgba(139, 92, 246, 0.22);
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.25);
+}
+
+.btn-keyfile--teal {
+    background: rgba(20, 184, 166, 0.1);
+    border-color: rgba(20, 184, 166, 0.28);
+    color: var(--teal-light);
+}
+.btn-keyfile--teal:hover {
+    background: rgba(20, 184, 166, 0.2);
+    border-color: rgba(20, 184, 166, 0.5);
+    box-shadow: 0 0 10px rgba(20, 184, 166, 0.2);
+}
+
+.btn-keyfile-clear {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(244, 63, 94, 0.1);
+    border: 1px solid rgba(244, 63, 94, 0.25);
+    color: var(--danger);
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s, border-color 0.18s;
+}
+.btn-keyfile-clear:hover {
+    background: rgba(244, 63, 94, 0.22);
+    border-color: rgba(244, 63, 94, 0.5);
+}
+
+/* ── Keyfile Selected Badge ─────────────────────────── */
+.v2-keyfile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--purple-light);
+    font-size: 0.72rem;
+    font-weight: 600;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    animation: badgePop 0.2s cubic-bezier(.34,1.56,.64,1);
+}
+.v2-keyfile-badge--teal {
+    background: rgba(20, 184, 166, 0.12);
+    border-color: rgba(20, 184, 166, 0.3);
+    color: var(--teal-light);
+}
+@keyframes badgePop {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Light Theme Overrides ──────────────────────────── */
+.light-theme .v2-toggle-row {
+    background: rgba(139, 92, 246, 0.05);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+.light-theme .v2-panel {
+    background: rgba(139, 92, 246, 0.04);
+}
+.light-theme .v2-decrypt-keyfile {
+    background: rgba(20, 184, 166, 0.03);
+}
+.light-theme .toggle-track {
+    background: rgba(0,0,0,0.1);
+    border-color: rgba(0,0,0,0.12);
+}
+.light-theme .toggle-thumb {
+    background: rgba(0,0,0,0.4);
+}
+.light-theme .btn-keyfile {
+    background: rgba(139, 92, 246, 0.08);
+}
+.light-theme .btn-keyfile--teal {
+    background: rgba(20, 184, 166, 0.06);
+}
+
+
+/* =====================================================
+   PWA — INSTALL BANNER
+   ===================================================== */
+
+.pwa-install-banner {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 9999;
+    padding: 0 0 env(safe-area-inset-bottom, 0);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
+}
+
+/* Visible state — added by JS */
+.pwa-banner--visible {
+    transform: translateY(0);
+}
+
+.pwa-install-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    margin: 0 12px 12px;
+    border-radius: var(--radius-lg);
+    background: rgba(14, 16, 36, 0.92);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow:
+        0 -4px 32px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.pwa-install-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.pwa-install-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+.pwa-install-text strong {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+    font-family: var(--font-display);
+}
+.pwa-install-text span {
+    font-size: 0.73rem;
+    color: var(--text-2);
+}
+
+/* Install button */
+.pwa-btn {
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+}
+.pwa-btn-install {
+    padding: 8px 18px;
+    font-size: 0.82rem;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(139, 92, 246, 0.4);
+}
+.pwa-btn-install:hover {
+    background: linear-gradient(135deg, #6d28d9, #7c3aed);
+    box-shadow: 0 4px 18px rgba(139, 92, 246, 0.55);
+    transform: translateY(-1px);
+}
+.pwa-btn-install:active {
+    transform: translateY(0);
+}
+
+/* Dismiss × button */
+.pwa-btn-dismiss {
+    width: 32px; height: 32px;
+    padding: 0;
+    font-size: 0.9rem;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.pwa-btn-dismiss:hover {
+    background: rgba(255,255,255,0.12);
+    color: var(--text);
+}
+
+/* Light theme */
+.light-theme .pwa-install-inner {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(139, 92, 246, 0.25);
+    box-shadow:
+        0 -4px 32px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+.light-theme .pwa-install-text strong { color: #1e1b4b; }
+.light-theme .pwa-install-text span   { color: #64748b; }
+.light-theme .pwa-btn-dismiss {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.1);
+    color: #64748b;
+}
+.light-theme .pwa-btn-dismiss:hover {
+    background: rgba(0,0,0,0.08);
+    color: #334155;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+    .pwa-install-inner {
+        padding: 12px 14px;
+        margin: 0 8px 8px;
+        gap: 10px;
+    }
+    .pwa-install-icon { width: 34px; height: 34px; }
+    .pwa-install-text strong { font-size: 0.82rem; }
+    .pwa-install-text span   { font-size: 0.69rem; }
+    .pwa-btn-install { padding: 7px 14px; font-size: 0.78rem; }
+}
+
+
+/* =====================================================
+   STAGE PIPELINE PROGRESS TRACKER
+   ===================================================== */
+
+/* ── Pipeline row: [Pill] ── [Connector] ── [Pill] ── */
+.stage-pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    padding: 2px 0;
+    scrollbar-width: none;
+}
+.stage-pipeline::-webkit-scrollbar { display: none; }
+
+/* ── Stage pill ──────────────────────────────────────── */
+.stage-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    min-width: 76px;
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.stage-pill-icon  { font-size: 1.1rem; }
+.stage-pill-label { font-size: 0.68rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; }
+.stage-pill-pct   { font-size: 0.78rem; font-weight: 700; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+/* Idle — default grey */
+.stage-pill[data-state="idle"] {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.07);
+}
+
+/* Active — purple glow */
+.stage-pill[data-state="active"] {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.2);
+}
+.stage-pill[data-state="active"] .stage-pill-pct  { color: var(--purple-light); }
+.stage-pill[data-state="active"] .stage-pill-label { color: var(--purple-light); }
+
+/* Done — teal success */
+.stage-pill[data-state="done"] {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+.stage-pill[data-state="done"] .stage-pill-pct   { color: var(--success); }
+.stage-pill[data-state="done"] .stage-pill-label  { color: var(--success); }
+
+/* Error — red */
+.stage-pill[data-state="error"] {
+    background: rgba(244, 63, 94, 0.1);
+    border-color: rgba(244, 63, 94, 0.4);
+}
+.stage-pill[data-state="error"] .stage-pill-pct  { color: var(--danger); }
+.stage-pill[data-state="error"] .stage-pill-label { color: var(--danger); }
+
+/* ── Connector line between pills ───────────────────── */
+.stage-connector {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    min-width: 16px;
+    transition: background 0.35s ease, box-shadow 0.35s ease;
+}
+.stage-connector--active {
+    background: linear-gradient(90deg, var(--success), var(--teal-light));
+    box-shadow: 0 0 6px rgba(20, 184, 166, 0.35);
+}
+
+/* ── Stage Detail Cards container ───────────────────── */
+.stage-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+/* ── Individual detail card ─────────────────────────── */
+.stage-detail-card {
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: detailFadeIn 0.2s ease;
+}
+@keyframes detailFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Card header row */
+.sd-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.sd-icon  { font-size: 1rem; flex-shrink: 0; }
+.sd-title { font-size: 0.82rem; font-weight: 700; color: var(--text); flex: 1; }
+
+/* ── Status badge ───────────────────────────────────── */
+.sd-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background: rgba(255,255,255,0.07);
+    color: var(--text-3);
+    border: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+}
+.sd-badge--active {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--purple-light);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+.sd-badge--done {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+.sd-badge--error {
+    background: rgba(244, 63, 94, 0.15);
+    color: var(--danger);
+    border-color: rgba(244, 63, 94, 0.3);
+}
+
+/* ── Metrics grid ───────────────────────────────────── */
+.sd-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 14px;
+}
+.sd-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.sd-metric-label {
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.sd-metric-value {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Stage sub-progress bar ─────────────────────────── */
+.sd-bar-track {
+    height: 4px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.sd-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    transition: width 0.1s linear;
+    will-change: width;
+}
+.sd-bar-fill--purple {
+    background: linear-gradient(90deg, var(--purple-dark), var(--purple-light));
+}
+.sd-bar-fill--teal {
+    background: linear-gradient(90deg, var(--teal-dark), var(--teal-light));
+}
+
+/* ── Light theme overrides ──────────────────────────── */
+.light-theme .stage-pill {
+    background: rgba(0,0,0,0.03);
+    border-color: rgba(0,0,0,0.1);
+}
+.light-theme .stage-pill[data-state="idle"] .stage-pill-label { color: #64748b; }
+.light-theme .stage-connector { background: rgba(0,0,0,0.1); }
+.light-theme .stage-detail-card {
+    background: rgba(0,0,0,0.02);
+    border-color: rgba(0,0,0,0.08);
+}
+.light-theme .sd-metric-value { color: #1e293b; }
+
+/* ── Mobile: stack metrics 1 column ────────────────── */
+@media (max-width: 480px) {
+    .sd-metrics { grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+    .stage-pill { min-width: 62px; padding: 7px 10px; }
+    .stage-pill-label { font-size: 0.62rem; }
+    .stage-pill-pct   { font-size: 0.72rem; }
+}

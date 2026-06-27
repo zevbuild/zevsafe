@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ZevSafe">
+    <meta name="application-name" content="ZevSafe">
     <meta name="theme-color" content="#08091a">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="./icon-192.png">
 
     <!-- Primary SEO Meta Tags -->
     <title>How To Use ZevSafe — Offline Folder Encryption Guide</title>
@@ -15,6 +26,7 @@
     <meta property="og:url" content="https://zevsafe.pages.dev/how-to-use.html">
     <meta property="og:title" content="How To Use ZevSafe — Step-by-Step Offline Encryption Guide">
     <meta property="og:description" content="Detailed guide on how to secure folders locally using AES-256-GCM encryption inside your browser.">
+    <meta property="og:image" content="https://zevsafe.pages.dev/icon-512.png">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
     </style>
@@ -679,27 +691,28 @@
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
                     .then(reg => {
-                        console.log('Service Worker registered.', reg.scope);
-                        
-                        // Check for service worker updates immediately when network status changes to online
-                        window.addEventListener('online', () => {
-                            console.log('Network online. Checking for service worker updates...');
-                            reg.update().catch(err => console.error('SW update failed:', err));
+                        console.log('[ZevSafe PWA] SW registered on guide page.');
+                        window.addEventListener('online', () => reg.update().catch(() => {}));
+                        setInterval(() => reg.update().catch(() => {}), 10 * 60 * 1000);
+                        reg.addEventListener('updatefound', () => {
+                            const nw = reg.installing;
+                            if (!nw) return;
+                            nw.addEventListener('statechange', () => {
+                                if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                                    nw.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
                         });
                     })
-                    .catch(err => console.error('Service Worker registration failed:', err));
-            });
+                    .catch(err => console.warn('[ZevSafe PWA] SW registration failed:', err));
 
-            // Listen for service worker activation changes and reload the page automatically
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
-                    refreshing = true;
-                    console.log('New Service Worker activated. Reloading page...');
-                    window.location.reload();
-                }
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) { refreshing = true; window.location.reload(); }
+                });
             });
-        }
+        };
+    ;
     </script>
 </body>
 </html>

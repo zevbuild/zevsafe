@@ -6,10 +6,22 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ZevSafe">
+    <meta name="application-name" content="ZevSafe">
     <meta name="theme-color" content="#08091a">
-    
+    <meta name="msapplication-TileColor" content="#08091a">
+    <meta name="msapplication-TileImage" content="./icon-192.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- Apple Touch Icon (iOS home screen) -->
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+
     <!-- Primary SEO Meta Tags -->
-    <title>ZevSafe — 100% Offline Folder & File Encryption</title>
+    <title>ZevSafe</title>
     <meta name="description" content="Securely lock folders using bank-grade client-side encryption. Runs entirely in your browser using AES-256-GCM. Your files and passwords never leave your device.">
     <meta name="keywords" content="browser-based folder encryption, client-side file encryption, zero-knowledge file locker, offline folder locker, in-browser AES-256 encryption, serverless file encryption, air-gapped folder lock, PBKDF2 key derivation web app, AES-GCM folder protection, local-first file tools, how to encrypt a folder without uploading it, secure folder tool no installation, safe offline file vault free, maximum encryption file size, folder size limit, browser memory limits">
 
@@ -18,6 +30,7 @@
     <meta property="og:url" content="https://zevsafe.pages.dev/">
     <meta property="og:title" content="ZevSafe — Zero-Knowledge Offline Folder Encryption">
     <meta property="og:description" content="Compress and encrypt entire folders into portable vaults right inside your browser. No server tracking, no data collection.">
+    <meta property="og:image" content="https://zevsafe.pages.dev/icon-512.png">
     <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');</style>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -148,6 +161,39 @@
                         </div>
                     </div>
 
+                    <!-- ── V2 MODE TOGGLE ── -->
+                    <div class="v2-toggle-row">
+                        <label class="v2-toggle-label" for="v2-mode-toggle">
+                            <span class="v2-badge">v2</span>
+                            <span class="v2-toggle-text">Enhanced Security Mode</span>
+                            <span class="v2-toggle-hint">PBKDF2-SHA512 · 600k iterations · optional keyfile</span>
+                        </label>
+                        <label class="toggle-switch" aria-label="Enable v2 enhanced mode">
+                            <input type="checkbox" id="v2-mode-toggle" role="switch">
+                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                        </label>
+                    </div>
+
+                    <!-- ── V2 OPTIONS (shown only when toggle is ON) ── -->
+                    <div id="v2-options-panel" class="v2-panel" style="display:none;">
+                        <div class="v2-panel-header">🔐 Keyfile (Optional Second Factor)</div>
+                        <p class="v2-panel-desc">Any file (image, document, etc.) acts as a physical key. Without it, the vault cannot be opened — even with the correct password.</p>
+                        <div class="v2-keyfile-row">
+                            <label class="btn-keyfile" onclick="event.stopPropagation()">
+                                🗝️ Select Keyfile
+                                <input type="file" id="v2-keyfile-input-encrypt" style="display:none;">
+                            </label>
+                            <button class="btn-keyfile-clear" id="v2-keyfile-clear-encrypt" title="Remove keyfile" style="display:none;">✕</button>
+                        </div>
+                        <span class="v2-keyfile-badge" id="v2-keyfile-badge-encrypt" style="display:none;"></span>
+                        <div class="v2-warning">⚠️ Keep this keyfile safe. If you lose it, the vault cannot be decrypted.</div>
+                    </div>
+
+                    <div class="alert-box alert-box--danger">
+                        <span class="alert-icon">⚠️</span>
+                        <p>If you lose the password or required keyfile, decryption will not be possible and encrypted files may be permanently inaccessible.</p>
+                    </div>
+
                     <button class="btn btn--purple" id="btn-encrypt">
                         <span class="btn-shimmer"></span>
                         <span class="btn-content">🔐 Encrypt &amp; Download</span>
@@ -205,9 +251,23 @@
                         </div>
                     </div>
 
+                    <!-- ── V2 KEYFILE FOR DECRYPT (auto-detected) ── -->
+                    <div class="v2-decrypt-keyfile">
+                        <div class="v2-panel-header">🗝️ Keyfile (for v2 vaults only)</div>
+                        <p class="v2-panel-desc">If this vault was encrypted with a keyfile, select it here. Leave empty for standard vaults — the format is auto-detected.</p>
+                        <div class="v2-keyfile-row">
+                            <label class="btn-keyfile btn-keyfile--teal" onclick="event.stopPropagation()">
+                                🗝️ Select Keyfile
+                                <input type="file" id="v2-keyfile-input-decrypt" style="display:none;">
+                            </label>
+                            <button class="btn-keyfile-clear" id="v2-keyfile-clear-decrypt" title="Remove keyfile" style="display:none;">✕</button>
+                        </div>
+                        <span class="v2-keyfile-badge v2-keyfile-badge--teal" id="v2-keyfile-badge-decrypt" style="display:none;"></span>
+                    </div>
+
                     <div class="alert-box">
                         <span class="alert-icon">🛡️</span>
-                        <p>Wrong password triggers immediate rejection. AES-GCM authentication prevents silent corruption.</p>
+                        <p>Vault version auto-detected. Wrong password triggers immediate rejection. AES-GCM authentication prevents silent corruption.</p>
                     </div>
 
                     <button class="btn btn--teal" id="btn-decrypt">
@@ -221,6 +281,29 @@
         <!-- ── PROGRESS PANEL ── -->
         <section class="progress-panel" id="progress-card" style="display:none;" aria-live="polite">
             <div class="progress-panel-inner">
+
+                <!-- ── Stage Pipeline Pills ── -->
+                <div class="stage-pipeline" id="stage-pipeline">
+                    <div class="stage-pill" id="stage-compress" data-stage="compress">
+                        <span class="stage-pill-icon">📦</span>
+                        <span class="stage-pill-label">Compress</span>
+                        <span class="stage-pill-pct" id="stage-compress-pct">—</span>
+                    </div>
+                    <div class="stage-connector" id="stage-conn-1"></div>
+                    <div class="stage-pill" id="stage-crypto" data-stage="crypto">
+                        <span class="stage-pill-icon" id="stage-crypto-icon">🔐</span>
+                        <span class="stage-pill-label" id="stage-crypto-label">Encrypt</span>
+                        <span class="stage-pill-pct" id="stage-crypto-pct">—</span>
+                    </div>
+                    <div class="stage-connector" id="stage-conn-2"></div>
+                    <div class="stage-pill" id="stage-save" data-stage="save">
+                        <span class="stage-pill-icon">💾</span>
+                        <span class="stage-pill-label">Save</span>
+                        <span class="stage-pill-pct" id="stage-save-pct">—</span>
+                    </div>
+                </div>
+
+                <!-- ── Overall bar ── -->
                 <div class="progress-top">
                     <div class="progress-status">
                         <span class="status-dot" id="status-dot"></span>
@@ -231,9 +314,104 @@
                 <div class="progress-track">
                     <div class="progress-fill" id="progress-bar-fill"></div>
                 </div>
+
+                <!-- ── Stage Detail Cards ── -->
+                <div class="stage-details" id="stage-details" style="display:none;">
+
+                    <!-- Compress detail -->
+                    <div class="stage-detail-card" id="detail-compress" style="display:none;">
+                        <div class="sd-header">
+                            <span class="sd-icon">📦</span>
+                            <span class="sd-title">Compression</span>
+                            <span class="sd-badge sd-badge--active" id="sd-compress-status">In Progress</span>
+                        </div>
+                        <div class="sd-metrics">
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Original</span>
+                                <span class="sd-metric-value" id="sd-original-size">—</span>
+                            </div>
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Compressed</span>
+                                <span class="sd-metric-value" id="sd-compressed-size">—</span>
+                            </div>
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Ratio</span>
+                                <span class="sd-metric-value" id="sd-ratio">—</span>
+                            </div>
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Time</span>
+                                <span class="sd-metric-value" id="sd-compress-time">—</span>
+                            </div>
+                        </div>
+                        <div class="sd-bar-track">
+                            <div class="sd-bar-fill sd-bar-fill--purple" id="sd-compress-bar"></div>
+                        </div>
+                    </div>
+
+                    <!-- Crypto detail -->
+                    <div class="stage-detail-card" id="detail-crypto" style="display:none;">
+                        <div class="sd-header">
+                            <span class="sd-icon" id="sd-crypto-icon">🔐</span>
+                            <span class="sd-title" id="sd-crypto-title">Encryption</span>
+                            <span class="sd-badge sd-badge--active" id="sd-crypto-status">In Progress</span>
+                        </div>
+                        <div class="sd-metrics">
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Algorithm</span>
+                                <span class="sd-metric-value">AES-256-GCM</span>
+                            </div>
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Data Size</span>
+                                <span class="sd-metric-value" id="sd-crypto-size">—</span>
+                            </div>
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Auth Tag</span>
+                                <span class="sd-metric-value" id="sd-auth-tag">Pending</span>
+                            </div>
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Time</span>
+                                <span class="sd-metric-value" id="sd-crypto-time">—</span>
+                            </div>
+                        </div>
+                        <div class="sd-bar-track">
+                            <div class="sd-bar-fill sd-bar-fill--teal" id="sd-crypto-bar"></div>
+                        </div>
+                    </div>
+
+                    <!-- Save detail -->
+                    <div class="stage-detail-card" id="detail-save" style="display:none;">
+                        <div class="sd-header">
+                            <span class="sd-icon">💾</span>
+                            <span class="sd-title" id="sd-save-title">Output</span>
+                            <span class="sd-badge" id="sd-save-status">Waiting</span>
+                        </div>
+                        <div class="sd-metrics">
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Output File</span>
+                                <span class="sd-metric-value" id="sd-output-name">—</span>
+                            </div>
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Output Size</span>
+                                <span class="sd-metric-value" id="sd-output-size">—</span>
+                            </div>
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Total Time</span>
+                                <span class="sd-metric-value" id="sd-total-time">—</span>
+                            </div>
+                            <div class="sd-metric">
+                                <span class="sd-metric-label">Version</span>
+                                <span class="sd-metric-value" id="sd-vault-version">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /stage-details -->
+
+                <!-- ── Log console ── -->
                 <div class="log-console" id="log-output" role="log" aria-label="Operation log"></div>
             </div>
         </section>
+
 
         <!-- ── HOW IT WORKS ── -->
         <section class="how-section">
@@ -298,18 +476,24 @@
             </div>
             <div class="pw-modal-body">
                 <div class="pw-modal-warning">
-                    ⚠️ <strong>Important:</strong> If you lose this password, decryption will not be possible. There is no password recovery.
+                    ⚠️ <strong>Critical:</strong> If you lose this password or required keyfile, decryption will not be possible. Encrypted files or folders may be permanently inaccessible.
                 </div>
+                <div class="pw-vault-summary" id="pw-vault-summary" aria-live="polite"></div>
                 <div class="pw-display-group">
-                    <label for="pw-save-display">Your Password</label>
+                    <label for="pw-save-display">Password / Encryption Key</label>
                     <div class="pw-display-wrapper">
                         <input type="text" id="pw-save-display" readonly autocomplete="off" spellcheck="false">
                         <button id="btn-copy-pw" title="Copy password">📋 Copy</button>
                     </div>
                 </div>
+                <div class="pw-modal-note">
+                    Download a printable recovery sheet and store it offline. Anyone with this sheet can unlock the vault.
+                </div>
             </div>
             <div class="pw-modal-footer">
                 <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-close-pw-modal">Dismiss</button>
+                <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-print-pw-sheet">🖨️ Print Sheet</button>
+                <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-download-pw-sheet">⬇️ Download Sheet</button>
                 <button class="pw-modal-btn pw-modal-btn--primary" id="btn-save-pw-manager">💾 Save Password</button>
             </div>
         </div>
@@ -317,32 +501,111 @@
 
     <script src="jszip.min.js"></script>
     <script src="app.js"></script>
+
+    <!-- ── PWA: Install Banner + Service Worker Registration ── -->
+    <div class="pwa-install-banner" id="pwa-install-banner" style="display:none;" role="complementary" aria-label="Install ZevSafe app">
+        <div class="pwa-install-inner">
+            <img src="./icon-192.png" alt="ZevSafe icon" class="pwa-install-icon" width="40" height="40">
+            <div class="pwa-install-text">
+                <strong>Install ZevSafe</strong>
+                <span>Add to home screen for offline access</span>
+            </div>
+            <button class="pwa-btn pwa-btn-install" id="pwa-btn-install">Install</button>
+            <button class="pwa-btn pwa-btn-dismiss" id="pwa-btn-dismiss" aria-label="Dismiss">✕</button>
+        </div>
+    </div>
+
     <script>
+    (() => {
+        'use strict';
+
+        // ── Service Worker Registration ──────────────────────────────
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
+                navigator.serviceWorker.register('./sw.js', { scope: './' })
                     .then(reg => {
-                        console.log('Service Worker registered.', reg.scope);
-                        
-                        // Check for service worker updates immediately when network status changes to online
+                        console.log('[ZevSafe PWA] SW registered. Scope:', reg.scope);
+
+                        // Poll for updates when user comes back online
                         window.addEventListener('online', () => {
-                            console.log('Network online. Checking for service worker updates...');
-                            reg.update().catch(err => console.error('SW update failed:', err));
+                            reg.update().catch(() => {});
+                        });
+
+                        // Periodic background update check (every 10 mins)
+                        setInterval(() => reg.update().catch(() => {}), 10 * 60 * 1000);
+
+                        // When a new SW is waiting, send SKIP_WAITING and reload
+                        reg.addEventListener('updatefound', () => {
+                            const newWorker = reg.installing;
+                            if (!newWorker) return;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('[ZevSafe PWA] New SW installed. Sending SKIP_WAITING.');
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
                         });
                     })
-                    .catch(err => console.error('Service Worker registration failed:', err));
-            });
+                    .catch(err => console.warn('[ZevSafe PWA] SW registration failed:', err));
 
-            // Listen for service worker activation changes and reload the page automatically
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
-                    refreshing = true;
-                    console.log('New Service Worker activated. Reloading page...');
-                    window.location.reload();
+                // Auto-reload when new SW takes control
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                        refreshing = true;
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+
+        // ── PWA Install Prompt ───────────────────────────────────────
+        let deferredInstallPrompt = null;
+        const installBanner   = document.getElementById('pwa-install-banner');
+        const btnInstall      = document.getElementById('pwa-btn-install');
+        const btnDismiss      = document.getElementById('pwa-btn-dismiss');
+
+        // Skip showing banner if already installed
+        const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+                         || window.navigator.standalone === true;
+
+        if (!isInstalled) {
+            window.addEventListener('beforeinstallprompt', e => {
+                e.preventDefault();
+                deferredInstallPrompt = e;
+
+                // Don't show again if user dismissed recently (7 days)
+                const dismissed = sessionStorage.getItem('pwa-install-dismissed');
+                if (!dismissed) {
+                    installBanner.style.display = 'block';
+                    requestAnimationFrame(() => installBanner.classList.add('pwa-banner--visible'));
                 }
             });
         }
+
+        btnInstall?.addEventListener('click', async () => {
+            if (!deferredInstallPrompt) return;
+            installBanner.classList.remove('pwa-banner--visible');
+            setTimeout(() => { installBanner.style.display = 'none'; }, 350);
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            console.log('[ZevSafe PWA] Install prompt outcome:', outcome);
+            deferredInstallPrompt = null;
+        });
+
+        btnDismiss?.addEventListener('click', () => {
+            installBanner.classList.remove('pwa-banner--visible');
+            setTimeout(() => { installBanner.style.display = 'none'; }, 350);
+            sessionStorage.setItem('pwa-install-dismissed', '1');
+        });
+
+        // Clean up after successful install
+        window.addEventListener('appinstalled', () => {
+            console.log('[ZevSafe PWA] App installed successfully!');
+            installBanner.style.display = 'none';
+            deferredInstallPrompt = null;
+        });
+    })();
     </script>
 </body>
 </html>
