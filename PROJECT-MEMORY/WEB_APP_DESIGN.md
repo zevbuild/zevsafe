@@ -10,6 +10,7 @@ The application runs as a self-contained Single-Page Application (SPA). It uses 
 * **HTML5 File System API**: Allows users to select folders (`webkitdirectory` input attribute) or drag and drop folders directly. The dropzone listener uses `webkitGetAsEntry()` to recursively traverse the files and subfolders, capturing their hierarchy.
 * **JSZip Core**: A pure JavaScript compression library. Files are read as array buffers chunk by chunk, zipped in-memory preserving the relative directory path, and packaged into a ZIP blob.
 * **Web Crypto API**: The standard native browser API for cryptographic operations. It compiles and executes AES-256-GCM algorithms in native browser C++ space, yielding very high encryption speeds.
+* **Password Preservation UI**: After encryption, the app shows a save modal containing the vault password, encrypted folder/project name, output vault filename, and keyfile requirement status. It can copy the password, trigger browser password-manager storage when `PasswordCredential` is available, download a printable recovery text sheet, or open the browser print dialog directly.
 
 ---
 
@@ -38,9 +39,59 @@ The generated `.enc` file packages all elements required for offline decryption:
 0                      16                     28
 ```
 
+### Enhanced v2 Vault Format
+The app also supports an enhanced v2 mode:
+
+* **KDF**: `PBKDF2-SHA512`
+* **Iterations**: `600,000`
+* **Salt**: `32 bytes`
+* **Optional keyfile**: Any selected file can be hashed with `SHA-256` and mixed into the derived password key material. A v2 vault created with a keyfile requires both the password and the same keyfile to decrypt.
+
+```text
+┌────────────┬────────────┬─────────┬──────────────────┬────────────────┬──────────────────────────────┐
+│ Magic ZV2  │ Version    │ Flags   │ Salt (32 Bytes)  │ IV (12 Bytes)  │ Ciphertext + GCM Auth Tag     │
+│ 4 Bytes    │ 1 Byte     │ 1 Byte  │                  │                │ Variable Length               │
+└────────────┴────────────┴─────────┴──────────────────┴────────────────┴──────────────────────────────┘
+0            4            5         6                  38               50
+```
+
+Flag bit `0x01` means a keyfile was used.
+
 ---
 
-## 3. Browser Compatibility & Offline Usage
+## 3. Password Recovery, Printing, and Warnings
+
+The web app does not maintain a custom local password vault. Its "save password" flow uses the browser's Credential Management API when available, so actual storage depends on the browser/password manager.
+
+The app additionally generates a recovery record in memory immediately after encryption. This record is used only for the visible modal, copy action, password-manager save action, text export, and print action.
+
+Recovery record fields:
+
+* Encrypted folder/project name
+* Output vault filename
+* Vault format/version
+* Password / encryption key text
+* Keyfile required status
+* Keyfile filename and SHA-256 fingerprint when v2 keyfile mode is used
+
+The printable recovery sheet is generated as plain text and named:
+
+```text
+<encrypted-folder-name>_password_recovery_sheet.txt
+```
+
+The UI and exported/printed recovery sheet must clearly warn:
+
+```text
+If you lose this password or required keyfile, decryption will not be possible.
+Encrypted files or folders may be permanently inaccessible.
+```
+
+This warning is shown before encryption, inside the password save modal, and inside the printed/downloaded recovery sheet.
+
+---
+
+## 4. Browser Compatibility & Offline Usage
 * **Compatibility**: Works on all modern web browsers supporting the Web Crypto API, including Google Chrome, Microsoft Edge, Mozilla Firefox, Apple Safari (both Desktop and Mobile).
 * **Offline Execution**:
   * The application has zero network dependencies. All libraries (`jszip.min.js`) are saved locally.
