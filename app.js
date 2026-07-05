@@ -89,7 +89,7 @@ function initDeviceUI() {
         if (encryptDropText) encryptDropText.textContent = 'Tap to select files';
 
         const decryptDropText = document.querySelector('#decrypt-drop-zone .drop-primary');
-        if (decryptDropText) decryptDropText.textContent = 'Tap to select .enc file';
+        if (decryptDropText) decryptDropText.textContent = 'Tap to select .zev file';
 
         // Show mobile tabs
         const mobileTabs = document.getElementById('mobile-tabs');
@@ -1180,7 +1180,7 @@ btnEncrypt.addEventListener('click', async () => {
             combined.set(new Uint8Array(ciphertext),   V2_OFFSET_CIPHER);// bytes 50+
 
             encBlob  = new Blob([combined], { type: 'application/octet-stream' });
-            filename = `${selectedEncryptFolderName}.enc`;
+            filename = `${selectedEncryptFolderName}.zev`;
             recoveryRecord.vaultFilename = filename;
             triggerDownload(encBlob, filename);
             ProgressTracker.onSaveDone(filename, combined.byteLength, 'v2');  // ← real output stats
@@ -1217,7 +1217,7 @@ btnEncrypt.addEventListener('click', async () => {
             combined.set(new Uint8Array(ciphertext), 28);
 
             encBlob  = new Blob([combined], { type: 'application/octet-stream' });
-            filename = `${selectedEncryptFolderName}.enc`;
+            filename = `${selectedEncryptFolderName}.zev`;
             recoveryRecord.vaultFilename = filename;
             triggerDownload(encBlob, filename);
             ProgressTracker.onSaveDone(filename, combined.byteLength, 'v1');  // ← real output stats
@@ -1255,7 +1255,7 @@ btnEncrypt.addEventListener('click', async () => {
 
 btnDecrypt.addEventListener('click', async () => {
     if (!selectedDecryptFile) {
-        alert('⚠️ Please select or drop a .enc vault file first.');
+        alert('⚠️ Please select or drop a .zev vault file first.');
         return;
     }
 
@@ -1277,7 +1277,7 @@ btnDecrypt.addEventListener('click', async () => {
 
         // Minimum size check
         if (arrayBuffer.byteLength < 44) {
-            throw new Error('File is too small to be a valid vault — may be corrupted or not a .enc file.');
+            throw new Error('File is too small to be a valid vault — may be corrupted or not a .zev file.');
         }
 
         updateProgress('Detecting vault version...', 15);
@@ -1368,7 +1368,7 @@ btnDecrypt.addEventListener('click', async () => {
         // Validate ZIP structure and trigger download
         await JSZip.loadAsync(decryptedBuffer);
 
-        const folderName    = selectedDecryptFile.name.replace(/\.enc$/i, '');
+        const folderName    = selectedDecryptFile.name.replace(/\.zev$/i, '');
         const decryptedBlob = new Blob([decryptedBuffer], { type: 'application/zip' });
         triggerDownload(decryptedBlob, `${folderName}_decrypted.zip`);
         ProgressTracker.onSaveDone(`${folderName}_decrypted.zip`, decryptedBuffer.byteLength, vaultIsV2 ? 'v2' : 'v1');  // ← real output
@@ -1436,7 +1436,7 @@ function showPasswordSavePrompt(recordOrPassword) {
     const record = typeof recordOrPassword === 'string'
         ? {
             folderName: selectedEncryptFolderName || 'ZevSafe vault',
-            vaultFilename: selectedEncryptFolderName ? `${selectedEncryptFolderName}.enc` : 'ZevSafe vault',
+            vaultFilename: selectedEncryptFolderName ? `${selectedEncryptFolderName}.zev` : 'ZevSafe vault',
             version: 'unknown',
             password: recordOrPassword,
             keyfileRequired: false,
@@ -1453,7 +1453,7 @@ function showPasswordSavePrompt(recordOrPassword) {
         }
         [
             ['Folder', record.folderName],
-            ['Vault', record.vaultFilename || `${record.folderName}.enc`],
+            ['Vault', record.vaultFilename || `${record.folderName}.zev`],
             ['Keyfile', record.keyfileRequired ? `${record.keyfileName || 'Required'} required` : 'Not required']
         ].forEach(([label, value]) => {
             const row = document.createElement('div');

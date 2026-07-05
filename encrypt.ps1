@@ -22,7 +22,7 @@ if (-not (Test-Path $folderPath -PathType Container)) {
 
 $folderPath = (Get-Item $folderPath).FullName
 $folderName = Split-Path $folderPath -Leaf
-$outputPath = Join-Path (Split-Path $folderPath -Parent) "$folderName.enc"
+$outputPath = Join-Path (Split-Path $folderPath -Parent) "$folderName.zev"
 
 $password = Read-Host -Prompt "Enter a strong password to secure the folder" -AsSecureString
 $confirm = Read-Host -Prompt "Confirm your password" -AsSecureString

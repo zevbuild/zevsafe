@@ -3,7 +3,7 @@
 //  Strategy:
 //    • App Shell   → Cache-First  (instant offline load)
 //    • Google Fonts → Stale-While-Revalidate (cached + refreshed)
-//    • .enc files  → NEVER cached (security constraint)
+//    • .zev files  → NEVER cached (security constraint)
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
@@ -74,7 +74,7 @@ self.addEventListener('fetch', event => {
     if (url.protocol === 'blob:' || url.protocol === 'data:') return;
 
     // ── Security: NEVER cache .enc vault files ─────────────────
-    if (url.pathname.endsWith('.enc')) return;
+    if (url.pathname.endsWith('.zev')) return;
 
     // ── Security: skip chrome-extension or non-http(s) ─────────
     if (!url.protocol.startsWith('http')) return;

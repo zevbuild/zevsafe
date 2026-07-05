@@ -208,31 +208,31 @@
                 <div class="card-inner">
                     <div class="card-tag card-tag--teal">DECRYPT</div>
                     <h2 class="card-title">🔓 Decrypt Folder</h2>
-                    <p class="card-desc">Restore your original folder from a <code>.enc</code> vault file with your password.</p>
+                    <p class="card-desc">Restore your original folder from a <code>.zev</code> vault file with your password.</p>
 
                     <!-- Desktop: drop zone -->
                     <div class="drop-zone" id="decrypt-drop-zone" role="button" tabindex="0"
-                         aria-label="Drop .enc file here or click to browse">
+                         aria-label="Drop .zev file here or click to browse">
                         <div class="drop-zone-inner" id="decrypt-dz-inner">
                             <div class="drop-icon-wrap">
                                 <span class="drop-icon">📦</span>
                                 <div class="drop-ring drop-ring--teal"></div>
                             </div>
-                            <p class="drop-primary">Drop .enc file here</p>
+                            <p class="drop-primary">Drop .zev file here</p>
                             <p class="drop-secondary">or</p>
                             <label class="btn-browse btn-browse--teal" onclick="event.stopPropagation()">
-                                Select .enc File
-                                <input type="file" id="decrypt-file-input-dz" accept=".enc"
+                                Select .zev File
+                                <input type="file" id="decrypt-file-input-dz" accept=".zev"
                                        style="display:none;" autocomplete="off">
                             </label>
                             <!-- Mobile-friendly decrypt file input -->
-                            <input type="file" id="decrypt-file-input" accept=".enc" style="display:none;" autocomplete="off">
+                            <input type="file" id="decrypt-file-input" accept=".zev" style="display:none;" autocomplete="off">
                         </div>
                         <!-- Decrypt file summary widget -->
                         <div class="selected-files-widget" id="decrypt-selected-widget" style="display: none;" onclick="event.stopPropagation()">
                             <span class="sf-icon">📦</span>
                             <div class="sf-info">
-                                <span class="sf-name" id="decrypt-selected-name">vault_name.enc</span>
+                                <span class="sf-name" id="decrypt-selected-name">vault_name.zev</span>
                                 <span class="sf-meta" id="decrypt-selected-meta">0 KB</span>
                             </div>
                             <button class="sf-clear-btn" id="btn-clear-decrypt" title="Clear selection">✕</button>
@@ -445,7 +445,7 @@
                     <div class="how-num">04</div>
                     <div class="how-body">
                         <h3>Download</h3>
-                        <p>One portable <code>.enc</code> file — open anywhere with ZevSafe.</p>
+                        <p>One portable <code>.zev</code> file — open anywhere with ZevSafe.</p>
                     </div>
                 </div>
             </div>

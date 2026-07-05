@@ -11,7 +11,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 # 1. Inputs
 if ([string]::IsNullOrEmpty($encPath)) {
-    $encPath = Read-Host -Prompt "Enter the absolute path of the .enc file to decrypt (or drag and drop it here)"
+    $encPath = Read-Host -Prompt "Enter the absolute path of the .zev file to decrypt (or drag and drop it here)"
 }
 
 # Clean trailing slashes and quotes from drag-and-drop
@@ -25,7 +25,7 @@ if (-not (Test-Path $encPath -PathType Leaf)) {
 $encPath = (Get-Item $encPath).FullName
 $parentDir = Split-Path $encPath -Parent
 $fileName = Split-Path $encPath -Leaf
-$folderName = $fileName -replace "\.enc$", ""
+$folderName = $fileName -replace "\.zev$", ""
 $targetFolder = Join-Path $parentDir $folderName
 
 # Check if target folder already exists to prevent overwriting
