@@ -73,7 +73,7 @@ self.addEventListener('fetch', event => {
     if (request.method !== 'GET') return;
     if (url.protocol === 'blob:' || url.protocol === 'data:') return;
 
-    // ── Security: NEVER cache .enc vault files ─────────────────
+    // ── Security: NEVER cache .zev vault files ─────────────────
     if (url.pathname.endsWith('.zev')) return;
 
     // ── Security: skip chrome-extension or non-http(s) ─────────

@@ -420,6 +420,10 @@
                 <span class="badge-dot"></span>
                 Full Documentation
             </div>
+            <div class="hero-badge" style="background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:var(--success);">
+                <span style="font-size:0.75rem;">🟢</span>
+                Stable v3 &mdash; <code style="font-size:0.78rem;">.zev</code> format &middot; PBKDF2-SHA512 &middot; 600k iterations &middot; most secure version to date
+            </div>
             <span class="guide-hero-icon">📖</span>
             <h1>How To Use ZevSafe</h1>
             <p>Step-by-step guide to encrypting and decrypting your folders with military-grade AES-256-GCM — all inside your browser, all offline.</p>
@@ -454,14 +458,14 @@
                     <div class="step-num step-num--purple">4</div>
                     <div class="step-body">
                         <h3>Click "Encrypt & Download"</h3>
-                        <p>ZevSafe compresses your folder, derives an AES-256-GCM key with PBKDF2, encrypts everything, and auto-downloads a single <code>yourfolder.enc</code> file. Watch the live progress log.</p>
+                        <p>ZevSafe compresses your folder, derives an AES-256-GCM key with PBKDF2, encrypts everything, and auto-downloads a single <code>yourfolder.zev</code> file. Watch the live progress log.</p>
                     </div>
                 </div>
                 <div class="step-card step-card--purple">
                     <div class="step-num step-num--purple">5</div>
                     <div class="step-body">
                         <h3>Store Your Vault Safely</h3>
-                        <p>Move the <code>.enc</code> file to your USB, SD card, or cloud storage. <strong>Never forget your password</strong> — there is no recovery mechanism. The file is completely useless without it.</p>
+                        <p>Move the <code>.zev</code> file to your USB, SD card, or cloud storage. <strong>Never forget your password</strong> — there is no recovery mechanism. The file is completely useless without it.</p>
                     </div>
                 </div>
             </div>
@@ -481,8 +485,8 @@
                 <div class="step-card step-card--teal">
                     <div class="step-num step-num--teal">2</div>
                     <div class="step-body">
-                        <h3>Load Your .enc File</h3>
-                        <p>In the <strong>Unlock a Vault</strong> panel, drag & drop your <code>.enc</code> file or click <strong>Select .enc File</strong>. The file must not be modified or renamed to a different extension.</p>
+                        <h3>Load Your .zev File</h3>
+                        <p>In the <strong>Unlock a Vault</strong> panel, drag &amp; drop your <code>.zev</code> file or click <strong>Select .zev File</strong>. The file must not be modified or renamed to a different extension.</p>
                     </div>
                 </div>
                 <div class="step-card step-card--teal">
@@ -563,15 +567,15 @@
                             [ Salt (16 Bytes) ] &nbsp;+&nbsp; [ IV (12 Bytes) ] &nbsp;+&nbsp; [ Ciphertext (Variable) ] &nbsp;+&nbsp; [ GCM Tag (16 Bytes) ]
                         </div>
                     </li>
-                    <li><strong>Step 2.6: Disk Write:</strong> The packed array is downloaded as a single <code>.enc</code> file directly via browser local memory.</li>
+                    <li><strong>Step 2.6: Disk Write:</strong> The packed array is downloaded as a single <code>.zev</code> file directly via browser local memory.</li>
                 </ul>
 
                 <h3 class="guide-body-h3" style="color: var(--text);">3. Step-by-Step Decryption Flow</h3>
                 <p class="guide-body-p">
-                    When you upload a <code>.enc</code> file and click "Decrypt &amp; Download", the reverse sequence takes place:
+                    When you upload a <code>.zev</code> file and click "Decrypt &amp; Download", the reverse sequence takes place:
                 </p>
                 <ul class="guide-body-ul">
-                    <li><strong>Step 3.1: Parsing Headers:</strong> The browser reads the raw binary array of the <code>.enc</code> file. It extracts the first 16 bytes as the Salt, the next 12 bytes (bytes 16–27) as the IV, and the rest as the ciphertext payload (which implicitly contains the 16-byte GCM tag appended at the end).</li>
+                    <li><strong>Step 3.1: Parsing Headers:</strong> The browser reads the raw binary array of the <code>.zev</code> file. It extracts the first 16 bytes as the Salt, the next 12 bytes (bytes 16–27) as the IV, and the rest as the ciphertext payload (which implicitly contains the 16-byte GCM tag appended at the end).</li>
                     <li><strong>Step 3.2: Re-deriving the Key:</strong> The user-provided password and the extracted 16-byte Salt are passed to <code>crypto.subtle.deriveKey()</code> to re-derive the 256-bit AES-GCM key using the exact same PBKDF2 parameters (100k iterations, SHA-256).</li>
                     <li><strong>Step 3.3: Cryptographic Decryption &amp; Integrity Check:</strong> The browser calls <code>crypto.subtle.decrypt()</code> using the re-derived key and the extracted 12-byte IV. The Web Crypto engine automatically calculates the authentication tag and compares it to the GCM tag appended to the ciphertext.
                         <br><em>Note: If even a single byte has been modified, or if the password is incorrect, the tags will not match. The operation throws an <code>OperationError</code> and immediately aborts, preventing tampered data or wrong passwords from corrupting memory.</em>
@@ -604,10 +608,10 @@
                 </div>
                 <div class="tip-card tip-card--green">
                     <p class="tip-title tip-title--green">✅ Perfect for SD Cards</p>
-                    <p>Encrypt folders folder-by-folder onto your SD card. Each <code>.enc</code> file is fully portable and self-contained.</p>
+                    <p>Encrypt folders folder-by-folder onto your SD card. Each <code>.zev</code> file is fully portable and self-contained.</p>
                 </div>
                 <div class="tip-card tip-card--red">
-                    <p class="tip-title tip-title--red">❌ Never Modify the .enc File</p>
+                    <p class="tip-title tip-title--red">❌ Never Modify the .zev File</p>
                     <p>Even a single changed byte will cause GCM authentication to fail. The file is tamper-proof by design.</p>
                 </div>
             </div>

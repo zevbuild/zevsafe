@@ -1,4 +1,8 @@
 # Cryptographic Specifications: Android Offline Vault
+# ⚠️  ARCHIVED — this describes Kotlin/JVM PBKDF2 + AES-GCM code for an Android native app.
+# ⚠️  The project pivoted to a pure browser-based web app (ZevSafe).
+#     The actual crypto logic lives in app.js using the Web Crypto API — NOT this file.
+#     Do NOT confuse this with the real implementation.
 
 This document contains the core Kotlin/Java code required to implement PBKDF2/Argon2id key derivation and AES-256-GCM authenticated encryption.
 

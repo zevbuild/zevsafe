@@ -1,6 +1,9 @@
 # Web Cryptor: Architectural & Cryptographic Design
 
-This document details the client-side, browser-based zipping and encryption architecture used in Web Vault.
+This document details the client-side, browser-based zipping and encryption architecture used in ZevSafe.
+
+> **Status: Current** — accurately reflects the live app as of the `.zev` extension rename.
+> Real implementation lives in `app.js` (Web Crypto API), `index.html`, `sw.js`, `styles.css`.
 
 ---
 
@@ -30,8 +33,8 @@ We encrypt the zipped file stream using AES in Galois/Counter Mode (GCM):
 * **IV (Initialization Vector)**: A secure, random 12-byte initialization vector generated per-encryption.
 * **Auth Tag**: A 128-bit authentication tag is automatically appended to the ciphertext by the browser's Web Crypto engine. GCM validates this tag during decryption to verify that the file contents have not been modified or tampered with.
 
-### Output File Structure
-The generated `.enc` file packages all elements required for offline decryption:
+### Output File Structure (v1)
+The generated `.zev` file packages all elements required for offline decryption:
 ```text
 ┌──────────────────────┬──────────────────────┬────────────────────────────────────────────────────────┐
 │ Salt (16 Bytes)      │ IV (12 Bytes)        │ Ciphertext + 128-bit GCM Auth Tag (Variable Length)    │

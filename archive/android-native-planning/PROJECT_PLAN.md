@@ -1,4 +1,8 @@
 # Project Plan: Android Offline External SD Card Vault
+# ⚠️  ARCHIVED — this describes the original Android/Kotlin native app plan.
+# ⚠️  The project pivoted to a pure browser-based web app (ZevSafe).
+#     None of this Kotlin/Gradle/Shizuku code is used in the current app.
+#     Active implementation lives in: app.js, index.html, sw.js, styles.css
 
 This document outlines the project structure, components, and libraries for building the air-gapped Android vault app.
 

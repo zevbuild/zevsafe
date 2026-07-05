@@ -1,32 +1,56 @@
-# Tasks
+# Tasks — ZevSafe
 
-- `[x]` Create web UI skeleton `index.html` in workspace
-- `[x]` Create styling sheets `styles.css` with premium dark glassmorphism styling
-- `[x]` Implement JSZip and Web Crypto API core logic in `app.js`
-- `[x]` Write `mybrain/WEB_APP_DESIGN.md` documenting web app cryptography
-- `[x]` Document detailed encryption & decryption workflows in `how-to-use.html`
-- `[x]` Add "Download ZIP" button in `index.html` for Decrypt Explorer
-- `[x]` Modify `app.js` to support loading folders into Encrypt Explorer
-- `[x]` Modify `app.js` to support loading decrypted ZIP structures into Decrypt Explorer
-- `[x]` Modify `app.js` to package edited files in `btnEncrypt`
-- `[x]` Modify `app.js` to handle HTML tag preservation in `saveActiveFile()`
-- `[x]` Remove explorer pane HTML markup in `index.html`
-- `[x]` Remove CardExplorer class, setups, and toolbar bindings in `app.js`
-- `[x]` Revert btnEncrypt and btnDecrypt explorer load/unload logic in `app.js`
-- `[x]` Remove explorer event listeners in `app.js` (close and download buttons)
-- `[x]` Remove explorer styles in `styles.css`
-- `[x]` Update `README.md` to remove references to workspace explorer
-- `[x]` Revert `how-to-use.html` steps to omit explorer descriptions
-- `[x]` Verify the simplified portal works cleanly in the browser
-- `[x]` Dynamically update drop zone text to "Tap to select" on touch devices
-- `[x]` Remove redundant bottom nav bar and device banner to declutter vertical space
-- `[x]` Hide hero header on phone screens to maximize screen real estate and prevent excessive scrolling
-- `[x]` Ensure clicks on the drop zone dynamically route to the correct file/folder input depending on the device type without null errors
-- `[x]` Design and create a premium, minimalist SVG favicon (`favicon.svg`) representing ZevSafe's core values
-- `[x]` Link the SVG favicon in all HTML pages for browser tabs and mobile bookmarks
-- `[x]` Detect desktop/laptop users to load the productivity workspace, leaving mobile/tablet experiences untouched
-- `[x]` Add a rich text note editor with formatting toolbar (headers, lists, links, tables, highlights, undo/redo, Base64 image embed, drag-drop images)
-- `[x]` Create a "My Brain" folder tree vault in the desktop sidebar with node mutations (create/delete notes & folders)
-- `[x]` Integrate local note search and drag-and-drop hierarchy reordering with loops prevention
-- `[x]` Automatically track and apply system theme changes (Dark/Light) using native CSS variables and matchMedia listeners
-- `[x]` Implement client-side AES-256-GCM vault zipping and encryption ("Encrypt Vault" / "Decrypt Vault") via custom password modal
+Current and upcoming work only. Historical completed items are preserved below under a clearly marked section.
+
+---
+
+## 🔲 Upcoming / To Do
+
+> Add new tasks here as they come up. Format: `- [ ] Description`
+
+- [ ] Final cross-browser test of progress tracker UI (Compress → Encrypt → Save pipeline)
+- [ ] Accessibility pass: add `aria-live` to password strength meter, `role="alert"` to PWA install banner
+
+---
+
+## ✅ Current App — What's Actually Built
+
+These are the verified, shipped features in the live web app:
+
+- [x] `index.html` — main UI with Encrypt and Decrypt panels, drop zones, v2 toggle
+- [x] `styles.css` — dark glassmorphism design system with light theme support
+- [x] `app.js` — full encrypt/decrypt pipeline (v1 PBKDF2-SHA256 + v2 PBKDF2-SHA512 + keyfile XOR)
+- [x] `how-to-use.html` — step-by-step guide, crypto table, FAQ, technical pipeline breakdown
+- [x] `sw.js` — Production Service Worker (Cache-First + Stale-While-Revalidate strategies)
+- [x] `manifest.json` + `icon-192.png` + `icon-512.png` — PWA installable on desktop and mobile
+- [x] `encrypt.ps1` / `decrypt.ps1` — PowerShell streaming helpers for large files (no RAM limit)
+- [x] `favicon.svg` — SVG favicon for browser tabs and mobile bookmarks
+- [x] `WEB_APP_DESIGN.md` — current architecture & crypto spec reference doc (repo root)
+- [x] `CHANGELOG.md` — running changelog of shipped changes
+- [x] Password strength meter (real-time visual, shown on encrypt password field)
+- [x] Mobile tab bar (Encrypt / Decrypt) shown only on small screens
+- [x] Dynamic drop zone text ("Tap to select" on touch devices)
+- [x] Auto-theme detection (dark/light) via `matchMedia` + CSS variables
+- [x] v2 Enhanced Security mode toggle with optional keyfile second factor
+- [x] 3-stage real-time progress tracker UI (Compress → Encrypt/Decrypt → Save pills + detail cards)
+- [x] Password save modal: copy, print sheet, download sheet, browser password-manager save
+- [x] Vault extension renamed from `.enc` → `.zev` across all files and documentation
+- [x] `PROJECT-MEMORY/` Android planning docs archived to `archive/android-native-planning/`
+
+---
+
+## 🗃️ Historical Log — REMOVED Features (not in current app)
+
+> These features were added and then explicitly reverted. Listed here so the history is clear,
+> not as a to-do list.
+
+- [x] ~~Explorer pane HTML markup in `index.html`~~ — **REMOVED**
+- [x] ~~CardExplorer class, setups, and toolbar bindings in `app.js`~~ — **REMOVED**
+- [x] ~~btnEncrypt / btnDecrypt explorer load/unload logic~~ — **REMOVED**
+- [x] ~~Explorer event listeners (close and download buttons)~~ — **REMOVED**
+- [x] ~~Explorer styles in `styles.css`~~ — **REMOVED**
+- [x] ~~Workspace explorer references in `README.md`~~ — **REMOVED**
+- [x] ~~"My Brain" rich text note editor with formatting toolbar~~ — **REMOVED**
+- [x] ~~"My Brain" folder tree vault in desktop sidebar~~ — **REMOVED**
+- [x] ~~Local note search and drag-and-drop hierarchy reordering~~ — **REMOVED**
+- [x] ~~Desktop/laptop productivity workspace detection~~ — **REMOVED**

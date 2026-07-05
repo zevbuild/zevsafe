@@ -1,4 +1,8 @@
 # Storage Routing & Shizuku API Integration
+# ⚠️  ARCHIVED — this describes Kotlin code for Android SD card routing via Shizuku.
+# ⚠️  The project pivoted to a pure browser-based web app (ZevSafe).
+#     None of this Kotlin/Shizuku code is used in the current app.
+#     Active implementation lives in: app.js, index.html, sw.js, styles.css
 
 This document contains the implementation code for routing file operations to the external SD card app sandbox (`/Android/data/`) and utilizing Shizuku elevated privileges.
 

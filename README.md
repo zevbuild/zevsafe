@@ -10,6 +10,11 @@
 
 ---
 
+> 🟢 **Current stable release — v3 (`.zev` format):** the most secure version to date.
+> PBKDF2-SHA512 · 600,000 iterations · AES-256-GCM · optional keyfile second factor.
+
+---
+
 ## ✨ What is ZevSafe?
 
 **ZevSafe** is a fully client-side, zero-trust encryption portal. It runs entirely in your browser using the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) — no backend, no accounts, no internet connection required after first load.
@@ -33,12 +38,12 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
 | 🚀 **v2 Mode — PBKDF2-SHA512** | 600,000 iterations · 32-byte salt · 6× stronger KDF |
 | 🗝️ **Keyfile (2nd Factor)** | Any file acts as a physical key — optional, v2 only |
 | 📁 **Full Folder Support** | Encrypts entire folder trees via in-memory ZIP |
-| 💧 **Drag & Drop** | Drop a folder to encrypt, drop a `.enc` vault to decrypt |
+| 💧 **Drag & Drop** | Drop a folder to encrypt, drop a `.zev` vault to decrypt |
 | 🔄 **Auto-Version Detection** | Decryption auto-detects v1 vs v2 format from magic header |
 | 💪 **Password Strength Meter** | Real-time visual feedback on password strength |
 | 📲 **PWA — Installable App** | Install to home screen / desktop. Works fully offline |
 | 🌐 **100% Offline** | Zero network requests — files and passwords never leave your device |
-| 📦 **Single Portable Output** | Produces one compact `.enc` vault file |
+| 📦 **Single Portable Output** | Produces one compact `.zev` vault file |
 | 🔓 **Cross-Platform** | Works in any modern browser on Windows, Mac, Linux, Android, iOS |
 
 ---
@@ -62,7 +67,7 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
  AES-256-GCM Encrypt(zip bytes, key, iv) → ciphertext + auth tag
      │
      ▼
- Output file: [ Salt(16) | IV(12) | Ciphertext+Tag ] → yourfolder.enc
+ Output file: [ Salt(16) | IV(12) | Ciphertext+Tag ] → yourfolder.zev
 ```
 
 ### v2 — Enhanced Mode (opt-in toggle)
@@ -131,18 +136,18 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
 1. Open **ZevSafe** in your browser.
 2. Drag & drop your folder into the **Encrypt Folder** panel (or click "Browse Folder").
 3. Enter a strong password (8+ characters) and confirm it.
-4. Click **Encrypt & Download** → downloads `yourfolder.enc`.
+4. Click **Encrypt & Download** → downloads `yourfolder.zev`.
 
 ### 🚀 Encrypt a Folder — v2 (Enhanced)
 1. Complete steps 1–3 above.
 2. Toggle **Enhanced Security Mode (v2)** — the options panel expands.
 3. Optionally select a **Keyfile** (any file — photo, document, random binary).
-4. Click **Encrypt & Download** → downloads `yourfolder.enc` (v2 format).
+4. Click **Encrypt & Download** → downloads `yourfolder.zev` (v2 format).
    > ⚠️ If you used a keyfile, keep it. Without it, the vault **cannot be decrypted** — even with the correct password.
 
 ### 🔓 Decrypt a Vault
 1. Open **ZevSafe**.
-2. Drag & drop your `.enc` file into the **Decrypt** panel (or click "Select .enc File").
+2. Drag & drop your `.zev` file into the **Decrypt** panel (or click "Select .zev File").
 3. If the vault is v2 with a keyfile, click **Select Keyfile** on the decrypt side.
 4. Enter your password.
 5. Click **Decrypt & Download** → downloads `yourfolder_decrypted.zip`.
@@ -253,7 +258,7 @@ python -m http.server 8080
 - **No password recovery.** There is no backdoor, no reset. Lose your password → vault is permanently unrecoverable.
 - **Keyfile loss = vault loss.** If you encrypted with a keyfile in v2 mode, that exact file is required for decryption. Store it separately from the vault.
 - **Memory safety.** All crypto runs in the browser's native sandbox. Decrypted data exists only in RAM and is never written to disk until you choose to download.
-- **Service Worker never caches `.enc` files** or blob download URLs — decrypted output cannot be captured by the cache layer.
+- **Service Worker never caches `.zev` files** or blob download URLs — decrypted output cannot be captured by the cache layer.
 - **Verify the source.** Always use ZevSafe from the official Cloudflare Pages URL ([zevsafe.pages.dev](https://zevsafe.pages.dev)) or a locally cloned copy you trust.
 
 ---
