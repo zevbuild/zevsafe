@@ -217,13 +217,18 @@ zevsafe/
 ├── jszip.min.js        # Offline JS library for folder ZIP compression
 ├── encrypt.ps1         # (Windows) PowerShell streaming encryption (large files)
 ├── decrypt.ps1         # (Windows) PowerShell streaming decryption (large files)
+├── CHANGELOG.md        # Version history
+├── task.md             # Current/ongoing task tracker
+├── WEB_APP_DESIGN.md   # Current web app architecture notes
 ├── .gitignore
-└── mybrain/            # Project architecture & knowledge base
-    ├── PROJECT_PLAN.md
-    ├── CRYPTOGRAPHIC_SPECIFICATIONS.md
-    ├── SD_CARD_ENCRYPTION_GUIDE.md
-    ├── SHIZUKU_AND_STORAGE_ROUTING.md
-    └── WEB_APP_DESIGN.md
+└── archive/
+    └── android-native-planning/   # Superseded — early plan to build a native
+        │                          # Android/Kotlin app before pivoting to this
+        │                          # pure browser-based web app. Kept for reference only.
+        ├── PROJECT_PLAN.md
+        ├── CRYPTOGRAPHIC_SPECIFICATIONS.md
+        ├── SHIZUKU_AND_STORAGE_ROUTING.md
+        └── README.md
 ```
 
 ---
