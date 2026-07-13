@@ -309,11 +309,17 @@ body {
 
 .vault-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 32px 80px -12px rgba(0,0,0,0.8);
 }
 
-.vault-card--encrypt:hover { border-color: rgba(139,92,246,0.3); }
-.vault-card--decrypt:hover { border-color: rgba(20,184,166,0.25); }
+.vault-card--encrypt:hover {
+    border-color: rgba(139, 92, 246, 0.45);
+    box-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(139, 92, 246, 0.15);
+}
+
+.vault-card--decrypt:hover {
+    border-color: rgba(20, 184, 166, 0.35);
+    box-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(20, 184, 166, 0.12);
+}
 
 /* Inner glow behind card */
 .card-glow {
@@ -567,14 +573,17 @@ body {
 
 .field-input:focus {
     outline: none;
-    border-color: rgba(139,92,246,0.5);
     background: rgba(14,16,36,0.9);
-    box-shadow: 0 0 0 3px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.vault-card--encrypt .field-input:focus {
+    border-color: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .vault-card--decrypt .field-input:focus {
-    border-color: rgba(20,184,166,0.5);
-    box-shadow: 0 0 0 3px rgba(20,184,166,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+    border-color: rgba(20, 184, 166, 0.6);
+    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .toggle-pw {
@@ -673,8 +682,8 @@ body {
 }
 
 .btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    filter: brightness(1.08);
+    transform: translateY(-2px) scale(1.005);
+    filter: brightness(1.1);
 }
 
 .btn:active:not(:disabled) {
@@ -1266,7 +1275,22 @@ body {
     /* Snap single panel with tab switching */
     #decrypt-section { display: none; }
     #encrypt-section { display: block; }
+
+    /* Mobile-friendly smaller icons for compactness and better comfort */
+    .brand-icon { font-size: 1.15rem; }
+    .drop-icon { font-size: 1.8rem; }
+    .drop-ring { width: 48px; height: 48px; }
+    .field-icon { font-size: 0.8rem; left: 0.85rem; }
+    .alert-icon { font-size: 0.85rem; }
+    .pw-modal-icon { font-size: 1.3rem; }
+    .sf-icon { font-size: 1.4rem; }
+    .mobile-tab-icon { font-size: 0.95rem; }
+    .mfb-icon { font-size: 1.6rem; }
+    .bnav-icon { font-size: 1.15rem; }
+    .stage-pill-icon { font-size: 0.95rem; }
+    .sd-icon { font-size: 0.85rem; }
 }
+
 
 /* =====================================================
    TOUCH OPTIMIZATIONS (all touch devices)

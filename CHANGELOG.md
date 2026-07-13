@@ -4,6 +4,11 @@
 - Renamed vault file extension from `.enc` to `.zev`
 - Updated all UI text, file-picker filters, and PowerShell scripts to match
 - Fixed remaining `.enc` references in docs (`README.md`, `how-to-use.html`)
+- Optimized mobile layout by scaling down icons slightly on phone screens (<= 520px) for improved comfort and vertical space efficiency
+- Streamlined main page copy: removed redundant warning alerts and simplified descriptions to declutter the workspace
+- Enhanced design aesthetics: added high-end glows, dynamic gradient borders on card hover, and micro-scale animations to interactive buttons
+
+
 
 ## Version 2 — (v2 encryption upgrade)
 - Added v2 vault format: PBKDF2-SHA512, 600,000 iterations, 32-byte salt

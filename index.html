@@ -177,7 +177,7 @@
                     <!-- ── V2 OPTIONS (shown only when toggle is ON) ── -->
                     <div id="v2-options-panel" class="v2-panel" style="display:none;">
                         <div class="v2-panel-header">🔐 Keyfile (Optional Second Factor)</div>
-                        <p class="v2-panel-desc">Any file (image, document, etc.) acts as a physical key. Without it, the vault cannot be opened — even with the correct password.</p>
+                        <p class="v2-panel-desc">Any file acts as a physical key. Without it, the vault cannot be unlocked.</p>
                         <div class="v2-keyfile-row">
                             <label class="btn-keyfile" onclick="event.stopPropagation()">
                                 🗝️ Select Keyfile
@@ -186,12 +186,11 @@
                             <button class="btn-keyfile-clear" id="v2-keyfile-clear-encrypt" title="Remove keyfile" style="display:none;">✕</button>
                         </div>
                         <span class="v2-keyfile-badge" id="v2-keyfile-badge-encrypt" style="display:none;"></span>
-                        <div class="v2-warning">⚠️ Keep this keyfile safe. If you lose it, the vault cannot be decrypted.</div>
                     </div>
 
                     <div class="alert-box alert-box--danger">
                         <span class="alert-icon">⚠️</span>
-                        <p>If you lose the password or required keyfile, decryption will not be possible and encrypted files may be permanently inaccessible.</p>
+                        <p>If you lose the password or required keyfile, files may be permanently inaccessible.</p>
                     </div>
 
                     <button class="btn btn--purple" id="btn-encrypt">
@@ -254,7 +253,7 @@
                     <!-- ── V2 KEYFILE FOR DECRYPT (auto-detected) ── -->
                     <div class="v2-decrypt-keyfile">
                         <div class="v2-panel-header">🗝️ Keyfile (for v2 vaults only)</div>
-                        <p class="v2-panel-desc">If this vault was encrypted with a keyfile, select it here. Leave empty for standard vaults — the format is auto-detected.</p>
+                        <p class="v2-panel-desc">If this vault requires a keyfile, select it here. Standard vaults auto-detect.</p>
                         <div class="v2-keyfile-row">
                             <label class="btn-keyfile btn-keyfile--teal" onclick="event.stopPropagation()">
                                 🗝️ Select Keyfile
@@ -267,7 +266,7 @@
 
                     <div class="alert-box">
                         <span class="alert-icon">🛡️</span>
-                        <p>Vault version auto-detected. Wrong password triggers immediate rejection. AES-GCM authentication prevents silent corruption.</p>
+                        <p>Auto-detects format. AES-GCM authenticates and checks for tampering.</p>
                     </div>
 
                     <button class="btn btn--teal" id="btn-decrypt">
