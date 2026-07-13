@@ -1303,8 +1303,8 @@ body {
         border-radius: var(--radius-md);
     }
 
-    /* Bigger buttons */
-    .btn { padding: 1.05rem 1.5rem; font-size: 1rem; }
+    /* Smaller buttons for small devices */
+    .btn { padding: 0.8rem 1.2rem; font-size: 0.9rem; }
 
     /* Bigger toggle */
     .toggle-pw { font-size: 1.1rem; right: 0.9rem; }

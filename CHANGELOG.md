@@ -7,6 +7,8 @@
 - Optimized mobile layout by scaling down icons slightly on phone screens (<= 520px) for improved comfort and vertical space efficiency
 - Streamlined main page copy: removed redundant warning alerts and simplified descriptions to declutter the workspace
 - Enhanced design aesthetics: added high-end glows, dynamic gradient borders on card hover, and micro-scale animations to interactive buttons
+- Scaled down buttons on phone screens (<= 520px) to provide a more compact and thumb-friendly vertical viewport flow
+
 
 
 
