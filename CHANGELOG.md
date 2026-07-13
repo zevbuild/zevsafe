@@ -10,6 +10,9 @@
 - Scaled down buttons on phone screens (<= 520px) to provide a more compact and thumb-friendly vertical viewport flow
 - Removed the "How It Works" text block from the main page to keep the dashboard extremely clean and minimal, referencing the comprehensive user guide instead
 - Added premium ZevSafe logo branding: replaced generic text emojis with the newly generated 3D metallic lock-shield icon in the navbar, footer, and password save modal
+- Simplified design aesthetics: removed all cheap decorative emojis from card titles, input headers, buttons, and alert boxes
+- Cleaned up form inputs: adjusted prefix padding on password inputs now that decorative icons have been removed, creating a neat left-aligned typographic grid
+
 
 
 

@@ -105,7 +105,7 @@
                 <div class="card-glow card-glow--purple"></div>
                 <div class="card-inner">
                     <div class="card-tag card-tag--purple">ENCRYPT</div>
-                    <h2 class="card-title">🔐 Encrypt Folder</h2>
+                    <h2 class="card-title">Encrypt Folder</h2>
                     <p class="card-desc">Compress &amp; encrypt an entire folder into a single portable vault file.</p>
 
                     <!-- Desktop: drop zone -->
@@ -141,7 +141,6 @@
                     <div class="field-group">
                         <label class="field-label" for="encrypt-password">Password</label>
                         <div class="field-wrap">
-                            <span class="field-icon">🔑</span>
                             <input class="field-input" type="password" id="encrypt-password"
                                    placeholder="Min. 8 characters" autocomplete="new-password" spellcheck="false"
                                    inputmode="text">
@@ -158,7 +157,6 @@
                     <div class="field-group">
                         <label class="field-label" for="encrypt-confirm">Confirm Password</label>
                         <div class="field-wrap">
-                            <span class="field-icon">✅</span>
                             <input class="field-input" type="password" id="encrypt-confirm"
                                    placeholder="Re-enter password" autocomplete="new-password" spellcheck="false"
                                    inputmode="text">
@@ -181,11 +179,11 @@
 
                     <!-- ── V2 OPTIONS (shown only when toggle is ON) ── -->
                     <div id="v2-options-panel" class="v2-panel" style="display:none;">
-                        <div class="v2-panel-header">🔐 Keyfile (Optional Second Factor)</div>
+                        <div class="v2-panel-header">Keyfile (Optional Second Factor)</div>
                         <p class="v2-panel-desc">Any file acts as a physical key. Without it, the vault cannot be unlocked.</p>
                         <div class="v2-keyfile-row">
                             <label class="btn-keyfile" onclick="event.stopPropagation()">
-                                🗝️ Select Keyfile
+                                Select Keyfile
                                 <input type="file" id="v2-keyfile-input-encrypt" style="display:none;">
                             </label>
                             <button class="btn-keyfile-clear" id="v2-keyfile-clear-encrypt" title="Remove keyfile" style="display:none;">✕</button>
@@ -200,7 +198,7 @@
 
                     <button class="btn btn--purple" id="btn-encrypt">
                         <span class="btn-shimmer"></span>
-                        <span class="btn-content">🔐 Encrypt &amp; Download</span>
+                        <span class="btn-content">Encrypt &amp; Download</span>
                     </button>
                 </div>
             </section>
@@ -211,7 +209,7 @@
                 <div class="card-glow card-glow--teal"></div>
                 <div class="card-inner">
                     <div class="card-tag card-tag--teal">DECRYPT</div>
-                    <h2 class="card-title">🔓 Decrypt Folder</h2>
+                    <h2 class="card-title">Decrypt Folder</h2>
                     <p class="card-desc">Restore your original folder from a <code>.zev</code> vault file with your password.</p>
 
                     <!-- Desktop: drop zone -->
@@ -247,7 +245,6 @@
                     <div class="field-group">
                         <label class="field-label" for="decrypt-password">Password</label>
                         <div class="field-wrap">
-                            <span class="field-icon">🔑</span>
                             <input class="field-input" type="password" id="decrypt-password"
                                    placeholder="Enter vault password" autocomplete="current-password" spellcheck="false"
                                    inputmode="text">
@@ -257,11 +254,11 @@
 
                     <!-- ── V2 KEYFILE FOR DECRYPT (auto-detected) ── -->
                     <div class="v2-decrypt-keyfile">
-                        <div class="v2-panel-header">🗝️ Keyfile (for v2 vaults only)</div>
+                        <div class="v2-panel-header">Keyfile (for v2 vaults only)</div>
                         <p class="v2-panel-desc">If this vault requires a keyfile, select it here. Standard vaults auto-detect.</p>
                         <div class="v2-keyfile-row">
                             <label class="btn-keyfile btn-keyfile--teal" onclick="event.stopPropagation()">
-                                🗝️ Select Keyfile
+                                Select Keyfile
                                 <input type="file" id="v2-keyfile-input-decrypt" style="display:none;">
                             </label>
                             <button class="btn-keyfile-clear" id="v2-keyfile-clear-decrypt" title="Remove keyfile" style="display:none;">✕</button>
@@ -276,7 +273,7 @@
 
                     <button class="btn btn--teal" id="btn-decrypt">
                         <span class="btn-shimmer"></span>
-                        <span class="btn-content">🔓 Decrypt &amp; Download</span>
+                        <span class="btn-content">Decrypt &amp; Download</span>
                     </button>
                 </div>
             </section>
