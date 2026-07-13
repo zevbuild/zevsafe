@@ -2299,3 +2299,34 @@ body {
     .stage-pill-label { font-size: 0.62rem; }
     .stage-pill-pct   { font-size: 0.72rem; }
 }
+
+/* ── Brand Logo & App Icon Styles ───────────────────── */
+.brand-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+
+.footer-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    object-fit: cover;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+

@@ -9,6 +9,8 @@
 - Enhanced design aesthetics: added high-end glows, dynamic gradient borders on card hover, and micro-scale animations to interactive buttons
 - Scaled down buttons on phone screens (<= 520px) to provide a more compact and thumb-friendly vertical viewport flow
 - Removed the "How It Works" text block from the main page to keep the dashboard extremely clean and minimal, referencing the comprehensive user guide instead
+- Added premium ZevSafe logo branding: replaced generic text emojis with the newly generated 3D metallic lock-shield icon in the navbar, footer, and password save modal
+
 
 
 
