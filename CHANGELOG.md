@@ -12,6 +12,8 @@
 - Added premium ZevSafe logo branding: replaced generic text emojis with the newly generated 3D metallic lock-shield icon in the navbar, footer, and password save modal
 - Simplified design aesthetics: removed all cheap decorative emojis from card titles, input headers, buttons, and alert boxes
 - Cleaned up form inputs: adjusted prefix padding on password inputs now that decorative icons have been removed, creating a neat left-aligned typographic grid
+- Bumped PWA Service Worker app version to v5 to invalidate stale caches, ensuring users immediately get the simplified main page and new cyber-vault assets
+
 
 
 
