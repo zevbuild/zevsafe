@@ -1063,6 +1063,39 @@ function isV2Format(buffer) {
 }
 
 // ============================================
+// PERFORMANCE UTILITIES — SMART COMPRESSION
+// ============================================
+
+/**
+ * Detects if a set of files consists mostly of pre-compressed formats.
+ * Pre-compressed media/archives (JPEG, PNG, WEBP, MP4, MOV, MKV, MP3, ZIP, PDF, etc.)
+ * gain 0% size benefit from DEFLATE but consume heavy CPU cycles on mobile devices.
+ */
+function shouldStoreUncompressed(files) {
+    if (!files || files.length === 0) return false;
+    const mediaExts = new Set([
+        'jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'avif',
+        'mp4', 'mov', 'mkv', 'avi', 'webm', 'mp3', 'aac', 'flac', 'ogg', 'wav',
+        'zip', '7z', 'rar', 'gz', 'tar', 'bz2', 'xz', 'pdf', 'iso'
+    ]);
+
+    let mediaBytes = 0;
+    let totalBytes = 0;
+
+    for (const f of files) {
+        const ext = (f.name || '').split('.').pop().toLowerCase();
+        const size = f.size || 0;
+        totalBytes += size;
+        if (mediaExts.has(ext)) {
+            mediaBytes += size;
+        }
+    }
+
+    // If >60% of total size is pre-compressed media, use STORE mode
+    return totalBytes > 0 && (mediaBytes / totalBytes) >= 0.60;
+}
+
+// ============================================
 // ENCRYPTION WORKFLOW  (v1 + v2)
 // ============================================
 
@@ -1120,16 +1153,23 @@ btnEncrypt.addEventListener('click', async () => {
             zip.file(path, file);
         }
 
+        // Performance Optimization: Check whether folder is mostly pre-compressed media
+        const useStoreMode = shouldStoreUncompressed(selectedEncryptFiles);
+        const compressionMethod = useStoreMode ? 'STORE' : 'DEFLATE';
+        const compressionOpts = useStoreMode ? undefined : { level: 1 }; // Fast Level 1 DEFLATE (5x-10x faster)
+
+        log(`⚡ Packaging mode: ${useStoreMode ? 'Ultra-Fast Store (Pre-compressed media detected)' : 'Fast DEFLATE (Level 1)'}`, 'info');
+
         const zipBlob = await zip.generateAsync({
             type: 'blob',
-            compression: 'DEFLATE',
-            compressionOptions: { level: 6 }
+            compression: compressionMethod,
+            ...(compressionOpts ? { compressionOptions: compressionOpts } : {})
         }, (meta) => {
-            updateProgress(`Compressing: ${meta.percent.toFixed(0)}%`, meta.percent * 0.6);
+            updateProgress(`Packaging: ${meta.percent.toFixed(0)}%`, meta.percent * 0.6);
             ProgressTracker.onCompressProgress(meta.percent, _origTotalBytes);  // ← real % + real size
         });
 
-        log(`Compression complete. ZIP size: ${(zipBlob.size / 1024).toFixed(1)} KB`, 'info');
+        log(`Packaging complete. Vault archive size: ${formatBytes(zipBlob.size)}`, 'info');
         ProgressTracker.onCompressDone(_origTotalBytes, zipBlob.size);  // ← real sizes
         updateProgress('Deriving encryption key...', 62);
 
