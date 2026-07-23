@@ -144,13 +144,13 @@
                             <input class="field-input" type="password" id="encrypt-password"
                                    placeholder="Min. 8 characters" autocomplete="new-password" spellcheck="false"
                                    inputmode="text">
-                            <button class="toggle-pw" type="button" data-target="encrypt-password" aria-label="Show/hide">👁</button>
+                            <button class="toggle-pw" type="button" data-target="encrypt-password" aria-label="Show password">👁</button>
                         </div>
-                        <div class="strength-wrap" id="strength-wrap" style="display:none;">
+                        <div class="strength-wrap" id="strength-wrap" style="display:none;" aria-live="polite" aria-atomic="true">
                             <div class="strength-track">
                                 <div class="strength-fill" id="strength-bar"></div>
                             </div>
-                            <span class="strength-label" id="strength-label"></span>
+                            <span class="strength-label" id="strength-label" aria-live="polite"></span>
                         </div>
                     </div>
 
@@ -160,7 +160,7 @@
                             <input class="field-input" type="password" id="encrypt-confirm"
                                    placeholder="Re-enter password" autocomplete="new-password" spellcheck="false"
                                    inputmode="text">
-                            <button class="toggle-pw" type="button" data-target="encrypt-confirm" aria-label="Show/hide">👁</button>
+                            <button class="toggle-pw" type="button" data-target="encrypt-confirm" aria-label="Show password">👁</button>
                         </div>
                     </div>
 
@@ -172,7 +172,7 @@
                             <span class="v2-toggle-hint">PBKDF2-SHA512 · 600k iterations · optional keyfile</span>
                         </label>
                         <label class="toggle-switch" aria-label="Enable v2 enhanced mode">
-                            <input type="checkbox" id="v2-mode-toggle" role="switch">
+                            <input type="checkbox" id="v2-mode-toggle" role="switch" aria-checked="false">
                             <span class="toggle-track"><span class="toggle-thumb"></span></span>
                         </label>
                     </div>
@@ -248,7 +248,7 @@
                             <input class="field-input" type="password" id="decrypt-password"
                                    placeholder="Enter vault password" autocomplete="current-password" spellcheck="false"
                                    inputmode="text">
-                            <button class="toggle-pw" type="button" data-target="decrypt-password" aria-label="Show/hide">👁</button>
+                            <button class="toggle-pw" type="button" data-target="decrypt-password" aria-label="Show password">👁</button>
                         </div>
                     </div>
 
@@ -469,7 +469,7 @@
     <script src="app.js"></script>
 
     <!-- ── PWA: Install Banner + Service Worker Registration ── -->
-    <div class="pwa-install-banner" id="pwa-install-banner" style="display:none;" role="complementary" aria-label="Install ZevSafe app">
+    <div class="pwa-install-banner" id="pwa-install-banner" style="display:none;" role="region" aria-live="polite" aria-label="Install ZevSafe app">
         <div class="pwa-install-inner">
             <img src="./icon-192.png" alt="ZevSafe icon" class="pwa-install-icon" width="40" height="40">
             <div class="pwa-install-text">

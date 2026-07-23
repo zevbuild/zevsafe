@@ -218,9 +218,11 @@ document.querySelectorAll('.toggle-pw').forEach(btn => {
         if (input.type === 'password') {
             input.type = 'text';
             btn.textContent = '🙈';
+            btn.setAttribute('aria-label', 'Hide password');
         } else {
             input.type = 'password';
             btn.textContent = '👁';
+            btn.setAttribute('aria-label', 'Show password');
         }
     });
 });
@@ -398,6 +400,9 @@ setupDragAndDrop(encryptDropZone, encryptFolderInput, (files, folderName) => {
     
     encryptSelectedInfo.style.display = 'none';
     log(`Folder "${folderName}" selected (${files.length} files, ${formatBytes(totalSize)}).`, 'info');
+    if (totalSize > 1.5 * 1024 * 1024 * 1024) {
+        log('💡 Large folder (>1.5 GB). For zero-RAM background processing without browser memory limits, encrypt.ps1 is also available.', 'warn');
+    }
     showProgress();
     
 
@@ -1619,6 +1624,7 @@ function initV2UI() {
     if (v2Toggle && v2Panel) {
         v2Toggle.addEventListener('change', () => {
             v2Panel.style.display = v2Toggle.checked ? 'block' : 'none';
+            v2Toggle.setAttribute('aria-checked', v2Toggle.checked ? 'true' : 'false');
             if (!v2Toggle.checked) {
                 // Clear keyfile when v2 mode is disabled
                 v2KeyfileEncrypt = null;

@@ -12,7 +12,11 @@
 - Added premium ZevSafe logo branding: replaced generic text emojis with the newly generated 3D metallic lock-shield icon in the navbar, footer, and password save modal
 - Simplified design aesthetics: removed all cheap decorative emojis from card titles, input headers, buttons, and alert boxes
 - Cleaned up form inputs: adjusted prefix padding on password inputs now that decorative icons have been removed, creating a neat left-aligned typographic grid
-- Bumped PWA Service Worker app version to v5 to invalidate stale caches, ensuring users immediately get the simplified main page and new cyber-vault assets
+- Accessibility (a11y) pass: added `aria-live`, `aria-atomic`, `aria-checked`, and `aria-label` attributes to password strength meter, password visibility toggles, v2 switch, and PWA banner
+- Large folder memory guard: added intelligent client-side size check (>1.5 GB) recommending PowerShell zero-RAM streaming helper scripts
+- iOS Safari PWA guide: added dedicated iPhone/iPad manual "Add to Home Screen" instructions in `how-to-use.html`
+- Bumped PWA Service Worker app version to v6 for cache synchronization
+
 
 
 
