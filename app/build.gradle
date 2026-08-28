@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.zevbuild.zevsafe'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.zevbuild.zevsafe'
+        minSdk 23
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+    }
+}
+
+// Keep the Android APK in sync with the existing PWA files without duplicating sources.
+tasks.register('syncWebAssets', Copy) {
+    from(rootDir) {
+        include 'index.html'
+        include 'how-to-use.html'
+        include 'app.js'
+        include 'styles.css'
+        include 'sw.js'
+        include 'manifest.json'
+        include 'jszip.min.js'
+        include 'favicon.svg'
+        include 'icon-192.png'
+        include 'icon-512.png'
+        include 'cyber-vault.png'
+        include 'zevsafe-logo.png'
+        include 'google89c1668234bdd7ae.html'
+    }
+    into layout.projectDirectory.dir('src/main/assets/www')
+}
+
+preBuild.dependsOn('syncWebAssets')

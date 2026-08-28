@@ -281,3 +281,25 @@ MIT License — free to use, modify, and distribute.
 ---
 
 *ZevSafe — Secure your data. Trust no one. Not even us.*
+
+---
+
+## 🤖 Android APK build
+
+This repository now includes a minimal native Android WebView wrapper so GitHub Actions can create an installable APK from the existing offline PWA.
+
+### Build locally
+
+```bash
+gradle --no-daemon assembleDebug
+```
+
+The debug APK is generated at:
+
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Build in GitHub Actions
+
+Run the **Build Android APK** workflow manually from the Actions tab, or push to `main`, `master`, or `work`. The workflow uploads the APK as the `zevsafe-debug-apk` artifact.

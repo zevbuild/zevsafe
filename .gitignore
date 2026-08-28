@@ -16,3 +16,8 @@ test_folder_restored/
 # PowerShell compiled temp files
 *.dll
 *.exe
+
+# Gradle / Android build outputs
+.gradle/
+app/build/
+app/src/main/assets/www/
