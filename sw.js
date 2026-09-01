@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v7';
+const APP_VERSION    = 'v8';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
 const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
@@ -24,8 +24,7 @@ const SHELL_ASSETS = [
     './icon-192.png',
     './icon-512.png',
     './manifest.json',
-    './zevsafe-logo.png',
-    './cyber-vault.png'
+    './zevsafe-logo.png'
 ];
 
 // ── Install: precache the app shell ────────────────────────────

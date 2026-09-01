@@ -68,15 +68,12 @@
                     Lock your files.<br>
                     <span class="gradient-text">Nobody else can.</span>
                 </h1>
-                <p class="hero-sub phone-hide">
+                <p class="hero-sub">
                     AES-256 Military-Grade Folder Encryption. Runs entirely in your browser — your data and passwords never leave your device.
                 </p>
                 <div class="hero-tech-line phone-hide">
                     🔐 AES-256-GCM &nbsp;·&nbsp; 🔑 PBKDF2 &nbsp;·&nbsp; 📁 Full Folders &nbsp;·&nbsp; ✈️ Air-Gapped
                 </div>
-            </div>
-            <div class="hero-image-wrap phone-hide">
-                <img class="hero-image" src="cyber-vault.png" alt="ZevSafe Cyber Vault">
             </div>
         </header>
 
@@ -139,26 +136,20 @@
                     </div>
 
                     <div class="field-group">
-                        <label class="field-label" for="encrypt-password">Password</label>
+                        <label class="field-label" for="encrypt-password">Password or PIN</label>
                         <div class="field-wrap">
                             <input class="field-input" type="password" id="encrypt-password"
-                                   placeholder="Min. 8 characters" autocomplete="new-password" spellcheck="false"
+                                   placeholder="Enter password or PIN (min. 4 chars)" autocomplete="new-password" spellcheck="false"
                                    inputmode="text">
                             <button class="toggle-pw" type="button" data-target="encrypt-password" aria-label="Show password">👁</button>
-                        </div>
-                        <div class="strength-wrap" id="strength-wrap" style="display:none;" aria-live="polite" aria-atomic="true">
-                            <div class="strength-track">
-                                <div class="strength-fill" id="strength-bar"></div>
-                            </div>
-                            <span class="strength-label" id="strength-label" aria-live="polite"></span>
                         </div>
                     </div>
 
                     <div class="field-group">
-                        <label class="field-label" for="encrypt-confirm">Confirm Password</label>
+                        <label class="field-label" for="encrypt-confirm">Confirm Password or PIN</label>
                         <div class="field-wrap">
                             <input class="field-input" type="password" id="encrypt-confirm"
-                                   placeholder="Re-enter password" autocomplete="new-password" spellcheck="false"
+                                   placeholder="Re-enter password or PIN" autocomplete="new-password" spellcheck="false"
                                    inputmode="text">
                             <button class="toggle-pw" type="button" data-target="encrypt-confirm" aria-label="Show password">👁</button>
                         </div>
@@ -243,10 +234,10 @@
                     </div>
 
                     <div class="field-group">
-                        <label class="field-label" for="decrypt-password">Password</label>
+                        <label class="field-label" for="decrypt-password">Password or PIN</label>
                         <div class="field-wrap">
                             <input class="field-input" type="password" id="decrypt-password"
-                                   placeholder="Enter vault password" autocomplete="current-password" spellcheck="false"
+                                   placeholder="Enter password or PIN" autocomplete="current-password" spellcheck="false"
                                    inputmode="text">
                             <button class="toggle-pw" type="button" data-target="decrypt-password" aria-label="Show password">👁</button>
                         </div>
@@ -431,6 +422,43 @@
             <p class="footer-copy">Built by <strong>zevbuild</strong> · MIT License</p>
         </footer>
 
+    </div>
+
+    <!-- ── DECRYPTED VAULT FILE EXPLORER MODAL ── -->
+    <div class="explorer-modal-overlay" id="vault-explorer-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="explorer-modal-title">
+        <div class="explorer-modal">
+            <header class="explorer-header">
+                <div class="explorer-title-wrap">
+                    <span class="explorer-badge">Decrypted Vault</span>
+                    <h3 id="explorer-modal-title" class="explorer-title">Vault Explorer</h3>
+                    <span class="explorer-meta" id="explorer-modal-meta">0 files · 0 KB</span>
+                </div>
+                <button class="explorer-btn-close" id="btn-close-explorer" title="Close Explorer" aria-label="Close Explorer">✕</button>
+            </header>
+
+            <!-- Search and Action Toolbar -->
+            <div class="explorer-toolbar">
+                <div class="explorer-search-wrap">
+                    <span class="explorer-search-icon">🔍</span>
+                    <input type="text" id="explorer-search-input" class="explorer-search-input" placeholder="Search files in vault..." autocomplete="off" spellcheck="false">
+                    <button class="explorer-search-clear" id="btn-clear-explorer-search" title="Clear search" style="display: none;">✕</button>
+                </div>
+                <button class="explorer-btn-download-all" id="btn-explorer-download-all" title="Download all files as a ZIP archive">
+                    ⬇️ Download Full ZIP
+                </button>
+            </div>
+
+            <!-- File Explorer Body / Tree List -->
+            <div class="explorer-body" id="explorer-file-list" role="list">
+                <!-- Dynamically populated file rows -->
+            </div>
+
+            <!-- Explorer Footer -->
+            <footer class="explorer-footer">
+                <span class="explorer-footer-hint">💡 Tap or click <strong>⬇️</strong> next to any individual file to download it instantly.</span>
+                <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-done-explorer">Done</button>
+            </footer>
+        </div>
     </div>
 
     <!-- Password Save Prompt Modal -->

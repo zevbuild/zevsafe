@@ -33,9 +33,6 @@ const progressTitle       = document.getElementById('progress-title');
 const progressPercentage  = document.getElementById('progress-percentage');
 const progressBarFill     = document.getElementById('progress-bar-fill');
 const logOutput           = document.getElementById('log-output');
-const strengthWrap        = document.getElementById('strength-wrap');
-const strengthBar         = document.getElementById('strength-bar');
-const strengthLabel       = document.getElementById('strength-label');
 const statusDot           = document.getElementById('status-dot');
 
 // ============================================
@@ -173,38 +170,6 @@ window.addEventListener('resize', () => {
 initDeviceUI();
 
 
-
-// ============================================
-// PASSWORD STRENGTH METER
-// ============================================
-encryptPassword.addEventListener('input', () => {
-    const pw = encryptPassword.value;
-    if (!pw) {
-        strengthWrap.style.display = 'none';
-        return;
-    }
-    strengthWrap.style.display = 'flex';
-
-    let score = 0;
-    if (pw.length >= 8)  score++;
-    if (pw.length >= 16) score++;
-    if (/[A-Z]/.test(pw)) score++;
-    if (/[0-9]/.test(pw)) score++;
-    if (/[^A-Za-z0-9]/.test(pw)) score++;
-
-    const levels = [
-        { label: 'Very Weak', color: '#ef4444', width: '20%' },
-        { label: 'Weak',      color: '#f97316', width: '40%' },
-        { label: 'Fair',      color: '#f59e0b', width: '60%' },
-        { label: 'Strong',    color: '#10b981', width: '80%' },
-        { label: 'Very Strong', color: '#6366f1', width: '100%' },
-    ];
-    const level = levels[Math.min(score - 1, 4)] || levels[0];
-    strengthBar.style.background = level.color;
-    strengthBar.style.width = level.width;
-    strengthLabel.textContent = level.label;
-    strengthLabel.style.color = level.color;
-});
 
 // ============================================
 // SHOW / HIDE PASSWORD TOGGLE
@@ -1109,11 +1074,11 @@ btnEncrypt.addEventListener('click', async () => {
     const confirm  = encryptConfirm.value;
 
     if (!password) {
-        alert('⚠️ Please enter a password.');
+        alert('⚠️ Please enter a password or PIN.');
         return;
     }
-    if (password.length < 8) {
-        alert('⚠️ Password must be at least 8 characters long.');
+    if (password.length < 4) {
+        alert('⚠️ Password must be at least 4 characters or digits long.');
         return;
     }
     if (password !== confirm) {
@@ -1411,15 +1376,18 @@ btnDecrypt.addEventListener('click', async () => {
         updateProgress('Extracting ZIP...', 80);
 
         // Validate ZIP structure and trigger download
-        await JSZip.loadAsync(decryptedBuffer);
+        const unzipped = await JSZip.loadAsync(decryptedBuffer);
 
         const folderName    = selectedDecryptFile.name.replace(/\.zev$/i, '');
         const decryptedBlob = new Blob([decryptedBuffer], { type: 'application/zip' });
         triggerDownload(decryptedBlob, `${folderName}_decrypted.zip`);
         ProgressTracker.onSaveDone(`${folderName}_decrypted.zip`, decryptedBuffer.byteLength, vaultIsV2 ? 'v2' : 'v1');  // ← real output
 
-        log(`✅ Saved: "${folderName}_decrypted.zip" — extract it to restore your files.`, 'success');
+        log(`✅ Saved: "${folderName}_decrypted.zip" — opening Decrypted Vault Explorer...`, 'success');
         updateProgress('✅ Decryption complete!', 100);
+
+        // Open the in-browser Decrypted Vault File Explorer for selective file viewing and downloads
+        openVaultExplorer(folderName, unzipped, decryptedBlob);
 
         // Reset decrypt selected widget
         selectedDecryptFile = null;
@@ -1713,4 +1681,208 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initV2UI);
 } else {
     initV2UI();
+}
+
+// ============================================
+// IN-BROWSER DECRYPTED VAULT FILE EXPLORER
+// ============================================
+
+let currentDecryptedZip = null;
+let currentDecryptedFolderName = '';
+let currentDecryptedBlob = null;
+let currentDecryptedFileList = [];
+
+/**
+ * Returns a suitable icon based on file extension.
+ */
+function getFileIcon(filename) {
+    const ext = (filename || '').split('.').pop().toLowerCase();
+    const iconMap = {
+        pdf: '📄',
+        doc: '📝', docx: '📝', txt: '📄', md: '📝', rtf: '📝',
+        xls: '📊', xlsx: '📊', csv: '📊',
+        ppt: '📽️', pptx: '📽️',
+        jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', webp: '🖼️', svg: '🖼️', heic: '🖼️',
+        mp4: '🎬', mov: '🎬', mkv: '🎬', avi: '🎬', webm: '🎬',
+        mp3: '🎵', wav: '🎵', flac: '🎵', aac: '🎵', ogg: '🎵',
+        zip: '📦', rar: '📦', '7z': '📦', tar: '📦', gz: '📦',
+        js: '💻', ts: '💻', html: '🌐', css: '🎨', json: '⚙️', py: '🐍', c: '💻', cpp: '💻', java: '☕'
+    };
+    return iconMap[ext] || '📄';
+}
+
+/**
+ * Open and populate the Decrypted Vault File Explorer modal.
+ */
+function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
+    currentDecryptedFolderName = folderName;
+    currentDecryptedZip = zipInstance;
+    currentDecryptedBlob = fullZipBlob;
+
+    const modal = document.getElementById('vault-explorer-modal');
+    const modalTitle = document.getElementById('explorer-modal-title');
+    const modalMeta = document.getElementById('explorer-modal-meta');
+    const searchInput = document.getElementById('explorer-search-input');
+    const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+
+    if (!modal) return;
+
+    // Reset search
+    if (searchInput) searchInput.value = '';
+    if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+
+    // Parse all files from JSZip
+    currentDecryptedFileList = [];
+    let totalBytes = 0;
+
+    zipInstance.forEach((relativePath, zipEntry) => {
+        if (!zipEntry.dir) {
+            const size = zipEntry._data ? (zipEntry._data.uncompressedSize || 0) : 0;
+            totalBytes += size;
+            currentDecryptedFileList.push({
+                path: relativePath,
+                name: relativePath.split('/').pop() || relativePath,
+                dirPath: relativePath.includes('/') ? relativePath.substring(0, relativePath.lastIndexOf('/')) : '',
+                size: size,
+                entry: zipEntry
+            });
+        }
+    });
+
+    if (modalTitle) modalTitle.textContent = `${folderName}`;
+    if (modalMeta) modalMeta.textContent = `${currentDecryptedFileList.length} file(s) · ${formatBytes(totalBytes || fullZipBlob.size)}`;
+
+    renderExplorerFileList('');
+    modal.style.display = 'flex';
+}
+
+function closeVaultExplorer() {
+    const modal = document.getElementById('vault-explorer-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+/**
+ * Render file list with search filtering.
+ */
+function renderExplorerFileList(query = '') {
+    const listEl = document.getElementById('explorer-file-list');
+    if (!listEl) return;
+
+    listEl.innerHTML = '';
+    const q = query.trim().toLowerCase();
+    const filtered = q
+        ? currentDecryptedFileList.filter(f => f.path.toLowerCase().includes(q))
+        : currentDecryptedFileList;
+
+    if (filtered.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'explorer-empty';
+        empty.textContent = q ? `No files match "${query}"` : 'No files found in vault.';
+        listEl.appendChild(empty);
+        return;
+    }
+
+    filtered.forEach(file => {
+        const row = document.createElement('div');
+        row.className = 'explorer-item';
+
+        const left = document.createElement('div');
+        left.className = 'explorer-item-left';
+
+        const icon = document.createElement('span');
+        icon.className = 'explorer-item-icon';
+        icon.textContent = getFileIcon(file.name);
+
+        const info = document.createElement('div');
+        info.className = 'explorer-item-info';
+
+        const name = document.createElement('span');
+        name.className = 'explorer-item-name';
+        name.textContent = file.name;
+        name.title = file.path;
+
+        const path = document.createElement('span');
+        path.className = 'explorer-item-path';
+        path.textContent = file.dirPath ? `${file.dirPath}/` : '';
+
+        info.appendChild(name);
+        if (file.dirPath) info.appendChild(path);
+
+        left.appendChild(icon);
+        left.appendChild(info);
+
+        const right = document.createElement('div');
+        right.className = 'explorer-item-right';
+
+        const size = document.createElement('span');
+        size.className = 'explorer-item-size';
+        size.textContent = file.size > 0 ? formatBytes(file.size) : '';
+
+        const dlBtn = document.createElement('button');
+        dlBtn.className = 'explorer-file-dl-btn';
+        dlBtn.title = `Download ${file.name}`;
+        dlBtn.innerHTML = '⬇️ Save';
+        dlBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            try {
+                dlBtn.textContent = '⏳ ...';
+                const fileBlob = await currentDecryptedZip.file(file.path).async('blob');
+                triggerDownload(fileBlob, file.name);
+                dlBtn.textContent = '✅ Saved';
+                setTimeout(() => { dlBtn.innerHTML = '⬇️ Save'; }, 2000);
+            } catch (err) {
+                console.error('[Explorer Download]', err);
+                alert(`Failed to extract file: ${err.message}`);
+                dlBtn.innerHTML = '⬇️ Save';
+            }
+        });
+
+        right.appendChild(size);
+        right.appendChild(dlBtn);
+
+        row.appendChild(left);
+        row.appendChild(right);
+        listEl.appendChild(row);
+    });
+}
+
+// Wire up Explorer UI event listeners
+function initExplorerUI() {
+    const searchInput = document.getElementById('explorer-search-input');
+    const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+    const closeBtn = document.getElementById('btn-close-explorer');
+    const doneBtn = document.getElementById('btn-done-explorer');
+    const dlAllBtn = document.getElementById('btn-explorer-download-all');
+    const modal = document.getElementById('vault-explorer-modal');
+
+    searchInput?.addEventListener('input', () => {
+        const val = searchInput.value;
+        if (clearSearchBtn) clearSearchBtn.style.display = val ? 'block' : 'none';
+        renderExplorerFileList(val);
+    });
+
+    clearSearchBtn?.addEventListener('click', () => {
+        searchInput.value = '';
+        clearSearchBtn.style.display = 'none';
+        renderExplorerFileList('');
+    });
+
+    closeBtn?.addEventListener('click', closeVaultExplorer);
+    doneBtn?.addEventListener('click', closeVaultExplorer);
+
+    dlAllBtn?.addEventListener('click', () => {
+        if (currentDecryptedBlob && currentDecryptedFolderName) {
+            triggerDownload(currentDecryptedBlob, `${currentDecryptedFolderName}_decrypted.zip`);
+        }
+    });
+
+    modal?.addEventListener('click', (e) => {
+        if (e.target.id === 'vault-explorer-modal') closeVaultExplorer();
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initExplorerUI);
+} else {
+    initExplorerUI();
 }

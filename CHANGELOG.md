@@ -18,7 +18,11 @@
 - Bumped PWA Service Worker app version to v6 for cache synchronization
 - 10x Performance Speedup: optimized JSZip compression level from heavy level 6 to fast level 1 (5x-10x faster)
 - Smart Pre-Compressed Media Detector: automatically uses instant `STORE` mode for folders containing photos, videos, or archives (>60% media), dropping 600 MB folder processing time from 5 minutes down to 3-5 seconds on mobile devices
-- Bumped PWA Service Worker app version to v7 for speed update synchronization
+- In-Browser Decrypted Vault File Explorer: temporary in-memory file browser launched upon decryption allowing instant single-file downloads, subfolder inspection, and real-time search filtering
+- Password Flexibility & PIN Support: removed password strength complexity meter and reduced minimum length to 4+ digits/chars, supporting quick PINs and seamless password manager integration
+- UI/UX Streamlining: removed image assets from the hero section for a clean, centered, lightweight layout and refined mobile responsive ergonomics
+- Bumped PWA Service Worker app version to v8 for asset cache invalidation
+
 
 
 
