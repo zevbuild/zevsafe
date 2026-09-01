@@ -706,6 +706,29 @@ body {
     transform: none;
 }
 
+.btn--loading {
+    opacity: 0.9 !important;
+    cursor: wait !important;
+    position: relative;
+    pointer-events: none;
+    filter: brightness(1.08) !important;
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.6) !important;
+}
+
+.btn--loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.28) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: btnSweep 1.3s ease-in-out infinite;
+}
+
+@keyframes btnSweep {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
 .btn--purple {
     background: linear-gradient(135deg, #7c3aed, #8b5cf6, #a78bfa);
     background-size: 200% 200%;
@@ -822,9 +845,17 @@ body {
     height: 100%;
     width: 0%;
     border-radius: 10px;
-    background: linear-gradient(90deg, var(--purple), var(--teal));
-    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 0 10px rgba(139,92,246,0.5);
+    background: linear-gradient(90deg, #7c3aed, #a78bfa, #14b8a6, #2dd4bf);
+    background-size: 250% 100%;
+    animation: progressGlowShift 2.5s ease infinite;
+    transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 16px rgba(139,92,246,0.6), 0 0 10px rgba(20,184,166,0.4);
+}
+
+@keyframes progressGlowShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .log-console {
@@ -2111,22 +2142,36 @@ body {
     border-color: rgba(255,255,255,0.07);
 }
 
-/* Active — purple glow */
+/* Active — dynamic pulsing glow */
 .stage-pill[data-state="active"] {
-    background: rgba(139, 92, 246, 0.1);
-    border-color: rgba(139, 92, 246, 0.4);
-    box-shadow: 0 0 14px rgba(139, 92, 246, 0.2);
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.65);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), inset 0 0 10px rgba(139, 92, 246, 0.2);
+    animation: activePillPulse 1.8s ease-in-out infinite;
 }
 .stage-pill[data-state="active"] .stage-pill-pct  { color: var(--purple-light); }
 .stage-pill[data-state="active"] .stage-pill-label { color: var(--purple-light); }
 
-/* Done — teal success */
+@keyframes activePillPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 14px rgba(139, 92, 246, 0.3); }
+    50%      { transform: scale(1.03); box-shadow: 0 0 22px rgba(139, 92, 246, 0.6); border-color: #a78bfa; }
+}
+
+/* Done — teal success with pop animation */
 .stage-pill[data-state="done"] {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+    animation: pillDonePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .stage-pill[data-state="done"] .stage-pill-pct   { color: var(--success); }
 .stage-pill[data-state="done"] .stage-pill-label  { color: var(--success); }
+
+@keyframes pillDonePop {
+    0%   { transform: scale(0.92); }
+    60%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
 
 /* Error — red */
 .stage-pill[data-state="error"] {

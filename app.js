@@ -403,8 +403,16 @@ function log(message, type = 'info') {
     logOutput.scrollTop = logOutput.scrollHeight;
 }
 
-function showProgress() {
-    progressCard.style.display = 'flex';
+function showProgress(autoScroll = false) {
+    if (progressCard.style.display !== 'flex') {
+        progressCard.style.display = 'flex';
+        progressCard.style.animation = 'detailFadeIn 0.3s ease';
+        if (autoScroll && isMobile()) {
+            setTimeout(() => {
+                progressCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+    }
     if (statusDot) {
         statusDot.style.background = 'var(--purple-light)';
         statusDot.style.animationPlayState = 'running';
@@ -1099,10 +1107,16 @@ btnEncrypt.addEventListener('click', async () => {
         keyfileFingerprint: ''
     };
 
+    const encBtnContent = btnEncrypt.querySelector('.btn-content');
+    const encOrigText   = encBtnContent ? encBtnContent.textContent : 'Encrypt & Download';
     btnEncrypt.disabled = true;
+    btnEncrypt.classList.add('btn--loading');
+    if (encBtnContent) encBtnContent.textContent = '🔒 Encrypting Vault…';
+
     clearLogs();
     resetProgress();
     ProgressTracker.reset('encrypt');  // ← stage tracker init
+    showProgress(true);
     log(`Starting ${useV2 ? 'v2 (Enhanced)' : 'v1 (Standard)'} encryption of "${selectedEncryptFolderName}" (${selectedEncryptFiles.length} files)...`, 'info');
     if (useV2) log('🔒 v2 mode: PBKDF2-SHA512 · 600,000 iterations · 32-byte salt' + (v2KeyfileEncrypt ? ' · Keyfile active' : ''), 'info');
     updateProgress('Compressing folder...', 0);
@@ -1256,6 +1270,8 @@ btnEncrypt.addEventListener('click', async () => {
         console.error('[ZevSafe Encrypt]', err);
     } finally {
         btnEncrypt.disabled = false;
+        btnEncrypt.classList.remove('btn--loading');
+        if (encBtnContent) encBtnContent.textContent = encOrigText;
     }
 });
 
@@ -1275,10 +1291,16 @@ btnDecrypt.addEventListener('click', async () => {
         return;
     }
 
+    const decBtnContent = btnDecrypt.querySelector('.btn-content');
+    const decOrigText   = decBtnContent ? decBtnContent.textContent : 'Decrypt & Download';
     btnDecrypt.disabled = true;
+    btnDecrypt.classList.add('btn--loading');
+    if (decBtnContent) decBtnContent.textContent = '🔓 Decrypting Vault…';
+
     clearLogs();
     resetProgress();
     ProgressTracker.reset('decrypt');  // ← stage tracker init
+    showProgress(true);
     log(`Reading vault file "${selectedDecryptFile.name}"...`, 'info');
     updateProgress('Reading vault file...', 5);
 
@@ -1413,6 +1435,8 @@ btnDecrypt.addEventListener('click', async () => {
         console.error('[ZevSafe Decrypt]', err);
     } finally {
         btnDecrypt.disabled = false;
+        btnDecrypt.classList.remove('btn--loading');
+        if (decBtnContent) decBtnContent.textContent = decOrigText;
     }
 });
 
