@@ -1139,8 +1139,9 @@ btnEncrypt.addEventListener('click', async () => {
 
         log(`⚡ Packaging mode: ${useStoreMode ? 'Ultra-Fast Store (Pre-compressed media detected)' : 'Fast DEFLATE (Level 1)'}`, 'info');
 
-        const zipBlob = await zip.generateAsync({
-            type: 'blob',
+        // Step 1: Generate Uint8Array directly in one allocation (skips duplicate Blob->ArrayBuffer allocations)
+        let zipBytes = await zip.generateAsync({
+            type: 'uint8array',
             compression: compressionMethod,
             ...(compressionOpts ? { compressionOptions: compressionOpts } : {})
         }, (meta) => {
@@ -1148,11 +1149,11 @@ btnEncrypt.addEventListener('click', async () => {
             ProgressTracker.onCompressProgress(meta.percent, _origTotalBytes);  // ← real % + real size
         });
 
-        log(`Packaging complete. Vault archive size: ${formatBytes(zipBlob.size)}`, 'info');
-        ProgressTracker.onCompressDone(_origTotalBytes, zipBlob.size);  // ← real sizes
+        const zipDataSize = zipBytes.byteLength;
+        log(`Packaging complete. Vault archive size: ${formatBytes(zipDataSize)}`, 'info');
+        ProgressTracker.onCompressDone(_origTotalBytes, zipDataSize);  // ← real sizes
         updateProgress('Deriving encryption key...', 62);
 
-        const zipBuffer = await zipBlob.arrayBuffer();
         let encBlob, filename;
 
         if (useV2) {
@@ -1181,39 +1182,42 @@ btnEncrypt.addEventListener('click', async () => {
 
             log('Encrypting with AES-256-GCM (v2)...', 'info');
             updateProgress('Encrypting data...', 80);
-            // Estimate ~3s for v2 key derivation already done; AES on zipBuffer.byteLength
-            const _v2EncEstimate = Math.max(500, zipBuffer.byteLength / (50 * 1024 * 1024) * 1000);
-            ProgressTracker.onCryptoStart(zipBuffer.byteLength, _v2EncEstimate);  // ← animated
+            const _v2EncEstimate = Math.max(500, zipDataSize / (50 * 1024 * 1024) * 1000);
+            ProgressTracker.onCryptoStart(zipDataSize, _v2EncEstimate);  // ← animated
 
             const ciphertext = await window.crypto.subtle.encrypt(
                 { name: 'AES-GCM', iv: iv },
                 key,
-                zipBuffer
+                zipBytes.buffer
             );
+            // Free unencrypted raw bytes from JS memory immediately
+            zipBytes = null;
             ProgressTracker.onCryptoDone(true, 'v2');  // ← real completion
 
             updateProgress('Building v2 vault file...', 95);
 
-            // Assemble v2 binary: Magic(4) | Version(1) | Flags(1) | Salt(32) | IV(12) | CT
-            const combined = new Uint8Array(V2_HEADER_SIZE + ciphertext.byteLength);
-            combined.set(V2_MAGIC,                     0);   // bytes 0–3
-            combined[V2_OFFSET_VERSION] = V2_VERSION_BYTE;   // byte  4
-            combined[V2_OFFSET_FLAGS]   = flags;              // byte  5
-            combined.set(salt,                         V2_OFFSET_SALT);  // bytes 6–37
-            combined.set(iv,                           V2_OFFSET_IV);    // bytes 38–49
-            combined.set(new Uint8Array(ciphertext),   V2_OFFSET_CIPHER);// bytes 50+
+            // Assemble v2 header (50 bytes)
+            const headerBytes = new Uint8Array(V2_HEADER_SIZE);
+            headerBytes.set(V2_MAGIC, 0);                    // bytes 0–3
+            headerBytes[V2_OFFSET_VERSION] = V2_VERSION_BYTE;// byte  4
+            headerBytes[V2_OFFSET_FLAGS]   = flags;          // byte  5
+            headerBytes.set(salt, V2_OFFSET_SALT);           // bytes 6–37
+            headerBytes.set(iv,   V2_OFFSET_IV);             // bytes 38–49
 
-            encBlob  = new Blob([combined], { type: 'application/octet-stream' });
+            // Zero-copy Blob creation by reference: browser's C++ blob engine combines them with 0 duplicate RAM
+            encBlob = new Blob([headerBytes, ciphertext], { type: 'application/octet-stream' });
+            const totalVaultLength = V2_HEADER_SIZE + ciphertext.byteLength;
+
             filename = `${selectedEncryptFolderName}.zev`;
             recoveryRecord.vaultFilename = filename;
             triggerDownload(encBlob, filename);
-            ProgressTracker.onSaveDone(filename, combined.byteLength, 'v2');  // ← real output stats
+            ProgressTracker.onSaveDone(filename, totalVaultLength, 'v2');  // ← real output stats
 
-            log(`✅ v2 Vault created: "${filename}" (${formatBytes(combined.byteLength)})`, 'success');
+            log(`✅ v2 Vault created: "${filename}" (${formatBytes(totalVaultLength)})`, 'success');
             if (flags & V2_FLAG_KEYFILE) log('🗝️ This vault requires BOTH the password AND the keyfile to decrypt.', 'warn');
 
         } else {
-            // ── V1 ENCRYPTION PATH (unchanged) ───────────────────────────────
+            // ── V1 ENCRYPTION PATH (unchanged format, memory-optimized) ─────
             // V1 format: [Salt(16) | IV(12) | Ciphertext]  — no magic header
 
             const salt = window.crypto.getRandomValues(new Uint8Array(16));
@@ -1223,30 +1227,35 @@ btnEncrypt.addEventListener('click', async () => {
 
             log('Encrypting with AES-256-GCM...', 'info');
             updateProgress('Encrypting data...', 78);
-            const _v1EncEstimate = Math.max(300, zipBuffer.byteLength / (80 * 1024 * 1024) * 1000);
-            ProgressTracker.onCryptoStart(zipBuffer.byteLength, _v1EncEstimate);  // ← animated
+            const _v1EncEstimate = Math.max(300, zipDataSize / (80 * 1024 * 1024) * 1000);
+            ProgressTracker.onCryptoStart(zipDataSize, _v1EncEstimate);  // ← animated
 
             const ciphertext = await window.crypto.subtle.encrypt(
                 { name: 'AES-GCM', iv: iv },
                 key,
-                zipBuffer
+                zipBytes.buffer
             );
+            // Free unencrypted raw bytes from JS memory immediately
+            zipBytes = null;
             ProgressTracker.onCryptoDone(true, 'v1');  // ← real completion
 
             updateProgress('Building vault file...', 95);
 
-            const combined = new Uint8Array(16 + 12 + ciphertext.byteLength);
-            combined.set(salt, 0);
-            combined.set(iv,   16);
-            combined.set(new Uint8Array(ciphertext), 28);
+            // Assemble v1 header (28 bytes)
+            const headerBytes = new Uint8Array(28);
+            headerBytes.set(salt, 0);
+            headerBytes.set(iv,   16);
 
-            encBlob  = new Blob([combined], { type: 'application/octet-stream' });
+            // Zero-copy Blob creation by reference
+            encBlob = new Blob([headerBytes, ciphertext], { type: 'application/octet-stream' });
+            const totalVaultLength = 28 + ciphertext.byteLength;
+
             filename = `${selectedEncryptFolderName}.zev`;
             recoveryRecord.vaultFilename = filename;
             triggerDownload(encBlob, filename);
-            ProgressTracker.onSaveDone(filename, combined.byteLength, 'v1');  // ← real output stats
+            ProgressTracker.onSaveDone(filename, totalVaultLength, 'v1');  // ← real output stats
 
-            log(`✅ Vault created: "${filename}" (${formatBytes(combined.byteLength)})`, 'success');
+            log(`✅ Vault created: "${filename}" (${formatBytes(totalVaultLength)})`, 'success');
         }
 
         updateProgress('✅ Encryption complete!', 100);
