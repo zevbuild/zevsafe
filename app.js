@@ -1794,6 +1794,105 @@ function closeVaultExplorer() {
 }
 
 /**
+ * Detect if a file is a playable media file (video or audio)
+ */
+function getMediaCategory(filename) {
+    const ext = (filename || '').split('.').pop().toLowerCase();
+    const videoExts = ['mp4', 'webm', 'mov', 'mkv', 'm4v', 'ogv', 'avi'];
+    const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'weba'];
+    if (videoExts.includes(ext)) return 'video';
+    if (audioExts.includes(ext)) return 'audio';
+    return null;
+}
+
+function getMediaMimeType(filename) {
+    const ext = (filename || '').split('.').pop().toLowerCase();
+    const mimeMap = {
+        mp4: 'video/mp4',
+        webm: 'video/webm',
+        mov: 'video/quicktime',
+        mkv: 'video/x-matroska',
+        m4v: 'video/mp4',
+        ogv: 'video/ogg',
+        avi: 'video/x-msvideo',
+        mp3: 'audio/mpeg',
+        wav: 'audio/wav',
+        ogg: 'audio/ogg',
+        flac: 'audio/flac',
+        aac: 'audio/aac',
+        m4a: 'audio/mp4',
+        weba: 'audio/webm'
+    };
+    return mimeMap[ext] || 'application/octet-stream';
+}
+
+// Media player state
+let currentMediaBlobUrl = null;
+let currentMediaFilename = '';
+let currentMediaBlob = null;
+
+function openMediaPlayer(fileBlob, filename, category) {
+    const modal = document.getElementById('vault-media-modal');
+    const badge = document.getElementById('media-modal-badge');
+    const title = document.getElementById('media-modal-title');
+    const body = document.getElementById('media-modal-body');
+
+    if (!modal || !body) return;
+
+    // Clean up previous URL
+    if (currentMediaBlobUrl) {
+        URL.revokeObjectURL(currentMediaBlobUrl);
+        currentMediaBlobUrl = null;
+    }
+
+    currentMediaBlob = fileBlob;
+    currentMediaFilename = filename;
+    currentMediaBlobUrl = URL.createObjectURL(fileBlob);
+
+    if (badge) badge.textContent = category === 'video' ? '🎬 Video' : '🎵 Audio';
+    if (title) title.textContent = filename;
+
+    body.innerHTML = '';
+
+    if (category === 'video') {
+        const video = document.createElement('video');
+        video.className = 'media-player-element';
+        video.controls = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.src = currentMediaBlobUrl;
+        body.appendChild(video);
+    } else {
+        const audio = document.createElement('audio');
+        audio.className = 'media-player-element';
+        audio.controls = true;
+        audio.autoplay = true;
+        audio.src = currentMediaBlobUrl;
+        body.appendChild(audio);
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeMediaPlayer() {
+    const modal = document.getElementById('vault-media-modal');
+    const body = document.getElementById('media-modal-body');
+    if (modal) modal.style.display = 'none';
+    if (body) {
+        const mediaElem = body.querySelector('video, audio');
+        if (mediaElem) {
+            mediaElem.pause();
+            mediaElem.src = '';
+        }
+        body.innerHTML = '';
+    }
+    if (currentMediaBlobUrl) {
+        URL.revokeObjectURL(currentMediaBlobUrl);
+        currentMediaBlobUrl = null;
+    }
+}
+
+/**
  * Render file list with search filtering.
  */
 function renderExplorerFileList(query = '') {
@@ -1849,6 +1948,32 @@ function renderExplorerFileList(query = '') {
         const size = document.createElement('span');
         size.className = 'explorer-item-size';
         size.textContent = file.size > 0 ? formatBytes(file.size) : '';
+        right.appendChild(size);
+
+        // Auto-Detect Video and Audio files for instant playback
+        const mediaCategory = getMediaCategory(file.name);
+        if (mediaCategory) {
+            const playBtn = document.createElement('button');
+            playBtn.className = 'explorer-file-play-btn';
+            playBtn.title = `Play ${file.name} directly in browser`;
+            playBtn.innerHTML = '▶️ Play';
+            playBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try {
+                    playBtn.textContent = '⏳ ...';
+                    const rawBlob = await currentDecryptedZip.file(file.path).async('blob');
+                    const mimeType = getMediaMimeType(file.name);
+                    const mediaBlob = new Blob([rawBlob], { type: mimeType });
+                    openMediaPlayer(mediaBlob, file.name, mediaCategory);
+                    playBtn.innerHTML = '▶️ Play';
+                } catch (err) {
+                    console.error('[Media Play Error]', err);
+                    alert(`Failed to load media: ${err.message}`);
+                    playBtn.innerHTML = '▶️ Play';
+                }
+            });
+            right.appendChild(playBtn);
+        }
 
         const dlBtn = document.createElement('button');
         dlBtn.className = 'explorer-file-dl-btn';
@@ -1869,7 +1994,6 @@ function renderExplorerFileList(query = '') {
             }
         });
 
-        right.appendChild(size);
         right.appendChild(dlBtn);
 
         row.appendChild(left);
@@ -1878,7 +2002,7 @@ function renderExplorerFileList(query = '') {
     });
 }
 
-// Wire up Explorer UI event listeners
+// Wire up Explorer & Media Player UI event listeners
 function initExplorerUI() {
     const searchInput = document.getElementById('explorer-search-input');
     const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
@@ -1886,6 +2010,12 @@ function initExplorerUI() {
     const doneBtn = document.getElementById('btn-done-explorer');
     const dlAllBtn = document.getElementById('btn-explorer-download-all');
     const modal = document.getElementById('vault-explorer-modal');
+
+    // Media modal elements
+    const mediaModal = document.getElementById('vault-media-modal');
+    const closeMediaBtn = document.getElementById('btn-close-media-modal');
+    const mediaOpenTabBtn = document.getElementById('btn-media-open-tab');
+    const mediaDlBtn = document.getElementById('btn-media-download');
 
     searchInput?.addEventListener('input', () => {
         const val = searchInput.value;
@@ -1915,6 +2045,24 @@ function initExplorerUI() {
 
     modal?.addEventListener('click', (e) => {
         if (e.target.id === 'vault-explorer-modal') closeVaultExplorer();
+    });
+
+    // Media modal events
+    closeMediaBtn?.addEventListener('click', closeMediaPlayer);
+    mediaModal?.addEventListener('click', (e) => {
+        if (e.target.id === 'vault-media-modal') closeMediaPlayer();
+    });
+
+    mediaOpenTabBtn?.addEventListener('click', () => {
+        if (currentMediaBlobUrl) {
+            window.open(currentMediaBlobUrl, '_blank');
+        }
+    });
+
+    mediaDlBtn?.addEventListener('click', () => {
+        if (currentMediaBlob && currentMediaFilename) {
+            triggerDownload(currentMediaBlob, currentMediaFilename);
+        }
     });
 }
 

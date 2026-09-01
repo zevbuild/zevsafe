@@ -24,7 +24,9 @@
 - Decryption Flow Refinement: eliminated forced auto-download upon decryption, giving users full control to choose specific files or download the full ZIP from the Decrypted Vault Explorer
 - UI/UX & Animation Upgrade: added glowing shimmering progress bar transitions, animated pulsating/bursting stage pipeline pills, and interactive button loading sweeps during encryption and decryption
 - 5 GB+ Large File & Memory Optimization: eliminated duplicate buffer allocations via direct `uint8array` compression, zero-copy Blob-by-reference header assembly, and aggressive intermediate heap deallocation, cutting peak browser RAM usage by >65% to support large 5 GB+ video and media vaults
-- Bumped PWA Service Worker app version to v11 for cache synchronization
+- Dedicated In-Browser Media Player & Auto-Detector: intelligently identifies decrypted video (.mp4, .mov, .webm, .mkv) and audio (.mp3, .wav, .ogg, .flac, .aac) files, providing an instant "▶️ Play" button for direct cinema playback and new-tab streaming without requiring file downloads
+- Bumped PWA Service Worker app version to v12 for cache synchronization
+
 
 
 

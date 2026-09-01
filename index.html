@@ -461,6 +461,27 @@
         </div>
     </div>
 
+    <!-- Dedicated In-Browser Media Player Modal -->
+    <div class="media-modal-overlay" id="vault-media-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="media-modal-title">
+        <div class="media-modal-container">
+            <header class="media-modal-header">
+                <div class="media-modal-info">
+                    <span class="media-type-badge" id="media-modal-badge">🎬 Video</span>
+                    <h3 class="media-modal-title" id="media-modal-title">Media Preview</h3>
+                </div>
+                <div class="media-modal-actions">
+                    <button class="media-btn-action" id="btn-media-open-tab" title="Open and play in new browser tab">↗️ New Tab</button>
+                    <button class="media-btn-action" id="btn-media-download" title="Save file to device">⬇️ Save</button>
+                    <button class="explorer-btn-close" id="btn-close-media-modal" title="Close Player" aria-label="Close Player">✕</button>
+                </div>
+            </header>
+
+            <div class="media-modal-body" id="media-modal-body">
+                <!-- Dynamically populated <video> or <audio> element -->
+            </div>
+        </div>
+    </div>
+
     <!-- Password Save Prompt Modal -->
     <div class="pw-modal-overlay" id="pw-save-modal" style="display: none;">
         <div class="pw-modal">
