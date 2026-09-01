@@ -1375,18 +1375,17 @@ btnDecrypt.addEventListener('click', async () => {
         log('✅ Authenticated! Extracting folder archive...', 'success');
         updateProgress('Extracting ZIP...', 80);
 
-        // Validate ZIP structure and trigger download
+        // Validate ZIP structure
         const unzipped = await JSZip.loadAsync(decryptedBuffer);
 
         const folderName    = selectedDecryptFile.name.replace(/\.zev$/i, '');
         const decryptedBlob = new Blob([decryptedBuffer], { type: 'application/zip' });
-        triggerDownload(decryptedBlob, `${folderName}_decrypted.zip`);
         ProgressTracker.onSaveDone(`${folderName}_decrypted.zip`, decryptedBuffer.byteLength, vaultIsV2 ? 'v2' : 'v1');  // ← real output
 
-        log(`✅ Saved: "${folderName}_decrypted.zip" — opening Decrypted Vault Explorer...`, 'success');
+        log(`✅ Decryption successful! Opening Vault Explorer for "${folderName}"...`, 'success');
         updateProgress('✅ Decryption complete!', 100);
 
-        // Open the in-browser Decrypted Vault File Explorer for selective file viewing and downloads
+        // Open the in-browser Decrypted Vault File Explorer so the user can choose to download individual files or the full ZIP
         openVaultExplorer(folderName, unzipped, decryptedBlob);
 
         // Reset decrypt selected widget
@@ -1872,7 +1871,12 @@ function initExplorerUI() {
 
     dlAllBtn?.addEventListener('click', () => {
         if (currentDecryptedBlob && currentDecryptedFolderName) {
+            dlAllBtn.textContent = '⏳ Downloading...';
             triggerDownload(currentDecryptedBlob, `${currentDecryptedFolderName}_decrypted.zip`);
+            log(`✅ Downloaded full vault: "${currentDecryptedFolderName}_decrypted.zip"`, 'success');
+            setTimeout(() => {
+                dlAllBtn.textContent = '⬇️ Download Full ZIP';
+            }, 2000);
         }
     });
 

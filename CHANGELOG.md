@@ -21,7 +21,9 @@
 - In-Browser Decrypted Vault File Explorer: temporary in-memory file browser launched upon decryption allowing instant single-file downloads, subfolder inspection, and real-time search filtering
 - Password Flexibility & PIN Support: removed password strength complexity meter and reduced minimum length to 4+ digits/chars, supporting quick PINs and seamless password manager integration
 - UI/UX Streamlining: removed image assets from the hero section for a clean, centered, lightweight layout and refined mobile responsive ergonomics
-- Bumped PWA Service Worker app version to v8 for asset cache invalidation
+- Decryption Flow Refinement: eliminated forced auto-download upon decryption, giving users full control to choose specific files or download the full ZIP from the Decrypted Vault Explorer
+- Bumped PWA Service Worker app version to v9 for cache synchronization
+
 
 
 
