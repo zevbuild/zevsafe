@@ -179,8 +179,23 @@ body {
 
 .nav-pill:hover {
     color: var(--text);
-    background: rgba(139,92,246,0.12);
-    border-color: rgba(139,92,246,0.35);
+    border-color: rgba(139,92,246,0.4);
+    background: rgba(139,92,246,0.1);
+}
+
+.nav-pill--cta {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(20, 184, 166, 0.2));
+    border-color: rgba(139, 92, 246, 0.45);
+    color: #fff;
+    cursor: pointer;
+    font-family: var(--font-body);
+}
+
+.nav-pill--cta:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.45), rgba(20, 184, 166, 0.35));
+    border-color: var(--purple-light);
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.4);
+    transform: translateY(-1px);
 }
 
 .nav-pill-ghost {

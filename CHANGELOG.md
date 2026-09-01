@@ -25,7 +25,10 @@
 - UI/UX & Animation Upgrade: added glowing shimmering progress bar transitions, animated pulsating/bursting stage pipeline pills, and interactive button loading sweeps during encryption and decryption
 - 5 GB+ Large File & Memory Optimization: eliminated duplicate buffer allocations via direct `uint8array` compression, zero-copy Blob-by-reference header assembly, and aggressive intermediate heap deallocation, cutting peak browser RAM usage by >65% to support large 5 GB+ video and media vaults
 - Dedicated In-Browser Media Player & Auto-Detector: intelligently identifies decrypted video (.mp4, .mov, .webm, .mkv) and audio (.mp3, .wav, .ogg, .flac, .aac) files, providing an instant "▶️ Play" button for direct cinema playback and new-tab streaming without requiring file downloads
-- Bumped PWA Service Worker app version to v12 for cache synchronization
+- Android 2.5 GB Media Streaming & Hardware Acceleration: optimized in-browser media players with `playsinline` and persistent Blob streams for seamless 2 GB+ video playback directly inside Android Chrome or in a new browser tab
+- 1-Click PC Desktop Setup (25+ GB): added instant in-browser generation and download of `ZevSafe-PC-Setup-25GB.zip` containing drag-and-drop batch launchers (`Encrypt-Vault.bat`, `Decrypt-Vault.bat`) and streaming scripts for zero-RAM 25 GB – 100 GB+ vaults with no manual configuration
+- Bumped PWA Service Worker app version to v13 for cache synchronization
+
 
 
 

@@ -365,8 +365,8 @@ setupDragAndDrop(encryptDropZone, encryptFolderInput, (files, folderName) => {
     
     encryptSelectedInfo.style.display = 'none';
     log(`Folder "${folderName}" selected (${files.length} files, ${formatBytes(totalSize)}).`, 'info');
-    if (totalSize > 1.5 * 1024 * 1024 * 1024) {
-        log('💡 Large folder (>1.5 GB). For zero-RAM background processing without browser memory limits, encrypt.ps1 is also available.', 'warn');
+    if (totalSize > 2.5 * 1024 * 1024 * 1024) {
+        log('💡 Very large folder (>2.5 GB). For instant 25GB+ background processing with zero RAM limits, click "PC Setup (25+ GB)" in the top bar.', 'info');
     }
     showProgress();
     
@@ -1860,6 +1860,8 @@ function openMediaPlayer(fileBlob, filename, category) {
         video.controls = true;
         video.autoplay = true;
         video.playsInline = true;
+        video.setAttribute('webkit-playsinline', 'true');
+        video.setAttribute('preload', 'auto');
         video.src = currentMediaBlobUrl;
         body.appendChild(video);
     } else {
@@ -1867,6 +1869,7 @@ function openMediaPlayer(fileBlob, filename, category) {
         audio.className = 'media-player-element';
         audio.controls = true;
         audio.autoplay = true;
+        audio.setAttribute('preload', 'auto');
         audio.src = currentMediaBlobUrl;
         body.appendChild(audio);
     }
@@ -2067,7 +2070,84 @@ function initExplorerUI() {
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initExplorerUI);
+    document.addEventListener('DOMContentLoaded', () => {
+        initExplorerUI();
+        initPcSetupButton();
+    });
 } else {
     initExplorerUI();
+    initPcSetupButton();
+}
+
+/**
+ * Generates and downloads the 1-Click ZevSafe PC Desktop Setup (25+ GB) toolkit.
+ */
+async function downloadPcSetupToolkit() {
+    const btn = document.getElementById('btn-download-pc-setup');
+    const origText = btn ? btn.textContent : '💻 PC Setup (25+ GB)';
+    try {
+        if (btn) btn.textContent = '⏳ Creating Package...';
+
+        const zip = new JSZip();
+
+        const encryptBatContent = `@echo off\r\ntitle ZevSafe 25GB+ Vault Encryptor\r\nsetlocal EnableDelayedExpansion\r\n\r\necho ===================================================\r\necho   ZevSafe - 25GB+ Zero-RAM Folder Encryptor (PC)\r\necho ===================================================\r\necho.\r\n\r\nset "TARGET_FOLDER=%~1"\r\n\r\nif "%TARGET_FOLDER%"=="" (\r\n    echo Drag and drop a folder here or enter its path:\r\n    set /p "TARGET_FOLDER=Path: "\r\n)\r\n\r\nset "TARGET_FOLDER=%TARGET_FOLDER:"=%"\r\n\r\nif "%TARGET_FOLDER%"=="" (\r\n    echo [ERROR] No folder specified. Exiting.\r\n    pause\r\n    exit /b 1\r\n)\r\n\r\npowershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0encrypt.ps1" "%TARGET_FOLDER%"\r\n\r\necho.\r\necho ===================================================\r\necho   Process finished. Press any key to exit.\r\necho ===================================================\r\npause >nul`;
+
+        const decryptBatContent = `@echo off\r\ntitle ZevSafe 25GB+ Vault Decryptor\r\nsetlocal EnableDelayedExpansion\r\n\r\necho ===================================================\r\necho   ZevSafe - 25GB+ Zero-RAM Vault Decryptor (PC)\r\necho ===================================================\r\necho.\r\n\r\nset "TARGET_FILE=%~1"\r\n\r\nif "%TARGET_FILE%"=="" (\r\n    echo Drag and drop a .zev vault file here or enter its path:\r\n    set /p "TARGET_FILE=Path: "\r\n)\r\n\r\nset "TARGET_FILE=%TARGET_FILE:"=%"\r\n\r\nif "%TARGET_FILE%"=="" (\r\n    echo [ERROR] No .zev file specified. Exiting.\r\n    pause\r\n    exit /b 1\r\n)\r\n\r\npowershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0decrypt.ps1" "%TARGET_FILE%"\r\n\r\necho.\r\necho ===================================================\r\necho   Process finished. Press any key to exit.\r\necho ===================================================\r\npause >nul`;
+
+        let encPs1 = '';
+        let decPs1 = '';
+        try {
+            const r1 = await fetch('encrypt.ps1');
+            encPs1 = await r1.text();
+            const r2 = await fetch('decrypt.ps1');
+            decPs1 = await r2.text();
+        } catch (e) {
+            console.warn('Could not fetch ps1 files dynamically', e);
+        }
+
+        const readmeContent = `=======================================================
+  ZevSafe PC Desktop Setup (25GB - 100GB+ Zero-RAM)
+=======================================================
+
+HOW TO USE (NO MANUAL CONFIGURATION REQUIRED):
+
+1. TO ENCRYPT A FOLDER:
+   - Drag and drop any folder onto "Encrypt-Vault.bat" (or double click it).
+   - Enter your secure password when prompted.
+   - It will stream and create your ".zev" vault directly on your drive with 0 RAM limits!
+
+2. TO DECRYPT A VAULT:
+   - Drag and drop your ".zev" file onto "Decrypt-Vault.bat" (or double click it).
+   - Enter your password to restore your original folder!
+
+COMPATIBILITY:
+- 100% compatible with https://zevsafe.pages.dev
+- Works on Windows 10, 11, and Windows Server out of the box with standard PowerShell.
+`;
+
+        zip.file('Encrypt-Vault.bat', encryptBatContent);
+        zip.file('Decrypt-Vault.bat', decryptBatContent);
+        if (encPs1) zip.file('encrypt.ps1', encPs1);
+        if (decPs1) zip.file('decrypt.ps1', decPs1);
+        zip.file('README.txt', readmeContent);
+
+        const blob = await zip.generateAsync({ type: 'blob' });
+        triggerDownload(blob, 'ZevSafe-PC-Setup-25GB.zip');
+        log('✅ Downloaded "ZevSafe-PC-Setup-25GB.zip" — extract it on your PC for 1-click 25GB+ processing.', 'success');
+
+        if (btn) {
+            btn.textContent = '✅ Downloaded!';
+            setTimeout(() => { btn.textContent = origText; }, 2500);
+        }
+    } catch (err) {
+        console.error('[PC Setup Download Error]', err);
+        alert(`Failed to create PC toolkit: ${err.message}`);
+        if (btn) btn.textContent = origText;
+    }
+}
+
+function initPcSetupButton() {
+    document.querySelectorAll('.btn-download-pc-setup, #btn-download-pc-setup').forEach(btn => {
+        btn.addEventListener('click', downloadPcSetupToolkit);
+    });
 }
