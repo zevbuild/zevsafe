@@ -138,6 +138,15 @@ public static class FolderCryptor
         }
     }
 
+    private static readonly System.Collections.Generic.HashSet<string> PreCompressedExts = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".avif", ".ico", ".tiff", ".tif",
+        ".mp4", ".m4v", ".mov", ".mkv", ".avi", ".webm", ".wmv", ".flv", ".3gp", ".ogv", ".ts",
+        ".mp3", ".aac", ".flac", ".ogg", ".wav", ".m4a", ".opus", ".weba", ".wma",
+        ".zip", ".7z", ".rar", ".gz", ".tgz", ".bz2", ".xz", ".zst", ".iso", ".dmg", ".pkg", ".apk",
+        ".pdf", ".docx", ".xlsx", ".pptx", ".epub"
+    };
+
     private static void AddDirectoryToArchive(ZipArchive archive, string sourceDirPath, string entryPrefix)
     {
         var dirInfo = new DirectoryInfo(sourceDirPath);
@@ -145,7 +154,9 @@ public static class FolderCryptor
         foreach (var file in dirInfo.GetFiles())
         {
             string entryName = Path.Combine(entryPrefix, file.Name);
-            var entry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+            string ext = file.Extension;
+            var compressionLevel = PreCompressedExts.Contains(ext) ? CompressionLevel.NoCompression : CompressionLevel.Fastest;
+            var entry = archive.CreateEntry(entryName, compressionLevel);
             using (var entryStream = entry.Open())
             using (var fileStream = file.OpenRead())
             {

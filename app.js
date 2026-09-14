@@ -1038,34 +1038,33 @@ function isV2Format(buffer) {
 // ============================================
 // PERFORMANCE UTILITIES — SMART COMPRESSION
 // ============================================
+// PERFORMANCE UTILITIES — GRANULAR SMART COMPRESSION
+// ============================================
 
 /**
- * Detects if a set of files consists mostly of pre-compressed formats.
- * Pre-compressed media/archives (JPEG, PNG, WEBP, MP4, MOV, MKV, MP3, ZIP, PDF, etc.)
- * gain 0% size benefit from DEFLATE but consume heavy CPU cycles on mobile devices.
+ * Detects if an individual file is already compressed.
+ * Formats like JPEG, PNG, MP4, MKV, MP3, ZIP, PDF etc. gain 0% from DEFLATE
+ * but waste heavy CPU/battery cycles if re-compressed.
+ *
+ * @param {string} filename
+ * @returns {boolean}
  */
-function shouldStoreUncompressed(files) {
-    if (!files || files.length === 0) return false;
-    const mediaExts = new Set([
-        'jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'avif',
-        'mp4', 'mov', 'mkv', 'avi', 'webm', 'mp3', 'aac', 'flac', 'ogg', 'wav',
-        'zip', '7z', 'rar', 'gz', 'tar', 'bz2', 'xz', 'pdf', 'iso'
+function isPreCompressedExtension(filename) {
+    if (!filename) return false;
+    const ext = filename.split('.').pop().toLowerCase();
+    const preCompressedExts = new Set([
+        // Images
+        'jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'avif', 'ico', 'tiff', 'tif', 'raw', 'cr2', 'nef',
+        // Videos
+        'mp4', 'm4v', 'mov', 'mkv', 'avi', 'webm', 'wmv', 'flv', '3gp', 'ogv', 'ts', 'm2ts', 'vob',
+        // Audio
+        'mp3', 'aac', 'flac', 'ogg', 'wav', 'm4a', 'opus', 'weba', 'wma', 'alac',
+        // Archives & Packages
+        'zip', '7z', 'rar', 'gz', 'tgz', 'bz2', 'xz', 'zst', 'iso', 'dmg', 'pkg', 'apk', 'jar', 'deb', 'rpm', 'cab',
+        // Pre-compressed binary documents
+        'pdf', 'docx', 'xlsx', 'pptx', 'epub'
     ]);
-
-    let mediaBytes = 0;
-    let totalBytes = 0;
-
-    for (const f of files) {
-        const ext = (f.name || '').split('.').pop().toLowerCase();
-        const size = f.size || 0;
-        totalBytes += size;
-        if (mediaExts.has(ext)) {
-            mediaBytes += size;
-        }
-    }
-
-    // If >60% of total size is pre-compressed media, use STORE mode
-    return totalBytes > 0 && (mediaBytes / totalBytes) >= 0.60;
+    return preCompressedExts.has(ext);
 }
 
 // ============================================
@@ -1125,32 +1124,48 @@ btnEncrypt.addEventListener('click', async () => {
     const _origTotalBytes = selectedEncryptFiles.reduce((sum, f) => sum + f.size, 0);
 
     try {
-        // Step 1: Package folder into a ZIP archive in browser memory
+        // Step 1: Package folder using Granular Per-File Adaptive Compression
         const zip = new JSZip();
+        let storeCount = 0;
+        let deflateCount = 0;
+        let storeBytes = 0;
+        let deflateBytes = 0;
+
         for (const file of selectedEncryptFiles) {
             const path = file.relativeDir || file.webkitRelativePath || file.name;
-            zip.file(path, file);
+            const preComp = isPreCompressedExtension(file.name);
+            if (preComp) {
+                storeCount++;
+                storeBytes += file.size || 0;
+                zip.file(path, file, { compression: 'STORE' });
+            } else {
+                deflateCount++;
+                deflateBytes += file.size || 0;
+                zip.file(path, file, {
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 1 } // Fast Level 1 DEFLATE (5x-10x faster)
+                });
+            }
         }
 
-        // Performance Optimization: Check whether folder is mostly pre-compressed media
-        const useStoreMode = shouldStoreUncompressed(selectedEncryptFiles);
-        const compressionMethod = useStoreMode ? 'STORE' : 'DEFLATE';
-        const compressionOpts = useStoreMode ? undefined : { level: 1 }; // Fast Level 1 DEFLATE (5x-10x faster)
-
-        log(`⚡ Packaging mode: ${useStoreMode ? 'Ultra-Fast Store (Pre-compressed media detected)' : 'Fast DEFLATE (Level 1)'}`, 'info');
+        const compressStartTime = performance.now();
+        log(`⚡ Adaptive Packaging: ${storeCount} file(s) in STORE mode (instant), ${deflateCount} file(s) in DEFLATE mode...`, 'info');
 
         // Step 1: Generate Uint8Array directly in one allocation (skips duplicate Blob->ArrayBuffer allocations)
         let zipBytes = await zip.generateAsync({
             type: 'uint8array',
-            compression: compressionMethod,
-            ...(compressionOpts ? { compressionOptions: compressionOpts } : {})
+            streamFiles: true
         }, (meta) => {
             updateProgress(`Packaging: ${meta.percent.toFixed(0)}%`, meta.percent * 0.6);
             ProgressTracker.onCompressProgress(meta.percent, _origTotalBytes);  // ← real % + real size
         });
 
+        const compressElapsedSec = Math.max(0.001, (performance.now() - compressStartTime) / 1000);
         const zipDataSize = zipBytes.byteLength;
-        log(`Packaging complete. Vault archive size: ${formatBytes(zipDataSize)}`, 'info');
+        const throughputMbps = ((_origTotalBytes / (1024 * 1024)) / compressElapsedSec).toFixed(1);
+        const ratioPercent = _origTotalBytes > 0 ? Math.max(0, ((1 - (zipDataSize / _origTotalBytes)) * 100)).toFixed(1) : 0;
+
+        log(`Packaging complete: ${formatBytes(zipDataSize)} in ${compressElapsedSec.toFixed(2)}s (${throughputMbps} MB/s · ${ratioPercent}% reduction).`, 'info');
         ProgressTracker.onCompressDone(_origTotalBytes, zipDataSize);  // ← real sizes
         updateProgress('Deriving encryption key...', 62);
 
