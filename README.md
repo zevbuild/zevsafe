@@ -55,7 +55,7 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
 [Your Folder]
      │
      ▼
- Compress (ZIP / DEFLATE level 6)
+ Package & Compress (Smart Adaptive: STORE for media, Fast DEFLATE for docs)
      │
      ▼
  Generate: Salt (16 bytes) + IV (12 bytes)  ← cryptographically random
@@ -75,7 +75,7 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
 [Your Folder]
      │
      ▼
- Compress (ZIP / DEFLATE level 6)
+ Package & Compress (Smart Adaptive: STORE for media, Fast DEFLATE for docs)
      │
      ▼
  Generate: Salt (32 bytes) + IV (12 bytes)  ← cryptographically random

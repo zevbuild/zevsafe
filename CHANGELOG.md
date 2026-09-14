@@ -27,7 +27,10 @@
 - Dedicated In-Browser Media Player & Auto-Detector: intelligently identifies decrypted video (.mp4, .mov, .webm, .mkv) and audio (.mp3, .wav, .ogg, .flac, .aac) files, providing an instant "▶️ Play" button for direct cinema playback and new-tab streaming without requiring file downloads
 - Android 2.5 GB Media Streaming & Hardware Acceleration: optimized in-browser media players with `playsinline` and persistent Blob streams for seamless 2 GB+ video playback directly inside Android Chrome or in a new browser tab
 - 1-Click PC Desktop Setup (25+ GB): added instant in-browser generation and download of `ZevSafe-PC-Setup-25GB.zip` containing drag-and-drop batch launchers (`Encrypt-Vault.bat`, `Decrypt-Vault.bat`) and streaming scripts for zero-RAM 25 GB – 100 GB+ vaults with no manual configuration
-- Bumped PWA Service Worker app version to v13 for cache synchronization
+- Granular Per-File Smart Compression: upgraded packaging engine to evaluate each file entry individually (STORE mode for pre-compressed media/archives + Fast Level 1 DEFLATE for compressible documents/code), achieving up to 10x faster vault packaging with real-time throughput telemetry (MB/s)
+- Native PowerShell Streaming Compression Upgrade: added pre-compressed extension hashing and selective NoCompression/Fastest streaming in `encrypt.ps1`
+- Bumped PWA Service Worker app version to v14 for cache synchronization
+
 
 
 

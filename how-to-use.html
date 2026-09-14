@@ -558,7 +558,7 @@
                     When you drop a folder and click "Encrypt &amp; Download", the browser executes the following sequence:
                 </p>
                 <ul class="guide-body-ul">
-                    <li><strong>Step 2.1: Folder Compression (JSZip):</strong> The selected folder structure is compressed in-memory into a single ZIP binary stream using the DEFLATE algorithm (compression level 6). This hides original filenames and directory layout structure inside the compressed payload.</li>
+                    <li><strong>Step 2.1: Folder Compression (Granular Adaptive Packaging):</strong> The selected folder is packaged into a unified binary stream using per-file adaptive packaging: pre-compressed media (photos, videos, archives, PDFs) use instantaneous <code>STORE</code> mode (0 CPU overhead), while compressible files (text, code, data) use fast Level 1 <code>DEFLATE</code> compression for up to 10x faster vault generation.</li>
                     <li><strong>Step 2.2: Header Variables:</strong> The CSPRNG generates a random 16-byte Salt and a 12-byte Initialization Vector (IV/Nonce).</li>
                     <li><strong>Step 2.3: Key Stretching:</strong> The browser derives a 256-bit key from the password and Salt using PBKDF2-SHA256 (100k iterations) via <code>crypto.subtle.deriveKey()</code>.</li>
                     <li><strong>Step 2.4: AES-256-GCM ciphering:</strong> The ZIP binary stream is encrypted using AES-GCM-256 with the derived key and the 12-byte IV. During this operation, a 16-byte (128-bit) GCM authentication tag is generated to ensure integrity.</li>
