@@ -1093,13 +1093,13 @@ btnEncrypt.addEventListener('click', async () => {
         return;
     }
 
-    // Detect whether v2 mode is active
+    // Detect whether v2 mode is active (default: v2 Standard)
     const v2Toggle = document.getElementById('v2-mode-toggle');
-    const useV2    = v2Toggle ? v2Toggle.checked : false;
+    const useV2    = v2Toggle ? v2Toggle.checked : true;
     const recoveryRecord = {
         folderName: selectedEncryptFolderName || 'ZevSafe vault',
         vaultFilename: '',
-        version: useV2 ? 'v2 enhanced' : 'v1 standard',
+        version: useV2 ? 'v2 standard' : 'v1 legacy',
         password,
         keyfileRequired: false,
         keyfileName: '',
@@ -1116,8 +1116,8 @@ btnEncrypt.addEventListener('click', async () => {
     resetProgress();
     ProgressTracker.reset('encrypt');  // ← stage tracker init
     showProgress(true);
-    log(`Starting ${useV2 ? 'v2 (Enhanced)' : 'v1 (Standard)'} encryption of "${selectedEncryptFolderName}" (${selectedEncryptFiles.length} files)...`, 'info');
-    if (useV2) log('🔒 v2 mode: PBKDF2-SHA512 · 600,000 iterations · 32-byte salt' + (v2KeyfileEncrypt ? ' · Keyfile active' : ''), 'info');
+    log(`Starting ${useV2 ? 'v2 (Standard)' : 'v1 (Legacy)'} encryption of "${selectedEncryptFolderName}" (${selectedEncryptFiles.length} files)...`, 'info');
+    if (useV2) log('🔒 v2 Standard mode: PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · AES-256-GCM' + (v2KeyfileEncrypt ? ' · Keyfile active' : ''), 'info');
     updateProgress('Compressing folder...', 0);
 
     // Pre-calculate total original size for tracker
@@ -1329,7 +1329,7 @@ btnDecrypt.addEventListener('click', async () => {
     updateProgress('Reading vault file...', 5);
 
     try {
-        const arrayBuffer = await selectedDecryptFile.arrayBuffer();
+        let arrayBuffer = await selectedDecryptFile.arrayBuffer();
 
         // Minimum size check
         if (arrayBuffer.byteLength < 44) {
@@ -1340,7 +1340,7 @@ btnDecrypt.addEventListener('click', async () => {
 
         // ── AUTO-DETECT VERSION ──────────────────────────────────────────────
         const vaultIsV2 = isV2Format(arrayBuffer);
-        log(`Vault format: ${vaultIsV2 ? 'v2 (Enhanced)' : 'v1 (Standard)'}`, 'info');
+        log(`Vault format: ${vaultIsV2 ? 'v2 (Standard)' : 'v1 (Legacy)'}`, 'info');
 
         let decryptedBuffer;
 
@@ -1363,10 +1363,11 @@ btnDecrypt.addEventListener('click', async () => {
 
             const salt       = new Uint8Array(arrayBuffer, V2_OFFSET_SALT, 32);
             const iv         = new Uint8Array(arrayBuffer, V2_OFFSET_IV,   12);
-            const ciphertext = new Uint8Array(arrayBuffer, V2_OFFSET_CIPHER);
+            let ciphertext   = new Uint8Array(arrayBuffer, V2_OFFSET_CIPHER);
+            const cipherLen  = ciphertext.byteLength;
 
             log('Deriving v2 key: PBKDF2-SHA512, 600,000 iterations...', 'info');
-            updateProgress('Deriving v2 key (this is stronger, takes ~3s)...', 35);
+            updateProgress('Deriving v2 key (600k iterations)...', 35);
 
             let keyfileHash = null;
             if (hasKeyfile) {
@@ -1378,8 +1379,8 @@ btnDecrypt.addEventListener('click', async () => {
 
             log('Decrypting with AES-256-GCM (v2)...', 'info');
             updateProgress('Decrypting data...', 65);
-            const _v2DecEstimate = Math.max(500, ciphertext.byteLength / (50 * 1024 * 1024) * 1000);
-            ProgressTracker.onCryptoStart(ciphertext.byteLength, _v2DecEstimate);  // ← animated
+            const _v2DecEstimate = Math.max(500, cipherLen / (50 * 1024 * 1024) * 1000);
+            ProgressTracker.onCryptoStart(cipherLen, _v2DecEstimate);  // ← animated
 
             // GCM tag verification is automatic — throws OperationError if wrong
             decryptedBuffer = await window.crypto.subtle.decrypt(
@@ -1387,17 +1388,20 @@ btnDecrypt.addEventListener('click', async () => {
                 key,
                 ciphertext
             );
+            // Free intermediate buffers immediately to reduce peak memory
+            ciphertext = null;
+            arrayBuffer = null;
             ProgressTracker.onCryptoDone(true, 'v2');  // ← auth tag verified!
 
         } else {
-            // ── V1 DECRYPTION PATH (unchanged) ──────────────────────────────
-            // V1 format: [Salt(16) | IV(12) | Ciphertext]
+            // ── V1 DECRYPTION PATH (legacy backward-compatible) ─────────────
             log('Parsing v1 cryptographic header...', 'info');
             updateProgress('Parsing header...', 20);
 
             const salt       = new Uint8Array(arrayBuffer, 0, 16);
             const iv         = new Uint8Array(arrayBuffer, 16, 12);
-            const ciphertext = new Uint8Array(arrayBuffer, 28);
+            let ciphertext   = new Uint8Array(arrayBuffer, 28);
+            const cipherLen  = ciphertext.byteLength;
 
             log('Deriving key from password (PBKDF2-SHA256, 100k iterations)...', 'info');
             updateProgress('Deriving key...', 40);
@@ -1406,8 +1410,8 @@ btnDecrypt.addEventListener('click', async () => {
 
             log('Decrypting with AES-256-GCM...', 'info');
             updateProgress('Decrypting data...', 60);
-            const _v1DecEstimate = Math.max(300, ciphertext.byteLength / (80 * 1024 * 1024) * 1000);
-            ProgressTracker.onCryptoStart(ciphertext.byteLength, _v1DecEstimate);  // ← animated
+            const _v1DecEstimate = Math.max(300, cipherLen / (80 * 1024 * 1024) * 1000);
+            ProgressTracker.onCryptoStart(cipherLen, _v1DecEstimate);  // ← animated
 
             // GCM auth tag verified automatically — throws OperationError if wrong
             decryptedBuffer = await window.crypto.subtle.decrypt(
@@ -1415,6 +1419,9 @@ btnDecrypt.addEventListener('click', async () => {
                 key,
                 ciphertext
             );
+            // Free intermediate buffers immediately to reduce peak memory
+            ciphertext = null;
+            arrayBuffer = null;
             ProgressTracker.onCryptoDone(true, 'v1');  // ← auth tag verified!
         }
 

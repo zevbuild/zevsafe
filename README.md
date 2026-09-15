@@ -10,8 +10,8 @@
 
 ---
 
-> 🟢 **Current stable release — v3 (`.zev` format):** the most secure version to date.
-> PBKDF2-SHA512 · 600,000 iterations · AES-256-GCM · optional keyfile second factor.
+> 🟢 **Current stable release — v4 (`.zev` format):** military-grade security by default.
+> PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · AES-256-GCM · optional keyfile second factor.
 
 ---
 
@@ -19,7 +19,7 @@
 
 **ZevSafe** is a fully client-side, zero-trust encryption portal. It runs entirely in your browser using the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) — no backend, no accounts, no internet connection required after first load.
 
-It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** — and can be installed as a desktop or mobile app via PWA.
+It uses **v2 Standard (PBKDF2-SHA512 / 600k iterations)** by default, provides an optional **Keyfile second factor**, and maintains seamless backward compatibility with **v1 Legacy** vaults.
 
 **Perfect for:**
 - Encrypting sensitive folders before storing on USB drives or SD cards
@@ -33,14 +33,16 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
 
 | Feature | Details |
 |---|---|
-| 🔐 **AES-256-GCM Encryption** | Authenticated military-grade encryption (v1 & v2) |
-| 🔑 **v1 Mode — PBKDF2-SHA256** | 100,000 iterations · 16-byte salt · backward-compatible |
-| 🚀 **v2 Mode — PBKDF2-SHA512** | 600,000 iterations · 32-byte salt · 6× stronger KDF |
-| 🗝️ **Keyfile (2nd Factor)** | Any file acts as a physical key — optional, v2 only |
-| 📁 **Full Folder Support** | Encrypts entire folder trees via in-memory ZIP |
+| 🔐 **AES-256-GCM Encryption** | Authenticated military-grade encryption (v2 Standard & v1 Legacy) |
+| 🚀 **v2 Mode (Default Standard)** | PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · 6× stronger KDF |
+| 🗝️ **Keyfile (2nd Factor)** | Any file acts as a physical key — optional second factor |
+| 🔑 **v1 Legacy Support** | 100,000 iterations · 16-byte salt · seamless automatic detection |
+| 📁 **Full Folder Support** | Encrypts entire folder trees via in-memory streaming ZIP |
 | 💧 **Drag & Drop** | Drop a folder to encrypt, drop a `.zev` vault to decrypt |
-| 🔄 **Auto-Version Detection** | Decryption auto-detects v1 vs v2 format from magic header |
-| 💪 **Password Strength Meter** | Real-time visual feedback on password strength |
+| 🔄 **Auto-Version Detection** | Decryption auto-detects v1 vs v2 format from `ZV2\0` magic header |
+| 🎬 **In-Browser Media Player** | Play encrypted 2.5 GB+ videos/audio directly in-browser or in a new tab |
+| 📂 **Decrypted Vault Explorer** | Browse, search, filter, and selectively download decrypted files |
+| 💻 **PC Setup (25+ GB)** | 1-click Windows zero-RAM batch/PowerShell streaming toolkit |
 | 📲 **PWA — Installable App** | Install to home screen / desktop. Works fully offline |
 | 🌐 **100% Offline** | Zero network requests — files and passwords never leave your device |
 | 📦 **Single Portable Output** | Produces one compact `.zev` vault file |
@@ -50,7 +52,7 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
 
 ## 🔐 How It Works
 
-### v1 — Standard Mode (default)
+### v2 — Standard Military-Grade Mode (Default)
 ```
 [Your Folder]
      │
@@ -58,7 +60,33 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
  Package & Compress (Smart Adaptive: STORE for media, Fast DEFLATE for docs)
      │
      ▼
- Generate: Salt (16 bytes) + IV (12 bytes)  ← cryptographically random
+ Generate: Salt (32 bytes) + IV (12 bytes)  ← cryptographically random CSPRNG
+     │
+     ▼
+ PBKDF2(password, salt, 600k iterations, SHA-512) → 256 raw key bytes
+     │
+     ▼ (if optional keyfile provided)
+ SHA-256(keyfile) XOR rawKey  → mixed key bytes
+     │
+     ▼
+ Import as AES-256-GCM key
+     │
+     ▼
+ AES-256-GCM Encrypt → ciphertext + auth tag
+     │
+     ▼
+ Output file: [ Magic 'ZV2\0'(4) | Version(1) | Flags(1) | Salt(32) | IV(12) | Ciphertext+Tag ]
+```
+
+### v1 — Legacy Mode (Backward Compatibility)
+```
+[Your Folder]
+     │
+     ▼
+ Package & Compress (Smart Adaptive: STORE for media, Fast DEFLATE for docs)
+     │
+     ▼
+ Generate: Salt (16 bytes) + IV (12 bytes)  ← cryptographically random CSPRNG
      │
      ▼
  PBKDF2(password, salt, 100k iterations, SHA-256) → 256-bit AES-GCM key
@@ -70,39 +98,26 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
  Output file: [ Salt(16) | IV(12) | Ciphertext+Tag ] → yourfolder.zev
 ```
 
-### v2 — Enhanced Mode (opt-in toggle)
-```
-[Your Folder]
-     │
-     ▼
- Package & Compress (Smart Adaptive: STORE for media, Fast DEFLATE for docs)
-     │
-     ▼
- Generate: Salt (32 bytes) + IV (12 bytes)  ← cryptographically random
-     │
-     ▼
- PBKDF2(password, salt, 600k iterations, SHA-512) → 256 raw key bytes
-     │
-     ▼ (if keyfile provided)
- SHA-256(keyfile) XOR rawKey  → mixed key bytes
-     │
-     ▼
- Import as AES-256-GCM key
-     │
-     ▼
- AES-256-GCM Encrypt → ciphertext + auth tag
-     │
-     ▼
- Output file: [ Magic(4) | Version(1) | Flags(1) | Salt(32) | IV(12) | Ciphertext+Tag ]
-```
-
-**Decryption** is fully automatic — ZevSafe detects the format by reading the 4-byte magic header (`ZV2\0`) and routes to the correct pipeline. v1 vaults always work in v2-capable builds.
+**Decryption** is fully automatic — ZevSafe detects the format by reading the 4-byte magic header (`ZV2\0`) and routes to the correct pipeline. v1 legacy vaults always work seamlessly.
 
 ---
 
 ## 🛡️ Cryptography
 
-### v1 Parameters
+### v2 Parameters (Default Standard)
+| Parameter | Value |
+|---|---|
+| Cipher | AES-256-GCM (Authenticated Encryption) |
+| Key size | 256 bits |
+| IV size | 96 bits — 12 bytes |
+| Salt size | 256 bits — 32 bytes |
+| KDF | PBKDF2-SHA512 |
+| Iterations | 600,000 (exceeds OWASP 2024 recommendations) |
+| Second factor | Optional keyfile (SHA-256 XOR'd into key material) |
+| Format | Magic header `ZV2\0` for auto-detection |
+| Memory optimization | Aggressive deallocation of intermediate buffers before unzipping |
+
+### v1 Parameters (Legacy Compatibility)
 | Parameter | Value |
 |---|---|
 | Cipher | AES-256-GCM |
@@ -114,44 +129,26 @@ It supports two encryption modes — **v1 (Standard)** and **v2 (Enhanced)** —
 | Authentication | Built-in GCM tag — tamper-proof |
 | Entropy source | `window.crypto.getRandomValues()` |
 
-### v2 Parameters (Enhanced)
-| Parameter | Value |
-|---|---|
-| Cipher | AES-256-GCM (same) |
-| Key size | 256 bits (same) |
-| IV size | 96 bits — 12 bytes (same) |
-| Salt size | 256 bits — 32 bytes (2× larger) |
-| KDF | PBKDF2-SHA512 |
-| Iterations | 600,000 (6× stronger) |
-| Second factor | Optional keyfile (SHA-256 XOR'd into key material) |
-| Format | Magic header `ZV2\0` for auto-detection |
-
 > **GCM (Galois/Counter Mode)** provides both **confidentiality AND integrity**. Any tampering with the vault file will cause decryption to fail — no silent data corruption possible.
 
 ---
 
 ## 📖 Usage Guide
 
-### 🔐 Encrypt a Folder — v1 (Standard)
+### 🔐 Encrypt a Folder (v2 Standard by Default)
 1. Open **ZevSafe** in your browser.
-2. Drag & drop your folder into the **Encrypt Folder** panel (or click "Browse Folder").
-3. Enter a strong password (8+ characters) and confirm it.
-4. Click **Encrypt & Download** → downloads `yourfolder.zev`.
-
-### 🚀 Encrypt a Folder — v2 (Enhanced)
-1. Complete steps 1–3 above.
-2. Toggle **Enhanced Security Mode (v2)** — the options panel expands.
-3. Optionally select a **Keyfile** (any file — photo, document, random binary).
-4. Click **Encrypt & Download** → downloads `yourfolder.zev` (v2 format).
-   > ⚠️ If you used a keyfile, keep it. Without it, the vault **cannot be decrypted** — even with the correct password.
+2. Drag & drop your folder into the **Lock a Folder** panel (or click "Browse Folder").
+3. Enter a password or PIN (4+ characters) and confirm it.
+4. *(Optional)* Select a **Keyfile** (any file — photo, document, random binary) for 2-factor security.
+5. Click **Encrypt & Download** → downloads `yourfolder.zev`.
 
 ### 🔓 Decrypt a Vault
 1. Open **ZevSafe**.
-2. Drag & drop your `.zev` file into the **Decrypt** panel (or click "Select .zev File").
-3. If the vault is v2 with a keyfile, click **Select Keyfile** on the decrypt side.
+2. Drag & drop your `.zev` file into the **Unlock a Vault** panel (or click "Select .zev File").
+3. If the vault was encrypted with a keyfile, select the keyfile in the decrypt panel.
 4. Enter your password.
-5. Click **Decrypt & Download** → downloads `yourfolder_decrypted.zip`.
-6. Extract the ZIP to restore your original files.
+5. Click **Decrypt & Download** → opens the **Decrypted Vault Explorer**.
+6. Play media directly, inspect files, or download individual files / full ZIP.
 
 > **Format is auto-detected.** You do not need to manually select v1 or v2 mode when decrypting.
 

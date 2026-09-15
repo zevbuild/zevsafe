@@ -50,7 +50,7 @@
         <!-- ── NAVBAR ── -->
         <nav class="navbar">
             <div class="navbar-brand">
-                <img class="brand-logo" src="zevsafe-logo.jpg" alt="ZevSafe Logo">
+                <img class="brand-logo" src="zevsafe-logo.png" alt="ZevSafe Logo">
                 <span class="brand-name">ZevSafe</span>
             </div>
             <div class="navbar-links">
@@ -158,21 +158,21 @@
                         </div>
                     </div>
 
-                    <!-- ── V2 MODE TOGGLE ── -->
+                    <!-- ── V2 MODE TOGGLE (STANDARD DEFAULT) ── -->
                     <div class="v2-toggle-row">
                         <label class="v2-toggle-label" for="v2-mode-toggle">
-                            <span class="v2-badge">v2</span>
-                            <span class="v2-toggle-text">Enhanced Security Mode</span>
-                            <span class="v2-toggle-hint">PBKDF2-SHA512 · 600k iterations · optional keyfile</span>
+                            <span class="v2-badge">v2 Standard</span>
+                            <span class="v2-toggle-text">Military-Grade Security (Standard)</span>
+                            <span class="v2-toggle-hint">PBKDF2-SHA512 · 600,000 iterations · AES-256-GCM · 32-byte salt</span>
                         </label>
-                        <label class="toggle-switch" aria-label="Enable v2 enhanced mode">
-                            <input type="checkbox" id="v2-mode-toggle" role="switch" aria-checked="false">
+                        <label class="toggle-switch" aria-label="Toggle v2 standard military-grade mode">
+                            <input type="checkbox" id="v2-mode-toggle" role="switch" aria-checked="true" checked>
                             <span class="toggle-track"><span class="toggle-thumb"></span></span>
                         </label>
                     </div>
 
-                    <!-- ── V2 OPTIONS (shown only when toggle is ON) ── -->
-                    <div id="v2-options-panel" class="v2-panel" style="display:none;">
+                    <!-- ── V2 OPTIONS (Keyfile second factor) ── -->
+                    <div id="v2-options-panel" class="v2-panel" style="display:block;">
                         <div class="v2-panel-header">Keyfile (Optional Second Factor)</div>
                         <p class="v2-panel-desc">Any file acts as a physical key. Without it, the vault cannot be unlocked.</p>
                         <div class="v2-keyfile-row">
@@ -411,7 +411,7 @@
         <!-- ── FOOTER ── -->
         <footer class="site-footer">
             <div class="footer-brand">
-                <img class="footer-logo" src="zevsafe-logo.jpg" alt="ZevSafe Logo">
+                <img class="footer-logo" src="zevsafe-logo.png" alt="ZevSafe Logo">
                 <span>ZevSafe</span>
             </div>
             <p class="footer-tagline">Your files stay on your device. Always.</p>
