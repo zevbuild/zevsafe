@@ -29,7 +29,11 @@
 - 1-Click PC Desktop Setup (25+ GB): added instant in-browser generation and download of `ZevSafe-PC-Setup-25GB.zip` containing drag-and-drop batch launchers (`Encrypt-Vault.bat`, `Decrypt-Vault.bat`) and streaming scripts for zero-RAM 25 GB – 100 GB+ vaults with no manual configuration
 - Granular Per-File Smart Compression: upgraded packaging engine to evaluate each file entry individually (STORE mode for pre-compressed media/archives + Fast Level 1 DEFLATE for compressible documents/code), achieving up to 10x faster vault packaging with real-time throughput telemetry (MB/s)
 - Native PowerShell Streaming Compression Upgrade: added pre-compressed extension hashing and selective NoCompression/Fastest streaming in `encrypt.ps1`
-- Bumped PWA Service Worker app version to v14 for cache synchronization
+- Multi-Display Screen Size Optimization: separate high-performance CSS layouts tailored for Compact Phones (<=380px), Standard Mobile (<=520px), Tablets (521-900px), Laptops (901-1440px), and Ultrawide Displays (>1440px) with safe-area insets and `content-visibility: auto` 120Hz smooth scrolling
+- Advanced Decrypted Files View: introduced interactive List / Grid view toggle, category filter tabs (Videos, Audio, Photos, Docs, Code, Archives), multi-criteria sorting (Name, Size, Type), and multi-file selection with 1-click batch downloads
+- Feature-Packed Cinema Video & Audio Player: added playback speed selector (0.5x - 2.0x), instant +/-10s scrubbing, playlist auto-navigation across all vault media (Prev/Next tracks), Picture-in-Picture (PiP), Fullscreen, Aspect Ratio (Fit/Fill), duration counter, and full keyboard navigation (Space, Arrows, F, P, M)
+- Bumped PWA Service Worker app version to v15 for cache synchronization
+
 
 
 

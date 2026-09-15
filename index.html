@@ -430,8 +430,10 @@
         <div class="explorer-modal">
             <header class="explorer-header">
                 <div class="explorer-title-wrap">
-                    <span class="explorer-badge">Decrypted Vault</span>
-                    <h3 id="explorer-modal-title" class="explorer-title">Vault Explorer</h3>
+                    <div class="explorer-title-row">
+                        <span class="explorer-badge">Decrypted Vault</span>
+                        <h3 id="explorer-modal-title" class="explorer-title">Vault Explorer</h3>
+                    </div>
                     <span class="explorer-meta" id="explorer-modal-meta">0 files · 0 KB</span>
                 </div>
                 <button class="explorer-btn-close" id="btn-close-explorer" title="Close Explorer" aria-label="Close Explorer">✕</button>
@@ -444,19 +446,65 @@
                     <input type="text" id="explorer-search-input" class="explorer-search-input" placeholder="Search files in vault..." autocomplete="off" spellcheck="false">
                     <button class="explorer-search-clear" id="btn-clear-explorer-search" title="Clear search" style="display: none;">✕</button>
                 </div>
-                <button class="explorer-btn-download-all" id="btn-explorer-download-all" title="Download all files as a ZIP archive">
-                    ⬇️ Download Full ZIP
-                </button>
+
+                <div class="explorer-controls-wrap">
+                    <!-- Sort dropdown -->
+                    <div class="explorer-sort-wrap">
+                        <span class="explorer-sort-label">Sort:</span>
+                        <select id="explorer-sort-select" class="explorer-sort-select" aria-label="Sort files">
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="size-desc">Size (Largest)</option>
+                            <option value="size-asc">Size (Smallest)</option>
+                            <option value="type">File Type</option>
+                        </select>
+                    </div>
+
+                    <!-- View Toggle: List / Grid -->
+                    <div class="explorer-view-toggle" role="group" aria-label="View mode">
+                        <button class="explorer-view-btn explorer-view-btn--active" id="btn-view-list" title="List View" aria-pressed="true">☰</button>
+                        <button class="explorer-view-btn" id="btn-view-grid" title="Grid View" aria-pressed="false">⊞</button>
+                    </div>
+
+                    <button class="explorer-btn-download-all" id="btn-explorer-download-all" title="Download all files as a ZIP archive">
+                        ⬇️ Full ZIP
+                    </button>
+                </div>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div class="explorer-filter-tabs" id="explorer-filter-tabs" role="tablist" aria-label="Filter by file type">
+                <button class="explorer-filter-tab explorer-filter-tab--active" data-filter="all" role="tab" aria-selected="true">All (<span id="filter-count-all">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="video" role="tab" aria-selected="false">🎬 Videos (<span id="filter-count-video">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="audio" role="tab" aria-selected="false">🎵 Audio (<span id="filter-count-audio">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="photo" role="tab" aria-selected="false">🖼️ Photos (<span id="filter-count-photo">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="doc" role="tab" aria-selected="false">📄 Docs (<span id="filter-count-doc">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="code" role="tab" aria-selected="false">💻 Code (<span id="filter-count-code">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="archive" role="tab" aria-selected="false">📦 Archives (<span id="filter-count-archive">0</span>)</button>
+            </div>
+
+            <!-- Batch Selection Action Bar (hidden until items selected) -->
+            <div class="explorer-batch-bar" id="explorer-batch-bar" style="display: none;">
+                <div class="explorer-batch-info">
+                    <label class="explorer-checkbox-wrap">
+                        <input type="checkbox" id="explorer-select-all" aria-label="Select all visible files">
+                        <span>Select All</span>
+                    </label>
+                    <span id="explorer-selected-count">0 files selected</span>
+                </div>
+                <div class="explorer-batch-actions">
+                    <button class="explorer-btn-batch-dl" id="btn-batch-download" title="Download selected files">⬇️ Download Selected</button>
+                </div>
             </div>
 
             <!-- File Explorer Body / Tree List -->
-            <div class="explorer-body" id="explorer-file-list" role="list">
-                <!-- Dynamically populated file rows -->
+            <div class="explorer-body explorer-body--list" id="explorer-file-list" role="list">
+                <!-- Dynamically populated file rows or grid cards -->
             </div>
 
             <!-- Explorer Footer -->
             <footer class="explorer-footer">
-                <span class="explorer-footer-hint">💡 Tap or click <strong>⬇️</strong> next to any individual file to download it instantly.</span>
+                <span class="explorer-footer-hint" id="explorer-footer-hint">💡 Click <strong>▶️ Play</strong> to stream media directly or <strong>⬇️ Save</strong> to extract locally.</span>
                 <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-done-explorer">Done</button>
             </footer>
         </div>
@@ -469,6 +517,7 @@
                 <div class="media-modal-info">
                     <span class="media-type-badge" id="media-modal-badge">🎬 Video</span>
                     <h3 class="media-modal-title" id="media-modal-title">Media Preview</h3>
+                    <span class="media-track-counter" id="media-modal-counter">1 of 1</span>
                 </div>
                 <div class="media-modal-actions">
                     <button class="media-btn-action" id="btn-media-open-tab" title="Open and play in new browser tab">↗️ New Tab</button>
@@ -479,6 +528,38 @@
 
             <div class="media-modal-body" id="media-modal-body">
                 <!-- Dynamically populated <video> or <audio> element -->
+            </div>
+
+            <!-- Advanced Cinema Controls Bar -->
+            <div class="media-cinema-bar" id="media-cinema-bar">
+                <div class="media-cinema-left">
+                    <button class="media-ctrl-btn" id="btn-media-prev" title="Previous media track (Shift+Left)">⏮️ Prev</button>
+                    <button class="media-ctrl-btn" id="btn-media-rewind10" title="Rewind 10s (Left Arrow)">⏪ -10s</button>
+                    <button class="media-ctrl-btn" id="btn-media-forward10" title="Forward 10s (Right Arrow)">⏩ +10s</button>
+                    <button class="media-ctrl-btn" id="btn-media-next" title="Next media track (Shift+Right)">⏭️ Next</button>
+                </div>
+
+                <div class="media-cinema-center">
+                    <span class="media-time-badge" id="media-time-display">00:00 / 00:00</span>
+                </div>
+
+                <div class="media-cinema-right">
+                    <div class="media-speed-wrap">
+                        <span class="media-speed-label">Speed:</span>
+                        <select id="media-speed-select" class="media-speed-select" aria-label="Playback Speed">
+                            <option value="0.5">0.5×</option>
+                            <option value="0.75">0.75×</option>
+                            <option value="1" selected>1.0×</option>
+                            <option value="1.25">1.25×</option>
+                            <option value="1.5">1.5×</option>
+                            <option value="2">2.0×</option>
+                        </select>
+                    </div>
+
+                    <button class="media-ctrl-btn" id="btn-media-fit" title="Toggle aspect ratio (Fit/Fill)">↔️ Fit</button>
+                    <button class="media-ctrl-btn" id="btn-media-pip" title="Picture-in-Picture (P)">📺 PiP</button>
+                    <button class="media-ctrl-btn" id="btn-media-fullscreen" title="Fullscreen (F)">⛶ Fullscreen</button>
+                </div>
             </div>
         </div>
     </div>

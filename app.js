@@ -1758,65 +1758,51 @@ function getFileIcon(filename) {
     return iconMap[ext] || '📄';
 }
 
-/**
- * Open and populate the Decrypted Vault File Explorer modal.
- */
-function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
-    currentDecryptedFolderName = folderName;
-    currentDecryptedZip = zipInstance;
-    currentDecryptedBlob = fullZipBlob;
+// ============================================
+// DECRYPTED VAULT FILE EXPLORER & ADVANCED FILES VIEW
+// ============================================
 
-    const modal = document.getElementById('vault-explorer-modal');
-    const modalTitle = document.getElementById('explorer-modal-title');
-    const modalMeta = document.getElementById('explorer-modal-meta');
-    const searchInput = document.getElementById('explorer-search-input');
-    const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+let currentDecryptedBlob = null;
+let currentDecryptedFolderName = '';
+let currentDecryptedFileList = [];
+let currentDecryptedZip = null;
+let explorerViewMode = 'list'; // 'list' | 'grid'
+let explorerFilterCategory = 'all'; // 'all' | 'video' | 'audio' | 'photo' | 'doc' | 'code' | 'archive'
+let explorerSortMode = 'name-asc';
+let explorerSelectedFiles = new Set(); // Set of file.path strings
 
-    if (!modal) return;
-
-    // Reset search
-    if (searchInput) searchInput.value = '';
-    if (clearSearchBtn) clearSearchBtn.style.display = 'none';
-
-    // Parse all files from JSZip
-    currentDecryptedFileList = [];
-    let totalBytes = 0;
-
-    zipInstance.forEach((relativePath, zipEntry) => {
-        if (!zipEntry.dir) {
-            const size = zipEntry._data ? (zipEntry._data.uncompressedSize || 0) : 0;
-            totalBytes += size;
-            currentDecryptedFileList.push({
-                path: relativePath,
-                name: relativePath.split('/').pop() || relativePath,
-                dirPath: relativePath.includes('/') ? relativePath.substring(0, relativePath.lastIndexOf('/')) : '',
-                size: size,
-                entry: zipEntry
-            });
-        }
-    });
-
-    if (modalTitle) modalTitle.textContent = `${folderName}`;
-    if (modalMeta) modalMeta.textContent = `${currentDecryptedFileList.length} file(s) · ${formatBytes(totalBytes || fullZipBlob.size)}`;
-
-    renderExplorerFileList('');
-    modal.style.display = 'flex';
-}
-
-function closeVaultExplorer() {
-    const modal = document.getElementById('vault-explorer-modal');
-    if (modal) modal.style.display = 'none';
-}
+// Cinema Media Player State
+let currentMediaBlobUrl = null;
+let currentMediaFilename = '';
+let currentMediaBlob = null;
+let currentMediaPlaylist = []; // [{ path, name, category, mimeType, size }]
+let currentMediaIndex = -1;
+let currentMediaFitCover = false;
 
 /**
- * Detect if a file is a playable media file (video or audio)
+ * Classify file category based on extension.
  */
-function getMediaCategory(filename) {
+function getFileCategory(filename) {
     const ext = (filename || '').split('.').pop().toLowerCase();
-    const videoExts = ['mp4', 'webm', 'mov', 'mkv', 'm4v', 'ogv', 'avi'];
-    const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'weba'];
+    const videoExts = ['mp4', 'webm', 'mov', 'mkv', 'm4v', 'ogv', 'avi', 'wmv', 'flv', '3gp', 'ts'];
+    const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'opus', 'weba', 'wma'];
+    const photoExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'avif', 'svg', 'bmp', 'ico'];
+    const docExts = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'csv', 'epub', 'odt'];
+    const codeExts = ['js', 'ts', 'jsx', 'tsx', 'html', 'css', 'json', 'py', 'c', 'cpp', 'h', 'cs', 'java', 'go', 'rs', 'php', 'rb', 'sh', 'ps1', 'sql', 'yaml', 'yml', 'xml', 'md'];
+    const archiveExts = ['zip', '7z', 'rar', 'gz', 'tar', 'bz2', 'xz', 'iso', 'dmg', 'apk'];
+
     if (videoExts.includes(ext)) return 'video';
     if (audioExts.includes(ext)) return 'audio';
+    if (photoExts.includes(ext)) return 'photo';
+    if (docExts.includes(ext)) return 'doc';
+    if (codeExts.includes(ext)) return 'code';
+    if (archiveExts.includes(ext)) return 'archive';
+    return 'other';
+}
+
+function getMediaCategory(filename) {
+    const cat = getFileCategory(filename);
+    if (cat === 'video' || cat === 'audio') return cat;
     return null;
 }
 
@@ -1841,55 +1827,288 @@ function getMediaMimeType(filename) {
     return mimeMap[ext] || 'application/octet-stream';
 }
 
-// Media player state
-let currentMediaBlobUrl = null;
-let currentMediaFilename = '';
-let currentMediaBlob = null;
+function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return '00:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
 
-function openMediaPlayer(fileBlob, filename, category) {
+function updateCategoryFilterCounts() {
+    const counts = { all: currentDecryptedFileList.length, video: 0, audio: 0, photo: 0, doc: 0, code: 0, archive: 0 };
+    for (const f of currentDecryptedFileList) {
+        const cat = getFileCategory(f.name);
+        if (counts[cat] !== undefined) counts[cat]++;
+    }
+    for (const key of Object.keys(counts)) {
+        const el = document.getElementById(`filter-count-${key}`);
+        if (el) el.textContent = counts[key];
+    }
+}
+
+function updateBatchBar() {
+    const batchBar = document.getElementById('explorer-batch-bar');
+    const selectedCountEl = document.getElementById('explorer-selected-count');
+    const selectAllCb = document.getElementById('explorer-select-all');
+    if (!batchBar) return;
+
+    const count = explorerSelectedFiles.size;
+    if (count > 0) {
+        batchBar.style.display = 'flex';
+        if (selectedCountEl) selectedCountEl.textContent = `${count} file(s) selected`;
+    } else {
+        batchBar.style.display = 'none';
+        if (selectAllCb) selectAllCb.checked = false;
+    }
+}
+
+async function batchDownloadSelected() {
+    if (explorerSelectedFiles.size === 0 || !currentDecryptedZip) return;
+    const btn = document.getElementById('btn-batch-download');
+    const origText = btn ? btn.textContent : '⬇️ Download Selected';
+    try {
+        if (btn) btn.textContent = '⏳ Preparing...';
+        if (explorerSelectedFiles.size === 1) {
+            const singlePath = Array.from(explorerSelectedFiles)[0];
+            const fileItem = currentDecryptedFileList.find(f => f.path === singlePath);
+            if (fileItem) {
+                const blob = await currentDecryptedZip.file(singlePath).async('blob');
+                triggerDownload(blob, fileItem.name);
+            }
+        } else {
+            const batchZip = new JSZip();
+            for (const path of explorerSelectedFiles) {
+                const rawBlob = await currentDecryptedZip.file(path).async('blob');
+                batchZip.file(path, rawBlob);
+            }
+            const outBlob = await batchZip.generateAsync({ type: 'blob' });
+            triggerDownload(outBlob, `${currentDecryptedFolderName}_selected.zip`);
+        }
+        if (btn) {
+            btn.textContent = '✅ Downloaded!';
+            setTimeout(() => { btn.textContent = origText; }, 2000);
+        }
+    } catch (err) {
+        console.error('[Batch Download Error]', err);
+        alert(`Failed to download selected: ${err.message}`);
+        if (btn) btn.textContent = origText;
+    }
+}
+
+function sortFileList(files, mode) {
+    const list = [...files];
+    switch (mode) {
+        case 'name-asc':
+            return list.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+        case 'name-desc':
+            return list.sort((a, b) => b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' }));
+        case 'size-desc':
+            return list.sort((a, b) => (b.size || 0) - (a.size || 0));
+        case 'size-asc':
+            return list.sort((a, b) => (a.size || 0) - (b.size || 0));
+        case 'type':
+            return list.sort((a, b) => {
+                const extA = (a.name || '').split('.').pop().toLowerCase();
+                const extB = (b.name || '').split('.').pop().toLowerCase();
+                return extA.localeCompare(extB);
+            });
+        default:
+            return list;
+    }
+}
+
+/**
+ * Open and populate the Decrypted Vault File Explorer modal.
+ */
+function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
+    currentDecryptedFolderName = folderName;
+    currentDecryptedZip = zipInstance;
+    currentDecryptedBlob = fullZipBlob;
+    explorerSelectedFiles.clear();
+
+    const modal = document.getElementById('vault-explorer-modal');
+    const modalTitle = document.getElementById('explorer-modal-title');
+    const modalMeta = document.getElementById('explorer-modal-meta');
+    const searchInput = document.getElementById('explorer-search-input');
+    const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+
+    if (!modal) return;
+
+    // Reset search
+    if (searchInput) searchInput.value = '';
+    if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+
+    // Parse all files from JSZip
+    currentDecryptedFileList = [];
+    currentMediaPlaylist = [];
+    let totalBytes = 0;
+
+    zipInstance.forEach((relativePath, zipEntry) => {
+        if (!zipEntry.dir) {
+            const size = zipEntry._data ? (zipEntry._data.uncompressedSize || 0) : 0;
+            totalBytes += size;
+            const fileItem = {
+                path: relativePath,
+                name: relativePath.split('/').pop() || relativePath,
+                dirPath: relativePath.includes('/') ? relativePath.substring(0, relativePath.lastIndexOf('/')) : '',
+                size: size,
+                entry: zipEntry
+            };
+            currentDecryptedFileList.push(fileItem);
+
+            const mediaCat = getMediaCategory(fileItem.name);
+            if (mediaCat) {
+                currentMediaPlaylist.push({
+                    path: fileItem.path,
+                    name: fileItem.name,
+                    category: mediaCat,
+                    mimeType: getMediaMimeType(fileItem.name),
+                    size: fileItem.size
+                });
+            }
+        }
+    });
+
+    if (modalTitle) modalTitle.textContent = `${folderName}`;
+    if (modalMeta) modalMeta.textContent = `${currentDecryptedFileList.length} file(s) · ${formatBytes(totalBytes || fullZipBlob.size)}`;
+
+    updateCategoryFilterCounts();
+    updateBatchBar();
+    renderExplorerFileList('');
+    modal.style.display = 'flex';
+}
+
+function closeVaultExplorer() {
+    const modal = document.getElementById('vault-explorer-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+/**
+ * Play a media track from the vault playlist by index.
+ */
+async function playMediaByIndex(index) {
+    if (!currentMediaPlaylist || index < 0 || index >= currentMediaPlaylist.length) return;
+    currentMediaIndex = index;
+    const item = currentMediaPlaylist[index];
+
     const modal = document.getElementById('vault-media-modal');
     const badge = document.getElementById('media-modal-badge');
     const title = document.getElementById('media-modal-title');
+    const counter = document.getElementById('media-modal-counter');
     const body = document.getElementById('media-modal-body');
+    const prevBtn = document.getElementById('btn-media-prev');
+    const nextBtn = document.getElementById('btn-media-next');
+    const speedSelect = document.getElementById('media-speed-select');
+    const timeDisplay = document.getElementById('media-time-display');
 
-    if (!modal || !body) return;
+    if (!modal || !body || !currentDecryptedZip) return;
 
-    // Clean up previous URL
     if (currentMediaBlobUrl) {
         URL.revokeObjectURL(currentMediaBlobUrl);
         currentMediaBlobUrl = null;
     }
 
-    currentMediaBlob = fileBlob;
-    currentMediaFilename = filename;
-    currentMediaBlobUrl = URL.createObjectURL(fileBlob);
+    try {
+        const rawBlob = await currentDecryptedZip.file(item.path).async('blob');
+        currentMediaBlob = new Blob([rawBlob], { type: item.mimeType });
+        currentMediaFilename = item.name;
+        currentMediaBlobUrl = URL.createObjectURL(currentMediaBlob);
 
-    if (badge) badge.textContent = category === 'video' ? '🎬 Video' : '🎵 Audio';
-    if (title) title.textContent = filename;
+        if (badge) badge.textContent = item.category === 'video' ? '🎬 Video' : '🎵 Audio';
+        if (title) title.textContent = item.name;
+        if (counter) counter.textContent = `${index + 1} of ${currentMediaPlaylist.length}`;
 
-    body.innerHTML = '';
+        if (prevBtn) prevBtn.disabled = index <= 0;
+        if (nextBtn) nextBtn.disabled = index >= currentMediaPlaylist.length - 1;
 
-    if (category === 'video') {
-        const video = document.createElement('video');
-        video.className = 'media-player-element';
-        video.controls = true;
-        video.autoplay = true;
-        video.playsInline = true;
-        video.setAttribute('webkit-playsinline', 'true');
-        video.setAttribute('preload', 'auto');
-        video.src = currentMediaBlobUrl;
-        body.appendChild(video);
-    } else {
-        const audio = document.createElement('audio');
-        audio.className = 'media-player-element';
-        audio.controls = true;
-        audio.autoplay = true;
-        audio.setAttribute('preload', 'auto');
-        audio.src = currentMediaBlobUrl;
-        body.appendChild(audio);
+        body.innerHTML = '';
+
+        if (item.category === 'video') {
+            const video = document.createElement('video');
+            video.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
+            video.controls = true;
+            video.autoplay = true;
+            video.playsInline = true;
+            video.setAttribute('webkit-playsinline', 'true');
+            video.setAttribute('preload', 'auto');
+            video.src = currentMediaBlobUrl;
+
+            if (speedSelect) video.playbackRate = parseFloat(speedSelect.value || '1');
+
+            video.addEventListener('timeupdate', () => {
+                if (timeDisplay) {
+                    timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+                }
+            });
+            video.addEventListener('loadedmetadata', () => {
+                if (timeDisplay) {
+                    timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+                }
+            });
+            video.addEventListener('ended', () => {
+                if (currentMediaIndex < currentMediaPlaylist.length - 1) {
+                    playMediaByIndex(currentMediaIndex + 1);
+                }
+            });
+
+            body.appendChild(video);
+        } else {
+            const audio = document.createElement('audio');
+            audio.className = 'media-player-element';
+            audio.controls = true;
+            audio.autoplay = true;
+            audio.setAttribute('preload', 'auto');
+            audio.src = currentMediaBlobUrl;
+
+            if (speedSelect) audio.playbackRate = parseFloat(speedSelect.value || '1');
+
+            audio.addEventListener('timeupdate', () => {
+                if (timeDisplay) {
+                    timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+                }
+            });
+            audio.addEventListener('loadedmetadata', () => {
+                if (timeDisplay) {
+                    timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+                }
+            });
+            audio.addEventListener('ended', () => {
+                if (currentMediaIndex < currentMediaPlaylist.length - 1) {
+                    playMediaByIndex(currentMediaIndex + 1);
+                }
+            });
+
+            body.appendChild(audio);
+        }
+
+        modal.style.display = 'flex';
+    } catch (err) {
+        console.error('[Media Play Error]', err);
+        alert(`Failed to load media: ${err.message}`);
     }
+}
 
-    modal.style.display = 'flex';
+function openMediaPlayerByPath(filePath) {
+    if (!currentMediaPlaylist || currentMediaPlaylist.length === 0) {
+        // Build playlist if not built
+        currentMediaPlaylist = [];
+        for (const fileItem of currentDecryptedFileList) {
+            const mediaCat = getMediaCategory(fileItem.name);
+            if (mediaCat) {
+                currentMediaPlaylist.push({
+                    path: fileItem.path,
+                    name: fileItem.name,
+                    category: mediaCat,
+                    mimeType: getMediaMimeType(fileItem.name),
+                    size: fileItem.size
+                });
+            }
+        }
+    }
+    const idx = currentMediaPlaylist.findIndex(item => item.path === filePath);
+    if (idx !== -1) {
+        playMediaByIndex(idx);
+    }
 }
 
 function closeMediaPlayer() {
@@ -1911,116 +2130,212 @@ function closeMediaPlayer() {
 }
 
 /**
- * Render file list with search filtering.
+ * Render file list with search, category filtering, sorting, and view mode (list/grid).
  */
 function renderExplorerFileList(query = '') {
     const listEl = document.getElementById('explorer-file-list');
     if (!listEl) return;
 
     listEl.innerHTML = '';
+    listEl.className = `explorer-body ${explorerViewMode === 'grid' ? 'explorer-body--grid' : 'explorer-body--list'}`;
+
     const q = query.trim().toLowerCase();
-    const filtered = q
-        ? currentDecryptedFileList.filter(f => f.path.toLowerCase().includes(q))
-        : currentDecryptedFileList;
+    let filtered = currentDecryptedFileList;
+
+    // Search query filter
+    if (q) {
+        filtered = filtered.filter(f => f.path.toLowerCase().includes(q));
+    }
+
+    // Category filter
+    if (explorerFilterCategory !== 'all') {
+        filtered = filtered.filter(f => getFileCategory(f.name) === explorerFilterCategory);
+    }
+
+    // Sort files
+    filtered = sortFileList(filtered, explorerSortMode);
 
     if (filtered.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'explorer-empty';
-        empty.textContent = q ? `No files match "${query}"` : 'No files found in vault.';
+        empty.textContent = q ? `No files match "${query}" in this view.` : 'No files in this category.';
         listEl.appendChild(empty);
         return;
     }
 
     filtered.forEach(file => {
-        const row = document.createElement('div');
-        row.className = 'explorer-item';
-
-        const left = document.createElement('div');
-        left.className = 'explorer-item-left';
-
-        const icon = document.createElement('span');
-        icon.className = 'explorer-item-icon';
-        icon.textContent = getFileIcon(file.name);
-
-        const info = document.createElement('div');
-        info.className = 'explorer-item-info';
-
-        const name = document.createElement('span');
-        name.className = 'explorer-item-name';
-        name.textContent = file.name;
-        name.title = file.path;
-
-        const path = document.createElement('span');
-        path.className = 'explorer-item-path';
-        path.textContent = file.dirPath ? `${file.dirPath}/` : '';
-
-        info.appendChild(name);
-        if (file.dirPath) info.appendChild(path);
-
-        left.appendChild(icon);
-        left.appendChild(info);
-
-        const right = document.createElement('div');
-        right.className = 'explorer-item-right';
-
-        const size = document.createElement('span');
-        size.className = 'explorer-item-size';
-        size.textContent = file.size > 0 ? formatBytes(file.size) : '';
-        right.appendChild(size);
-
-        // Auto-Detect Video and Audio files for instant playback
+        const isSelected = explorerSelectedFiles.has(file.path);
         const mediaCategory = getMediaCategory(file.name);
-        if (mediaCategory) {
-            const playBtn = document.createElement('button');
-            playBtn.className = 'explorer-file-play-btn';
-            playBtn.title = `Play ${file.name} directly in browser`;
-            playBtn.innerHTML = '▶️ Play';
-            playBtn.addEventListener('click', async (e) => {
+
+        if (explorerViewMode === 'grid') {
+            // ── Grid Card Layout ──
+            const card = document.createElement('div');
+            card.className = 'explorer-grid-card';
+
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'explorer-grid-cb';
+            cb.checked = isSelected;
+            cb.setAttribute('aria-label', `Select ${file.name}`);
+            cb.addEventListener('change', () => {
+                if (cb.checked) explorerSelectedFiles.add(file.path);
+                else explorerSelectedFiles.delete(file.path);
+                updateBatchBar();
+            });
+            card.appendChild(cb);
+
+            const icon = document.createElement('div');
+            icon.className = 'explorer-grid-icon';
+            icon.textContent = getFileIcon(file.name);
+            card.appendChild(icon);
+
+            const name = document.createElement('div');
+            name.className = 'explorer-grid-name';
+            name.textContent = file.name;
+            name.title = file.path;
+            card.appendChild(name);
+
+            if (file.dirPath) {
+                const pathEl = document.createElement('div');
+                pathEl.className = 'explorer-grid-path';
+                pathEl.textContent = `${file.dirPath}/`;
+                card.appendChild(pathEl);
+            }
+
+            const size = document.createElement('div');
+            size.className = 'explorer-grid-size';
+            size.textContent = file.size > 0 ? formatBytes(file.size) : '';
+            card.appendChild(size);
+
+            const actions = document.createElement('div');
+            actions.className = 'explorer-grid-actions';
+
+            if (mediaCategory) {
+                const playBtn = document.createElement('button');
+                playBtn.className = 'explorer-file-play-btn';
+                playBtn.title = `Play ${file.name}`;
+                playBtn.innerHTML = '▶️';
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openMediaPlayerByPath(file.path);
+                });
+                actions.appendChild(playBtn);
+            }
+
+            const dlBtn = document.createElement('button');
+            dlBtn.className = 'explorer-file-dl-btn';
+            dlBtn.title = `Download ${file.name}`;
+            dlBtn.innerHTML = '⬇️';
+            dlBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 try {
-                    playBtn.textContent = '⏳ ...';
-                    const rawBlob = await currentDecryptedZip.file(file.path).async('blob');
-                    const mimeType = getMediaMimeType(file.name);
-                    const mediaBlob = new Blob([rawBlob], { type: mimeType });
-                    openMediaPlayer(mediaBlob, file.name, mediaCategory);
-                    playBtn.innerHTML = '▶️ Play';
+                    dlBtn.textContent = '⏳';
+                    const fileBlob = await currentDecryptedZip.file(file.path).async('blob');
+                    triggerDownload(fileBlob, file.name);
+                    dlBtn.textContent = '✅';
+                    setTimeout(() => { dlBtn.innerHTML = '⬇️'; }, 2000);
                 } catch (err) {
-                    console.error('[Media Play Error]', err);
-                    alert(`Failed to load media: ${err.message}`);
-                    playBtn.innerHTML = '▶️ Play';
+                    console.error('[Explorer Download]', err);
+                    alert(`Failed to extract file: ${err.message}`);
+                    dlBtn.innerHTML = '⬇️';
                 }
             });
-            right.appendChild(playBtn);
-        }
+            actions.appendChild(dlBtn);
 
-        const dlBtn = document.createElement('button');
-        dlBtn.className = 'explorer-file-dl-btn';
-        dlBtn.title = `Download ${file.name}`;
-        dlBtn.innerHTML = '⬇️ Save';
-        dlBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            try {
-                dlBtn.textContent = '⏳ ...';
-                const fileBlob = await currentDecryptedZip.file(file.path).async('blob');
-                triggerDownload(fileBlob, file.name);
-                dlBtn.textContent = '✅ Saved';
-                setTimeout(() => { dlBtn.innerHTML = '⬇️ Save'; }, 2000);
-            } catch (err) {
-                console.error('[Explorer Download]', err);
-                alert(`Failed to extract file: ${err.message}`);
-                dlBtn.innerHTML = '⬇️ Save';
+            card.appendChild(actions);
+            listEl.appendChild(card);
+
+        } else {
+            // ── List Row Layout ──
+            const row = document.createElement('div');
+            row.className = 'explorer-item';
+
+            const left = document.createElement('div');
+            left.className = 'explorer-item-left';
+
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'explorer-item-cb';
+            cb.checked = isSelected;
+            cb.setAttribute('aria-label', `Select ${file.name}`);
+            cb.addEventListener('change', () => {
+                if (cb.checked) explorerSelectedFiles.add(file.path);
+                else explorerSelectedFiles.delete(file.path);
+                updateBatchBar();
+            });
+            left.appendChild(cb);
+
+            const icon = document.createElement('span');
+            icon.className = 'explorer-item-icon';
+            icon.textContent = getFileIcon(file.name);
+            left.appendChild(icon);
+
+            const info = document.createElement('div');
+            info.className = 'explorer-item-info';
+
+            const name = document.createElement('span');
+            name.className = 'explorer-item-name';
+            name.textContent = file.name;
+            name.title = file.path;
+            info.appendChild(name);
+
+            if (file.dirPath) {
+                const pathEl = document.createElement('span');
+                pathEl.className = 'explorer-item-path';
+                pathEl.textContent = `${file.dirPath}/`;
+                info.appendChild(pathEl);
             }
-        });
 
-        right.appendChild(dlBtn);
+            left.appendChild(info);
 
-        row.appendChild(left);
-        row.appendChild(right);
-        listEl.appendChild(row);
+            const right = document.createElement('div');
+            right.className = 'explorer-item-right';
+
+            const size = document.createElement('span');
+            size.className = 'explorer-item-size';
+            size.textContent = file.size > 0 ? formatBytes(file.size) : '';
+            right.appendChild(size);
+
+            if (mediaCategory) {
+                const playBtn = document.createElement('button');
+                playBtn.className = 'explorer-file-play-btn';
+                playBtn.title = `Play ${file.name} directly in browser`;
+                playBtn.innerHTML = '▶️ Play';
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openMediaPlayerByPath(file.path);
+                });
+                right.appendChild(playBtn);
+            }
+
+            const dlBtn = document.createElement('button');
+            dlBtn.className = 'explorer-file-dl-btn';
+            dlBtn.title = `Download ${file.name}`;
+            dlBtn.innerHTML = '⬇️ Save';
+            dlBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try {
+                    dlBtn.textContent = '⏳ ...';
+                    const fileBlob = await currentDecryptedZip.file(file.path).async('blob');
+                    triggerDownload(fileBlob, file.name);
+                    dlBtn.textContent = '✅ Saved';
+                    setTimeout(() => { dlBtn.innerHTML = '⬇️ Save'; }, 2000);
+                } catch (err) {
+                    console.error('[Explorer Download]', err);
+                    alert(`Failed to extract file: ${err.message}`);
+                    dlBtn.innerHTML = '⬇️ Save';
+                }
+            });
+            right.appendChild(dlBtn);
+
+            row.appendChild(left);
+            row.appendChild(right);
+            listEl.appendChild(row);
+        }
     });
 }
 
-// Wire up Explorer & Media Player UI event listeners
+// Wire up Explorer & Cinema Media Player UI event listeners
 function initExplorerUI() {
     const searchInput = document.getElementById('explorer-search-input');
     const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
@@ -2029,12 +2344,28 @@ function initExplorerUI() {
     const dlAllBtn = document.getElementById('btn-explorer-download-all');
     const modal = document.getElementById('vault-explorer-modal');
 
+    const sortSelect = document.getElementById('explorer-sort-select');
+    const viewListBtn = document.getElementById('btn-view-list');
+    const viewGridBtn = document.getElementById('btn-view-grid');
+    const selectAllCb = document.getElementById('explorer-select-all');
+    const batchDlBtn = document.getElementById('btn-batch-download');
+    const filterTabs = document.querySelectorAll('.explorer-filter-tab');
+
     // Media modal elements
     const mediaModal = document.getElementById('vault-media-modal');
     const closeMediaBtn = document.getElementById('btn-close-media-modal');
     const mediaOpenTabBtn = document.getElementById('btn-media-open-tab');
     const mediaDlBtn = document.getElementById('btn-media-download');
+    const mediaPrevBtn = document.getElementById('btn-media-prev');
+    const mediaNextBtn = document.getElementById('btn-media-next');
+    const mediaRewind10Btn = document.getElementById('btn-media-rewind10');
+    const mediaForward10Btn = document.getElementById('btn-media-forward10');
+    const mediaSpeedSelect = document.getElementById('media-speed-select');
+    const mediaFitBtn = document.getElementById('btn-media-fit');
+    const mediaPipBtn = document.getElementById('btn-media-pip');
+    const mediaFullscreenBtn = document.getElementById('btn-media-fullscreen');
 
+    // Search
     searchInput?.addEventListener('input', () => {
         const val = searchInput.value;
         if (clearSearchBtn) clearSearchBtn.style.display = val ? 'block' : 'none';
@@ -2047,6 +2378,64 @@ function initExplorerUI() {
         renderExplorerFileList('');
     });
 
+    // Sort
+    sortSelect?.addEventListener('change', () => {
+        explorerSortMode = sortSelect.value;
+        renderExplorerFileList(searchInput ? searchInput.value : '');
+    });
+
+    // View mode switch
+    viewListBtn?.addEventListener('click', () => {
+        explorerViewMode = 'list';
+        viewListBtn.classList.add('explorer-view-btn--active');
+        viewGridBtn?.classList.remove('explorer-view-btn--active');
+        viewListBtn.setAttribute('aria-pressed', 'true');
+        viewGridBtn?.setAttribute('aria-pressed', 'false');
+        renderExplorerFileList(searchInput ? searchInput.value : '');
+    });
+
+    viewGridBtn?.addEventListener('click', () => {
+        explorerViewMode = 'grid';
+        viewGridBtn.classList.add('explorer-view-btn--active');
+        viewListBtn?.classList.remove('explorer-view-btn--active');
+        viewGridBtn.setAttribute('aria-pressed', 'true');
+        viewListBtn?.setAttribute('aria-pressed', 'false');
+        renderExplorerFileList(searchInput ? searchInput.value : '');
+    });
+
+    // Category filter tabs
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            filterTabs.forEach(t => {
+                t.classList.remove('explorer-filter-tab--active');
+                t.setAttribute('aria-selected', 'false');
+            });
+            tab.classList.add('explorer-filter-tab--active');
+            tab.setAttribute('aria-selected', 'true');
+            explorerFilterCategory = tab.dataset.filter || 'all';
+            renderExplorerFileList(searchInput ? searchInput.value : '');
+        });
+    });
+
+    // Select All
+    selectAllCb?.addEventListener('change', () => {
+        const q = (searchInput?.value || '').trim().toLowerCase();
+        let visible = currentDecryptedFileList;
+        if (q) visible = visible.filter(f => f.path.toLowerCase().includes(q));
+        if (explorerFilterCategory !== 'all') visible = visible.filter(f => getFileCategory(f.name) === explorerFilterCategory);
+
+        if (selectAllCb.checked) {
+            visible.forEach(f => explorerSelectedFiles.add(f.path));
+        } else {
+            visible.forEach(f => explorerSelectedFiles.delete(f.path));
+        }
+        updateBatchBar();
+        renderExplorerFileList(searchInput ? searchInput.value : '');
+    });
+
+    // Batch download
+    batchDlBtn?.addEventListener('click', batchDownloadSelected);
+
     closeBtn?.addEventListener('click', closeVaultExplorer);
     doneBtn?.addEventListener('click', closeVaultExplorer);
 
@@ -2056,7 +2445,7 @@ function initExplorerUI() {
             triggerDownload(currentDecryptedBlob, `${currentDecryptedFolderName}_decrypted.zip`);
             log(`✅ Downloaded full vault: "${currentDecryptedFolderName}_decrypted.zip"`, 'success');
             setTimeout(() => {
-                dlAllBtn.textContent = '⬇️ Download Full ZIP';
+                dlAllBtn.textContent = '⬇️ Full ZIP';
             }, 2000);
         }
     });
@@ -2065,7 +2454,7 @@ function initExplorerUI() {
         if (e.target.id === 'vault-explorer-modal') closeVaultExplorer();
     });
 
-    // Media modal events
+    // ── Cinema Media Modal Events ──
     closeMediaBtn?.addEventListener('click', closeMediaPlayer);
     mediaModal?.addEventListener('click', (e) => {
         if (e.target.id === 'vault-media-modal') closeMediaPlayer();
@@ -2080,6 +2469,103 @@ function initExplorerUI() {
     mediaDlBtn?.addEventListener('click', () => {
         if (currentMediaBlob && currentMediaFilename) {
             triggerDownload(currentMediaBlob, currentMediaFilename);
+        }
+    });
+
+    mediaPrevBtn?.addEventListener('click', () => {
+        if (currentMediaIndex > 0) playMediaByIndex(currentMediaIndex - 1);
+    });
+
+    mediaNextBtn?.addEventListener('click', () => {
+        if (currentMediaIndex < currentMediaPlaylist.length - 1) playMediaByIndex(currentMediaIndex + 1);
+    });
+
+    mediaRewind10Btn?.addEventListener('click', () => {
+        const media = document.querySelector('#media-modal-body video, #media-modal-body audio');
+        if (media) media.currentTime = Math.max(0, media.currentTime - 10);
+    });
+
+    mediaForward10Btn?.addEventListener('click', () => {
+        const media = document.querySelector('#media-modal-body video, #media-modal-body audio');
+        if (media) media.currentTime = Math.min(media.duration || 0, media.currentTime + 10);
+    });
+
+    mediaSpeedSelect?.addEventListener('change', (e) => {
+        const media = document.querySelector('#media-modal-body video, #media-modal-body audio');
+        if (media) media.playbackRate = parseFloat(e.target.value || '1');
+    });
+
+    mediaFitBtn?.addEventListener('click', () => {
+        currentMediaFitCover = !currentMediaFitCover;
+        const video = document.querySelector('#media-modal-body video');
+        if (video) video.classList.toggle('media-player-element--cover', currentMediaFitCover);
+        if (mediaFitBtn) mediaFitBtn.textContent = currentMediaFitCover ? '↔️ Fill' : '↔️ Fit';
+    });
+
+    mediaPipBtn?.addEventListener('click', async () => {
+        const video = document.querySelector('#media-modal-body video');
+        if (!video) return;
+        try {
+            if (document.pictureInPictureElement) {
+                await document.exitPictureInPicture();
+            } else if (video.requestPictureInPicture) {
+                await video.requestPictureInPicture();
+            }
+        } catch (err) {
+            console.warn('[PiP Error]', err);
+        }
+    });
+
+    mediaFullscreenBtn?.addEventListener('click', () => {
+        const container = document.querySelector('.media-modal-container') || document.querySelector('#media-modal-body video');
+        if (!container) return;
+        if (!document.fullscreenElement) {
+            container.requestFullscreen?.() || container.webkitRequestFullscreen?.();
+        } else {
+            document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+        }
+    });
+
+    // Keyboard Shortcuts for Media Player
+    window.addEventListener('keydown', (e) => {
+        const mediaModalEl = document.getElementById('vault-media-modal');
+        if (!mediaModalEl || mediaModalEl.style.display === 'none') return;
+
+        const media = document.querySelector('#media-modal-body video, #media-modal-body audio');
+        if (!media) return;
+
+        if (e.key === ' ' || e.code === 'Space') {
+            e.preventDefault();
+            if (media.paused) media.play(); else media.pause();
+        } else if (e.key === 'ArrowLeft' && e.shiftKey) {
+            e.preventDefault();
+            if (currentMediaIndex > 0) playMediaByIndex(currentMediaIndex - 1);
+        } else if (e.key === 'ArrowRight' && e.shiftKey) {
+            e.preventDefault();
+            if (currentMediaIndex < currentMediaPlaylist.length - 1) playMediaByIndex(currentMediaIndex + 1);
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            media.currentTime = Math.max(0, media.currentTime - 10);
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            media.currentTime = Math.min(media.duration || 0, media.currentTime + 10);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            media.volume = Math.min(1, media.volume + 0.1);
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            media.volume = Math.max(0, media.volume - 0.1);
+        } else if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            mediaFullscreenBtn?.click();
+        } else if (e.key === 'p' || e.key === 'P') {
+            e.preventDefault();
+            mediaPipBtn?.click();
+        } else if (e.key === 'm' || e.key === 'M') {
+            e.preventDefault();
+            media.muted = !media.muted;
+        } else if (e.key === 'Escape') {
+            closeMediaPlayer();
         }
     });
 }
