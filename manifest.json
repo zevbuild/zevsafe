@@ -1,14 +1,17 @@
 {
+    "id": "https://zevsafe.pages.dev/",
     "name": "ZevSafe — Offline File Encryption",
     "short_name": "ZevSafe",
     "description": "100% client-side AES-256-GCM folder encryption. Your files and passwords never leave your device.",
     "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",
+    "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
     "orientation": "any",
     "background_color": "#08091a",
     "theme_color": "#08091a",
     "lang": "en-US",
+    "dir": "ltr",
     "categories": ["security", "utilities", "productivity"],
     "icons": [
         {
@@ -21,31 +24,45 @@
             "src": "./icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "./icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
         },
         {
             "src": "./icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
-        }
-    ],
-    "screenshots": [],
-    "shortcuts": [
-        {
-            "name": "Encrypt Files",
-            "short_name": "Encrypt",
-            "description": "Open ZevSafe and encrypt a folder",
-            "url": "./index.html#encrypt",
-            "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }]
+            "purpose": "any"
         },
         {
-            "name": "Decrypt Files",
-            "short_name": "Decrypt",
-            "description": "Open ZevSafe and decrypt a vault",
-            "url": "./index.html#decrypt",
-            "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }]
+            "src": "./icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ],
+    "shortcuts": [
+        {
+            "name": "Encrypt Folder",
+            "short_name": "Encrypt",
+            "description": "Lock and encrypt a folder into a secure vault",
+            "url": "./index.html#encrypt",
+            "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        },
+        {
+            "name": "Decrypt Vault",
+            "short_name": "Decrypt",
+            "description": "Unlock and restore a .zev vault file",
+            "url": "./index.html#decrypt",
+            "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        }
+    ],
+    "launch_handler": {
+        "client_mode": "navigate-existing"
+    },
     "prefer_related_applications": false
 }
