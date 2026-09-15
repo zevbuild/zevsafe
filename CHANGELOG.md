@@ -1,10 +1,15 @@
 # Changelog
 
 ## Version 4 — September 15, 2026
+- Fixed Files & Folder Upload & Drag-and-Drop: Removed restrictive single-folder drop constraints, allowing users to drop loose files, multiple files, or full directory structures directly into the vault creator
+- Added Dedicated "Browse Files" & "Browse Folder" Selectors: Dual browse buttons in the encrypt drop zone allow picking either full directories (`webkitdirectory`) or individual multi-file selections with 1 click
+- Fixed Clear Selection Buttons: Wired `#btn-clear-encrypt` and `#btn-clear-decrypt` with full state resetting, allowing users to easily clear, replace, or re-select files/vaults
+- Added DataTransfer Fallback: Added robust fallback to `dt.files` for browsers or drag-and-drop sources where `webkitGetAsEntry()` returns empty or unsupported items
+- Added Selected Widget Click-to-Change: Users can click the selected file/folder card to immediately open the picker and choose alternative files
 - Standard v2 Military-Grade Encryption by Default: All newly created `.zev` vaults now use hardened v2 encryption by default (PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · AES-256-GCM authenticated cipher with optional keyfile second factor)
 - Seamless Backward Compatibility: Auto-detects legacy v1 vaults (`[Salt(16B) | IV(12B) | Ciphertext]`) vs standard v2 vaults (`ZV2\0` magic header) on decryption with zero manual switching
 - Aggressive Decryption Memory Deallocation: Immediately deallocates intermediate `arrayBuffer` and `ciphertext` buffers upon GCM authentication completion, dropping peak RAM consumption by ~50% prior to ZIP decompression
-- PWA Service Worker Cache Sync: Bumped PWA cache version to `v17` and updated documentation across `README.md`, `how-to-use.html`, and `how-to-use-zevsafe/`
+- PWA Service Worker Cache Sync: Bumped PWA cache version to `v18` and updated documentation across `README.md`, `how-to-use.html`, and `how-to-use-zevsafe/`
 
 ## Version 3 — July 5, 2026
 - Renamed vault file extension from `.enc` to `.zev`

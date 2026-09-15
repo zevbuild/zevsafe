@@ -3,7 +3,8 @@
 // ============================================
 const encryptDropZone     = document.getElementById('encrypt-drop-zone');
 const encryptFolderInput  = document.getElementById('encrypt-folder-input');    // mobile input
-const encryptFolderInputDz= document.getElementById('encrypt-folder-input-dz'); // desktop drop-zone input
+const encryptFolderInputDz= document.getElementById('encrypt-folder-input-dz'); // desktop folder input
+const encryptFilesInputDz = document.getElementById('encrypt-files-input-dz');  // desktop files input
 const encryptSelectedInfo = document.getElementById('encrypt-selected-info');
 const encryptPassword     = document.getElementById('encrypt-password');
 const encryptConfirm      = document.getElementById('encrypt-confirm');
@@ -136,24 +137,77 @@ function switchTab(tab, animate = true) {
     }
 }
 
-// Wire mobile file inputs (large tap buttons shown on phone)
-function onEncryptFilesSelected(files, folderName) {
+// ── Selection State Handlers ────────────────────────
+function onEncryptSelected(files, folderName) {
+    if (!files || files.length === 0) return;
     selectedEncryptFiles      = files;
-    selectedEncryptFolderName = folderName;
-    encryptSelectedInfo.textContent = `✅ ${folderName} — ${files.length} file(s)`;
-    log(`Folder "${folderName}" selected (${files.length} files).`, 'info');
+    selectedEncryptFolderName = folderName || 'secured_vault';
+
+    let totalSize = 0;
+    for (const f of files) {
+        totalSize += (f.size || 0);
+    }
+
+    if (encryptDzInner && encryptSelectedWidget) {
+        encryptDzInner.style.display = 'none';
+        encryptSelectedWidget.style.display = 'flex';
+        encryptSelectedName.textContent = folderName;
+        encryptSelectedMeta.textContent = `${files.length} file(s) · ${formatBytes(totalSize)}`;
+    }
+
+    encryptSelectedInfo.style.display = 'none';
+    log(`Selected "${folderName}" (${files.length} file(s), ${formatBytes(totalSize)}).`, 'info');
+    if (totalSize > 2.5 * 1024 * 1024 * 1024) {
+        log('💡 Very large dataset (>2.5 GB). For instant 25GB+ background processing with zero RAM limits, click "PC Setup (25+ GB)" in the top bar.', 'info');
+    }
     showProgress();
 }
 
-function onDecryptFileSelected(files) {
-    if (files.length > 0) {
-        selectedDecryptFile = files[0];
-        decryptSelectedInfo.textContent = `✅ ${selectedDecryptFile.name}`;
-        log(`Vault file "${selectedDecryptFile.name}" selected.`, 'info');
-        showProgress();
+function clearEncryptSelection() {
+    selectedEncryptFiles      = [];
+    selectedEncryptFolderName = '';
+    if (encryptFolderInput)   encryptFolderInput.value = '';
+    if (encryptFolderInputDz) encryptFolderInputDz.value = '';
+    if (encryptFilesInputDz)  encryptFilesInputDz.value = '';
+
+    if (encryptDzInner && encryptSelectedWidget) {
+        encryptDzInner.style.display = '';
+        encryptSelectedWidget.style.display = 'none';
     }
+    encryptSelectedInfo.style.display = '';
+    encryptSelectedInfo.textContent = 'No folder or files selected';
+    log('Cleared selected files.', 'info');
 }
 
+function onDecryptSelected(files) {
+    if (!files || files.length === 0) return;
+    selectedDecryptFile = files[0];
+
+    if (decryptDzInner && decryptSelectedWidget) {
+        decryptDzInner.style.display = 'none';
+        decryptSelectedWidget.style.display = 'flex';
+        decryptSelectedName.textContent = selectedDecryptFile.name;
+        decryptSelectedMeta.textContent = formatBytes(selectedDecryptFile.size || 0);
+    }
+
+    decryptSelectedInfo.style.display = 'none';
+    log(`Vault file "${selectedDecryptFile.name}" selected (${formatBytes(selectedDecryptFile.size || 0)}).`, 'info');
+    showProgress();
+}
+
+function clearDecryptSelection() {
+    selectedDecryptFile = null;
+    if (decryptFileInput)   decryptFileInput.value = '';
+    if (decryptFileInputDz) decryptFileInputDz.value = '';
+
+    if (decryptDzInner && decryptSelectedWidget) {
+        decryptDzInner.style.display = '';
+        decryptSelectedWidget.style.display = 'none';
+    }
+    decryptSelectedInfo.style.display = '';
+    decryptSelectedInfo.textContent = 'No file selected';
+    log('Cleared selected vault file.', 'info');
+}
 
 // Re-check device on resize (e.g. rotation)
 window.addEventListener('resize', () => {
@@ -168,8 +222,6 @@ window.addEventListener('resize', () => {
 
 // Run on load
 initDeviceUI();
-
-
 
 // ============================================
 // SHOW / HIDE PASSWORD TOGGLE
@@ -193,7 +245,7 @@ document.querySelectorAll('.toggle-pw').forEach(btn => {
 });
 
 // ============================================
-// DRAG & DROP — FIXED ASYNC TRAVERSAL
+// DRAG & DROP — ROBUST ASYNC TRAVERSAL WITH FALLBACK
 // ============================================
 
 /**
@@ -214,19 +266,17 @@ function readEntryAsync(entry, pathPrefix) {
             const readBatch = () => {
                 reader.readEntries(entries => {
                     if (entries.length === 0) {
-                        // All batches read — done
                         resolve(allFiles);
                     } else {
-                        // Chrome caps readEntries at 100 items per call — keep reading
                         const promises = entries.map(e =>
                             readEntryAsync(e, pathPrefix + entry.name + '/')
                         );
                         Promise.all(promises).then(results => {
                             results.forEach(r => allFiles.push(...r));
-                            readBatch(); // read next batch
+                            readBatch();
                         });
                     }
-                }, () => resolve(allFiles)); // error on readEntries → return what we have
+                }, () => resolve(allFiles));
             };
 
             readBatch();
@@ -236,7 +286,7 @@ function readEntryAsync(entry, pathPrefix) {
     });
 }
 
-function setupDragAndDrop(dropZone, fileInput, onFilesSelected, requireFolder = false) {
+function setupDragAndDrop(dropZone, primaryInput, onFilesSelected) {
     // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
         dropZone.addEventListener(ev, e => {
@@ -256,51 +306,59 @@ function setupDragAndDrop(dropZone, fileInput, onFilesSelected, requireFolder = 
     // Handle drop
     dropZone.addEventListener('drop', async (e) => {
         const dt = e.dataTransfer;
+        if (!dt) return;
 
-        // Restrict drops to folders only if requireFolder is true and it's not a mobile browser
-        if (requireFolder && !isMobile()) {
-            if (dt.items && dt.items.length > 0) {
-                const entry = dt.items[0].webkitGetAsEntry();
-                if (!entry || !entry.isDirectory) {
-                    alert('⚠️ Only folder uploads are supported. Please drag and drop a folder.');
-                    return;
-                }
-            } else if (dt.files.length > 0 && !dt.files[0].webkitRelativePath) {
-                alert('⚠️ Only folder uploads are supported. Please drag and drop a folder.');
-                return;
-            }
-        }
+        let files = [];
+        let folderName = 'secured_vault';
 
         if (dt.items && dt.items.length > 0) {
-            const rootName = dt.items[0].webkitGetAsEntry()?.name || 'files';
             const promises = [];
+            let firstEntryName = '';
 
             for (let i = 0; i < dt.items.length; i++) {
-                const entry = dt.items[i].webkitGetAsEntry();
+                const item = dt.items[i];
+                const entry = (item.webkitGetAsEntry ? item.webkitGetAsEntry() : null);
                 if (entry) {
+                    if (!firstEntryName) firstEntryName = entry.name;
                     promises.push(readEntryAsync(entry, ''));
                 }
             }
 
-            const results = await Promise.all(promises);
-            const files = results.flat();
+            if (promises.length > 0) {
+                const results = await Promise.all(promises);
+                files = results.flat();
+            }
 
             if (files.length > 0) {
-                onFilesSelected(files, rootName);
-            } else {
-                log('No readable files found in the dropped item.', 'warn');
+                if (dt.items.length === 1 && firstEntryName) {
+                    folderName = firstEntryName.replace(/\.[^/.]+$/, '') || firstEntryName;
+                } else if (dt.items.length > 1) {
+                    folderName = 'secured_files';
+                }
             }
+        }
+
+        // Reliable fallback if webkitGetAsEntry failed or yielded 0 files
+        if (files.length === 0 && dt.files && dt.files.length > 0) {
+            files = Array.from(dt.files);
+            if (files.length === 1) {
+                folderName = files[0].name.replace(/\.[^/.]+$/, '') || files[0].name;
+            } else {
+                folderName = 'secured_files';
+            }
+        }
+
+        if (files.length > 0) {
+            onFilesSelected(files, folderName);
         } else {
-            // Fallback for browsers without filesystem API
-            const files = Array.from(dt.files);
-            onFilesSelected(files, files[0]?.name || 'files');
+            log('⚠️ No readable files found in the dropped item.', 'warn');
         }
     });
 
-    // Click to open file picker (only if not triggered from inside the browse button)
+    // Click on dropzone opens picker
     dropZone.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-browse') || e.target.closest('.btn-browse--teal')) return;
-        const activeInput = isMobile() ? fileInput : (document.getElementById(fileInput.id + '-dz') || fileInput);
+        if (e.target.closest('.btn-browse') || e.target.closest('.btn-browse--teal') || e.target.closest('.sf-clear-btn')) return;
+        const activeInput = isMobile() ? primaryInput : (document.getElementById(primaryInput.id + '-dz') || primaryInput);
         if (activeInput) activeInput.click();
     });
 
@@ -308,87 +366,118 @@ function setupDragAndDrop(dropZone, fileInput, onFilesSelected, requireFolder = 
     dropZone.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            const activeInput = isMobile() ? fileInput : (document.getElementById(fileInput.id + '-dz') || fileInput);
+            const activeInput = isMobile() ? primaryInput : (document.getElementById(primaryInput.id + '-dz') || primaryInput);
             if (activeInput) activeInput.click();
         }
     });
+}
 
-    // Helper to handle selected files
-    const handleFiles = (inputEl) => {
-        const files = Array.from(inputEl.files);
+// ── Initialize Drop Zones ───────────────────────────
+setupDragAndDrop(encryptDropZone, encryptFolderInput, (files, folderName) => {
+    onEncryptSelected(files, folderName);
+});
+
+setupDragAndDrop(decryptDropZone, decryptFileInput, (files) => {
+    onDecryptSelected(files);
+});
+
+// ── Wire File Input Elements ─────────────────────────
+if (encryptFolderInputDz) {
+    encryptFolderInputDz.addEventListener('change', () => {
+        const files = Array.from(encryptFolderInputDz.files || []);
         if (files.length > 0) {
-            let folderName = 'folder';
+            let folderName = 'secured_folder';
             for (const f of files) {
                 if (f.webkitRelativePath) {
                     folderName = f.webkitRelativePath.split('/')[0];
                     break;
                 }
             }
-            if (folderName === 'folder' && files.length > 1) {
-                folderName = 'secured_files';
-            } else if (folderName === 'folder' && files.length === 1) {
-                folderName = files[0].name.substring(0, files[0].name.lastIndexOf('.')) || files[0].name;
-            }
-            onFilesSelected(files, folderName);
+            onEncryptSelected(files, folderName);
         }
-        inputEl.value = '';
-    };
-
-    // Handle browse input for mobile fileInput
-    if (fileInput) {
-        fileInput.addEventListener('change', () => handleFiles(fileInput));
-    }
-
-    // Handle browse input for desktop fileInput if it exists
-    const desktopInput = document.getElementById(fileInput.id + '-dz');
-    if (desktopInput) {
-        desktopInput.addEventListener('change', () => handleFiles(desktopInput));
-    }
+        encryptFolderInputDz.value = '';
+    });
 }
 
-// Initialize Drag & Drop
-setupDragAndDrop(encryptDropZone, encryptFolderInput, (files, folderName) => {
-    selectedEncryptFiles      = files;
-    selectedEncryptFolderName = folderName;
-    
-    let totalSize = 0;
-    for (const f of files) {
-        totalSize += f.size;
-    }
-    
-    if (encryptDzInner && encryptSelectedWidget) {
-        encryptDzInner.style.display = 'none';
-        encryptSelectedWidget.style.display = 'flex';
-        encryptSelectedName.textContent = folderName;
-        encryptSelectedMeta.textContent = `${files.length} file(s) · ${formatBytes(totalSize)}`;
-    }
-    
-    encryptSelectedInfo.style.display = 'none';
-    log(`Folder "${folderName}" selected (${files.length} files, ${formatBytes(totalSize)}).`, 'info');
-    if (totalSize > 2.5 * 1024 * 1024 * 1024) {
-        log('💡 Very large folder (>2.5 GB). For instant 25GB+ background processing with zero RAM limits, click "PC Setup (25+ GB)" in the top bar.', 'info');
-    }
-    showProgress();
-    
-
-}, true);
-
-setupDragAndDrop(decryptDropZone, decryptFileInput, (files) => {
-    if (files.length > 0) {
-        selectedDecryptFile = files[0];
-        
-        if (decryptDzInner && decryptSelectedWidget) {
-            decryptDzInner.style.display = 'none';
-            decryptSelectedWidget.style.display = 'flex';
-            decryptSelectedName.textContent = selectedDecryptFile.name;
-            decryptSelectedMeta.textContent = formatBytes(selectedDecryptFile.size);
+if (encryptFilesInputDz) {
+    encryptFilesInputDz.addEventListener('change', () => {
+        const files = Array.from(encryptFilesInputDz.files || []);
+        if (files.length > 0) {
+            let folderName = files.length === 1
+                ? (files[0].name.replace(/\.[^/.]+$/, '') || files[0].name)
+                : 'secured_files';
+            onEncryptSelected(files, folderName);
         }
-        
-        decryptSelectedInfo.style.display = 'none';
-        log(`Vault file "${selectedDecryptFile.name}" selected (${formatBytes(selectedDecryptFile.size)}).`, 'info');
-        showProgress();
-    }
-});
+        encryptFilesInputDz.value = '';
+    });
+}
+
+if (encryptFolderInput) {
+    encryptFolderInput.addEventListener('change', () => {
+        const files = Array.from(encryptFolderInput.files || []);
+        if (files.length > 0) {
+            let folderName = files.length === 1
+                ? (files[0].name.replace(/\.[^/.]+$/, '') || files[0].name)
+                : 'secured_files';
+            for (const f of files) {
+                if (f.webkitRelativePath) {
+                    folderName = f.webkitRelativePath.split('/')[0];
+                    break;
+                }
+            }
+            onEncryptSelected(files, folderName);
+        }
+        encryptFolderInput.value = '';
+    });
+}
+
+if (decryptFileInputDz) {
+    decryptFileInputDz.addEventListener('change', () => {
+        const files = Array.from(decryptFileInputDz.files || []);
+        if (files.length > 0) onDecryptSelected(files);
+        decryptFileInputDz.value = '';
+    });
+}
+
+if (decryptFileInput) {
+    decryptFileInput.addEventListener('change', () => {
+        const files = Array.from(decryptFileInput.files || []);
+        if (files.length > 0) onDecryptSelected(files);
+        decryptFileInput.value = '';
+    });
+}
+
+// ── Wire Clear Buttons ────────────────────────────────
+if (btnClearEncrypt) {
+    btnClearEncrypt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clearEncryptSelection();
+    });
+}
+
+if (btnClearDecrypt) {
+    btnClearDecrypt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clearDecryptSelection();
+    });
+}
+
+// ── Allow clicking selected widget to re-open picker ──
+if (encryptSelectedWidget) {
+    encryptSelectedWidget.addEventListener('click', (e) => {
+        if (e.target.closest('.sf-clear-btn')) return;
+        const activeInput = isMobile() ? encryptFolderInput : (encryptFilesInputDz || encryptFolderInputDz);
+        if (activeInput) activeInput.click();
+    });
+}
+
+if (decryptSelectedWidget) {
+    decryptSelectedWidget.addEventListener('click', (e) => {
+        if (e.target.closest('.sf-clear-btn')) return;
+        const activeInput = isMobile() ? decryptFileInput : (decryptFileInputDz || decryptFileInput);
+        if (activeInput) activeInput.click();
+    });
+}
 
 // ============================================
 // PROGRESS & LOGGING HELPERS
@@ -1073,7 +1162,7 @@ function isPreCompressedExtension(filename) {
 
 btnEncrypt.addEventListener('click', async () => {
     if (selectedEncryptFiles.length === 0) {
-        alert('⚠️ Please select or drop a folder first.');
+        alert('⚠️ Please select or drop files or a folder first.');
         return;
     }
 
@@ -1276,17 +1365,10 @@ btnEncrypt.addEventListener('click', async () => {
         updateProgress('✅ Encryption complete!', 100);
         showPasswordSavePrompt(recoveryRecord);
 
-        // Reset encrypt selected widget
-        selectedEncryptFiles = [];
-        selectedEncryptFolderName = '';
+        // Reset encrypt selection & keyfile
+        clearEncryptSelection();
         v2KeyfileEncrypt = null;
         updateKeyfileBadge('encrypt', null);
-        if (encryptDzInner && encryptSelectedWidget) {
-            encryptDzInner.style.display = '';
-            encryptSelectedWidget.style.display = 'none';
-        }
-        encryptSelectedInfo.style.display = '';
-        encryptSelectedInfo.textContent = 'No folder selected';
 
     } catch (err) {
         log(`❌ Encryption failed: ${err.message}`, 'error');
@@ -1441,16 +1523,10 @@ btnDecrypt.addEventListener('click', async () => {
         // Open the in-browser Decrypted Vault File Explorer so the user can choose to download individual files or the full ZIP
         openVaultExplorer(folderName, unzipped, decryptedBlob);
 
-        // Reset decrypt selected widget
-        selectedDecryptFile = null;
+        // Reset decrypt selection & keyfile
+        clearDecryptSelection();
         v2KeyfileDecrypt = null;
         updateKeyfileBadge('decrypt', null);
-        if (decryptDzInner && decryptSelectedWidget) {
-            decryptDzInner.style.display = '';
-            decryptSelectedWidget.style.display = 'none';
-        }
-        decryptSelectedInfo.style.display = '';
-        decryptSelectedInfo.textContent = 'No file selected';
 
     } catch (err) {
         // AES-GCM throws OperationError for wrong password or tampered data
