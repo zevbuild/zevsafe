@@ -20,9 +20,6 @@ const SHELL_ASSETS = [
     './styles.css',
     './app.js',
     './jszip.min.js',
-    './favicon.svg',
-    './icon-192.png',
-    './icon-512.png',
     './manifest.json',
     './zevsafe-logo.png'
 ];
