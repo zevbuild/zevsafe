@@ -55,7 +55,7 @@
             </div>
             <div class="navbar-links">
                 <button class="nav-pill nav-pill--cta" id="btn-download-pc-setup" title="Download 1-Click 25GB+ PC Toolkit">💻 PC Setup (25+ GB)</button>
-                <a href="/how-to-use/index.html" class="nav-pill">📖 Guide</a>
+                <a href="./how-to-use-zevsafe/index.html" class="nav-pill">📖 Guide</a>
                 <a href="https://github.com/zevbuild" target="_blank" class="nav-pill nav-pill-ghost">GitHub ↗</a>
             </div>
         </nav>
@@ -75,7 +75,7 @@
                     AES-256 Military-Grade Folder Encryption. Runs entirely in your browser — your data and passwords never leave your device.
                 </p>
                 <div class="hero-tech-line phone-hide">
-                    🔐 AES-256-GCM &nbsp;·&nbsp; 🔑 WEB-VERSION-18 &nbsp;·&nbsp; 📁 Full Folders
+                    🔐 AES-256-GCM &nbsp;·&nbsp; 🔑 WEB-VERSION-19 &nbsp;·&nbsp; 📁 Full Folders
                 </div>
             </div>
         </header>
@@ -108,34 +108,35 @@
                     <h2 class="card-title">Encrypt Folder</h2>
                     <p class="card-desc">Compress &amp; encrypt an entire folder into a single portable vault file.</p>
 
-                    <!-- Desktop: drop zone -->
+                    <!-- Desktop / Mobile drop zone -->
                     <div class="drop-zone" id="encrypt-drop-zone" role="button" tabindex="0"
-                         aria-label="Drop folder here or click to browse">
+                         aria-label="Drop files or folder here or click to browse">
                         <div class="drop-zone-inner" id="encrypt-dz-inner">
                             <div class="drop-icon-wrap">
                                 <span class="drop-icon">📁</span>
                                 <div class="drop-ring"></div>
                             </div>
-                            <p class="drop-primary">Drop folder here</p>
+                            <p class="drop-primary">Drop files or folder here</p>
                             <p class="drop-secondary">or</p>
-                            <label class="btn-browse" onclick="event.stopPropagation()">
-                                Browse Folder
-                                <input type="file" id="encrypt-folder-input-dz" webkitdirectory directory multiple
-                                       style="display:none;" autocomplete="off">
-                            </label>
-                            <!-- Mobile-friendly file input (multiple files) -->
+                            <div class="drop-btn-row">
+                                <button type="button" class="btn-browse" id="btn-browse-folder">📁 Browse Folder</button>
+                                <button type="button" class="btn-browse btn-browse--ghost" id="btn-browse-files">📄 Browse Files</button>
+                            </div>
+                            <!-- Hidden File Inputs -->
+                            <input type="file" id="encrypt-folder-input-dz" webkitdirectory directory multiple style="display:none;" autocomplete="off">
+                            <input type="file" id="encrypt-files-input-dz" multiple style="display:none;" autocomplete="off">
                             <input type="file" id="encrypt-folder-input" multiple style="display:none;" autocomplete="off">
                         </div>
                         <!-- Uploaded files summary widget -->
-                        <div class="selected-files-widget" id="encrypt-selected-widget" style="display: none;" onclick="event.stopPropagation()">
+                        <div class="selected-files-widget" id="encrypt-selected-widget" style="display: none;">
                             <span class="sf-icon">📁</span>
                             <div class="sf-info">
                                 <span class="sf-name" id="encrypt-selected-name">folder_name</span>
                                 <span class="sf-meta" id="encrypt-selected-meta">0 files · 0 KB</span>
                             </div>
-                            <button class="sf-clear-btn" id="btn-clear-encrypt" title="Clear selection">✕</button>
+                            <button class="sf-clear-btn" id="btn-clear-encrypt" type="button" aria-label="Clear selection" title="Clear selection">✕</button>
                         </div>
-                        <p class="drop-selected" id="encrypt-selected-info">No folder selected</p>
+                        <p class="drop-selected" id="encrypt-selected-info">No folder or files selected</p>
                     </div>
 
                     <div class="field-group">
@@ -206,7 +207,7 @@
                     <h2 class="card-title">Decrypt Folder</h2>
                     <p class="card-desc">Restore your original folder from a <code>.zev</code> vault file with your password.</p>
 
-                    <!-- Desktop: drop zone -->
+                    <!-- Desktop / Mobile drop zone -->
                     <div class="drop-zone" id="decrypt-drop-zone" role="button" tabindex="0"
                          aria-label="Drop .zev file here or click to browse">
                         <div class="drop-zone-inner" id="decrypt-dz-inner">
@@ -216,22 +217,19 @@
                             </div>
                             <p class="drop-primary">Drop .zev file here</p>
                             <p class="drop-secondary">or</p>
-                            <label class="btn-browse btn-browse--teal" onclick="event.stopPropagation()">
-                                Select .zev File
-                                <input type="file" id="decrypt-file-input-dz" accept=".zev"
-                                       style="display:none;" autocomplete="off">
-                            </label>
-                            <!-- Mobile-friendly decrypt file input -->
+                            <button type="button" class="btn-browse btn-browse--teal" id="btn-browse-decrypt">📦 Select .zev File</button>
+                            <!-- Hidden File Inputs -->
+                            <input type="file" id="decrypt-file-input-dz" accept=".zev" style="display:none;" autocomplete="off">
                             <input type="file" id="decrypt-file-input" accept=".zev" style="display:none;" autocomplete="off">
                         </div>
                         <!-- Decrypt file summary widget -->
-                        <div class="selected-files-widget" id="decrypt-selected-widget" style="display: none;" onclick="event.stopPropagation()">
+                        <div class="selected-files-widget selected-files-widget--teal" id="decrypt-selected-widget" style="display: none;">
                             <span class="sf-icon">📦</span>
                             <div class="sf-info">
                                 <span class="sf-name" id="decrypt-selected-name">vault_name.zev</span>
                                 <span class="sf-meta" id="decrypt-selected-meta">0 KB</span>
                             </div>
-                            <button class="sf-clear-btn" id="btn-clear-decrypt" title="Clear selection">✕</button>
+                            <button class="sf-clear-btn sf-clear-btn--teal" id="btn-clear-decrypt" type="button" aria-label="Clear selection" title="Clear selection">✕</button>
                         </div>
                         <p class="drop-selected" id="decrypt-selected-info">No file selected</p>
                     </div>
@@ -416,7 +414,7 @@
             </div>
             <p class="footer-tagline">Your files stay on your device. Always.</p>
             <div class="footer-links">
-                <a href="how-to-use.html">How To Use</a>
+                <a href="./how-to-use-zevsafe/index.html">How To Use</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>

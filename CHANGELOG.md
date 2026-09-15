@@ -9,7 +9,7 @@
 - Standard v2 Military-Grade Encryption by Default: All newly created `.zev` vaults now use hardened v2 encryption by default (PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · AES-256-GCM authenticated cipher with optional keyfile second factor)
 - Seamless Backward Compatibility: Auto-detects legacy v1 vaults (`[Salt(16B) | IV(12B) | Ciphertext]`) vs standard v2 vaults (`ZV2\0` magic header) on decryption with zero manual switching
 - Aggressive Decryption Memory Deallocation: Immediately deallocates intermediate `arrayBuffer` and `ciphertext` buffers upon GCM authentication completion, dropping peak RAM consumption by ~50% prior to ZIP decompression
-- PWA Service Worker Cache Sync: Bumped PWA cache version to `v18` and updated documentation across `README.md`, `how-to-use.html`, and `how-to-use-zevsafe/`
+- PWA Service Worker Cache Sync: Bumped PWA cache version to `v19` and updated documentation across `README.md`, `how-to-use-zevsafe/`, and app shell assets
 
 ## Version 3 — July 5, 2026
 - Renamed vault file extension from `.enc` to `.zev`

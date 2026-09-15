@@ -5,6 +5,8 @@ const encryptDropZone     = document.getElementById('encrypt-drop-zone');
 const encryptFolderInput  = document.getElementById('encrypt-folder-input');    // mobile input
 const encryptFolderInputDz= document.getElementById('encrypt-folder-input-dz'); // desktop folder input
 const encryptFilesInputDz = document.getElementById('encrypt-files-input-dz');  // desktop files input
+const btnBrowseFolder     = document.getElementById('btn-browse-folder');       // desktop folder browse button
+const btnBrowseFiles      = document.getElementById('btn-browse-files');        // desktop files browse button
 const encryptSelectedInfo = document.getElementById('encrypt-selected-info');
 const encryptPassword     = document.getElementById('encrypt-password');
 const encryptConfirm      = document.getElementById('encrypt-confirm');
@@ -19,6 +21,7 @@ const btnClearEncrypt     = document.getElementById('btn-clear-encrypt');
 const decryptDropZone     = document.getElementById('decrypt-drop-zone');
 const decryptFileInput    = document.getElementById('decrypt-file-input');      // mobile input
 const decryptFileInputDz  = document.getElementById('decrypt-file-input-dz');  // desktop drop-zone input
+const btnBrowseDecrypt    = document.getElementById('btn-browse-decrypt');      // decrypt browse button
 const decryptSelectedInfo = document.getElementById('decrypt-selected-info');
 const decryptPassword     = document.getElementById('decrypt-password');
 const btnDecrypt          = document.getElementById('btn-decrypt');
@@ -381,6 +384,25 @@ setupDragAndDrop(decryptDropZone, decryptFileInput, (files) => {
     onDecryptSelected(files);
 });
 
+// ── Wire Explicit Browse Buttons ────────────────────
+btnBrowseFolder?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const input = isMobile() ? encryptFolderInput : encryptFolderInputDz;
+    if (input) input.click();
+});
+
+btnBrowseFiles?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const input = isMobile() ? encryptFolderInput : (encryptFilesInputDz || encryptFolderInput);
+    if (input) input.click();
+});
+
+btnBrowseDecrypt?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const input = isMobile() ? decryptFileInput : (decryptFileInputDz || decryptFileInput);
+    if (input) input.click();
+});
+
 // ── Wire File Input Elements ─────────────────────────
 if (encryptFolderInputDz) {
     encryptFolderInputDz.addEventListener('change', () => {
@@ -395,7 +417,6 @@ if (encryptFolderInputDz) {
             }
             onEncryptSelected(files, folderName);
         }
-        encryptFolderInputDz.value = '';
     });
 }
 
@@ -408,7 +429,6 @@ if (encryptFilesInputDz) {
                 : 'secured_files';
             onEncryptSelected(files, folderName);
         }
-        encryptFilesInputDz.value = '';
     });
 }
 
@@ -427,7 +447,6 @@ if (encryptFolderInput) {
             }
             onEncryptSelected(files, folderName);
         }
-        encryptFolderInput.value = '';
     });
 }
 
@@ -435,7 +454,6 @@ if (decryptFileInputDz) {
     decryptFileInputDz.addEventListener('change', () => {
         const files = Array.from(decryptFileInputDz.files || []);
         if (files.length > 0) onDecryptSelected(files);
-        decryptFileInputDz.value = '';
     });
 }
 
@@ -443,7 +461,6 @@ if (decryptFileInput) {
     decryptFileInput.addEventListener('change', () => {
         const files = Array.from(decryptFileInput.files || []);
         if (files.length > 0) onDecryptSelected(files);
-        decryptFileInput.value = '';
     });
 }
 
@@ -1683,36 +1700,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Wire up upload widget clear buttons
-    const btnClearEncrypt = document.getElementById('btn-clear-encrypt');
-    const btnClearDecrypt = document.getElementById('btn-clear-decrypt');
-    
-    btnClearEncrypt?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectedEncryptFiles = [];
-        selectedEncryptFolderName = '';
-        if (encryptDzInner && encryptSelectedWidget) {
-            encryptDzInner.style.display = '';
-            encryptSelectedWidget.style.display = 'none';
-        }
-        encryptSelectedInfo.style.display = '';
-        encryptSelectedInfo.textContent = 'No folder selected';
-        log('Folder selection cleared.', 'info');
-    });
-
-    btnClearDecrypt?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectedDecryptFile = null;
-        if (decryptDzInner && decryptSelectedWidget) {
-            decryptDzInner.style.display = '';
-            decryptSelectedWidget.style.display = 'none';
-        }
-        decryptSelectedInfo.style.display = '';
-        decryptSelectedInfo.textContent = 'No file selected';
-        log('Vault file selection cleared.', 'info');
-    });
-
-
 });
 
 function formatBytes(bytes, decimals = 1) {
@@ -1766,6 +1753,8 @@ function initV2UI() {
             if (!v2Toggle.checked) {
                 // Clear keyfile when v2 mode is disabled
                 v2KeyfileEncrypt = null;
+                const encKeyfileInput = document.getElementById('v2-keyfile-input-encrypt');
+                if (encKeyfileInput) encKeyfileInput.value = '';
                 updateKeyfileBadge('encrypt', null);
             }
         });
@@ -1777,7 +1766,6 @@ function initV2UI() {
         encKeyfileInput.addEventListener('change', () => {
             v2KeyfileEncrypt = encKeyfileInput.files[0] || null;
             updateKeyfileBadge('encrypt', v2KeyfileEncrypt);
-            encKeyfileInput.value = '';
             if (v2KeyfileEncrypt) log(`🗝️ Keyfile selected: "${v2KeyfileEncrypt.name}" (${formatBytes(v2KeyfileEncrypt.size)})`, 'info');
         });
     }
@@ -1788,7 +1776,6 @@ function initV2UI() {
         decKeyfileInput.addEventListener('change', () => {
             v2KeyfileDecrypt = decKeyfileInput.files[0] || null;
             updateKeyfileBadge('decrypt', v2KeyfileDecrypt);
-            decKeyfileInput.value = '';
             if (v2KeyfileDecrypt) log(`🗝️ Keyfile selected: "${v2KeyfileDecrypt.name}" (${formatBytes(v2KeyfileDecrypt.size)})`, 'info');
         });
     }
@@ -1796,11 +1783,13 @@ function initV2UI() {
     // ── Clear buttons ─────────────────────────────────────────────────────
     document.getElementById('v2-keyfile-clear-encrypt')?.addEventListener('click', () => {
         v2KeyfileEncrypt = null;
+        if (encKeyfileInput) encKeyfileInput.value = '';
         updateKeyfileBadge('encrypt', null);
         log('Keyfile cleared.', 'info');
     });
     document.getElementById('v2-keyfile-clear-decrypt')?.addEventListener('click', () => {
         v2KeyfileDecrypt = null;
+        if (decKeyfileInput) decKeyfileInput.value = '';
         updateKeyfileBadge('decrypt', null);
         log('Keyfile cleared.', 'info');
     });
