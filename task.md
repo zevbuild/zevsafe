@@ -53,4 +53,4 @@ These are the verified, shipped features in the live web app:
 - [x] ~~"My Brain" rich text note editor with formatting toolbar~~ — **REMOVED**
 - [x] ~~"My Brain" folder tree vault in desktop sidebar~~ — **REMOVED**
 - [x] ~~Local note search and drag-and-drop hierarchy reordering~~ — **REMOVED**
-- [x] ~~Desktop/laptop productivity workspace detection~~ — **REMOVED**
+- [x] ~~Desktop/laptop productivity workspace detection~~ — **REMOVED** 
