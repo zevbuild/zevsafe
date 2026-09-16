@@ -2031,9 +2031,26 @@ function updateCategoryFilterCounts() {
         const cat = getFileCategory(f.name);
         if (counts[cat] !== undefined) counts[cat]++;
     }
+
+    let nonZeroCats = 0;
     for (const key of Object.keys(counts)) {
         const el = document.getElementById(`filter-count-${key}`);
+        const tab = document.getElementById(`tab-filter-${key}`) || (el ? el.closest('.explorer-filter-tab') : null);
         if (el) el.textContent = counts[key];
+        if (tab && key !== 'all') {
+            if (counts[key] > 0) {
+                tab.style.display = '';
+                nonZeroCats++;
+            } else {
+                tab.style.display = 'none';
+            }
+        }
+    }
+
+    const filterTabsContainer = document.getElementById('explorer-filter-tabs');
+    if (filterTabsContainer) {
+        // Only show category bar if multiple files AND at least 2 distinct categories with files
+        filterTabsContainer.style.display = (currentDecryptedFileList.length > 1 && nonZeroCats > 1) ? 'flex' : 'none';
     }
 }
 
@@ -2161,7 +2178,13 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
     });
 
     if (modalTitle) modalTitle.textContent = `${folderName}`;
-    if (modalMeta) modalMeta.textContent = `${currentDecryptedFileList.length} file(s) · ${formatBytes(totalBytes || fullZipBlob.size)}`;
+    const fileWord = currentDecryptedFileList.length === 1 ? 'file' : 'files';
+    if (modalMeta) modalMeta.textContent = `${currentDecryptedFileList.length} ${fileWord} · ${formatBytes(totalBytes || fullZipBlob.size)}`;
+
+    const toolbar = document.getElementById('explorer-toolbar');
+    if (toolbar) {
+        toolbar.style.display = currentDecryptedFileList.length > 1 ? 'flex' : 'none';
+    }
 
     updateCategoryFilterCounts();
     updateBatchBar();
@@ -2444,17 +2467,21 @@ function renderExplorerFileList(query = '') {
             const left = document.createElement('div');
             left.className = 'explorer-item-left';
 
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.className = 'explorer-item-cb';
-            cb.checked = isSelected;
-            cb.setAttribute('aria-label', `Select ${file.name}`);
-            cb.addEventListener('change', () => {
-                if (cb.checked) explorerSelectedFiles.add(file.path);
-                else explorerSelectedFiles.delete(file.path);
-                updateBatchBar();
-            });
-            left.appendChild(cb);
+            // Only show checkboxes when there are multiple files to select
+            if (currentDecryptedFileList.length > 1) {
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'explorer-item-cb';
+                cb.checked = isSelected;
+                cb.setAttribute('aria-label', `Select ${file.name}`);
+                cb.addEventListener('change', (e) => {
+                    e.stopPropagation();
+                    if (cb.checked) explorerSelectedFiles.add(file.path);
+                    else explorerSelectedFiles.delete(file.path);
+                    updateBatchBar();
+                });
+                left.appendChild(cb);
+            }
 
             const icon = document.createElement('span');
             icon.className = 'explorer-item-icon';
@@ -2473,7 +2500,7 @@ function renderExplorerFileList(query = '') {
             if (file.dirPath) {
                 const pathEl = document.createElement('span');
                 pathEl.className = 'explorer-item-path';
-                pathEl.textContent = `${file.dirPath}/`;
+                pathEl.textContent = `📁 ${file.dirPath}/`;
                 info.appendChild(pathEl);
             }
 
@@ -2518,6 +2545,15 @@ function renderExplorerFileList(query = '') {
                 }
             });
             right.appendChild(dlBtn);
+
+            // Allow clicking row to play media or download
+            if (mediaCategory) {
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', (e) => {
+                    if (e.target.closest('button') || e.target.closest('input')) return;
+                    openMediaPlayerByPath(file.path);
+                });
+            }
 
             row.appendChild(left);
             row.appendChild(right);
@@ -2636,7 +2672,7 @@ function initExplorerUI() {
             triggerDownload(currentDecryptedBlob, `${currentDecryptedFolderName}_decrypted.zip`);
             log(`✅ Downloaded full vault: "${currentDecryptedFolderName}_decrypted.zip"`, 'success');
             setTimeout(() => {
-                dlAllBtn.textContent = '⬇️ Full ZIP';
+                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
             }, 2000);
         }
     });

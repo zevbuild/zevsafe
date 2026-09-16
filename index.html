@@ -68,14 +68,14 @@
                     Zero-Knowledge · Zero-Tracking · 100% Offline
                 </div>
                 <h1 class="hero-title">
-                    Lock your files.<br>
+                    Lock your Files | Folders.<br>
                     <span class="gradient-text">Nobody else can see your data.</span>
                 </h1>
                 <p class="hero-sub">
-                    AES-256 Military-Grade Folder Encryption. Runs entirely in your browser — your data and passwords never leave your device.
+                    AES-256  Folder Encryption. Runs entirely in your browser — your data and passwords never leave your device.
                 </p>
                 <div class="hero-tech-line phone-hide">
-                    🔐 AES-256-GCM &nbsp;·&nbsp; 🔑 WEB-VERSION-20 &nbsp;·&nbsp; 📁 Full Folders
+                    🔐 AES-256-GCM &nbsp;·&nbsp; 🔑 WEB-VERSION-21 &nbsp;·&nbsp; 📁 Full Folders
                 </div>
             </div>
         </header>
@@ -431,16 +431,21 @@
             <header class="explorer-header">
                 <div class="explorer-title-wrap">
                     <div class="explorer-title-row">
-                        <span class="explorer-badge">Decrypted Vault</span>
+                        <span class="explorer-badge">🔓 Decrypted Vault</span>
                         <h3 id="explorer-modal-title" class="explorer-title">Vault Explorer</h3>
                     </div>
                     <span class="explorer-meta" id="explorer-modal-meta">0 files · 0 KB</span>
                 </div>
-                <button class="explorer-btn-close" id="btn-close-explorer" title="Close Explorer" aria-label="Close Explorer">✕</button>
+                <div class="explorer-header-actions">
+                    <button class="explorer-btn-download-all" id="btn-explorer-download-all" title="Download all files as a ZIP archive">
+                        ⬇️ Download All (ZIP)
+                    </button>
+                    <button class="explorer-btn-close" id="btn-close-explorer" title="Close Explorer" aria-label="Close Explorer">✕</button>
+                </div>
             </header>
 
             <!-- Search and Action Toolbar -->
-            <div class="explorer-toolbar">
+            <div class="explorer-toolbar" id="explorer-toolbar">
                 <div class="explorer-search-wrap">
                     <span class="explorer-search-icon">🔍</span>
                     <input type="text" id="explorer-search-input" class="explorer-search-input" placeholder="Search files in vault..." autocomplete="off" spellcheck="false">
@@ -465,22 +470,18 @@
                         <button class="explorer-view-btn explorer-view-btn--active" id="btn-view-list" title="List View" aria-pressed="true">☰</button>
                         <button class="explorer-view-btn" id="btn-view-grid" title="Grid View" aria-pressed="false">⊞</button>
                     </div>
-
-                    <button class="explorer-btn-download-all" id="btn-explorer-download-all" title="Download all files as a ZIP archive">
-                        ⬇️ Full ZIP
-                    </button>
                 </div>
             </div>
 
-            <!-- Category Filter Tabs -->
-            <div class="explorer-filter-tabs" id="explorer-filter-tabs" role="tablist" aria-label="Filter by file type">
-                <button class="explorer-filter-tab explorer-filter-tab--active" data-filter="all" role="tab" aria-selected="true">All (<span id="filter-count-all">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="video" role="tab" aria-selected="false">🎬 Videos (<span id="filter-count-video">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="audio" role="tab" aria-selected="false">🎵 Audio (<span id="filter-count-audio">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="photo" role="tab" aria-selected="false">🖼️ Photos (<span id="filter-count-photo">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="doc" role="tab" aria-selected="false">📄 Docs (<span id="filter-count-doc">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="code" role="tab" aria-selected="false">💻 Code (<span id="filter-count-code">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="archive" role="tab" aria-selected="false">📦 Archives (<span id="filter-count-archive">0</span>)</button>
+            <!-- Category Filter Tabs (shown when multiple categories exist) -->
+            <div class="explorer-filter-tabs" id="explorer-filter-tabs" role="tablist" aria-label="Filter by file type" style="display: none;">
+                <button class="explorer-filter-tab explorer-filter-tab--active" data-filter="all" id="tab-filter-all" role="tab" aria-selected="true">All (<span id="filter-count-all">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="video" id="tab-filter-video" role="tab" aria-selected="false">🎬 Videos (<span id="filter-count-video">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="audio" id="tab-filter-audio" role="tab" aria-selected="false">🎵 Audio (<span id="filter-count-audio">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="photo" id="tab-filter-photo" role="tab" aria-selected="false">🖼️ Photos (<span id="filter-count-photo">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="doc" id="tab-filter-doc" role="tab" aria-selected="false">📄 Docs (<span id="filter-count-doc">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="code" id="tab-filter-code" role="tab" aria-selected="false">💻 Code (<span id="filter-count-code">0</span>)</button>
+                <button class="explorer-filter-tab" data-filter="archive" id="tab-filter-archive" role="tab" aria-selected="false">📦 Archives (<span id="filter-count-archive">0</span>)</button>
             </div>
 
             <!-- Batch Selection Action Bar (hidden until items selected) -->
@@ -504,8 +505,8 @@
 
             <!-- Explorer Footer -->
             <footer class="explorer-footer">
-                <span class="explorer-footer-hint" id="explorer-footer-hint">💡 Click <strong>▶️ Play</strong> to stream media directly or <strong>⬇️ Save</strong> to extract locally.</span>
-                <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-done-explorer">Done</button>
+                <span class="explorer-footer-hint" id="explorer-footer-hint">🔒 Decrypted in your browser. All files stay on your device.</span>
+                <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-done-explorer">Close</button>
             </footer>
         </div>
     </div>

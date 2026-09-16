@@ -5,8 +5,11 @@
 - Fixed Local Folder Upload: Resolved issue where touchscreen laptops (coarse pointer) and resized desktop viewports routed "Browse Folder" to a file-only selector; folder browse now reliably opens the native directory picker
 - Native File System Access API: Added `window.showDirectoryPicker()` support for native OS directory selection with recursive hierarchy preservation on modern desktop browsers (Chrome, Edge, Opera), with seamless fallback to HTML5 `webkitdirectory`
 - Enhanced Drag-and-Drop Traversal: Added support for `getAsFileSystemHandle()` alongside `webkitGetAsEntry()` for seamless folder and nested subfolder drops
-- Reliable Re-selection: Automatically clears input values prior to click so choosing the same or modified folder triggers selection immediately
-- PWA Service Worker Cache Sync: Bumped PWA cache version to `v20` and app indicator to `WEB-VERSION-20`
+- Simplified & Streamlined Decrypted Vault Explorer: Redesigned modal with clean, intuitive layout so anybody can understand it instantly; eliminated unstyled white category buttons and awkward control wrapping
+- Smart Visibility Adaptation: Hides redundant search bars, sort dropdowns, view toggles, and checkboxes when viewing single-file vaults; automatically hides 0-count category tabs
+- Prominent Primary Download Button: Relocated `⬇️ Download All (ZIP)` directly into the header next to close button for instant 1-click access
+- Enhanced Media & File Actions: Polished `▶️ Play` (purple gradient) and `⬇️ Save` (teal pill) buttons with row click-to-play support
+- PWA Service Worker Cache Sync: Bumped PWA cache version to `v21` and app indicator to `WEB-VERSION-21`
 
 ## Version 3 — July 5, 2026
 - Renamed vault file extension from `.enc` to `.zev`
