@@ -289,6 +289,68 @@ function readEntryAsync(entry, pathPrefix) {
     });
 }
 
+/**
+ * Recursively reads all File objects from a FileSystemDirectoryHandle (File System Access API).
+ * Populates file.relativeDir so folder hierarchy is preserved.
+ */
+async function readDirectoryHandleAsync(dirHandle, pathPrefix = '') {
+    const files = [];
+    try {
+        for await (const entry of dirHandle.values()) {
+            if (entry.kind === 'file') {
+                try {
+                    const file = await entry.getFile();
+                    file.relativeDir = pathPrefix + entry.name;
+                    files.push(file);
+                } catch (e) {
+                    console.warn(`[DirectoryPicker] Could not read file "${entry.name}":`, e);
+                }
+            } else if (entry.kind === 'directory') {
+                const subFiles = await readDirectoryHandleAsync(entry, pathPrefix + entry.name + '/');
+                files.push(...subFiles);
+            }
+        }
+    } catch (err) {
+        console.warn(`[DirectoryPicker] Error traversing directory "${dirHandle.name}":`, err);
+    }
+    return files;
+}
+
+/**
+ * Universal local folder picker:
+ * 1. Uses modern window.showDirectoryPicker() if available (Chrome, Edge, Opera on desktop).
+ * 2. Seamlessly falls back to HTML5 <input webkitdirectory directory multiple> (Firefox, Safari, non-secure context, mobile).
+ */
+async function openFolderPicker() {
+    // 1. Try modern File System Access API
+    if (typeof window.showDirectoryPicker === 'function' && window.isSecureContext) {
+        try {
+            const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+            if (dirHandle) {
+                const files = await readDirectoryHandleAsync(dirHandle, dirHandle.name + '/');
+                if (files.length > 0) {
+                    onEncryptSelected(files, dirHandle.name);
+                    return;
+                } else {
+                    log(`⚠️ Selected folder "${dirHandle.name}" contains no readable files.`, 'warn');
+                    return;
+                }
+            }
+        } catch (err) {
+            // User cancelled/closed folder picker dialog
+            if (err.name === 'AbortError') return;
+            console.warn('[DirectoryPicker fallback to input]', err);
+        }
+    }
+
+    // 2. Standard HTML5 webkitdirectory input fallback
+    const folderInput = encryptFolderInputDz || encryptFolderInput;
+    if (folderInput) {
+        folderInput.value = '';
+        folderInput.click();
+    }
+}
+
 function setupDragAndDrop(dropZone, primaryInput, onFilesSelected) {
     // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
@@ -316,15 +378,44 @@ function setupDragAndDrop(dropZone, primaryInput, onFilesSelected) {
 
         if (dt.items && dt.items.length > 0) {
             const promises = [];
+            let entryCount = 0;
             let firstEntryName = '';
 
             for (let i = 0; i < dt.items.length; i++) {
                 const item = dt.items[i];
-                const entry = (item.webkitGetAsEntry ? item.webkitGetAsEntry() : null);
-                if (entry) {
-                    if (!firstEntryName) firstEntryName = entry.name;
-                    promises.push(readEntryAsync(entry, ''));
+                if (item.kind && item.kind !== 'file') continue;
+
+                // 1. Try modern File System Access API entry if available
+                if (typeof item.getAsFileSystemHandle === 'function') {
+                    try {
+                        const handle = await item.getAsFileSystemHandle();
+                        if (handle) {
+                            entryCount++;
+                            if (!firstEntryName) firstEntryName = handle.name;
+                            if (handle.kind === 'directory') {
+                                promises.push(readDirectoryHandleAsync(handle, handle.name + '/'));
+                            } else if (handle.kind === 'file') {
+                                promises.push(handle.getFile().then(f => {
+                                    f.relativeDir = f.name;
+                                    return [f];
+                                }).catch(() => []));
+                            }
+                            continue;
+                        }
+                    } catch (_) {
+                        // Fallback to webkitGetAsEntry below
+                    }
                 }
+
+                // 2. Standard webkitGetAsEntry traversal
+                try {
+                    const entry = (item.webkitGetAsEntry ? item.webkitGetAsEntry() : null);
+                    if (entry) {
+                        entryCount++;
+                        if (!firstEntryName) firstEntryName = entry.name;
+                        promises.push(readEntryAsync(entry, ''));
+                    }
+                } catch (_) {}
             }
 
             if (promises.length > 0) {
@@ -333,17 +424,20 @@ function setupDragAndDrop(dropZone, primaryInput, onFilesSelected) {
             }
 
             if (files.length > 0) {
-                if (dt.items.length === 1 && firstEntryName) {
+                if (entryCount === 1 && firstEntryName) {
                     folderName = firstEntryName.replace(/\.[^/.]+$/, '') || firstEntryName;
-                } else if (dt.items.length > 1) {
+                } else if (entryCount > 1) {
                     folderName = 'secured_files';
                 }
             }
         }
 
-        // Reliable fallback if webkitGetAsEntry failed or yielded 0 files
+        // Reliable fallback if items traversal yielded 0 files
         if (files.length === 0 && dt.files && dt.files.length > 0) {
             files = Array.from(dt.files);
+            for (const f of files) {
+                if (!f.relativeDir) f.relativeDir = f.webkitRelativePath || f.name;
+            }
             if (files.length === 1) {
                 folderName = files[0].name.replace(/\.[^/.]+$/, '') || files[0].name;
             } else {
@@ -361,16 +455,30 @@ function setupDragAndDrop(dropZone, primaryInput, onFilesSelected) {
     // Click on dropzone opens picker
     dropZone.addEventListener('click', (e) => {
         if (e.target.closest('.btn-browse') || e.target.closest('.btn-browse--teal') || e.target.closest('.sf-clear-btn')) return;
-        const activeInput = isMobile() ? primaryInput : (document.getElementById(primaryInput.id + '-dz') || primaryInput);
-        if (activeInput) activeInput.click();
+        if (dropZone === encryptDropZone) {
+            openFolderPicker();
+        } else {
+            const activeInput = decryptFileInputDz || decryptFileInput;
+            if (activeInput) {
+                activeInput.value = '';
+                activeInput.click();
+            }
+        }
     });
 
     // Keyboard accessibility
     dropZone.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            const activeInput = isMobile() ? primaryInput : (document.getElementById(primaryInput.id + '-dz') || primaryInput);
-            if (activeInput) activeInput.click();
+            if (dropZone === encryptDropZone) {
+                openFolderPicker();
+            } else {
+                const activeInput = decryptFileInputDz || decryptFileInput;
+                if (activeInput) {
+                    activeInput.value = '';
+                    activeInput.click();
+                }
+            }
         }
     });
 }
@@ -387,20 +495,25 @@ setupDragAndDrop(decryptDropZone, decryptFileInput, (files) => {
 // ── Wire Explicit Browse Buttons ────────────────────
 btnBrowseFolder?.addEventListener('click', (e) => {
     e.stopPropagation();
-    const input = isMobile() ? encryptFolderInput : encryptFolderInputDz;
-    if (input) input.click();
+    openFolderPicker();
 });
 
 btnBrowseFiles?.addEventListener('click', (e) => {
     e.stopPropagation();
-    const input = isMobile() ? encryptFolderInput : (encryptFilesInputDz || encryptFolderInput);
-    if (input) input.click();
+    const input = encryptFilesInputDz || encryptFolderInput;
+    if (input) {
+        input.value = '';
+        input.click();
+    }
 });
 
 btnBrowseDecrypt?.addEventListener('click', (e) => {
     e.stopPropagation();
-    const input = isMobile() ? decryptFileInput : (decryptFileInputDz || decryptFileInput);
-    if (input) input.click();
+    const input = decryptFileInputDz || decryptFileInput;
+    if (input) {
+        input.value = '';
+        input.click();
+    }
 });
 
 // ── Wire File Input Elements ─────────────────────────
@@ -412,7 +525,9 @@ if (encryptFolderInputDz) {
             for (const f of files) {
                 if (f.webkitRelativePath) {
                     folderName = f.webkitRelativePath.split('/')[0];
-                    break;
+                    f.relativeDir = f.webkitRelativePath;
+                } else if (!f.relativeDir) {
+                    f.relativeDir = f.name;
                 }
             }
             onEncryptSelected(files, folderName);
@@ -427,6 +542,9 @@ if (encryptFilesInputDz) {
             let folderName = files.length === 1
                 ? (files[0].name.replace(/\.[^/.]+$/, '') || files[0].name)
                 : 'secured_files';
+            for (const f of files) {
+                f.relativeDir = f.name;
+            }
             onEncryptSelected(files, folderName);
         }
     });
@@ -436,14 +554,17 @@ if (encryptFolderInput) {
     encryptFolderInput.addEventListener('change', () => {
         const files = Array.from(encryptFolderInput.files || []);
         if (files.length > 0) {
-            let folderName = files.length === 1
-                ? (files[0].name.replace(/\.[^/.]+$/, '') || files[0].name)
-                : 'secured_files';
+            let folderName = 'secured_folder';
             for (const f of files) {
                 if (f.webkitRelativePath) {
                     folderName = f.webkitRelativePath.split('/')[0];
-                    break;
+                    f.relativeDir = f.webkitRelativePath;
+                } else if (!f.relativeDir) {
+                    f.relativeDir = f.name;
                 }
+            }
+            if (folderName === 'secured_folder' && files.length === 1) {
+                folderName = files[0].name.replace(/\.[^/.]+$/, '') || files[0].name;
             }
             onEncryptSelected(files, folderName);
         }
@@ -483,16 +604,18 @@ if (btnClearDecrypt) {
 if (encryptSelectedWidget) {
     encryptSelectedWidget.addEventListener('click', (e) => {
         if (e.target.closest('.sf-clear-btn')) return;
-        const activeInput = isMobile() ? encryptFolderInput : (encryptFilesInputDz || encryptFolderInputDz);
-        if (activeInput) activeInput.click();
+        openFolderPicker();
     });
 }
 
 if (decryptSelectedWidget) {
     decryptSelectedWidget.addEventListener('click', (e) => {
         if (e.target.closest('.sf-clear-btn')) return;
-        const activeInput = isMobile() ? decryptFileInput : (decryptFileInputDz || decryptFileInput);
-        if (activeInput) activeInput.click();
+        const activeInput = decryptFileInputDz || decryptFileInput;
+        if (activeInput) {
+            activeInput.value = '';
+            activeInput.click();
+        }
     });
 }
 
@@ -1834,10 +1957,6 @@ function getFileIcon(filename) {
 // DECRYPTED VAULT FILE EXPLORER & ADVANCED FILES VIEW
 // ============================================
 
-let currentDecryptedBlob = null;
-let currentDecryptedFolderName = '';
-let currentDecryptedFileList = [];
-let currentDecryptedZip = null;
 let explorerViewMode = 'list'; // 'list' | 'grid'
 let explorerFilterCategory = 'all'; // 'all' | 'video' | 'audio' | 'photo' | 'doc' | 'code' | 'archive'
 let explorerSortMode = 'name-asc';
