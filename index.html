@@ -23,19 +23,126 @@
     <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 
     <!-- Primary SEO Meta Tags -->
-    <title>ZevSafe</title>
-    <meta name="description" content="Securely lock folders using bank-grade client-side encryption. Runs entirely in your browser using AES-256-GCM. Your files and passwords never leave your device.">
+    <title>ZevSafe — Free Offline Folder &amp; File Encryption | Zero-Knowledge AES-256</title>
+    <meta name="description" content="Free, 100% offline, zero-knowledge folder and file encryption in your browser. Military-grade AES-256-GCM with PBKDF2-SHA512 (600,000 rounds) and keyfile 2FA. No upload, no server, zero tracking.">
     <meta name="keywords" content="browser-based folder encryption, client-side file encryption, zero-knowledge file locker, offline folder locker, in-browser AES-256 encryption, serverless file encryption, air-gapped folder lock, PBKDF2 key derivation web app, AES-GCM folder protection, local-first file tools, how to encrypt a folder without uploading it, secure folder tool no installation, safe offline file vault free, maximum encryption file size, folder size limit, browser memory limits">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="zevbuild">
+    <link rel="canonical" href="https://zevsafe.pages.dev/">
 
-    <!-- Open Graph / Facebook (For cleaner links when sharing on social/Discord) -->
+    <!-- Preconnect for Google Fonts (Core Web Vitals Optimization) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap">
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ZevSafe">
     <meta property="og:url" content="https://zevsafe.pages.dev/">
-    <meta property="og:title" content="ZevSafe — Zero-Knowledge Offline Folder Encryption">
-    <meta property="og:description" content="Compress and encrypt entire folders into portable vaults right inside your browser. No server tracking, no data collection.">
-    <meta property="og:image" content="https://zevsafe.pages.dev/zevsafe.jpg">
-    <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');</style>
+    <meta property="og:title" content="ZevSafe — Free Offline Folder &amp; File Encryption | Zero-Knowledge AES-256">
+    <meta property="og:description" content="Compress and encrypt entire folders into portable AES-256-GCM vaults right inside your browser. 100% offline, zero-knowledge, no server uploads.">
+    <meta property="og:image" content="https://zevsafe.pages.dev/zevsafe-og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="ZevSafe - Zero-Knowledge Folder &amp; File Encryption">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://zevsafe.pages.dev/">
+    <meta name="twitter:title" content="ZevSafe — Free Offline Folder &amp; File Encryption | Zero-Knowledge AES-256">
+    <meta name="twitter:description" content="Compress and encrypt entire folders into portable AES-256-GCM vaults right inside your browser. 100% offline, zero-knowledge, no server uploads.">
+    <meta name="twitter:image" content="https://zevsafe.pages.dev/zevsafe-og.png">
+    <meta name="twitter:image:alt" content="ZevSafe - Zero-Knowledge Folder &amp; File Encryption">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://zevsafe.pages.dev/#webapp",
+          "name": "ZevSafe",
+          "url": "https://zevsafe.pages.dev/",
+          "applicationCategory": "SecurityApplication",
+          "operatingSystem": "Any (Windows, macOS, Linux, Android, iOS)",
+          "browserRequirements": "Requires any modern browser with Web Crypto API support (Chrome, Edge, Firefox, Safari)",
+          "description": "100% offline, zero-knowledge folder and file encryption using AES-256-GCM and PBKDF2-SHA512. Your files and passwords never leave your browser.",
+          "image": "https://zevsafe.pages.dev/zevsafe-og.png",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "100% Client-Side AES-256-GCM Encryption",
+            "Zero-Knowledge Architecture - No files uploaded to servers",
+            "PBKDF2-SHA512 key stretching with 600,000 iterations",
+            "Optional Keyfile Two-Factor Authentication",
+            "In-browser streaming media player for 2.5 GB+ encrypted videos",
+            "Progressive Web App (PWA) with 100% offline capability",
+            "Zero server logs or tracking"
+          ],
+          "author": {
+            "@type": "Organization",
+            "name": "zevbuild",
+            "url": "https://github.com/zevbuild"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://zevsafe.pages.dev/#website",
+          "url": "https://zevsafe.pages.dev/",
+          "name": "ZevSafe",
+          "description": "Zero-knowledge offline folder and file encryption web app.",
+          "publisher": {
+            "@type": "Organization",
+            "name": "zevbuild",
+            "url": "https://github.com/zevbuild"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://zevsafe.pages.dev/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How does ZevSafe encrypt folders without uploading them?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "ZevSafe runs 100% inside your browser using the native W3C Web Crypto API. Folders are zipped in-memory, an AES-256-GCM encryption key is derived using PBKDF2-SHA512 (600,000 iterations), and the ciphertext is saved directly to your disk. Zero network requests are made."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is ZevSafe safe to use offline and air-gapped?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. ZevSafe is a Progressive Web App (PWA) that caches all required assets locally. You can disconnect your Wi-Fi, unplug Ethernet, or run the app in airplane mode. Your files and passwords never leave RAM."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What encryption standard does ZevSafe use?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "ZevSafe employs military-grade AES-256-GCM (Galois/Counter Mode) authenticated encryption, PBKDF2-SHA512 key derivation with 600,000 rounds, a 32-byte cryptographically secure random salt, and an optional physical keyfile second factor."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the maximum folder size I can encrypt?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "In modern desktop browsers, ZevSafe can process folders and videos up to 5 GB+ with zero-copy stream architecture. On mobile devices, files up to 2.5 GB are supported. For 25 GB to 100 GB+ datasets, a 1-click Windows zero-RAM batch tool is also available."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
     <!-- Ambient background -->
@@ -50,7 +157,7 @@
         <!-- ── NAVBAR ── -->
         <nav class="navbar">
             <div class="navbar-brand">
-                <img class="brand-logo" src="zevsafe-logo.png" alt="ZevSafe Logo">
+                <img class="brand-logo" src="zevsafe-logo.png" alt="ZevSafe Logo - Zero-Knowledge File Encryption" width="32" height="32">
                 <span class="brand-name">ZevSafe</span>
             </div>
             <div class="navbar-links">
@@ -406,10 +513,97 @@
         </section>
 
 
+        <!-- ── SEO FEATURES & FAQ (Zero-Bloat, Semantic & Crawlable) ── -->
+        <section class="seo-info-section" aria-labelledby="seo-features-title">
+            <header class="seo-section-header">
+                <h2 class="seo-section-title" id="seo-features-title">Why Choose ZevSafe for Offline Folder Encryption?</h2>
+                <p class="seo-section-desc">Zero-knowledge client-side encryption engineered for privacy, speed, and cross-platform portability.</p>
+            </header>
+
+            <div class="seo-grid">
+                <article class="seo-card">
+                    <span class="seo-card-icon" aria-hidden="true">🛡️</span>
+                    <h3 class="seo-card-title">100% Client-Side &amp; Zero-Knowledge</h3>
+                    <p class="seo-card-text">All encryption and decryption runs entirely in your browser using the native Web Crypto API. Files, passwords, and keys never leave your device.</p>
+                </article>
+
+                <article class="seo-card">
+                    <span class="seo-card-icon" aria-hidden="true">🔐</span>
+                    <h3 class="seo-card-title">AES-256-GCM Military-Grade Cipher</h3>
+                    <p class="seo-card-text">Authenticated Galois/Counter Mode encryption automatically verifies data integrity and prevents tampering, bit-flipping, and corruption.</p>
+                </article>
+
+                <article class="seo-card">
+                    <span class="seo-card-icon" aria-hidden="true">⚙️</span>
+                    <h3 class="seo-card-title">PBKDF2-SHA512 (600,000 Iterations)</h3>
+                    <p class="seo-card-text">Strengthened key stretching with a 32-byte CSPRNG random salt provides robust resistance against GPU/ASIC brute-force and dictionary attacks.</p>
+                </article>
+
+                <article class="seo-card">
+                    <span class="seo-card-icon" aria-hidden="true">🗝️</span>
+                    <h3 class="seo-card-title">Keyfile Two-Factor Authentication</h3>
+                    <p class="seo-card-text">Enhance security by combining your password with any personal file (image, document, key) as an indispensable second factor.</p>
+                </article>
+
+                <article class="seo-card">
+                    <span class="seo-card-icon" aria-hidden="true">📦</span>
+                    <h3 class="seo-card-title">Full Folder Tree Compression</h3>
+                    <p class="seo-card-text">Smart adaptive packaging compresses text files while using instant STORE mode for pre-compressed videos and photos, maximizing performance.</p>
+                </article>
+
+                <article class="seo-card">
+                    <span class="seo-card-icon" aria-hidden="true">✈️</span>
+                    <h3 class="seo-card-title">Air-Gapped &amp; 100% Offline PWA</h3>
+                    <p class="seo-card-text">Install as a Progressive Web App and operate in complete airplane mode. No network connection or account sign-up is ever needed.</p>
+                </article>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="seo-faq-wrap" aria-labelledby="seo-faq-title">
+                <header class="seo-section-header">
+                    <h2 class="seo-section-title" id="seo-faq-title">Frequently Asked Questions</h2>
+                    <p class="seo-section-desc">Everything you need to know about browser-based zero-knowledge folder protection.</p>
+                </header>
+
+                <div class="seo-faq-list">
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">How does ZevSafe encrypt folders without uploading them?</summary>
+                        <div class="seo-faq-content">
+                            ZevSafe runs 100% inside your browser using the native W3C Web Crypto API. Folders are packaged into an in-memory zip archive, an AES-256-GCM encryption key is derived using PBKDF2-SHA512 (600,000 iterations), and the ciphertext is downloaded directly to your disk. No data is ever transmitted over the network.
+                        </div>
+                    </details>
+
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">Is ZevSafe safe to use offline and air-gapped?</summary>
+                        <div class="seo-faq-content">
+                            Yes. ZevSafe is a Progressive Web App (PWA) with full offline caching. You can disconnect your Wi-Fi, unplug Ethernet, or use airplane mode. Your files and passwords remain strictly in device RAM.
+                        </div>
+                    </details>
+
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">What encryption standard does ZevSafe use?</summary>
+                        <div class="seo-faq-content">
+                            ZevSafe employs military-grade AES-256-GCM (Galois/Counter Mode) authenticated encryption, PBKDF2-SHA512 key derivation with 600,000 rounds, a 32-byte cryptographically secure random salt, and an optional physical keyfile second factor.
+                        </div>
+                    </details>
+
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">What is the maximum folder size I can encrypt?</summary>
+                        <div class="seo-faq-content">
+                            On desktop browsers, ZevSafe can process folders and videos up to 5 GB+ with zero-copy stream architecture. On mobile devices, files up to 2.5 GB are supported. For 25 GB to 100 GB+ datasets, download our 1-click Windows PC Setup toolkit from the navigation bar.
+                        </div>
+                    </details>
+                </div>
+
+                <p class="seo-guide-cta">Looking for step-by-step instructions and technical architecture? Visit our <a href="./how-to-use-zevsafe/index.html">Comprehensive User Guide &amp; Documentation</a>.</p>
+            </div>
+        </section>
+
+
         <!-- ── FOOTER ── -->
         <footer class="site-footer">
             <div class="footer-brand">
-                <img class="footer-logo" src="zevsafe-logo.png" alt="ZevSafe Logo">
+                <img class="footer-logo" src="zevsafe-logo.png" alt="ZevSafe Logo" width="24" height="24">
                 <span>ZevSafe</span>
             </div>
             <p class="footer-tagline">Your files stay on your device. Always.</p>
@@ -569,7 +763,7 @@
     <div class="pw-modal-overlay" id="pw-save-modal" style="display: none;">
         <div class="pw-modal">
             <div class="pw-modal-header">
-                <img class="modal-logo" src="zevsafe-logo.jpg" alt="ZevSafe Logo">
+                <img class="modal-logo" src="zevsafe-logo.png" alt="ZevSafe Logo" width="28" height="28">
                 <h3>Save Vault Password</h3>
             </div>
             <div class="pw-modal-body">
@@ -603,7 +797,7 @@
     <!-- ── PWA: Install Banner + Service Worker Registration ── -->
     <div class="pwa-install-banner" id="pwa-install-banner" style="display:none;" role="region" aria-live="polite" aria-label="Install ZevSafe app">
         <div class="pwa-install-inner">
-            <img src="./zevsafe-logo.jpg" alt="ZevSafe icon" class="pwa-install-icon" width="40" height="40">
+            <img src="./zevsafe-logo.png" alt="ZevSafe icon" class="pwa-install-icon" width="40" height="40">
             <div class="pwa-install-text">
                 <strong>Install ZevSafe</strong>
                 <span>Add to home screen for offline access</span>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e1026"/>
+      <stop offset="100%" stop-color="#060714"/>
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bgGrad)" stroke="url(#borderGrad)" stroke-width="3"/>
+
+  <!-- Shield contour -->
+  <path d="M 64 20 L 96 32 C 96 68 84 88 64 104 C 44 88 32 68 32 32 Z"
+        fill="#121533" stroke="url(#glowGrad)" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Padlock Shackle -->
+  <path d="M 52 56 V 46 C 52 39.37 57.37 34 64 34 C 70.63 34 76 39.37 76 46 V 56"
+        fill="none" stroke="url(#glowGrad)" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Padlock Body -->
+  <rect x="46" y="56" width="36" height="30" rx="6" fill="url(#glowGrad)" filter="url(#subtleGlow)"/>
+
+  <!-- Padlock Keyhole -->
+  <circle cx="64" cy="68" r="3.5" fill="#08091a"/>
+  <polygon points="62,68 66,68 67.5,77 60.5,77" fill="#08091a"/>
+</svg>

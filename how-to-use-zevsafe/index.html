@@ -10,34 +10,145 @@
     <meta name="application-name" content="ZevSafe">
     <meta name="theme-color" content="#08091a">
     <meta name="msapplication-TileColor" content="#08091a">
-    <meta name="msapplication-TileImage" content="./icon-512.png">
+    <meta name="msapplication-TileImage" content="../icon-512.png">
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="../manifest.json">
 
     <!-- Apple Touch Icon & Favicons -->
-    <link rel="apple-touch-icon" href="./icon-192.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+    <link rel="apple-touch-icon" href="../icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="../icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="../icon-512.png">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
 
     <!-- Primary SEO Meta Tags -->
-    <title>How To Use ZevSafe — Offline Folder Encryption Guide</title>
-    <meta name="description" content="Learn how to encrypt and decrypt folders offline with AES-256-GCM. Read the step-by-step user guide for ZevSafe offline encryption portal.">
-    <meta name="keywords" content="browser-based folder encryption, client-side file encryption, zero-knowledge file locker, offline folder locker, in-browser AES-256 encryption, serverless file encryption, air-gapped folder lock, PBKDF2 key derivation web app, AES-GCM folder protection, local-first file tools, how to encrypt a folder without uploading it, secure folder tool no installation, safe offline file vault free, user guide, maximum encryption file size, folder size limit, browser memory limits">
+    <title>How To Use ZevSafe — Offline Folder Encryption &amp; Decryption Guide</title>
+    <meta name="description" content="Step-by-step guide to encrypting and decrypting folders offline with AES-256-GCM and PBKDF2-SHA512. Zero uploads, zero tracking, 100% in-browser security.">
+    <meta name="keywords" content="how to use zevsafe, offline folder encryption guide, browser-based folder encryption, client-side file encryption, zero-knowledge file locker, offline folder locker, in-browser AES-256 encryption, PBKDF2-SHA512 tutorial, AES-GCM folder protection, secure folder tool no installation">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="zevbuild">
+    <link rel="canonical" href="https://zevsafe.pages.dev/how-to-use-zevsafe/">
+
+    <!-- Preconnect for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap">
 
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://zevsafe.pages.dev/how-to-use.html">
-    <meta property="og:title" content="How To Use ZevSafe — Step-by-Step Offline Encryption Guide">
-    <meta property="og:description" content="Detailed guide on how to secure folders locally using AES-256-GCM encryption inside your browser.">
-    <meta property="og:image" content="https://zevsafe.pages.dev/icon-512.png">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
-    </style>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="ZevSafe">
+    <meta property="og:url" content="https://zevsafe.pages.dev/how-to-use-zevsafe/">
+    <meta property="og:title" content="How To Use ZevSafe — Offline Folder Encryption &amp; Decryption Guide">
+    <meta property="og:description" content="Detailed guide on how to secure folders locally using AES-256-GCM encryption inside your browser. No server tracking, no data collection.">
+    <meta property="og:image" content="https://zevsafe.pages.dev/zevsafe-og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="ZevSafe - Step-by-Step Offline Encryption Guide">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://zevsafe.pages.dev/how-to-use-zevsafe/">
+    <meta name="twitter:title" content="How To Use ZevSafe — Offline Folder Encryption &amp; Decryption Guide">
+    <meta name="twitter:description" content="Detailed guide on how to secure folders locally using AES-256-GCM encryption inside your browser. No server tracking, no data collection.">
+    <meta name="twitter:image" content="https://zevsafe.pages.dev/zevsafe-og.png">
+    <meta name="twitter:image:alt" content="ZevSafe - Step-by-Step Offline Encryption Guide">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://zevsafe.pages.dev/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "User Guide",
+              "item": "https://zevsafe.pages.dev/how-to-use-zevsafe/"
+            }
+          ]
+        },
+        {
+          "@type": "HowTo",
+          "name": "How to Encrypt a Folder Offline with ZevSafe",
+          "description": "Step-by-step instructions to encrypt an entire folder offline into a secure .zev vault using AES-256-GCM and PBKDF2-SHA512.",
+          "totalTime": "PT1M",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Open ZevSafe",
+              "text": "Open ZevSafe in any modern browser. It works 100% offline after initial load."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Select Your Folder",
+              "text": "Drag and drop your folder into the Encrypt drop zone or click Browse Folder."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Create a Strong Password",
+              "text": "Enter and confirm a strong password or PIN. Optionally attach a keyfile as a second factor."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 4,
+              "name": "Encrypt and Download",
+              "text": "Click Encrypt & Download. The browser packages and encrypts your folder into a single portable .zev vault file."
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Is ZevSafe really offline? Can it be trusted?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. ZevSafe makes zero network requests. All encryption runs inside your browser using the native Web Crypto API."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What browsers are supported?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Chrome 37+, Edge 12+, Firefox 34+, Safari 11+, Opera 24+ covering 99%+ of devices including Android and iOS."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What happens with a wrong password?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "AES-GCM's authentication tag fails instantly — you'll see a clear error message. No partial or corrupted data is ever produced."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I install ZevSafe on iPhone or iPad (iOS Safari)?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Open ZevSafe in Safari, tap the Share button, select Add to Home Screen, and tap Add. It runs like a native app and works offline."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+    <link rel="stylesheet" href="../styles.css">
     <style>
         /* ── Guide-page extras ── */
         .guide-shell {
@@ -409,11 +520,11 @@
     <!-- Navbar (reuse from main styles) -->
     <nav class="navbar">
         <div class="navbar-brand">
-            <img class="brand-logo" src="zevsafe-logo.png" alt="ZevSafe Logo">
+            <img class="brand-logo" src="../zevsafe-logo.png" alt="ZevSafe Logo - Zero-Knowledge Encryption" width="32" height="32">
             <span class="brand-name">ZevSafe</span>
         </div>
         <div class="navbar-links">
-            <a href="index.html" class="nav-pill">← Back to App</a>
+            <a href="../index.html" class="nav-pill">← Back to App</a>
             <a href="https://github.com/zevbuild" target="_blank" class="nav-pill nav-pill-ghost">GitHub ↗</a>
         </div>
     </nav>
@@ -681,22 +792,22 @@
             <span style="font-size:2.5rem; filter:drop-shadow(0 0 16px rgba(139,92,246,0.5))">🔒</span>
             <h2>Ready to Secure Your Files?</h2>
             <p>Go back to ZevSafe and start encrypting. Your data is yours — keep it that way.</p>
-            <a href="index.html" class="cta-btn">🔐 Open ZevSafe</a>
+            <a href="../index.html" class="cta-btn">🔐 Open ZevSafe</a>
         </div>
 
         <!-- Footer -->
         <footer class="site-footer">
             <div class="footer-brand">
-                <img class="footer-logo" src="zevsafe-logo.png" alt="ZevSafe Logo">
+                <img class="footer-logo" src="../zevsafe-logo.png" alt="ZevSafe Logo" width="24" height="24">
                 <span>ZevSafe</span>
             </div>
             <p class="footer-tagline">Your files stay on your device. Always.</p>
             <div class="footer-links">
-                <a href="index.html">App</a>
+                <a href="../index.html">App</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
-                <span>AES-256-GCM · PBKDF2-SHA256</span>
+                <span>AES-256-GCM · PBKDF2-SHA512</span>
             </div>
             <p class="footer-copy">Built by <strong>zevbuild</strong> · MIT License</p>
         </footer>
@@ -710,7 +821,7 @@
         
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
+                navigator.serviceWorker.register('../sw.js', { scope: '../' })
                     .then(reg => {
                         console.log('[ZevSafe PWA] SW registered on guide page.');
                         window.addEventListener('online', () => reg.update().catch(() => {}));
