@@ -8,12 +8,12 @@
 [![KDF: PBKDF2-SHA512](https://img.shields.io/badge/KDF-PBKDF2--SHA512%20(600k)-3b82f6?style=for-the-badge)](#-cryptography)
 [![PWA: Installable](https://img.shields.io/badge/PWA-Installable-8b5cf6?style=for-the-badge)](#-pwa--install-as-an-app)
 [![100% Offline](https://img.shields.io/badge/Mode-100%25%20Offline-f59e0b?style=for-the-badge)](#)
-[![Release: v4 / WEB-VERSION-21](https://img.shields.io/badge/Release-v4%20(WEB--VERSION--21)-06b6d4?style=for-the-badge)](CHANGELOG.md)
+[![Release: v5 / WEB-VERSION-23](https://img.shields.io/badge/Release-v5%20(WEB--VERSION--23)-06b6d4?style=for-the-badge)](CHANGELOG.md)
 
 ---
 
-> 🟢 **Current stable release — v4 (`.zev` format / WEB-VERSION-21):** military-grade security by default.  
-> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · AES-256-GCM · optional keyfile 2FA · Decrypted Vault Explorer · Cinema Media Player · 5 GB+ in-browser streaming.**
+> 🟢 **Current stable release — v5 (`.zev` format / WEB-VERSION-23):** military-grade security by default with 5 GB low-RAM streaming.  
+> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · 4 MB Chunked AES-256-GCM (`ZV3\0`) · optional keyfile 2FA · Instant <100ms Vault Explorer · Cinema Media Player · 5 GB mobile & desktop streaming (<150 MB RAM).**
 
 ---
 
@@ -21,14 +21,14 @@
 
 **ZevSafe** is a zero-trust, client-side encryption portal designed to lock sensitive files and directory hierarchies into single portable encrypted vaults (`.zev`). It executes entirely within your browser sandbox leveraging the native W3C [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) — **no backend servers, no cloud telemetry, no accounts, and no data transmission over the network**.
 
-Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v2 Standard (PBKDF2-SHA512 / 600,000 rounds)** by default, supports an optional **Keyfile second factor**, provides a built-in **Decrypted Vault Explorer** with an **in-browser Cinema Media Player**, and maintains transparent backward compatibility with legacy **v1 vaults**.
+Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-RAM Streaming (`ZV3\0` / PBKDF2-SHA512 / 600,000 rounds)** by default so users can compress, encrypt, and decrypt up to **5 GB** on mobile and desktop browsers without out-of-memory crashes, supports an optional **Keyfile second factor**, provides an instant **Decrypted Vault Explorer** with an **in-browser Cinema Media Player**, and maintains 100% backward compatibility with **v2 Standard** and **v1 Legacy** vaults.
 
 ### Ideal For:
 - **Zero-knowledge backup:** Encrypting personal archives before storing on USB flash drives, external SSDs, or public cloud storage.
 - **Air-gapped security:** Encrypting and decrypting data on completely offline machines or in airplane mode.
 - **Two-factor protection:** Pairing a passphrase with a physical keyfile (e.g., a photo, key file, or document) so neither factor alone can unlock the vault.
-- **Instant media streaming:** Playing encrypted 2.5 GB+ videos and audio files directly inside the browser without downloading decrypted files to disk.
-- **Selective file extraction:** Inspecting decrypted vault contents and extracting single files or batch-downloading selected files instead of saving the full archive.
+- **Instant media streaming:** Playing encrypted multi-GB videos and audio files directly inside the browser without downloading decrypted files to disk.
+- **Selective file extraction:** Unlocking a 5 GB vault catalog in **< 100 ms** (`< 15 MB RAM`) and extracting single files by decrypting only their specific 4 MB chunk span.
 
 ---
 
@@ -36,28 +36,28 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v2 Stan
 
 | Feature | Description |
 |---|---|
-| 🔐 **AES-256-GCM Authenticated Encryption** | Military-grade authenticated cipher guaranteeing confidentiality and detecting any bit-flipping or file tampering. |
-| 🛡️ **v2 Standard (Default Mode)** | PBKDF2-SHA512 key stretching with **600,000 iterations** and a 32-byte CSPRNG random salt (exceeds OWASP guidelines). |
-| 🗝️ **Keyfile Two-Factor Authentication (2FA)** | Mixes a SHA-256 hash of any file (image, key, binary) into derived key material as a physical second factor. |
-| 🔑 **Automatic v1 Legacy Compatibility** | Reads the 4-byte `ZV2\0` magic header to automatically detect and decrypt older v1 vaults (100,000 PBKDF2-SHA256 iterations). |
+| 🔐 **AES-256-GCM Authenticated Encryption** | Military-grade authenticated cipher guaranteeing confidentiality and detecting any bit-flipping, chunk reordering, or file tampering. |
+| ⚡ **v3 5 GB Low-RAM Streaming Engine (`ZV3\0`)** | Streams ZIP64 compression (`CompressionStream('deflate-raw')`) and 4 MB chunked AES-256-GCM in a background Web Worker with 2-credit (~8 MB) backpressure, keeping peak browser heap under 150 MB. |
+| 🛡️ **PBKDF2-SHA512 (600,000 Iterations)** | Key stretching with **600,000 iterations** and a 32-byte CSPRNG random salt offloaded to a Web Worker so the UI stays at 60 FPS. |
+| 🗝️ **Keyfile Two-Factor Authentication (2FA)** | Mixes a SHA-256 hash of any file (image, key, binary) into derived key material via XOR as a physical second factor. |
+| 🔑 **Automatic v1 / v2 / v3 Compatibility** | Sniffs the container header (`ZV3\0`, `ZV2\0`, or legacy v1) from the first 57 bytes to transparently decrypt all vault generations. |
 | 📁 **Dual File & Full Directory Support** | Select individual files, multi-file selections, or complete directory trees using "Browse Folder" or "Browse Files". |
 | ⚡ **Native File System Access API** | Uses `window.showDirectoryPicker()` with recursive folder hierarchy capture and seamless fallback to HTML5 `webkitdirectory`. |
-| 📂 **Decrypted Vault Explorer** | In-memory interactive file manager featuring List and Grid views, instant search, multi-criteria sorting, and batch downloads. |
-| ⬇️ **1-Click Full ZIP & Single-File Downloads** | Download individual files, selected batches, or click `⬇️ Download All (ZIP)` directly in the header. |
+| 📂 **Instant Decrypted Vault Explorer (< 100 ms)** | Reads only the 57-byte header and encrypted tail manifest (`file.slice(manifestOffset)`) to list 1,000+ files in < 100 ms without buffering the vault. |
+| ⬇️ **Multi-Tier Mobile & Desktop Streaming Saves** | Routes 5 GB downloads via Tier 1 FileSystem Access API, Tier 2 Service Worker `/_stream_download` stream intercept, and Tier 3 OPFS staging. |
 | 🎬 **In-Browser Cinema Media Player** | Direct playback for decrypted video (`.mp4`, `.mov`, `.webm`, `.mkv`) and audio (`.mp3`, `.wav`, `.ogg`, `.flac`, `.aac`) with zero disk writes. |
 | 🎛️ **Advanced Cinema Controls** | Variable playback speed (0.5×–2.0×), ±10s scrubbing, track navigation, Picture-in-Picture (PiP), fullscreen, and "New Tab" streaming. |
-| 📦 **Smart Adaptive Compression** | Instant `STORE` mode for pre-compressed media/archives + Fast Level 1 DEFLATE for compressible documents/code (up to **10× faster**). |
-| 🚀 **5 GB+ Memory Optimization** | Zero-copy buffer management and intermediate heap deallocation cut browser RAM usage by >65%, supporting 5 GB+ vaults on desktop and 2.5 GB on mobile. |
+| 📦 **Smart Adaptive Compression** | Instant `STORE` mode for pre-compressed media/archives + streaming `DEFLATE` for compressible documents/code. |
 | 💻 **1-Click PC Setup (25+ GB)** | Includes Windows batch launchers (`Encrypt-Vault.bat`, `Decrypt-Vault.bat`) and streaming PowerShell scripts for zero-RAM 25 GB–100 GB+ datasets. |
-| 📊 **3-Stage Real-Time Pipeline Tracker** | Visual progress pills (`Compress` → `Encrypt/Decrypt` → `Save`) with live throughput telemetry (MB/s, compression ratio, timers). |
+| 📊 **3-Stage 60 FPS Pipeline Tracker** | Visual progress pills (`Compress` → `Encrypt/Decrypt` → `Save`) with live throughput telemetry (MB/s, ETA, elapsed time). |
 | 📝 **Password Recovery & Manager Integration** | Real-time password modal with 1-click clipboard copy, browser password-manager save (`PasswordCredential`), print sheet, and text export. |
-| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v21`), auto-updating in background, fully functional offline. |
+| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v23`), auto-updating in background, fully functional offline. |
 
 ---
 
 ## 🔐 How It Works
 
-### v2 — Standard Mode Architecture (Default)
+### v3 / v2 — Streaming & Standard Architecture (Default)
 
 ```text
 [Files / Directory Tree]

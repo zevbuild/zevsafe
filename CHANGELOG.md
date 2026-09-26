@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 5 — September 26, 2026
+- 5 GB Low-RAM Streaming Compression, Encryption & Decryption Engine (`ZV3\0`): Added chunked 4 MB STREAM AEAD (`AES-256-GCM`) pipeline capable of compressing, encrypting, and decrypting vaults up to 5 GB with < 150 MB peak heap RAM on mobile (Android Chrome, iOS Safari) and desktop browsers
+- Zero-Buffer Streaming ZIP64 Packager (`js/stream-packer.js`): Streams files via `file.stream()` and native `CompressionStream('deflate-raw')` with 24-byte ZIP64 Data Descriptors (`Bit 3`), adaptive `STORE`/`DEFLATE` selection, and an encrypted tail manifest catalog
+- Instant Vault Explorer & Selective Chunk Extraction (`js/stream-unpacker.js`): Unlocks and lists 1,000+ files from a 5 GB vault in < 100 ms using < 15 MB RAM by slicing only the 57-byte container header and encrypted tail manifest; extracts individual files or media streams by decrypting only the required 4 MB chunk span
+- Off-Thread Web Worker & Credit Backpressure (`js/crypto-worker.js`, `js/worker-bridge.js`): Offloads 600,000-iteration PBKDF2-SHA512 key derivation, deflate compression, and AES-GCM chunk encryption/decryption to a dedicated Web Worker with zero-copy `Transferable` buffers, 2-credit (~8 MB) flow control, and 60 FPS live telemetry
+- Multi-Tier Mobile & Desktop Streaming Downloads (`js/stream-saver.js`, `sw.js`): Implements Tier 1 FileSystem Access API (`showSaveFilePicker`), Tier 2 Service Worker `/_stream_download` stream interception, and Tier 3 OPFS disk staging so 5 GB outputs save without hitting browser `Blob` memory limits
+- Automated Verification Suite (`test/`): Added 710 automated unit, integration, and 4-tier E2E tests verifying cryptographic integrity, tamper rejection, memory bounds, and v1/v2/v3 backward compatibility
+- PWA Service Worker Cache Sync: Bumped PWA cache version to `v23` (`WEB-VERSION-23`)
+
 ## Version 4 — September 15, 2026
 - Fixed Files & Folder Upload & Drag-and-Drop: Removed restrictive single-folder drop constraints, allowing users to drop loose files, multiple files, or full directory structures directly into the vault creator
 - Fixed Local Folder Upload: Resolved issue where touchscreen laptops (coarse pointer) and resized desktop viewports routed "Browse Folder" to a file-only selector; folder browse now reliably opens the native directory picker
