@@ -16,3 +16,8 @@ test_folder_restored/
 # PowerShell compiled temp files
 *.dll
 *.exe
+
+# Agent scratch & internal workflow files
+.agents/
+ORIGINAL_REQUEST.md
+

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZevSafe v3 STREAM AEAD Core Verification Suite</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+        h1 {
+            color: var(--text-heading);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.8rem;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .status-running {
+            background-color: rgba(210, 153, 34, 0.15);
+            color: var(--accent-yellow);
+            border: 1px solid var(--accent-yellow);
+        }
+        .status-passed {
+            background-color: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+        .status-failed {
+            background-color: rgba(248, 81, 73, 0.15);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+        .log-section {
+            background-color: #05070a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            font-size: 0.85rem;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .log-pass { color: var(--accent-green); }
+        .log-fail { color: var(--accent-red); font-weight: bold; }
+        .log-info { color: var(--accent-blue); }
+        .log-header { color: var(--text-heading); font-weight: bold; margin-top: 0.8rem; }
+        button {
+            background-color: #238636;
+            color: #ffffff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2ea043;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ZevSafe v3 STREAM AEAD Verification Suite</h1>
+            <div class="subtitle">Unit tests for PBKDF2-SHA512, STREAM AEAD chunk framing, Web Streams TransformStream, and tamper rejection.</div>
+        </header>
+
+        <div class="card">
+            <div id="status-badge" class="status-badge status-running">RUNNING SUITE...</div>
+            <div style="margin-bottom: 1rem;">
+                <button id="btn-rerun" onclick="runSuite()">Re-run Verification Suite</button>
+            </div>
+            <div id="log-console" class="log-section"></div>
+        </div>
+    </div>
+
+    <!-- Core Module under test -->
+    <script src="../js/stream-crypto.js"></script>
+
+    <script>
+        const logConsole = document.getElementById('log-console');
+        const statusBadge = document.getElementById('status-badge');
+
+        function log(msg, type = 'text') {
+            const span = document.createElement('span');
+            if (type === 'pass') span.className = 'log-pass';
+            else if (type === 'fail') span.className = 'log-fail';
+            else if (type === 'info') span.className = 'log-info';
+            else if (type === 'header') span.className = 'log-header';
+            span.textContent = msg + '\n';
+            logConsole.appendChild(span);
+            logConsole.scrollTop = logConsole.scrollHeight;
+        }
+
+        let totalTests = 0;
+        let passedTests = 0;
+        let failedTests = 0;
+        const failures = [];
+
+        function assert(condition, message) {
+            totalTests++;
+            if (condition) {
+                passedTests++;
+                log(`  ✓ ${message}`, 'pass');
+            } else {
+                failedTests++;
+                log(`  ✗ FAIL: ${message}`, 'fail');
+                failures.push(message);
+            }
+        }
+
+        function arraysEqual(a, b) {
+            if (a.length !== b.length) return false;
+            for (let i = 0; i < a.length; i++) {
+                if (a[i] !== b[i]) return false;
+            }
+            return true;
+        }
+
+        async function sha256Hex(bytes) {
+            const hash = await crypto.subtle.digest('SHA-256', bytes);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        async function streamToBytes(readableStream) {
+            const reader = readableStream.getReader();
+            const chunks = [];
+            let totalLength = 0;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                if (value && value.byteLength > 0) {
+                    chunks.push(value);
+                    totalLength += value.byteLength;
+                }
+            }
+            const result = new Uint8Array(totalLength);
+            let offset = 0;
+            for (const chunk of chunks) {
+                result.set(chunk, offset);
+                offset += chunk.byteLength;
+            }
+            return result;
+        }
+
+        function createStreamFromChunks(chunks) {
+            return new ReadableStream({
+                start(controller) {
+                    for (const chunk of chunks) {
+                        controller.enqueue(chunk);
+                    }
+                    controller.close();
+                }
+            });
+        }
+
+        function concatArrayOfBuffers(arrays) {
+            const total = arrays.reduce((acc, a) => acc + a.byteLength, 0);
+            const out = new Uint8Array(total);
+            let offset = 0;
+            for (const a of arrays) {
+                out.set(a, offset);
+                offset += a.byteLength;
+            }
+            return out;
+        }
+
+        async function runSuite() {
+            logConsole.textContent = '';
+            totalTests = 0;
+            passedTests = 0;
+            failedTests = 0;
+            failures.length = 0;
+
+            statusBadge.className = 'status-badge status-running';
+            statusBadge.textContent = 'RUNNING SUITE...';
+
+            log('Starting ZevSafe v3 STREAM AEAD Verification Suite...', 'info');
+            const startTime = performance.now();
+
+            try {
+                // 1. Container Header Tests
+                log('1. Container Header Tests', 'header');
+                const salt = StreamCrypto.generateSalt(32);
+                const prefix = StreamCrypto.generateBaseIVPrefix(7);
+                const manifestOffset = 9876543210n;
+
+                assert(salt.length === 32, 'generateSalt produces 32 bytes');
+                assert(prefix.length === 7, 'generateBaseIVPrefix produces 7 bytes');
+
+                const header = StreamCrypto.createContainerHeader({
+                    salt,
+                    baseIVPrefix: prefix,
+                    chunkSize: 4194304,
+                    flags: StreamCrypto.V3_FLAG_KEYFILE,
+                    manifestOffset
+                });
+
+                assert(header.length === StreamCrypto.V3_HEADER_SIZE, `Container header size is exactly ${StreamCrypto.V3_HEADER_SIZE} bytes (57 bytes)`);
+                assert(arraysEqual(header.slice(0, 4), StreamCrypto.V3_MAGIC), "Header magic is 'ZV3\\0'");
+                assert(header[4] === StreamCrypto.V3_VERSION, 'Header version is 0x03');
+                assert(header[5] === StreamCrypto.V3_FLAG_KEYFILE, 'Header flags preserve V3_FLAG_KEYFILE');
+
+                const parsed = StreamCrypto.parseContainerHeader(header);
+                assert(arraysEqual(parsed.magic, StreamCrypto.V3_MAGIC), 'Parsed magic matches');
+                assert(parsed.version === 3, 'Parsed version is 3');
+                assert(parsed.flags === StreamCrypto.V3_FLAG_KEYFILE, 'Parsed flags match');
+                assert(parsed.chunkSize === 4194304, 'Parsed chunkSize is 4 MB');
+                assert(arraysEqual(parsed.salt, salt), 'Parsed salt matches original');
+                assert(arraysEqual(parsed.baseIVPrefix, prefix), 'Parsed baseIVPrefix matches original');
+                assert(parsed.manifestOffset === manifestOffset, 'Parsed manifestOffset matches 9876543210n');
+
+                StreamCrypto.updateManifestOffset(header, 123456789012345n);
+                const updatedParsed = StreamCrypto.parseContainerHeader(header);
+                assert(updatedParsed.manifestOffset === 123456789012345n, 'updateManifestOffset updates offset correctly');
+
+                // 2. IV and AAD
+                log('2. IV and AAD Computation Tests', 'header');
+                const iv0False = StreamCrypto.computeChunkIV(prefix, 0, false);
+                assert(iv0False.length === StreamCrypto.IV_LENGTH, 'computeChunkIV returns 12 bytes');
+                assert(arraysEqual(iv0False.slice(0, 7), prefix), 'IV bytes 0..6 match baseIVPrefix');
+                assert(iv0False[11] === 0x00, 'IV byte 11 is 0x00 when isLast = false');
+
+                const iv5True = StreamCrypto.computeChunkIV(prefix, 5, true);
+                assert(iv5True[10] === 5 && iv5True[11] === 0x01, 'IV encodes chunk index 5 and isLast = true');
+
+                const aad0False = StreamCrypto.computeChunkAAD(StreamCrypto.V3_MAGIC, StreamCrypto.V3_VERSION, salt, 0, false);
+                assert(aad0False.length === StreamCrypto.AAD_LENGTH, 'computeChunkAAD returns 42 bytes');
+                assert(arraysEqual(aad0False.slice(0, 4), StreamCrypto.V3_MAGIC), "AAD magic matches 'ZV3\\0'");
+                assert(aad0False[4] === 0x03, 'AAD version is 0x03');
+                assert(aad0False[41] === 0x00, 'AAD isLast byte is 0x00');
+
+                // 3. PBKDF2 Key Derivation & Keyfile Tests
+                log('3. PBKDF2 Key Derivation & Keyfile Tests', 'header');
+                const key1 = await StreamCrypto.deriveMasterKey('MasterPassword!2026', salt, 1000);
+                assert(key1 !== null && key1.algorithm.name === 'AES-GCM', 'deriveMasterKey returns AES-GCM CryptoKey');
+
+                const keyfileA = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+                const keyfileB = new Uint8Array([8, 7, 6, 5, 4, 3, 2, 1]);
+                const keyWithA = await StreamCrypto.deriveMasterKey('MasterPassword!2026', salt, 1000, keyfileA);
+                const keyWithA2 = await StreamCrypto.deriveMasterKey('MasterPassword!2026', salt, 1000, keyfileA);
+                const keyWithB = await StreamCrypto.deriveMasterKey('MasterPassword!2026', salt, 1000, keyfileB);
+
+                const sampleText = new TextEncoder().encode('ZevSafe Stream AEAD Browser Verification');
+                const encWithKeyA = await StreamCrypto.encryptChunk(keyWithA, sampleText, prefix, 0, true, salt);
+                const decWithKeyA2 = await StreamCrypto.decryptChunk(keyWithA2, encWithKeyA, prefix, 0, true, salt);
+                assert(arraysEqual(decWithKeyA2, sampleText), 'Keyfile 2FA key successfully decrypts matching ciphertext');
+
+                let wrongKeyfileCaught = false;
+                try {
+                    await StreamCrypto.decryptChunk(keyWithB, encWithKeyA, prefix, 0, true, salt);
+                } catch (e) {
+                    wrongKeyfileCaught = (e.name === 'OperationError');
+                }
+                assert(wrongKeyfileCaught, 'Wrong keyfile throws OperationError');
+
+                // 4. Single Chunk Encrypt & Decrypt Framing Tests
+                log('4. Single Chunk Framing Tests', 'header');
+                const testSizes = [0, 1, 16, 1024, 65536];
+                for (const size of testSizes) {
+                    const plain = new Uint8Array(size);
+                    for (let i = 0; i < size; i++) plain[i] = (i * 17) & 0xFF;
+                    const chunk = await StreamCrypto.encryptChunk(key1, plain, prefix, 0, true, salt);
+                    assert(chunk.byteLength === 4 + size + 16, `Framed chunk size for ${size}B is 4 + ${size} + 16 = ${chunk.byteLength}`);
+                    const dec = await StreamCrypto.decryptChunk(key1, chunk, prefix, 0, true, salt);
+                    assert(arraysEqual(dec, plain), `Plaintext round-trip for ${size}B verified`);
+                }
+
+                // 5. Tamper Rejection
+                log('5. Tamper Rejection & Adversarial Tests', 'header');
+                const validChunk = await StreamCrypto.encryptChunk(key1, sampleText, prefix, 0, true, salt);
+
+                // 1-bit flip in ciphertext
+                const tamperedCt = new Uint8Array(validChunk);
+                tamperedCt[6] ^= 0x01;
+                let bitFlipCaught = false;
+                try {
+                    await StreamCrypto.decryptChunk(key1, tamperedCt, prefix, 0, true, salt);
+                } catch (e) {
+                    bitFlipCaught = (e.name === 'OperationError');
+                }
+                assert(bitFlipCaught, '1-bit ciphertext flip throws OperationError');
+
+                // Altered chunk index
+                let indexTamperCaught = false;
+                try {
+                    await StreamCrypto.decryptChunk(key1, validChunk, prefix, 1, true, salt);
+                } catch (e) {
+                    indexTamperCaught = (e.name === 'OperationError');
+                }
+                assert(indexTamperCaught, 'Altered chunkIndex throws OperationError');
+
+                // Altered isLast flag
+                let flagTamperCaught = false;
+                try {
+                    await StreamCrypto.decryptChunk(key1, validChunk, prefix, 0, false, salt);
+                } catch (e) {
+                    flagTamperCaught = (e.name === 'OperationError');
+                }
+                assert(flagTamperCaught, 'Altered isLast flag throws OperationError');
+
+                // 6. Web Streams API Pipeline
+                log('6. Web Streams API Streaming Pipeline Tests', 'header');
+                const testChunkSize = 32768;
+                const totalBytes = testChunkSize * 3 + 4321;
+                const streamData = new Uint8Array(totalBytes);
+                for (let i = 0; i < totalBytes; i++) streamData[i] = (i * 7) & 0xFF;
+                const origHash = await sha256Hex(streamData);
+
+                const pStream = createStreamFromChunks([streamData]);
+                const encStream = pStream.pipeThrough(StreamCrypto.createChunkEncryptorStream(key1, prefix, salt, testChunkSize));
+                const decStream = encStream.pipeThrough(StreamCrypto.createChunkDecryptorStream(key1, prefix, salt, testChunkSize));
+
+                const recoveredBytes = await streamToBytes(decStream);
+                const recoveredHash = await sha256Hex(recoveredBytes);
+
+                assert(recoveredBytes.length === totalBytes, `Recovered stream length matches ${totalBytes}`);
+                assert(recoveredHash === origHash, `Recovered SHA-256 matches original: ${recoveredHash}`);
+
+                // 7. Stream Adversarial Attacks
+                log('7. Stream Adversarial Attacks Tests', 'header');
+                const enc3Chunks = [];
+                const encStream3 = createStreamFromChunks([new Uint8Array(testChunkSize * 3)])
+                    .pipeThrough(StreamCrypto.createChunkEncryptorStream(key1, prefix, salt, testChunkSize));
+                const reader = encStream3.getReader();
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    enc3Chunks.push(value);
+                }
+
+                // Truncation (drop final chunk)
+                let truncCaught = false;
+                try {
+                    const ts = createStreamFromChunks([enc3Chunks[0], enc3Chunks[1]])
+                        .pipeThrough(StreamCrypto.createChunkDecryptorStream(key1, prefix, salt, testChunkSize));
+                    await streamToBytes(ts);
+                } catch (e) {
+                    truncCaught = (e.name === 'OperationError');
+                }
+                assert(truncCaught, 'Omitted final chunk throws OperationError');
+
+                // Reordering (swap chunks)
+                let reorderCaught = false;
+                try {
+                    const rs = createStreamFromChunks([enc3Chunks[1], enc3Chunks[0], enc3Chunks[2]])
+                        .pipeThrough(StreamCrypto.createChunkDecryptorStream(key1, prefix, salt, testChunkSize));
+                    await streamToBytes(rs);
+                } catch (e) {
+                    reorderCaught = (e.name === 'OperationError');
+                }
+                assert(reorderCaught, 'Reordered chunks throw OperationError');
+
+                const elapsed = (performance.now() - startTime).toFixed(1);
+                log(`\nAll tests completed in ${elapsed} ms: ${passedTests}/${totalTests} PASSED`, 'header');
+
+                if (failedTests === 0) {
+                    statusBadge.className = 'status-badge status-passed';
+                    statusBadge.textContent = `ALL ${passedTests} TESTS PASSED (100%)`;
+                } else {
+                    statusBadge.className = 'status-badge status-failed';
+                    statusBadge.textContent = `${failedTests} OF ${totalTests} TESTS FAILED`;
+                }
+
+            } catch (err) {
+                log(`Fatal error: ${err.message}`, 'fail');
+                statusBadge.className = 'status-badge status-failed';
+                statusBadge.textContent = 'FATAL SUITE ERROR';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', runSuite);
+    </script>
+</body>
+</html>

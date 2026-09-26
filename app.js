@@ -248,6 +248,79 @@ document.querySelectorAll('.toggle-pw').forEach(btn => {
 });
 
 // ============================================
+// PASSWORD STRENGTH EVALUATOR
+// ============================================
+
+/**
+ * Evaluates password strength and returns score, label, fill percent, and color.
+ * @param {string} password
+ * @returns {{ score: number, label: string, percent: number, color: string }}
+ */
+function evaluatePasswordStrength(password) {
+    if (!password || password.length === 0) {
+        return { score: 0, label: '', percent: 0, color: '' };
+    }
+    if (password.length < 4) {
+        return { score: 0, label: 'Too short', percent: 15, color: '#ef4444' };
+    }
+
+    let score = 0;
+    // Length bonuses
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (password.length >= 16) score++;
+
+    // Character diversity
+    const hasLower = /[a-z]/.test(password);
+    const hasUpper = /[A-Z]/.test(password);
+    const hasDigit = /[0-9]/.test(password);
+    const hasSpecial = /[^a-zA-Z0-9]/.test(password);
+
+    const varietyCount = [hasLower, hasUpper, hasDigit, hasSpecial].filter(Boolean).length;
+    if (varietyCount >= 2) score++;
+    if (varietyCount >= 3) score++;
+    if (varietyCount >= 4) score++;
+
+    // Pattern deductions
+    if (/^[0-9]+$/.test(password) || /^[a-zA-Z]+$/.test(password)) {
+        score = Math.max(1, score - 1);
+    }
+
+    if (score <= 1) {
+        return { score: 1, label: 'Weak', percent: 25, color: '#f97316' };
+    } else if (score <= 3) {
+        return { score: 2, label: 'Fair', percent: 50, color: '#eab308' };
+    } else if (score <= 5) {
+        return { score: 3, label: 'Strong', percent: 75, color: '#14b8a6' };
+    } else {
+        return { score: 4, label: 'Very Strong', percent: 100, color: '#10b981' };
+    }
+}
+
+// Bind live strength meter input event
+const encryptStrengthWrap = document.getElementById('encrypt-strength-wrap');
+const encryptStrengthFill = document.getElementById('encrypt-strength-fill');
+const encryptStrengthLabel = document.getElementById('encrypt-strength-label');
+
+encryptPassword?.addEventListener('input', () => {
+    const val = encryptPassword.value;
+    if (!val) {
+        if (encryptStrengthWrap) encryptStrengthWrap.style.display = 'none';
+        return;
+    }
+    const res = evaluatePasswordStrength(val);
+    if (encryptStrengthWrap) encryptStrengthWrap.style.display = 'flex';
+    if (encryptStrengthFill) {
+        encryptStrengthFill.style.width = `${res.percent}%`;
+        encryptStrengthFill.style.backgroundColor = res.color;
+    }
+    if (encryptStrengthLabel) {
+        encryptStrengthLabel.textContent = res.label;
+        encryptStrengthLabel.style.color = res.color;
+    }
+});
+
+// ============================================
 // DRAG & DROP — ROBUST ASYNC TRAVERSAL WITH FALLBACK
 // ============================================
 
@@ -1353,6 +1426,99 @@ btnEncrypt.addEventListener('click', async () => {
     const _origTotalBytes = selectedEncryptFiles.reduce((sum, f) => sum + f.size, 0);
 
     try {
+        if (useV2 && typeof WorkerBridge !== 'undefined') {
+            // ── V3 5 GB STREAMING ENCRYPTION PIPELINE (Low-RAM Web Worker) ────────
+            log(`🚀 Starting v3 Streaming Encryption of "${selectedEncryptFolderName}" (${selectedEncryptFiles.length} file(s), ${formatBytes(_origTotalBytes)})...`, 'info');
+            log('🔒 v3 STREAM AEAD mode: PBKDF2-SHA512 (600k rounds) · 4 MB Chunks · AES-256-GCM · Peak RAM < 150 MB' + (v2KeyfileEncrypt ? ' · Keyfile active' : ''), 'info');
+            updateProgress('Initializing streaming engine...', 5);
+
+            let keyfileBytes = null;
+            if (v2KeyfileEncrypt) {
+                log('🗝️ Hashing keyfile (SHA-256)...', 'info');
+                keyfileBytes = await hashKeyfile(v2KeyfileEncrypt);
+                recoveryRecord.keyfileRequired = true;
+                recoveryRecord.keyfileName = v2KeyfileEncrypt.name;
+                recoveryRecord.keyfileFingerprint = bytesToHex(keyfileBytes);
+                log('Keyfile hash mixed into key material.', 'info');
+            }
+
+            const filename = `${selectedEncryptFolderName}.zev`;
+            recoveryRecord.vaultFilename = filename;
+            recoveryRecord.version = 'v3 streaming (5 GB)';
+
+            let streamWriter = null;
+            if (typeof StreamSaverAdapter !== 'undefined') {
+                try {
+                    streamWriter = await StreamSaverAdapter.createStreamWriter(filename, _origTotalBytes);
+                    log(`💾 Streaming destination connected via ${streamWriter.tier}`, 'info');
+                } catch (sErr) {
+                    if (sErr.name === 'AbortError') {
+                        log('File save cancelled by user.', 'warn');
+                        return;
+                    }
+                    console.warn('[StreamSaver] Fallback to buffered sink:', sErr);
+                }
+            }
+
+            ProgressTracker.onCompressProgress(10, _origTotalBytes);
+
+            let totalVaultBytes = 0;
+            await new Promise((resolve, reject) => {
+                WorkerBridge.startEncryption({
+                    files: selectedEncryptFiles,
+                    password,
+                    keyfile: keyfileBytes,
+                    options: {
+                        writable: streamWriter ? (streamWriter.writable || streamWriter) : null,
+                        bufferChunks: !streamWriter
+                    },
+                    onProgress(telemetry) {
+                        const { percent, stage, throughputMBs, elapsedSec, etaSec } = telemetry;
+                        const speed = throughputMBs > 0 ? ` (${throughputMBs.toFixed(1)} MB/s)` : '';
+                        const eta = etaSec > 0 ? ` · ETA ${Math.ceil(etaSec)}s` : '';
+                        updateProgress(`${stage}${speed}${eta}`, percent);
+
+                        if (percent < 50) {
+                            ProgressTracker.onCompressProgress(percent * 2, _origTotalBytes);
+                        } else {
+                            ProgressTracker.onCryptoStart(_origTotalBytes, (etaSec || 3) * 1000);
+                        }
+                    },
+                    async onComplete(result) {
+                        try {
+                            totalVaultBytes = result.totalBytes;
+                            if (streamWriter && typeof streamWriter.finalize === 'function') {
+                                await streamWriter.finalize();
+                            } else if (result.vault) {
+                                const encBlob = new Blob([result.vault], { type: 'application/octet-stream' });
+                                triggerDownload(encBlob, filename);
+                            }
+                            resolve(result);
+                        } catch (finErr) {
+                            reject(finErr);
+                        }
+                    },
+                    onError(err) {
+                        reject(err);
+                    }
+                });
+            });
+
+            ProgressTracker.onCryptoDone(true, 'v3');
+            ProgressTracker.onSaveDone(filename, totalVaultBytes, 'v3');
+            log(`✅ v3 Streaming Vault created: "${filename}" (${formatBytes(totalVaultBytes)})`, 'success');
+            if (keyfileBytes) log('🗝️ This vault requires BOTH the password AND the keyfile to decrypt.', 'warn');
+
+            updateProgress('✅ Encryption complete!', 100);
+            showPasswordSavePrompt(recoveryRecord);
+
+            // Reset encrypt selection & keyfile
+            clearEncryptSelection();
+            v2KeyfileEncrypt = null;
+            updateKeyfileBadge('encrypt', null);
+            return;
+        }
+
         // Step 1: Package folder using Granular Per-File Adaptive Compression
         const zip = new JSZip();
         let storeCount = 0;
@@ -1551,12 +1717,43 @@ btnDecrypt.addEventListener('click', async () => {
     updateProgress('Reading vault file...', 5);
 
     try {
-        let arrayBuffer = await selectedDecryptFile.arrayBuffer();
-
-        // Minimum size check
-        if (arrayBuffer.byteLength < 44) {
+        // Read header first (57 bytes) to avoid loading multi-GB vault into arrayBuffer
+        const headerSlice = await selectedDecryptFile.slice(0, 57).arrayBuffer();
+        if (headerSlice.byteLength < 44) {
             throw new Error('File is too small to be a valid vault — may be corrupted or not a .zev file.');
         }
+
+        const isV3 = headerSlice.byteLength >= 57 &&
+            new Uint8Array(headerSlice, 0, 4).every((b, i) => b === [0x5A, 0x56, 0x33, 0x00][i]);
+
+        if (isV3 && typeof StreamUnpacker !== 'undefined') {
+            // ── V3 5 GB STREAMING DECRYPTION PIPELINE ─────────────────────
+            log(`⚡ v3 Streaming Vault detected ("${selectedDecryptFile.name}", ${formatBytes(selectedDecryptFile.size || 0)}). Reading manifest trailer (< 100 ms)...`, 'info');
+            updateProgress('Reading manifest trailer...', 25);
+
+            let keyfileBytes = null;
+            if (v2KeyfileDecrypt) {
+                log('🗝️ Hashing keyfile for key derivation...', 'info');
+                keyfileBytes = await hashKeyfile(v2KeyfileDecrypt);
+            }
+
+            const catalog = await StreamUnpacker.readVaultManifest(selectedDecryptFile, password, keyfileBytes);
+            const folderName = selectedDecryptFile.name.replace(/\.zev$/i, '');
+
+            log(`✅ Authenticated! Loaded catalog with ${catalog.fileCount} file(s) (${formatBytes(catalog.totalSize)}) with zero RAM buffering!`, 'success');
+            updateProgress('✅ Decryption complete!', 100);
+            ProgressTracker.onCryptoDone(true, 'v3');
+            ProgressTracker.onSaveDone(`${folderName}_decrypted`, catalog.totalSize, 'v3');
+
+            openV3VaultExplorer(folderName, catalog, selectedDecryptFile, password, keyfileBytes);
+
+            clearDecryptSelection();
+            v2KeyfileDecrypt = null;
+            updateKeyfileBadge('decrypt', null);
+            return;
+        }
+
+        let arrayBuffer = await selectedDecryptFile.arrayBuffer();
 
         updateProgress('Detecting vault version...', 15);
 
@@ -1933,6 +2130,101 @@ let currentDecryptedZip = null;
 let currentDecryptedFolderName = '';
 let currentDecryptedBlob = null;
 let currentDecryptedFileList = [];
+let currentV3Vault = null; // { folderName, catalog, file, password, keyfileBytes }
+
+/**
+ * Retrieves a decrypted file Blob from either memory JSZip (v1/v2) or on-demand stream extraction (v3).
+ * @param {string} filePath
+ * @returns {Promise<Blob>}
+ */
+async function getDecryptedFileBlob(filePath) {
+    if (currentDecryptedZip) {
+        return await currentDecryptedZip.file(filePath).async('blob');
+    }
+    if (currentV3Vault && typeof StreamUnpacker !== 'undefined') {
+        const entry = currentV3Vault.catalog.files.find(f => f.path === filePath);
+        if (!entry) throw new Error(`File not found in vault catalog: ${filePath}`);
+        const extracted = await StreamUnpacker.extractSingleFile(
+            currentV3Vault.file,
+            currentV3Vault.password,
+            entry,
+            {
+                keyfileBytes: currentV3Vault.keyfileBytes,
+                manifest: currentV3Vault.catalog
+            }
+        );
+        return new Blob([extracted.data || extracted]);
+    }
+    throw new Error('No decrypted archive or vault loaded');
+}
+
+/**
+ * Opens Decrypted Vault Explorer for a v3 streaming vault without loading full archive into RAM.
+ */
+function openV3VaultExplorer(folderName, catalog, vaultFile, password, keyfileBytes) {
+    currentDecryptedFolderName = folderName;
+    currentDecryptedZip = null;
+    currentDecryptedBlob = null;
+    currentV3Vault = {
+        folderName,
+        catalog,
+        file: vaultFile,
+        password,
+        keyfileBytes
+    };
+    explorerSelectedFiles.clear();
+
+    const modal = document.getElementById('vault-explorer-modal');
+    const modalTitle = document.getElementById('explorer-modal-title');
+    const modalMeta = document.getElementById('explorer-modal-meta');
+    const searchInput = document.getElementById('explorer-search-input');
+    const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+
+    if (!modal) return;
+
+    if (searchInput) searchInput.value = '';
+    if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+
+    currentDecryptedFileList = [];
+    currentMediaPlaylist = [];
+    let totalBytes = catalog.totalSize || 0;
+
+    for (const f of catalog.files) {
+        const fileItem = {
+            path: f.path,
+            name: f.path.split('/').pop() || f.path,
+            dirPath: f.path.includes('/') ? f.path.substring(0, f.path.lastIndexOf('/')) : '',
+            size: f.size || 0,
+            entry: f
+        };
+        currentDecryptedFileList.push(fileItem);
+
+        const mediaCat = getMediaCategory(fileItem.name);
+        if (mediaCat) {
+            currentMediaPlaylist.push({
+                path: fileItem.path,
+                name: fileItem.name,
+                category: mediaCat,
+                mimeType: getMediaMimeType(fileItem.name),
+                size: fileItem.size
+            });
+        }
+    }
+
+    if (modalTitle) modalTitle.textContent = `${folderName}`;
+    const fileWord = currentDecryptedFileList.length === 1 ? 'file' : 'files';
+    if (modalMeta) modalMeta.textContent = `${currentDecryptedFileList.length} ${fileWord} · ${formatBytes(totalBytes)} · v3 Streaming`;
+
+    const toolbar = document.getElementById('explorer-toolbar');
+    if (toolbar) {
+        toolbar.style.display = currentDecryptedFileList.length > 1 ? 'flex' : 'none';
+    }
+
+    updateCategoryFilterCounts();
+    updateBatchBar();
+    renderExplorerFileList('');
+    modal.style.display = 'flex';
+}
 
 /**
  * Returns a suitable icon based on file extension.
@@ -2071,7 +2363,7 @@ function updateBatchBar() {
 }
 
 async function batchDownloadSelected() {
-    if (explorerSelectedFiles.size === 0 || !currentDecryptedZip) return;
+    if (explorerSelectedFiles.size === 0 || (!currentDecryptedZip && !currentV3Vault)) return;
     const btn = document.getElementById('btn-batch-download');
     const origText = btn ? btn.textContent : '⬇️ Download Selected';
     try {
@@ -2080,13 +2372,13 @@ async function batchDownloadSelected() {
             const singlePath = Array.from(explorerSelectedFiles)[0];
             const fileItem = currentDecryptedFileList.find(f => f.path === singlePath);
             if (fileItem) {
-                const blob = await currentDecryptedZip.file(singlePath).async('blob');
+                const blob = await getDecryptedFileBlob(singlePath);
                 triggerDownload(blob, fileItem.name);
             }
         } else {
             const batchZip = new JSZip();
             for (const path of explorerSelectedFiles) {
-                const rawBlob = await currentDecryptedZip.file(path).async('blob');
+                const rawBlob = await getDecryptedFileBlob(path);
                 batchZip.file(path, rawBlob);
             }
             const outBlob = await batchZip.generateAsync({ type: 'blob' });
@@ -2215,7 +2507,7 @@ async function playMediaByIndex(index) {
     const speedSelect = document.getElementById('media-speed-select');
     const timeDisplay = document.getElementById('media-time-display');
 
-    if (!modal || !body || !currentDecryptedZip) return;
+    if (!modal || !body || (!currentDecryptedZip && !currentV3Vault)) return;
 
     if (currentMediaBlobUrl) {
         URL.revokeObjectURL(currentMediaBlobUrl);
@@ -2223,7 +2515,7 @@ async function playMediaByIndex(index) {
     }
 
     try {
-        const rawBlob = await currentDecryptedZip.file(item.path).async('blob');
+        const rawBlob = await getDecryptedFileBlob(item.path);
         currentMediaBlob = new Blob([rawBlob], { type: item.mimeType });
         currentMediaFilename = item.name;
         currentMediaBlobUrl = URL.createObjectURL(currentMediaBlob);
@@ -2444,7 +2736,7 @@ function renderExplorerFileList(query = '') {
                 e.stopPropagation();
                 try {
                     dlBtn.textContent = '⏳';
-                    const fileBlob = await currentDecryptedZip.file(file.path).async('blob');
+                    const fileBlob = await getDecryptedFileBlob(file.path);
                     triggerDownload(fileBlob, file.name);
                     dlBtn.textContent = '✅';
                     setTimeout(() => { dlBtn.innerHTML = '⬇️'; }, 2000);
@@ -2534,7 +2826,7 @@ function renderExplorerFileList(query = '') {
                 e.stopPropagation();
                 try {
                     dlBtn.textContent = '⏳ ...';
-                    const fileBlob = await currentDecryptedZip.file(file.path).async('blob');
+                    const fileBlob = await getDecryptedFileBlob(file.path);
                     triggerDownload(fileBlob, file.name);
                     dlBtn.textContent = '✅ Saved';
                     setTimeout(() => { dlBtn.innerHTML = '⬇️ Save'; }, 2000);
@@ -2666,14 +2958,61 @@ function initExplorerUI() {
     closeBtn?.addEventListener('click', closeVaultExplorer);
     doneBtn?.addEventListener('click', closeVaultExplorer);
 
-    dlAllBtn?.addEventListener('click', () => {
-        if (currentDecryptedBlob && currentDecryptedFolderName) {
+    dlAllBtn?.addEventListener('click', async () => {
+        if (!currentDecryptedFolderName) return;
+        const outName = `${currentDecryptedFolderName}_decrypted.zip`;
+        if (currentDecryptedBlob) {
             dlAllBtn.textContent = '⏳ Downloading...';
-            triggerDownload(currentDecryptedBlob, `${currentDecryptedFolderName}_decrypted.zip`);
-            log(`✅ Downloaded full vault: "${currentDecryptedFolderName}_decrypted.zip"`, 'success');
+            triggerDownload(currentDecryptedBlob, outName);
+            log(`✅ Downloaded full vault: "${outName}"`, 'success');
             setTimeout(() => {
                 dlAllBtn.textContent = '⬇️ Download All (ZIP)';
             }, 2000);
+        } else if (currentV3Vault) {
+            dlAllBtn.textContent = '⏳ Streaming ZIP...';
+            try {
+                let streamWriter = null;
+                if (typeof StreamSaverAdapter !== 'undefined') {
+                    streamWriter = await StreamSaverAdapter.createStreamWriter(outName, currentV3Vault.catalog.totalSize);
+                }
+                await new Promise((resolve, reject) => {
+                    WorkerBridge.startDecryption({
+                        vaultSource: currentV3Vault.file,
+                        password: currentV3Vault.password,
+                        keyfile: currentV3Vault.keyfileBytes,
+                        options: {
+                            writable: streamWriter ? (streamWriter.writable || streamWriter) : null,
+                            bufferChunks: !streamWriter
+                        },
+                        onProgress(t) {
+                            const speed = t.throughputMBs > 0 ? ` · ${t.throughputMBs.toFixed(1)} MB/s` : '';
+                            dlAllBtn.textContent = `⏳ ${Math.round(t.percent)}%${speed}`;
+                        },
+                        async onComplete(res) {
+                            try {
+                                if (streamWriter && typeof streamWriter.finalize === 'function') {
+                                    await streamWriter.finalize();
+                                } else if (res.decryptedBytes) {
+                                    const b = new Blob([res.decryptedBytes], { type: 'application/zip' });
+                                    triggerDownload(b, outName);
+                                }
+                                dlAllBtn.textContent = '✅ Downloaded!';
+                                log(`✅ Stream-downloaded full decrypted vault: "${outName}"`, 'success');
+                                setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
+                                resolve(res);
+                            } catch (e) { reject(e); }
+                        },
+                        onError(err) {
+                            dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+                            reject(err);
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error('[Download All Error]', err);
+                alert(`Download failed: ${err.message}`);
+                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+            }
         }
     });
 

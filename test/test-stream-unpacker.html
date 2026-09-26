@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZevSafe v3 Stream Unpacker & Decryption Verification Suite</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+        }
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+        h1 {
+            color: var(--text-heading);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.8rem;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .status-running {
+            background-color: rgba(210, 153, 34, 0.15);
+            color: var(--accent-yellow);
+            border: 1px solid var(--accent-yellow);
+        }
+        .status-passed {
+            background-color: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+        .status-failed {
+            background-color: rgba(248, 81, 73, 0.15);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+        .log-section {
+            background-color: #05070a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            font-size: 0.85rem;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .log-pass { color: var(--accent-green); }
+        .log-fail { color: var(--accent-red); font-weight: bold; }
+        .log-info { color: var(--accent-blue); }
+        .log-header { color: var(--text-heading); font-weight: bold; margin-top: 0.8rem; }
+        button {
+            background-color: #238636;
+            color: #ffffff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2ea043;
+        }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .meta-item {
+            background: #0d1117;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .meta-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        .meta-val {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-heading);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ZevSafe v3 Stream Unpacker Verification</h1>
+            <div class="subtitle">Milestone 3: Streaming Decryption, Selective Extraction & Backward Compatibility Engine</div>
+        </header>
+
+        <div class="card">
+            <div id="status-badge" class="status-badge status-running">RUNNING TEST SUITE...</div>
+
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="meta-label">Tests Passed</div>
+                    <div id="meta-passed" class="meta-val">0</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Total Tests</div>
+                    <div id="meta-total" class="meta-val">0</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Execution Time</div>
+                    <div id="meta-time" class="meta-val">0 ms</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Format Compatibility</div>
+                    <div class="meta-val" style="color: var(--accent-green);">v1, v2, v3</div>
+                </div>
+            </div>
+
+            <button id="btn-rerun" onclick="runSuite()">Re-run Test Suite</button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top: 0; color: var(--text-heading);">Execution Logs</h3>
+            <div id="log-console" class="log-section"></div>
+        </div>
+    </div>
+
+    <!-- Required Libraries and Modules -->
+    <script src="../jszip.min.js"></script>
+    <script src="../js/stream-crypto.js"></script>
+    <script src="../js/stream-packer.js"></script>
+    <script src="../js/stream-unpacker.js"></script>
+
+    <script>
+        const logConsole = document.getElementById('log-console');
+        const statusBadge = document.getElementById('status-badge');
+        const metaPassed = document.getElementById('meta-passed');
+        const metaTotal = document.getElementById('meta-total');
+        const metaTime = document.getElementById('meta-time');
+
+        function log(msg, type = 'text') {
+            const span = document.createElement('span');
+            if (type === 'pass') span.className = 'log-pass';
+            else if (type === 'fail') span.className = 'log-fail';
+            else if (type === 'info') span.className = 'log-info';
+            else if (type === 'header') span.className = 'log-header';
+            span.textContent = msg + '\n';
+            logConsole.appendChild(span);
+            logConsole.scrollTop = logConsole.scrollHeight;
+        }
+
+        let totalTests = 0;
+        let passedTests = 0;
+        let failedTests = 0;
+        const failures = [];
+
+        function assert(condition, message) {
+            totalTests++;
+            if (condition) {
+                passedTests++;
+                log(`  ✓ ${message}`, 'pass');
+            } else {
+                failedTests++;
+                log(`  ✗ FAIL: ${message}`, 'fail');
+                failures.push(message);
+            }
+            metaPassed.textContent = passedTests;
+            metaTotal.textContent = totalTests;
+        }
+
+        async function sha256Hex(bytes) {
+            const hash = await crypto.subtle.digest('SHA-256', bytes);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        async function streamToBytes(readableStream) {
+            const reader = readableStream.getReader();
+            const chunks = [];
+            let totalLength = 0;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                if (value && value.byteLength > 0) {
+                    chunks.push(value);
+                    totalLength += value.byteLength;
+                }
+            }
+            const result = new Uint8Array(totalLength);
+            let offset = 0;
+            for (const chunk of chunks) {
+                result.set(chunk, offset);
+                offset += chunk.byteLength;
+            }
+            return result;
+        }
+
+        async function buildSyntheticV1Vault(password, plaintext, iterations = 1000) {
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const enc = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw',
+                enc.encode(password),
+                { name: 'PBKDF2' },
+                false,
+                ['deriveKey']
+            );
+            const key = await crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt']
+            );
+            const ctBuf = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv, tagLength: 128 },
+                key,
+                plaintext
+            );
+            const ct = new Uint8Array(ctBuf);
+            const vault = new Uint8Array(28 + ct.byteLength);
+            vault.set(salt, 0);
+            vault.set(iv, 16);
+            vault.set(ct, 28);
+            return vault;
+        }
+
+        async function buildSyntheticV2Vault(password, plaintext, options = {}) {
+            const iterations = options.iterations || 1000;
+            const keyfileBytes = options.keyfileBytes || null;
+            const hasKeyfile = !!keyfileBytes;
+
+            const salt = crypto.getRandomValues(new Uint8Array(32));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const enc = new TextEncoder();
+
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw',
+                enc.encode(password),
+                { name: 'PBKDF2' },
+                false,
+                ['deriveBits']
+            );
+            const derivedBits = await crypto.subtle.deriveBits(
+                { name: 'PBKDF2', salt, iterations, hash: 'SHA-512' },
+                keyMaterial,
+                256
+            );
+            let rawKey = new Uint8Array(derivedBits);
+
+            if (hasKeyfile) {
+                const kBuf = keyfileBytes instanceof Uint8Array ? keyfileBytes : new Uint8Array(keyfileBytes);
+                const digest = await crypto.subtle.digest('SHA-256', kBuf);
+                const kHash = new Uint8Array(digest);
+                const mixed = new Uint8Array(32);
+                for (let i = 0; i < 32; i++) mixed[i] = rawKey[i] ^ kHash[i];
+                rawKey = mixed;
+            }
+
+            const key = await crypto.subtle.importKey(
+                'raw',
+                rawKey,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt']
+            );
+            const ctBuf = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv, tagLength: 128 },
+                key,
+                plaintext
+            );
+            const ct = new Uint8Array(ctBuf);
+
+            const vault = new Uint8Array(50 + ct.byteLength);
+            vault.set(StreamUnpacker.V2_MAGIC, 0);
+            vault[4] = StreamUnpacker.V2_VERSION;
+            vault[5] = hasKeyfile ? 0x01 : 0x00;
+            vault.set(salt, 6);
+            vault.set(iv, 38);
+            vault.set(ct, 50);
+            return vault;
+        }
+
+        async function buildSyntheticV3Vault(files, password, options = {}) {
+            const chunkSize = options.chunkSize || 1024;
+            const iterations = options.iterations || 1000;
+            const keyfileBytes = options.keyfileBytes || null;
+            const hasKeyfile = !!keyfileBytes;
+
+            const salt = StreamCrypto.generateSalt(32);
+            const baseIVPrefix = StreamCrypto.generateBaseIVPrefix(7);
+            const masterKey = await StreamCrypto.deriveMasterKey(password, salt, iterations, keyfileBytes);
+
+            const zipStream = StreamPacker.createStreamingZipSource(files);
+            const zipParts = [];
+            const zipReader = zipStream.getReader();
+            while (true) {
+                const { done, value } = await zipReader.read();
+                if (done) break;
+                if (value) zipParts.push(value);
+            }
+            const zipBytes = new Uint8Array(zipParts.reduce((a, b) => a + b.byteLength, 0));
+            let off = 0;
+            for (const p of zipParts) {
+                zipBytes.set(p, off);
+                off += p.byteLength;
+            }
+
+            const catalogFiles = [];
+            for (let i = 0; i < zipBytes.length - 46; i++) {
+                if (zipBytes[i] === 0x50 && zipBytes[i+1] === 0x4B && zipBytes[i+2] === 0x01 && zipBytes[i+3] === 0x02) {
+                    const method = zipBytes[i + 10] | (zipBytes[i + 11] << 8);
+                    const crc = (zipBytes[i + 16] | (zipBytes[i + 17] << 8) | (zipBytes[i + 18] << 16) | (zipBytes[i + 19] << 24)) >>> 0;
+                    const compSize = (zipBytes[i + 20] | (zipBytes[i + 21] << 8) | (zipBytes[i + 22] << 16) | (zipBytes[i + 23] << 24)) >>> 0;
+                    const uncompSize = (zipBytes[i + 24] | (zipBytes[i + 25] << 8) | (zipBytes[i + 26] << 16) | (zipBytes[i + 27] << 24)) >>> 0;
+                    const nameLen = zipBytes[i + 28] | (zipBytes[i + 29] << 8);
+                    const extraLen = zipBytes[i + 30] | (zipBytes[i + 31] << 8);
+                    const offset = (zipBytes[i + 42] | (zipBytes[i + 43] << 8) | (zipBytes[i + 44] << 16) | (zipBytes[i + 45] << 24)) >>> 0;
+                    const name = new TextDecoder().decode(zipBytes.subarray(i + 46, i + 46 + nameLen));
+
+                    const chunkStart = Math.floor(offset / chunkSize);
+                    const chunkEnd = Math.floor((offset + 30 + nameLen + extraLen + compSize - 1) / chunkSize);
+
+                    catalogFiles.push({
+                        path: name,
+                        size: uncompSize,
+                        compressedSize: compSize,
+                        offset: offset,
+                        localHeaderOffset: offset,
+                        compressed: method === 8,
+                        chunkStart: chunkStart,
+                        chunkEnd: Math.max(chunkStart, chunkEnd),
+                        crc32: crc
+                    });
+                }
+            }
+
+            const zipSource = new ReadableStream({
+                start(c) { c.enqueue(zipBytes); c.close(); }
+            });
+            const encryptStream = StreamCrypto.createChunkEncryptorStream(masterKey, baseIVPrefix, salt, chunkSize);
+            const ciphertextChunksBytes = await streamToBytes(zipSource.pipeThrough(encryptStream));
+
+            const manifestCatalog = {
+                version: 3,
+                totalSize: catalogFiles.reduce((acc, f) => acc + f.size, 0),
+                fileCount: catalogFiles.length,
+                files: catalogFiles
+            };
+            const manifestEnvelope = await StreamPacker.buildEncryptedManifest(manifestCatalog, masterKey);
+
+            const manifestOffset = BigInt(StreamUnpacker.V3_HEADER_SIZE + ciphertextChunksBytes.byteLength);
+            const header = StreamCrypto.createContainerHeader({
+                salt,
+                baseIVPrefix,
+                chunkSize,
+                flags: hasKeyfile ? 0x01 : 0x00,
+                manifestOffset
+            });
+
+            const totalVault = new Uint8Array(StreamUnpacker.V3_HEADER_SIZE + ciphertextChunksBytes.byteLength + manifestEnvelope.byteLength);
+            totalVault.set(header, 0);
+            totalVault.set(ciphertextChunksBytes, StreamUnpacker.V3_HEADER_SIZE);
+            totalVault.set(manifestEnvelope, Number(manifestOffset));
+
+            return {
+                vaultBytes: totalVault,
+                manifestCatalog,
+                masterKey,
+                salt,
+                baseIVPrefix,
+                chunkSize,
+                manifestOffset
+            };
+        }
+
+        async function runSuite() {
+            totalTests = 0;
+            passedTests = 0;
+            failedTests = 0;
+            failures.length = 0;
+            logConsole.textContent = '';
+            statusBadge.className = 'status-badge status-running';
+            statusBadge.textContent = 'RUNNING TEST SUITE...';
+
+            const startTime = performance.now();
+
+            try {
+                log('===============================================================', 'info');
+                log('  ZevSafe v3 Stream Unpacker Browser Verification Suite', 'header');
+                log('===============================================================\n', 'info');
+
+                // -------------------------------------------------------------
+                // 1. Format Sniffing & Header Parsing Tests
+                // -------------------------------------------------------------
+                log('--- 1. Format Sniffing & Vault Header Parsing Tests ---', 'header');
+
+                let smallSizeError = false;
+                try {
+                    StreamUnpacker.detectVaultVersion(new Uint8Array(43));
+                } catch (err) {
+                    smallSizeError = err.message.includes('File is too small to be a valid vault');
+                }
+                assert(smallSizeError, 'detectVaultVersion rejects buffers < 44 bytes with explicit error');
+
+                const v3Dummy = new Uint8Array(60);
+                v3Dummy.set(StreamUnpacker.V3_MAGIC, 0);
+                v3Dummy[4] = 0x03;
+                assert(StreamUnpacker.detectVaultVersion(v3Dummy) === 3, 'detectVaultVersion identifies ZV3\\0 magic as version 3');
+                assert(StreamUnpacker.isV3Format(v3Dummy) === true, 'isV3Format returns true for v3 container');
+
+                const v2Dummy = new Uint8Array(55);
+                v2Dummy.set(StreamUnpacker.V2_MAGIC, 0);
+                v2Dummy[4] = 0x02;
+                assert(StreamUnpacker.detectVaultVersion(v2Dummy) === 2, 'detectVaultVersion identifies ZV2\\0 magic as version 2');
+                assert(StreamUnpacker.isV2Format(v2Dummy) === true, 'isV2Format returns true for v2 container');
+
+                const v1Dummy = new Uint8Array(50).fill(0xAA);
+                assert(StreamUnpacker.detectVaultVersion(v1Dummy) === 1, 'detectVaultVersion identifies non-magic >= 44 bytes as version 1');
+                assert(StreamUnpacker.isV1Format(v1Dummy) === true, 'isV1Format returns true for v1 container');
+
+                const validV3Header = StreamCrypto.createContainerHeader({
+                    salt: new Uint8Array(32).fill(0x11),
+                    baseIVPrefix: new Uint8Array(7).fill(0x22),
+                    chunkSize: 4194304,
+                    flags: 0x01,
+                    manifestOffset: 12345678n
+                });
+                const parsedV3 = await StreamUnpacker.parseVaultHeader(validV3Header);
+                assert(parsedV3.version === 3, 'parseVaultHeader extracts v3 version 3');
+                assert(parsedV3.hasKeyfile === true, 'parseVaultHeader detects hasKeyfile true');
+                assert(parsedV3.manifestOffset === 12345678n, 'parseVaultHeader extracts 64-bit manifestOffset');
+
+                // -------------------------------------------------------------
+                // 2. Backward-Compatible Decryptors Tests
+                // -------------------------------------------------------------
+                log('\n--- 2. Backward-Compatible Decryptors (v1 & v2) Tests ---', 'header');
+
+                const testPassword = 'BrowserStandardPassword2026!';
+                const testPlaintext = new TextEncoder().encode('ZevSafe browser backward compatibility payload.');
+                const expectedHash = await sha256Hex(testPlaintext);
+
+                // v1 Round-trip
+                const v1Vault = await buildSyntheticV1Vault(testPassword, testPlaintext, 1000);
+                const decryptedV1 = await StreamUnpacker.decryptV1Vault(v1Vault, testPassword, { iterations: 1000 });
+                assert(await sha256Hex(decryptedV1) === expectedHash, 'decryptV1Vault decrypts genuine v1 vault byte-for-byte');
+
+                // v2 Round-trip (without keyfile)
+                const v2Vault = await buildSyntheticV2Vault(testPassword, testPlaintext, { iterations: 1000 });
+                const decryptedV2 = await StreamUnpacker.decryptV2Vault(v2Vault, testPassword, null, { iterations: 1000 });
+                assert(await sha256Hex(decryptedV2) === expectedHash, 'decryptV2Vault decrypts genuine v2 vault byte-for-byte');
+
+                // v2 Round-trip (with keyfile)
+                const keyfile = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+                const v2KeyfileVault = await buildSyntheticV2Vault(testPassword, testPlaintext, { iterations: 1000, keyfileBytes: keyfile });
+                const decryptedV2Keyfile = await StreamUnpacker.decryptV2Vault(v2KeyfileVault, testPassword, keyfile, { iterations: 1000 });
+                assert(await sha256Hex(decryptedV2Keyfile) === expectedHash, 'decryptV2Vault decrypts v2 vault with keyfile 2FA');
+
+                // Missing keyfile check
+                let missingKeyThrown = false;
+                try {
+                    await StreamUnpacker.decryptV2Vault(v2KeyfileVault, testPassword, null, { iterations: 1000 });
+                } catch (err) {
+                    missingKeyThrown = err.message.includes('This v2 vault was encrypted with a keyfile');
+                }
+                assert(missingKeyThrown, 'decryptV2Vault rejects decryption when keyfile is required but omitted');
+
+                // -------------------------------------------------------------
+                // 3. v3 Manifest Reader & Instant Browsing Tests
+                // -------------------------------------------------------------
+                log('\n--- 3. v3 Encrypted Manifest Reader & Instant Browsing Tests ---', 'header');
+
+                const multiChunkData = new Uint8Array(20000);
+                for (let i = 0; i < 20000; i++) multiChunkData[i] = (i * 73 + (i % 37)) & 0xFF;
+
+                const sampleFiles = [
+                    { name: 'documents/report.txt', data: new TextEncoder().encode('Report content '.repeat(50)) },
+                    { name: 'assets/image.png', data: new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3, 4]) },
+                    { name: 'empty.dat', data: new Uint8Array(0) },
+                    { name: 'large_data.bin', data: multiChunkData }
+                ];
+
+                const v3Setup = await buildSyntheticV3Vault(sampleFiles, testPassword, {
+                    chunkSize: 1024,
+                    iterations: 1000
+                });
+                const v3Vault = v3Setup.vaultBytes;
+
+                const manifestStart = performance.now();
+                const catalog = await StreamUnpacker.readVaultManifest(v3Vault, testPassword, { iterations: 1000 });
+                const manifestDuration = performance.now() - manifestStart;
+
+                assert(manifestDuration < 100, `readVaultManifest completed in ${manifestDuration.toFixed(1)} ms (< 100 ms target)`);
+                assert(catalog.version === 3, 'readVaultManifest returns version 3 catalog');
+                assert(catalog.fileCount === 4, 'Catalog file count matches 4');
+                assert(catalog.files[0].path === 'documents/report.txt', 'Catalog entry 0 path matches');
+                assert(catalog.files[1].compressed === false, 'Catalog entry 1 recognized as STORE');
+                assert(catalog.files[3].chunkEnd > catalog.files[3].chunkStart, 'Catalog entry 3 spans multiple chunks');
+
+                // -------------------------------------------------------------
+                // 4. Selective Single-File Extraction Tests
+                // -------------------------------------------------------------
+                log('\n--- 4. Selective Single-File Extraction Tests ---', 'header');
+
+                const reportEntry = catalog.files.find(f => f.path === 'documents/report.txt');
+                const extractedReport = await StreamUnpacker.extractSingleFile(v3Vault, v3Setup.masterKey, reportEntry);
+                assert(await sha256Hex(extractedReport) === await sha256Hex(sampleFiles[0].data), 'extractSingleFile decompresses DEFLATE file with exact SHA-256 match');
+
+                const pngEntry = catalog.files.find(f => f.path === 'assets/image.png');
+                const extractedPng = await StreamUnpacker.extractSingleFile(v3Vault, v3Setup.masterKey, pngEntry);
+                assert(await sha256Hex(extractedPng) === await sha256Hex(sampleFiles[1].data), 'extractSingleFile extracts STORE file with exact SHA-256 match');
+
+                const emptyEntry = catalog.files.find(f => f.path === 'empty.dat');
+                const extractedEmpty = await StreamUnpacker.extractSingleFile(v3Vault, v3Setup.masterKey, emptyEntry);
+                assert(extractedEmpty.byteLength === 0, 'extractSingleFile extracts empty 0-byte file');
+
+                const largeEntry = catalog.files.find(f => f.path === 'large_data.bin');
+                const extractedLarge = await StreamUnpacker.extractSingleFile(v3Vault, v3Setup.masterKey, largeEntry);
+                assert(await sha256Hex(extractedLarge) === await sha256Hex(sampleFiles[3].data), 'extractSingleFile extracts multi-chunk spanned file with exact SHA-256 match');
+
+                // -------------------------------------------------------------
+                // 5. Selective Batch Extraction Tests
+                // -------------------------------------------------------------
+                log('\n--- 5. Selective Batch Extraction Tests ---', 'header');
+
+                const batchResults = await StreamUnpacker.extractMultipleFiles(v3Vault, v3Setup.masterKey, [reportEntry, pngEntry]);
+                assert(batchResults.length === 2, 'extractMultipleFiles extracts 2 files');
+                assert(await sha256Hex(batchResults[0].data) === await sha256Hex(sampleFiles[0].data), 'Batch extracted report matches SHA-256');
+
+                // -------------------------------------------------------------
+                // 6. Full Streaming Vault Decryption Tests
+                // -------------------------------------------------------------
+                log('\n--- 6. Full Streaming Vault Decryption Tests ---', 'header');
+
+                const vaultStream = new ReadableStream({
+                    start(c) { c.enqueue(v3Vault); c.close(); }
+                });
+                const decryptStream = StreamUnpacker.createStreamingVaultDecryptor(vaultStream, v3Setup.masterKey);
+                const decryptedZip = await streamToBytes(decryptStream);
+                assert(decryptedZip.byteLength > 0, `Stream decryptor emitted ${decryptedZip.byteLength} bytes`);
+
+                const unzipped = await JSZip.loadAsync(decryptedZip);
+                const unzippedReport = await unzipped.file('documents/report.txt').async('uint8array');
+                assert(await sha256Hex(unzippedReport) === await sha256Hex(sampleFiles[0].data), 'JSZip extracted report matches original byte-for-byte');
+
+                // -------------------------------------------------------------
+                // 7. Unified Route Selector Tests
+                // -------------------------------------------------------------
+                log('\n--- 7. Unified Route Selector (decryptVault) Tests ---', 'header');
+
+                const fullV3 = await StreamUnpacker.decryptVault(v3Vault, testPassword, { iterations: 1000 });
+                const fullZip = await JSZip.loadAsync(fullV3);
+                assert(fullZip.file('documents/report.txt') !== null, 'decryptVault routed and decrypted v3 vault completely');
+
+                // -------------------------------------------------------------
+                // RESULTS
+                // -------------------------------------------------------------
+                const duration = Math.round(performance.now() - startTime);
+                metaTime.textContent = `${duration} ms`;
+
+                log('\n===============================================================', 'info');
+                log(`  TEST RESULTS: ${passedTests}/${totalTests} PASSED (${duration} ms)`, 'header');
+
+                if (failedTests > 0) {
+                    statusBadge.className = 'status-badge status-failed';
+                    statusBadge.textContent = `${failedTests} TESTS FAILED`;
+                    log(`  FAILURES (${failedTests}):`, 'fail');
+                    failures.forEach(f => log(`   - ${f}`, 'fail'));
+                } else {
+                    statusBadge.className = 'status-badge status-passed';
+                    statusBadge.textContent = `ALL ${totalTests} TESTS PASSED (100%)`;
+                    log('  ALL TESTS PASSED WITH 100% SUCCESS RATE.', 'pass');
+                }
+                log('===============================================================\n', 'info');
+
+            } catch (err) {
+                statusBadge.className = 'status-badge status-failed';
+                statusBadge.textContent = 'FATAL SUITE ERROR';
+                log(`Fatal suite error: ${err.message}\n${err.stack}`, 'fail');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', runSuite);
+    </script>
+</body>
+</html>

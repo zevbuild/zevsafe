@@ -256,6 +256,13 @@
                         </div>
                     </div>
 
+                    <div class="strength-wrap" id="encrypt-strength-wrap" style="display:none;" aria-live="polite">
+                        <div class="strength-track">
+                            <div class="strength-fill" id="encrypt-strength-fill"></div>
+                        </div>
+                        <span class="strength-label" id="encrypt-strength-label">Weak</span>
+                    </div>
+
                     <div class="field-group">
                         <label class="field-label" for="encrypt-confirm">Confirm Password or PIN</label>
                         <div class="field-wrap">
@@ -266,12 +273,12 @@
                         </div>
                     </div>
 
-                    <!-- ── V2 MODE TOGGLE (STANDARD DEFAULT) ── -->
+                    <!-- ── V3 STREAMING ENCRYPTION TOGGLE (DEFAULT) ── -->
                     <div class="v2-toggle-row">
                         <label class="v2-toggle-label" for="v2-mode-toggle">
-                            <span class="v2-badge">v2 Standard</span>
-                            <span class="v2-toggle-text">Military-Grade Security (Standard)</span>
-                            <span class="v2-toggle-hint">PBKDF2-SHA512 · 600,000 iterations · AES-256-GCM · 32-byte salt</span>
+                            <span class="v2-badge">v3 Streaming (5 GB)</span>
+                            <span class="v2-toggle-text">Military-Grade 5 GB Streaming Mode</span>
+                            <span class="v2-toggle-hint">PBKDF2-SHA512 (600k rounds) · 4 MB STREAM AEAD · Low RAM &lt; 150 MB</span>
                         </label>
                         <label class="toggle-switch" aria-label="Toggle v2 standard military-grade mode">
                             <input type="checkbox" id="v2-mode-toggle" role="switch" aria-checked="true" checked>
@@ -413,6 +420,33 @@
                 </div>
                 <div class="progress-track">
                     <div class="progress-fill" id="progress-bar-fill"></div>
+                </div>
+
+                <!-- ── 60 FPS Real-Time Telemetry HUD ── -->
+                <div class="telemetry-hud" id="telemetry-hud" style="display: none;">
+                    <div class="hud-item">
+                        <span class="hud-label">Speed</span>
+                        <span class="hud-val" id="telemetry-speed">0.0 MB/s</span>
+                    </div>
+                    <div class="hud-item">
+                        <span class="hud-label">Elapsed</span>
+                        <span class="hud-val" id="telemetry-elapsed">00:00</span>
+                    </div>
+                    <div class="hud-item">
+                        <span class="hud-label">Remaining (ETA)</span>
+                        <span class="hud-val" id="telemetry-eta">--:--</span>
+                    </div>
+                    <div class="hud-item">
+                        <span class="hud-label">Processed</span>
+                        <span class="hud-val" id="telemetry-bytes">0 MB / 0 MB</span>
+                    </div>
+                </div>
+
+                <!-- ── Operation Actions (Cooperative Cancel) ── -->
+                <div class="progress-actions" id="progress-actions" style="display: none;">
+                    <button type="button" class="btn-cancel-op" id="btn-cancel-op" title="Cancel current operation">
+                        <span class="cancel-icon">✕</span> Cancel Operation
+                    </button>
                 </div>
 
                 <!-- ── Stage Detail Cards ── -->
@@ -722,7 +756,12 @@
             </header>
 
             <div class="media-modal-body" id="media-modal-body">
-                <!-- Dynamically populated <video> or <audio> element -->
+                <video id="cinema-video" class="media-player-element" style="display:none;" controls playsinline webkit-playsinline preload="auto"></video>
+                <audio id="cinema-audio" class="media-player-element" style="display:none;" controls preload="auto"></audio>
+                <div id="media-loading-indicator" style="display:none;flex-direction:column;align-items:center;gap:12px;color:var(--text-2);">
+                    <div class="status-dot" style="width:16px;height:16px;background:var(--purple-light);"></div>
+                    <span id="media-loading-text">Extracting media chunks on demand…</span>
+                </div>
             </div>
 
             <!-- Advanced Cinema Controls Bar -->
@@ -730,12 +769,17 @@
                 <div class="media-cinema-left">
                     <button class="media-ctrl-btn" id="btn-media-prev" title="Previous media track (Shift+Left)">⏮️ Prev</button>
                     <button class="media-ctrl-btn" id="btn-media-rewind10" title="Rewind 10s (Left Arrow)">⏪ -10s</button>
+                    <button class="media-ctrl-btn" id="btn-media-play" title="Play/Pause (Space)">▶️ Play</button>
                     <button class="media-ctrl-btn" id="btn-media-forward10" title="Forward 10s (Right Arrow)">⏩ +10s</button>
                     <button class="media-ctrl-btn" id="btn-media-next" title="Next media track (Shift+Right)">⏭️ Next</button>
                 </div>
 
                 <div class="media-cinema-center">
                     <span class="media-time-badge" id="media-time-display">00:00 / 00:00</span>
+                    <div class="media-volume-wrap" style="display:inline-flex;align-items:center;gap:4px;">
+                        <button class="media-ctrl-btn" id="btn-media-mute" title="Mute/Unmute (M)">🔊</button>
+                        <input type="range" id="media-volume-slider" min="0" max="1" step="0.05" value="1" class="media-volume-range" aria-label="Volume">
+                    </div>
                 </div>
 
                 <div class="media-cinema-right">
@@ -792,6 +836,12 @@
     </div>
 
     <script src="jszip.min.js"></script>
+    <script src="js/stream-crypto.js"></script>
+    <script src="js/stream-packer.js"></script>
+    <script src="js/stream-unpacker.js"></script>
+    <script src="js/crypto-worker.js"></script>
+    <script src="js/stream-saver.js"></script>
+    <script src="js/worker-bridge.js"></script>
     <script src="app.js"></script>
 
     <!-- ── PWA: Install Banner + Service Worker Registration ── -->

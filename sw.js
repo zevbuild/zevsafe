@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v22';
+const APP_VERSION    = 'v23';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
 const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
@@ -25,7 +25,13 @@ const SHELL_ASSETS = [
     './favicon.svg',
     './icon-192.png',
     './icon-512.png',
-    './zevsafe-og.png'
+    './zevsafe-og.png',
+    './js/stream-crypto.js',
+    './js/stream-packer.js',
+    './js/stream-unpacker.js',
+    './js/crypto-worker.js',
+    './js/worker-bridge.js',
+    './js/stream-saver.js'
 ];
 
 // ── Install: precache the app shell ────────────────────────────
@@ -80,6 +86,12 @@ self.addEventListener('fetch', event => {
 
     // ── Security: skip chrome-extension or non-http(s) ─────────
     if (!url.protocol.startsWith('http')) return;
+
+    // ── Route: Service Worker Synthetic Streaming Download Route ─────
+    if (url.pathname === '/_stream_download' || url.pathname.endsWith('/_stream_download')) {
+        event.respondWith(handleStreamDownload(url));
+        return;
+    }
 
     // ── Route: Google Fonts → Stale-While-Revalidate ──────────
     if (
@@ -164,10 +176,116 @@ async function staleWhileRevalidate(request, cacheName) {
     return cached || networkFetch;
 }
 
-// ── Message handler: force-skip waiting on demand ───────────────
+// ================================================================
+//  SERVICE WORKER STREAMING DOWNLOAD ENGINE (Tier 2 Adapter)
+// ================================================================
+
+const pendingDownloads = new Map();
+
+/**
+ * Handles synthetic GET /_stream_download requests.
+ * Streams data from the registered MessagePort directly into the browser's download pipeline.
+ */
+function handleStreamDownload(url) {
+    const downloadId = url.searchParams.get('id');
+    const queryFilename = url.searchParams.get('filename') || 'vault.zev';
+    const record = pendingDownloads.get(downloadId);
+
+    const filename = record ? record.filename : queryFilename;
+    const expectedSize = record ? record.expectedSize : 0;
+    const port = record ? record.port : null;
+
+    // Sanitize filename & format RFC 5987 header (Tests 2.19.3, 2.19.4)
+    const cleanName = filename.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
+    const asciiFallback = cleanName.replace(/[^\x20-\x7E]/g, '_');
+    const rfc5987Name = encodeURIComponent(cleanName);
+
+    const headers = new Headers({
+        'Content-Type': 'application/octet-stream; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${asciiFallback}"; filename*=UTF-8''${rfc5987Name}`,
+        'Content-Security-Policy': "default-src 'none'",
+        'X-Content-Type-Options': 'nosniff',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+    });
+    if (expectedSize > 0) {
+        headers.set('Content-Length', String(expectedSize));
+    }
+
+    if (!port) {
+        return new Response('Download stream expired or missing registration', { status: 410, headers });
+    }
+
+    const readable = new ReadableStream({
+        start(controller) {
+            port.onmessage = (msgEvent) => {
+                const msg = msgEvent.data;
+                if (!msg) return;
+
+                if (msg.type === 'CHUNK') {
+                    const chunkData = msg.chunk instanceof Uint8Array ? msg.chunk : new Uint8Array(msg.chunk);
+                    controller.enqueue(chunkData);
+                    // Send ACK for backpressure flow control (bounds memory <= 4 MB)
+                    port.postMessage({ type: 'ACK' });
+                } else if (msg.type === 'DONE') {
+                    try { controller.close(); } catch (_) {}
+                    pendingDownloads.delete(downloadId);
+                    port.close();
+                } else if (msg.type === 'ABORT' || msg.type === 'ERROR') {
+                    try { controller.error(new Error(msg.reason || msg.message || 'Aborted')); } catch (_) {}
+                    pendingDownloads.delete(downloadId);
+                    port.close();
+                }
+            };
+
+            port.onmessageerror = (err) => {
+                try { controller.error(err); } catch (_) {}
+                pendingDownloads.delete(downloadId);
+                port.close();
+            };
+        },
+        cancel(reason) {
+            // Browser download was cancelled or disconnected by user (Test 2.19.2)
+            try {
+                port.postMessage({ type: 'DISCONNECTED', reason: String(reason) });
+                port.close();
+            } catch (_) {}
+            pendingDownloads.delete(downloadId);
+        }
+    });
+
+    return new Response(readable, { headers, status: 200, statusText: 'OK' });
+}
+
+// ── Message handler: force-skip waiting and register streams ────
 self.addEventListener('message', event => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
+    const data = event.data;
+    if (!data) return;
+
+    if (data.type === 'SKIP_WAITING') {
         console.log('[ZevSafe SW] Received SKIP_WAITING. Activating new SW now.');
         self.skipWaiting();
+    } else if (data.type === 'REGISTER_DOWNLOAD' || data.type === 'REGISTER_STREAM') {
+        const downloadId = data.downloadId || data.id;
+        const filename = data.filename || 'download.zev';
+        const expectedSize = data.expectedSize || data.size || 0;
+        const port = event.ports && event.ports[0];
+        if (downloadId && port) {
+            pendingDownloads.set(downloadId, {
+                port,
+                filename,
+                expectedSize,
+                createdAt: Date.now()
+            });
+            try { port.postMessage({ type: 'STREAM_REGISTERED', id: downloadId }); } catch (_) {}
+
+            // Auto-cleanup after 60s if fetch never arrives
+            setTimeout(() => {
+                if (pendingDownloads.has(downloadId)) {
+                    pendingDownloads.delete(downloadId);
+                }
+            }, 60000);
+        }
     }
 });
+
+

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZevSafe v3 Worker Pipeline & Telemetry Verification Suite</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+        h1 {
+            color: var(--text-heading);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.8rem;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .status-running {
+            background-color: rgba(210, 153, 34, 0.15);
+            color: var(--accent-yellow);
+            border: 1px solid var(--accent-yellow);
+        }
+        .status-passed {
+            background-color: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+        .status-failed {
+            background-color: rgba(248, 81, 73, 0.15);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+        .log-section {
+            background-color: #05070a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            font-size: 0.85rem;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .log-pass { color: var(--accent-green); }
+        .log-fail { color: var(--accent-red); font-weight: bold; }
+        .log-info { color: var(--accent-blue); }
+        .log-header { color: var(--text-heading); font-weight: bold; margin-top: 0.8rem; }
+        button {
+            background-color: #238636;
+            color: #ffffff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: #2ea043; }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .meta-item {
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .meta-val {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--text-heading);
+        }
+        .meta-lbl {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ZevSafe v3 Worker Pipeline & Telemetry Verification Suite</h1>
+            <div class="subtitle">Milestone 4: Web Worker offloading, zero-copy Transferable ArrayBuffers, credit backpressure flow control, 60 FPS telemetry, instant manifest & selective extraction</div>
+        </header>
+
+        <div class="card">
+            <div id="status-badge" class="status-badge status-running">RUNNING SUITE...</div>
+            <div class="meta-grid">
+                <div class="meta-item"><div id="meta-total" class="meta-val">0</div><div class="meta-lbl">Total Tests</div></div>
+                <div class="meta-item"><div id="meta-passed" class="meta-val" style="color: var(--accent-green);">0</div><div class="meta-lbl">Passed</div></div>
+                <div class="meta-item"><div id="meta-failed" class="meta-val" style="color: var(--accent-red);">0</div><div class="meta-lbl">Failed</div></div>
+                <div class="meta-item"><div id="meta-time" class="meta-val">0 ms</div><div class="meta-lbl">Duration</div></div>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <button id="btn-rerun" onclick="runSuite()">Re-run Suite</button>
+            </div>
+            <div id="log-output" class="log-section">Initializing worker bridge test harness...</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../jszip.min.js"></script>
+    <script src="../js/stream-crypto.js"></script>
+    <script src="../js/stream-packer.js"></script>
+    <script src="../js/stream-unpacker.js"></script>
+    <script src="../js/worker-bridge.js"></script>
+
+    <script>
+        const statusBadge = document.getElementById('status-badge');
+        const logOutput = document.getElementById('log-output');
+        const metaTotal = document.getElementById('meta-total');
+        const metaPassed = document.getElementById('meta-passed');
+        const metaFailed = document.getElementById('meta-failed');
+        const metaTime = document.getElementById('meta-time');
+
+        let totalTests = 0;
+        let passedTests = 0;
+        let failedTests = 0;
+        const failures = [];
+
+        function log(msg, type = 'normal') {
+            const line = document.createElement('div');
+            line.textContent = msg;
+            if (type === 'pass') line.className = 'log-pass';
+            else if (type === 'fail') line.className = 'log-fail';
+            else if (type === 'info') line.className = 'log-info';
+            else if (type === 'header') line.className = 'log-header';
+            logOutput.appendChild(line);
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        function assert(condition, message) {
+            totalTests++;
+            metaTotal.textContent = totalTests;
+            if (condition) {
+                passedTests++;
+                metaPassed.textContent = passedTests;
+                log(`  ✓ ${message}`, 'pass');
+            } else {
+                failedTests++;
+                metaFailed.textContent = failedTests;
+                failures.push(message);
+                log(`  ✗ FAIL: ${message}`, 'fail');
+            }
+        }
+
+        async function sha256Hex(bytes) {
+            const hash = await crypto.subtle.digest('SHA-256', bytes);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        function createRandomBytes(length) {
+            const buf = new Uint8Array(length);
+            const MAX = 65536;
+            for (let offset = 0; offset < length; offset += MAX) {
+                const slice = buf.subarray(offset, Math.min(length, offset + MAX));
+                crypto.getRandomValues(slice);
+            }
+            return buf;
+        }
+
+        async function runSuite() {
+            totalTests = 0;
+            passedTests = 0;
+            failedTests = 0;
+            failures.length = 0;
+            logOutput.innerHTML = '';
+            statusBadge.className = 'status-badge status-running';
+            statusBadge.textContent = 'RUNNING SUITE...';
+            metaTotal.textContent = '0';
+            metaPassed.textContent = '0';
+            metaFailed.textContent = '0';
+            metaTime.textContent = '0 ms';
+
+            const startTime = performance.now();
+            const workerOptions = { workerUrl: '../js/crypto-worker.js' };
+
+            try {
+                log('===============================================================', 'info');
+                log('  ZevSafe v3 Worker Pipeline & Telemetry Verification Suite    ', 'header');
+                log('===============================================================\n', 'info');
+
+                // -------------------------------------------------------------
+                // 1. Worker Lifecycle & Direct Messaging
+                // -------------------------------------------------------------
+                log('--- 1. Worker Lifecycle & Direct Messaging Tests ---', 'header');
+
+                const worker1 = WorkerBridge.createWorker(workerOptions);
+                assert(worker1 && typeof worker1.postMessage === 'function', 'createWorker spawns a valid Web Worker');
+
+                const pingRes = await WorkerBridge.sendWorkerRequest(worker1, { type: 'PING' });
+                assert(pingRes.success === true && pingRes.pong === true, 'Worker responds to PING probe with pong ACK');
+
+                const salt1 = StreamCrypto.generateSalt(32);
+                const initRes = await WorkerBridge.sendWorkerRequest(worker1, {
+                    type: 'INIT_KEY',
+                    password: 'BrowserMasterPassword123!',
+                    salt: salt1.buffer.slice(0),
+                    iterations: 2000
+                });
+                assert(initRes.success === true && initRes.keyDerived === true, 'Worker derives PBKDF2-SHA512 master key off-thread');
+
+                const prefix1 = StreamCrypto.generateBaseIVPrefix(7);
+                const paramsRes = await WorkerBridge.sendWorkerRequest(worker1, {
+                    type: 'SET_PARAMS',
+                    baseIVPrefix: prefix1.buffer.slice(0),
+                    salt: salt1.buffer.slice(0),
+                    chunkSize: 65536
+                });
+                assert(paramsRes.success === true, 'SET_PARAMS configures session parameters');
+
+                worker1.terminate();
+
+                // -------------------------------------------------------------
+                // 2. Zero-Copy Transferable Buffer Pipeline
+                // -------------------------------------------------------------
+                log('\n--- 2. Zero-Copy Transferable Buffer Pipeline Tests ---', 'header');
+
+                const worker2 = WorkerBridge.createWorker(workerOptions);
+                await WorkerBridge.sendWorkerRequest(worker2, {
+                    type: 'INIT_KEY',
+                    password: 'TransferableBrowserPassword',
+                    salt: salt1.buffer.slice(0),
+                    iterations: 2000
+                });
+                await WorkerBridge.sendWorkerRequest(worker2, {
+                    type: 'SET_PARAMS',
+                    baseIVPrefix: prefix1.buffer.slice(0),
+                    salt: salt1.buffer.slice(0),
+                    chunkSize: 65536
+                });
+
+                const sampleText = 'Browser Transferable ArrayBuffers zero-copy verification';
+                const plainBytes = new TextEncoder().encode(sampleText);
+                const plainBuffer = plainBytes.buffer.slice(0);
+
+                const encRes = await WorkerBridge.sendWorkerRequest(worker2, {
+                    type: 'ENCRYPT_CHUNK',
+                    chunk: plainBuffer,
+                    chunkIndex: 0,
+                    isLast: true
+                }, [plainBuffer]);
+
+                assert(encRes.success === true, 'ENCRYPT_CHUNK returns success ACK');
+                assert(encRes.chunk instanceof ArrayBuffer, 'ENCRYPT_CHUNK returns transferred ArrayBuffer');
+
+                const decRes = await WorkerBridge.sendWorkerRequest(worker2, {
+                    type: 'DECRYPT_CHUNK',
+                    chunk: encRes.chunk,
+                    chunkIndex: 0,
+                    isLast: true
+                }, [encRes.chunk]);
+
+                assert(decRes.success === true, 'DECRYPT_CHUNK returns success ACK');
+                const recovered = new TextDecoder().decode(new Uint8Array(decRes.chunk));
+                assert(recovered === sampleText, 'Round-trip decrypted text matches original byte-for-byte');
+
+                worker2.terminate();
+
+                // -------------------------------------------------------------
+                // 3. Credit-Based Flow Control
+                // -------------------------------------------------------------
+                log('\n--- 3. Credit-Based Flow Control & Backpressure Tests ---', 'header');
+
+                const flow = new WorkerBridge.CreditFlowController(2);
+                assert(flow.getStats().maxCredits === 2 && flow.getStats().availableCredits === 2, 'Flow controller initializes with maxCredits available');
+
+                await flow.acquire();
+                assert(flow.getStats().availableCredits === 1 && flow.getStats().inFlight === 1, 'acquire() decrements credits');
+                flow.release();
+                assert(flow.getStats().availableCredits === 2 && flow.getStats().inFlight === 0, 'release() restores available credits');
+
+                // -------------------------------------------------------------
+                // 4. 60 FPS Telemetry Calculator
+                // -------------------------------------------------------------
+                log('\n--- 4. 60 FPS Telemetry Calculator Tests ---', 'header');
+
+                let telemetryResult = null;
+                const calc = new WorkerBridge.TelemetryCalculator({
+                    totalBytes: 5000,
+                    throttleMs: 50,
+                    onProgress: (p) => { telemetryResult = p; }
+                });
+
+                calc.setStage('Testing Stage', true);
+                assert(telemetryResult.stage === 'Testing Stage', 'Telemetry records stage name');
+                assert(telemetryResult.percent === 0, 'Initial percent is 0%');
+
+                calc.recordProgress(2500, true);
+                assert(telemetryResult.percent === 50, 'Telemetry computes 50.0% progress');
+                calc.dispose();
+
+                // -------------------------------------------------------------
+                // 5. Streaming Encryption Pipeline (startEncryption)
+                // -------------------------------------------------------------
+                log('\n--- 5. Streaming Encryption Pipeline (startEncryption) Tests ---', 'header');
+
+                const fileData = new TextEncoder().encode('ZevSafe Milestone 4 Browser Test Payload');
+                const files = [{ name: 'test.txt', size: fileData.byteLength, data: fileData, lastModified: Date.now() }];
+
+                const encResult = await new Promise((resolve, reject) => {
+                    WorkerBridge.startEncryption({
+                        files,
+                        password: 'BrowserStrongPassword!',
+                        options: { ...workerOptions, iterations: 1000 },
+                        onComplete: resolve,
+                        onError: reject
+                    });
+                });
+
+                assert(encResult.vault instanceof Uint8Array, 'startEncryption produces Uint8Array vault');
+                assert(encResult.manifest.files.length === 1, 'Encrypted manifest contains 1 file');
+
+                // -------------------------------------------------------------
+                // 6. Streaming Decryption Pipeline (startDecryption)
+                // -------------------------------------------------------------
+                log('\n--- 6. Streaming Decryption Pipeline (startDecryption) Tests ---', 'header');
+
+                let manifestReadyCalled = false;
+                const decResult = await new Promise((resolve, reject) => {
+                    WorkerBridge.startDecryption({
+                        vaultSource: encResult.vault,
+                        password: 'BrowserStrongPassword!',
+                        options: { ...workerOptions, iterations: 1000 },
+                        onManifestReady: (f) => {
+                            manifestReadyCalled = true;
+                            assert(f.length === 1, 'onManifestReady received files array');
+                        },
+                        onComplete: resolve,
+                        onError: reject
+                    });
+                });
+
+                assert(manifestReadyCalled, 'onManifestReady invoked before full stream unpack');
+                assert(decResult.decryptedBytes instanceof Uint8Array, 'startDecryption produces decrypted archive');
+
+                const zip = await JSZip.loadAsync(decResult.decryptedBytes);
+                const unzippedFile = await zip.file('test.txt').async('uint8array');
+                assert(await sha256Hex(unzippedFile) === await sha256Hex(fileData), 'Decrypted file matches original byte-for-byte');
+
+                // -------------------------------------------------------------
+                // 7. Selective Extraction (extractSingleFile)
+                // -------------------------------------------------------------
+                log('\n--- 7. Instant Manifest & Selective Extraction Tests ---', 'header');
+
+                const extracted = await WorkerBridge.extractSingleFile({
+                    vaultSource: encResult.vault,
+                    password: 'BrowserStrongPassword!',
+                    targetEntry: 'test.txt',
+                    options: { ...workerOptions, iterations: 1000 }
+                });
+
+                assert(await sha256Hex(extracted) === await sha256Hex(fileData), 'extractSingleFile matches original byte-for-byte (SHA-256)');
+
+                // -------------------------------------------------------------
+                // 8. Cooperative Cancellation
+                // -------------------------------------------------------------
+                log('\n--- 8. Cooperative Cancellation Mid-Stream Tests ---', 'header');
+
+                let cancelledCompleteCalled = false;
+                const cancelOp = WorkerBridge.startEncryption({
+                    files: [{ name: 'large.bin', size: 500000, data: new Uint8Array(500000) }],
+                    password: 'pw',
+                    options: { ...workerOptions, iterations: 1000 },
+                    onComplete: () => { cancelledCompleteCalled = true; },
+                    onError: () => {}
+                });
+
+                await new Promise(r => setTimeout(r, 10));
+                await cancelOp.cancel();
+                await new Promise(r => setTimeout(r, 50));
+                assert(cancelledCompleteCalled === false, 'startEncryption cancel() halts cleanly without calling onComplete');
+
+                // -------------------------------------------------------------
+                // 9. Fallback Async Worker Shim
+                // -------------------------------------------------------------
+                log('\n--- 9. Fallback Async Worker Shim Tests ---', 'header');
+
+                const shimEnc = await new Promise((resolve, reject) => {
+                    WorkerBridge.startEncryption({
+                        files,
+                        password: 'ShimPassword',
+                        options: { useShim: true, iterations: 1000 },
+                        onComplete: resolve,
+                        onError: reject
+                    });
+                });
+                assert(shimEnc.vault.byteLength > 100, 'startEncryption with useShim: true completes in browser');
+
+                // -------------------------------------------------------------
+                // RESULTS
+                // -------------------------------------------------------------
+                const duration = Math.round(performance.now() - startTime);
+                metaTime.textContent = `${duration} ms`;
+
+                log('\n===============================================================', 'info');
+                log(`  TEST RESULTS: ${passedTests}/${totalTests} PASSED (${duration} ms)`, 'header');
+
+                if (failedTests > 0) {
+                    statusBadge.className = 'status-badge status-failed';
+                    statusBadge.textContent = `${failedTests} TESTS FAILED`;
+                    log(`  FAILURES (${failedTests}):`, 'fail');
+                    failures.forEach(f => log(`   - ${f}`, 'fail'));
+                } else {
+                    statusBadge.className = 'status-badge status-passed';
+                    statusBadge.textContent = `ALL ${totalTests} TESTS PASSED (100%)`;
+                    log('  ALL TESTS PASSED WITH 100% SUCCESS RATE.', 'pass');
+                }
+                log('===============================================================\n', 'info');
+
+            } catch (err) {
+                statusBadge.className = 'status-badge status-failed';
+                statusBadge.textContent = 'FATAL SUITE ERROR';
+                log(`Fatal suite error: ${err.message}\n${err.stack}`, 'fail');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', runSuite);
+    </script>
+</body>
+</html>

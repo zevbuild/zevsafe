@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZevSafe 5 GB Streaming E2E Test Runner</title>
+    <style>
+        :root {
+            --bg-primary: #0a0d14;
+            --bg-secondary: #121824;
+            --bg-card: #182234;
+            --border-color: #24344d;
+            --text-primary: #f0f4fc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #eab308;
+            --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .title-group h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-tag {
+            background-color: #0369a1;
+            color: #e0f2fe;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        /* Metrics Bar */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .metric-card.pass { border-top: 4px solid var(--accent-green); }
+        .metric-card.fail { border-top: 4px solid var(--accent-red); }
+        .metric-card.memory { border-top: 4px solid var(--accent-blue); }
+        .metric-card.time { border-top: 4px solid var(--accent-yellow); }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            margin-top: 4px;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        /* Controls */
+        .controls-bar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        button:hover { background: #1d4ed8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        button.btn-tier {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        button.btn-tier:hover {
+            background: var(--border-color);
+        }
+
+        button.btn-danger {
+            background: #991b1b;
+        }
+        button.btn-danger:hover {
+            background: #7f1d1d;
+        }
+
+        .filter-input {
+            flex-grow: 1;
+            min-width: 220px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .filter-input:focus {
+            outline: 2px solid var(--accent-blue);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #38bdf8, #22c55e);
+            transition: width 0.1s linear;
+        }
+
+        /* Test Suites */
+        .suite-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .suite-header {
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .suite-header:hover {
+            background: #1e2c44;
+        }
+
+        .suite-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-list {
+            padding: 0;
+            list-style: none;
+        }
+
+        .test-item {
+            padding: 10px 16px;
+            border-bottom: 1px solid #1a2538;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 0.9rem;
+        }
+
+        .test-item:last-child {
+            border-bottom: none;
+        }
+
+        .test-item.passed { border-left: 3px solid var(--accent-green); }
+        .test-item.failed { border-left: 3px solid var(--accent-red); background: rgba(239, 68, 68, 0.05); }
+        .test-item.skipped { border-left: 3px solid var(--text-secondary); opacity: 0.6; }
+
+        .test-info {
+            flex-grow: 1;
+        }
+
+        .test-title {
+            font-weight: 500;
+        }
+
+        .test-error {
+            margin-top: 6px;
+            background: #2b1115;
+            color: #fca5a5;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+            border: 1px solid #7f1d1d;
+        }
+
+        .test-meta {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-left: 16px;
+            white-space: nowrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.pass { background: #14532d; color: #86efac; }
+        .status-badge.fail { background: #7f1d1d; color: #fca5a5; }
+        .status-badge.skip { background: #374151; color: #9ca3af; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="title-group">
+                <h1>
+                    <span>ZevSafe E2E Test Suite</span>
+                    <span class="badge-tag">5 GB Architecture</span>
+                </h1>
+                <div class="subtitle">Opaque-Box Requirement Verification · Tiers 1-4 · Peak Heap &lt; 150 MB Guardrail</div>
+            </div>
+            <div id="env-badge" class="badge-tag" style="background:#1e293b; color:#94a3b8;">
+                Initializing...
+            </div>
+        </header>
+
+        <!-- KPI Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Total Tests</div>
+                <div class="metric-value" id="metric-total">0</div>
+            </div>
+            <div class="metric-card pass">
+                <div class="metric-label">Passed</div>
+                <div class="metric-value" id="metric-passed" style="color: var(--accent-green);">0</div>
+            </div>
+            <div class="metric-card fail">
+                <div class="metric-label">Failed</div>
+                <div class="metric-value" id="metric-failed" style="color: var(--accent-red);">0</div>
+            </div>
+            <div class="metric-card memory">
+                <div class="metric-label">Peak Heap</div>
+                <div class="metric-value" id="metric-memory" style="color: var(--accent-blue);">0 MB</div>
+            </div>
+            <div class="metric-card time">
+                <div class="metric-label">Duration</div>
+                <div class="metric-value" id="metric-duration" style="color: var(--accent-yellow);">0s</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-bar">
+            <button id="btn-run-all">▶ Run All Tests</button>
+            <button id="btn-tier-1" class="btn-tier">Tier 1: Features</button>
+            <button id="btn-tier-2" class="btn-tier">Tier 2: Boundaries</button>
+            <button id="btn-tier-3" class="btn-tier">Tier 3: Combinations</button>
+            <button id="btn-tier-4" class="btn-tier">Tier 4: Real-World</button>
+            <input type="text" id="filter-input" class="filter-input" placeholder="Filter by feature, keyword, or test name...">
+            <button id="btn-abort" class="btn-danger" disabled>⏹ Stop</button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+
+        <!-- Test Suites Output Container -->
+        <div id="suites-container"></div>
+    </div>
+
+    <!-- Core Test Harness Modules -->
+    <script src="mock-stream.js"></script>
+    <script src="memory-profiler.js"></script>
+    <script src="e2e-runner.js"></script>
+    <!-- Attempt to load implementation scripts if available -->
+    <script src="../js/stream-crypto.js" onerror="console.log('stream-crypto.js not loaded yet (M1 in progress)')"></script>
+    <script src="../js/stream-packer.js" onerror="console.log('stream-packer.js not loaded yet (M2 planned)')"></script>
+    <script src="../js/stream-unpacker.js" onerror="console.log('stream-unpacker.js not loaded yet (M3 planned)')"></script>
+    <script src="../js/worker-bridge.js" onerror="console.log('worker-bridge.js not loaded yet (M4 planned)')"></script>
+    <script src="../js/stream-saver.js" onerror="console.log('stream-saver.js not loaded yet (M5 planned)')"></script>
+    <!-- Test Specifications -->
+    <script src="e2e-tests.js"></script>
+
+    <!-- DOM Integration Logic -->
+    <script>
+        (function () {
+            'use strict';
+
+            const envBadge = document.getElementById('env-badge');
+            const btnRunAll = document.getElementById('btn-run-all');
+            const btnTier1 = document.getElementById('btn-tier-1');
+            const btnTier2 = document.getElementById('btn-tier-2');
+            const btnTier3 = document.getElementById('btn-tier-3');
+            const btnTier4 = document.getElementById('btn-tier-4');
+            const btnAbort = document.getElementById('btn-abort');
+            const filterInput = document.getElementById('filter-input');
+            const progressFill = document.getElementById('progress-fill');
+            const suitesContainer = document.getElementById('suites-container');
+
+            const mTotal = document.getElementById('metric-total');
+            const mPassed = document.getElementById('metric-passed');
+            const mFailed = document.getElementById('metric-failed');
+            const mMemory = document.getElementById('metric-memory');
+            const mDuration = document.getElementById('metric-duration');
+
+            // Detect environment capabilities
+            const hasPerfMem = typeof performance !== 'undefined' && !!performance.memory;
+            const hasSubtle = typeof crypto !== 'undefined' && !!crypto.subtle;
+            const hasCompStream = typeof CompressionStream !== 'undefined';
+            envBadge.textContent = `${hasSubtle ? 'WebCrypto ✓' : 'WebCrypto ✗'} | ${hasCompStream ? 'DeflateStream ✓' : 'DeflateStream ✗'} | ${hasPerfMem ? 'PerfMemory ✓' : 'PerfMemory ✗'}`;
+            if (hasSubtle && hasCompStream) envBadge.style.color = '#38bdf8';
+
+            // Count total registered tests
+            function countRegisteredTests() {
+                let total = 0;
+                for (const suite of suites) {
+                    total += suite.tests.length;
+                }
+                mTotal.textContent = total;
+            }
+            countRegisteredTests();
+
+            // Render suite skeletons
+            function renderSuites() {
+                suitesContainer.innerHTML = '';
+                for (let sIdx = 0; sIdx < suites.length; sIdx++) {
+                    const suite = suites[sIdx];
+                    const suiteEl = document.createElement('div');
+                    suiteEl.className = 'suite-card';
+                    suiteEl.id = `suite-${sIdx}`;
+
+                    suiteEl.innerHTML = `
+                        <div class="suite-header" onclick="this.parentElement.querySelector('.test-list').classList.toggle('hidden')">
+                            <div class="suite-title">
+                                <span class="badge-tag">Tier ${suite.tier}</span>
+                                <span>${suite.title}</span>
+                            </div>
+                            <div class="suite-stats" id="suite-stats-${sIdx}">
+                                <span style="color:var(--text-secondary);">${suite.tests.length} tests</span>
+                            </div>
+                        </div>
+                        <ul class="test-list" id="test-list-${sIdx}">
+                            ${suite.tests.map((t, tIdx) => `
+                                <li class="test-item" id="test-item-${sIdx}-${tIdx}">
+                                    <div class="test-info">
+                                        <div class="test-title">${t.title}</div>
+                                        <div class="test-error" id="test-error-${sIdx}-${tIdx}" style="display:none;"></div>
+                                    </div>
+                                    <div class="test-meta">
+                                        <span class="status-badge" id="test-badge-${sIdx}-${tIdx}">Ready</span>
+                                        <span id="test-time-${sIdx}-${tIdx}"></span>
+                                    </div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    `;
+                    suitesContainer.appendChild(suiteEl);
+                }
+            }
+            renderSuites();
+
+            let executedCount = 0;
+            let totalToExecute = 0;
+            let currentPassed = 0;
+            let currentFailed = 0;
+
+            runner.on('onStart', () => {
+                executedCount = 0;
+                currentPassed = 0;
+                currentFailed = 0;
+                btnAbort.disabled = false;
+                btnRunAll.disabled = true;
+                progressFill.style.width = '0%';
+                mPassed.textContent = '0';
+                mFailed.textContent = '0';
+                mDuration.textContent = '0s';
+            });
+
+            runner.on('onTestEnd', (data) => {
+                const { test, suite } = data;
+                executedCount++;
+
+                if (test.status === 'passed') currentPassed++;
+                if (test.status === 'failed') currentFailed++;
+
+                mPassed.textContent = currentPassed;
+                mFailed.textContent = currentFailed;
+
+                // Update Progress
+                const pct = totalToExecute > 0 ? (executedCount / totalToExecute) * 100 : 0;
+                progressFill.style.width = `${pct}%`;
+
+                // Update Memory Metric
+                const mem = MemoryProfiler.getCurrentMemory();
+                if (mem.usedJSHeapBytes > 0) {
+                    mMemory.textContent = MemoryProfiler.formatBytes(mem.usedJSHeapBytes);
+                }
+
+                // Update DOM Item
+                const sIdx = suites.indexOf(suite);
+                if (sIdx !== -1) {
+                    const tIdx = suite.tests.indexOf(test);
+                    if (tIdx !== -1) {
+                        const itemEl = document.getElementById(`test-item-${sIdx}-${tIdx}`);
+                        const badgeEl = document.getElementById(`test-badge-${sIdx}-${tIdx}`);
+                        const timeEl = document.getElementById(`test-time-${sIdx}-${tIdx}`);
+                        const errEl = document.getElementById(`test-error-${sIdx}-${tIdx}`);
+
+                        if (itemEl && badgeEl) {
+                            itemEl.className = `test-item ${test.status}`;
+                            badgeEl.className = `status-badge ${test.status === 'passed' ? 'pass' : test.status === 'failed' ? 'fail' : 'skip'}`;
+                            badgeEl.textContent = test.status;
+                            if (timeEl) timeEl.textContent = `${test.durationMs}ms`;
+
+                            if (test.status === 'failed' && test.error) {
+                                if (errEl) {
+                                    errEl.style.display = 'block';
+                                    errEl.textContent = test.error.stack || test.error.message || String(test.error);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            runner.on('onFinish', (res) => {
+                btnAbort.disabled = true;
+                btnRunAll.disabled = false;
+                progressFill.style.width = '100%';
+                mDuration.textContent = `${(res.durationMs / 1000).toFixed(2)}s`;
+                if (res.peakMemoryMB > 0) {
+                    mMemory.textContent = `${res.peakMemoryMB.toFixed(1)} MB`;
+                }
+                console.log('E2E Test Execution Complete:', res);
+            });
+
+            async function executeSuite(tier = null) {
+                const search = filterInput.value.trim() || null;
+                runner.setFilter({ tier, search });
+
+                totalToExecute = 0;
+                for (const s of suites) {
+                    if (tier === null || s.tier === tier) {
+                        for (const t of s.tests) {
+                            if (!search || t.title.toLowerCase().includes(search.toLowerCase())) {
+                                totalToExecute++;
+                            }
+                        }
+                    }
+                }
+                mTotal.textContent = totalToExecute;
+
+                await runner.run();
+            }
+
+            btnRunAll.addEventListener('click', () => executeSuite(null));
+            btnTier1.addEventListener('click', () => executeSuite(1));
+            btnTier2.addEventListener('click', () => executeSuite(2));
+            btnTier3.addEventListener('click', () => executeSuite(3));
+            btnTier4.addEventListener('click', () => executeSuite(4));
+
+            btnAbort.addEventListener('click', () => {
+                runner.abort();
+            });
+
+            // Auto-run if URL query param ?autorun=1
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('autorun') === '1') {
+                const tierParam = params.get('tier');
+                const tier = tierParam ? parseInt(tierParam, 10) : null;
+                setTimeout(() => executeSuite(tier), 200);
+            }
+        })();
+    </script>
+</body>
+</html>
