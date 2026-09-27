@@ -1,5 +1,17 @@
 # Changelog
 
+## Version 6 — September 27, 2026 *(in progress)*
+> 🚧 Upcoming — features and fixes will be listed here as they land.
+
+- <!-- TODO: describe new features here -->
+
+---
+
+## Version 5.1 — September 27, 2026
+- PWA Version Indicator Sync (`index.html`): Corrected hero tech-line badge from `WEB-VERSION-21` to `WEB-VERSION-23` to match the Service Worker cache version bumped in v5, ensuring users always see the accurate app version on the landing page
+
+---
+
 ## Version 5 — September 26, 2026
 - 5 GB Low-RAM Streaming Compression, Encryption & Decryption Engine (`ZV3\0`): Added chunked 4 MB STREAM AEAD (`AES-256-GCM`) pipeline capable of compressing, encrypting, and decrypting vaults up to 5 GB with < 150 MB peak heap RAM on mobile (Android Chrome, iOS Safari) and desktop browsers
 - Zero-Buffer Streaming ZIP64 Packager (`js/stream-packer.js`): Streams files via `file.stream()` and native `CompressionStream('deflate-raw')` with 24-byte ZIP64 Data Descriptors (`Bit 3`), adaptive `STORE`/`DEFLATE` selection, and an encrypted tail manifest catalog
