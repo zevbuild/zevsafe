@@ -6,8 +6,9 @@
 - Light Theme Dark Surface Contrast Fixes (`styles.css`): Scoped high-contrast light typography and controls to modals, cinema player deck, telemetry HUD, and progress panels, preventing contrast inversion under light theme.
 - Decrypted Vault Explorer Breadcrumbs & Empty Size Pill Suppression (`styles.css`, `index.html`): Added breadcrumbs navigation bar and eliminated awkward empty pill artifacts on 0-byte items.
 - Dedicated Changelog Portal (`change-log/index.html`): Launched an interactive in-app and web release notes page featuring chronological milestones, category badges, real-time live search, version filter chips, and full dark/light theme synchronization.
+- Light Theme Nav-Pill & Password Input Contrast Fixes (`styles.css`): Fixed washed-out `.nav-pill` buttons and illegible dark password input boxes (`.field-input`, `#encrypt-password`, `#decrypt-password`) in light/white theme by enforcing crisp `#ffffff` input backgrounds, `#0f172a` text, `#94a3b8` placeholders, vibrant high-contrast CTA gradients (`.nav-pill--cta`), and refined drop-zone and button borders.
 - Automated AI Agent Documentation Rules (`AGENTS.md`, `GEMINI.md`, `.cursorrules`, `.agents/rules/auto_update_docs.md`): Established mandatory protocol requiring any AI assistant modifying the codebase to automatically synchronize `CHANGELOG.md`, `change-log/index.html`, and `README.md`.
-- PWA Service Worker Cache Sync: Bumped cache to `v26` (`WEB-VERSION-26`).
+- PWA Service Worker Cache Sync: Bumped cache to `v27` (`WEB-VERSION-27`).
 
 ---
 
