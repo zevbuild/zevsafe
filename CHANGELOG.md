@@ -5,7 +5,8 @@
 - Glassmorphic Specular Card Elevation (`styles.css`): Added specular top highlights and tuned hover glows to primary encryption and decryption vault cards for greater visual depth.
 - Light Theme Dark Surface Contrast Fixes (`styles.css`): Scoped high-contrast light typography and controls to modals, cinema player deck, telemetry HUD, and progress panels, preventing contrast inversion under light theme.
 - Decrypted Vault Explorer Breadcrumbs & Empty Size Pill Suppression (`styles.css`, `index.html`): Added breadcrumbs navigation bar and eliminated awkward empty pill artifacts on 0-byte items.
-- Cinema Player Mobile Control Deck (`styles.css`): Optimized control buttons, scrubbers, and time counters for small screen viewports.
+- Dedicated Changelog Portal (`change-log/index.html`): Launched an interactive in-app and web release notes page featuring chronological milestones, category badges, real-time live search, version filter chips, and full dark/light theme synchronization.
+- Automated AI Agent Documentation Rules (`AGENTS.md`, `GEMINI.md`, `.cursorrules`, `.agents/rules/auto_update_docs.md`): Established mandatory protocol requiring any AI assistant modifying the codebase to automatically synchronize `CHANGELOG.md`, `change-log/index.html`, and `README.md`.
 - PWA Service Worker Cache Sync: Bumped cache to `v26` (`WEB-VERSION-26`).
 
 ---

@@ -19,5 +19,6 @@ test_folder_restored/
 
 # Agent scratch & internal workflow files
 .agents/
+!.agents/rules/
 ORIGINAL_REQUEST.md
 
