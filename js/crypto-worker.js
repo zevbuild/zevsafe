@@ -569,7 +569,13 @@
     }
 
     // 2. Dedicated Web Worker scope (browser)
-    if (typeof self !== 'undefined' && typeof self.postMessage === 'function' && !parentPort) {
+    const isBrowserWindow = typeof window !== 'undefined' && typeof document !== 'undefined';
+    const isDedicatedWorker = !isBrowserWindow && (
+        (typeof WorkerGlobalScope !== 'undefined' && typeof self !== 'undefined' && self instanceof WorkerGlobalScope) ||
+        (typeof importScripts === 'function' && typeof window === 'undefined')
+    );
+
+    if (isDedicatedWorker && typeof self !== 'undefined' && typeof self.postMessage === 'function' && !parentPort) {
         self.onmessage = async (event) => {
             const data = event && event.data ? event.data : event;
             await processIncomingMessage(data, (reply, transfer) => {
@@ -578,14 +584,20 @@
         };
     }
 
+    const exportsObj = {
+        processIncomingMessage,
+        sessions,
+        defaultSession,
+        getSession,
+        clearSession
+    };
+
     // 3. Module export for testing & in-process async worker shim
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = {
-            processIncomingMessage,
-            sessions,
-            defaultSession,
-            getSession,
-            clearSession
-        };
+        module.exports = exportsObj;
+    }
+    const globalScope = typeof self !== 'undefined' ? self : typeof globalThis !== 'undefined' ? globalThis : this;
+    if (globalScope) {
+        globalScope.CryptoWorker = exportsObj;
     }
 })();

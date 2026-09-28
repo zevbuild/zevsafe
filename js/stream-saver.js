@@ -48,44 +48,64 @@
     }
 
     // ── Device & Capability Detection ────────────────────────────────
-    function isTier1Supported() {
-        return typeof window !== 'undefined' && typeof window.showSaveFilePicker === 'function';
+    function isTier1Supported(customWin) {
+        const win = customWin || (typeof window !== 'undefined' ? window : null);
+        return win !== null && typeof win.showSaveFilePicker === 'function';
     }
 
-    function isTier2Supported() {
-        return typeof navigator !== 'undefined' &&
-               'serviceWorker' in navigator &&
-               navigator.serviceWorker.controller !== null;
+    function isTier2Supported(customNav) {
+        const nav = customNav || (typeof navigator !== 'undefined' ? navigator : null);
+        return nav !== null &&
+               'serviceWorker' in nav &&
+               nav.serviceWorker &&
+               nav.serviceWorker.controller !== null &&
+               nav.serviceWorker.controller !== undefined;
     }
 
-    function isTier3Supported() {
-        return typeof navigator !== 'undefined' &&
-               'storage' in navigator &&
-               typeof navigator.storage.getDirectory === 'function';
+    function isTier3Supported(customNav) {
+        const nav = customNav || (typeof navigator !== 'undefined' ? navigator : null);
+        return nav !== null &&
+               'storage' in nav &&
+               nav.storage &&
+               typeof nav.storage.getDirectory === 'function';
     }
 
-    function isIOS() {
-        if (typeof navigator === 'undefined') return false;
-        const ua = navigator.userAgent || '';
-        const isAppleMobile = /iPad|iPhone|iPod/.test(ua);
-        const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+    function isIOS(customNav) {
+        const nav = customNav || (typeof navigator !== 'undefined' ? navigator : null);
+        if (!nav) return false;
+        const ua = nav.userAgent || '';
+        const isAppleMobile = /iPad|iPhone|iPod/i.test(ua);
+        const isIPadOS = nav.platform === 'MacIntel' && nav.maxTouchPoints > 1;
         return isAppleMobile || isIPadOS;
     }
 
-    function detectCapabilities() {
-        const t1 = isTier1Supported();
-        const t2 = isTier2Supported();
-        const t3 = isTier3Supported();
-        const ios = isIOS();
+    function isAndroid(customNav) {
+        const nav = customNav || (typeof navigator !== 'undefined' ? navigator : null);
+        if (!nav) return false;
+        if (nav.userAgentData && typeof nav.userAgentData.platform === 'string') {
+            if (/Android/i.test(nav.userAgentData.platform)) return true;
+        }
+        const ua = nav.userAgent || '';
+        return /Android/i.test(ua);
+    }
+
+    function detectCapabilities(customNav, customWin) {
+        const nav = customNav || (typeof navigator !== 'undefined' ? navigator : null);
+        const win = customWin || (typeof window !== 'undefined' ? window : null);
+        const t1 = isTier1Supported(win);
+        const t2 = isTier2Supported(nav);
+        const t3 = isTier3Supported(nav);
+        const ios = isIOS(nav);
+        const android = isAndroid(nav);
 
         let recommendedTier = TIER_4_FALLBACK;
-        if (ios && t3) {
-            // iOS Safari: OPFS staging preferred over SW iframe streaming
+        if ((ios || android) && t3) {
+            // Android mobile & iOS Safari: seekable OPFS staging preferred over SW iframe streaming
             recommendedTier = TIER_3_OPFS;
-        } else if (t1) {
+        } else if (t1 && !android && !ios) {
             // Desktop Chrome/Edge/Opera: direct FileSystem Access API
             recommendedTier = TIER_1_FSA;
-        } else if (t2) {
+        } else if (t2 && !android && !ios) {
             // Firefox/Safari Desktop: ServiceWorker synthetic download intercept
             recommendedTier = TIER_2_SW;
         } else if (t3) {
@@ -98,6 +118,7 @@
             tier2ServiceWorker: t2,
             tier3OPFS: t3,
             isIOS: ios,
+            isAndroid: android,
             recommendedTier
         };
     }
@@ -157,7 +178,26 @@
         stream.tier = TIER_1_FSA;
         stream.fileHandle = handle;
         stream.rawWritable = writableFileStream;
-        stream.seek = (pos) => (typeof writableFileStream.seek === 'function' ? writableFileStream.seek(pos) : Promise.resolve());
+        stream.seek = async (pos) => {
+            if (isClosed) {
+                throw new Error('Stream is already closed');
+            }
+            if (typeof pos !== 'number' || pos < 0 || !Number.isFinite(pos)) {
+                throw new TypeError('Seek position must be a non-negative number');
+            }
+            const seekOffset = Math.floor(pos);
+            if (typeof writableFileStream.seek === 'function') {
+                return await writableFileStream.seek(seekOffset);
+            } else if (typeof writableFileStream.write === 'function') {
+                try {
+                    return await writableFileStream.write({ type: 'seek', position: seekOffset });
+                } catch (wErr) {
+                    throw new Error(`Underlying writable stream does not support seek operations: ${wErr.message || wErr}`);
+                }
+            }
+            throw new Error('Underlying writable stream does not support seek operations');
+        };
+        stream.finalize = () => Promise.resolve();
         stream.writable = stream;
         return stream;
     }
@@ -225,29 +265,94 @@
             }
         };
 
+        const chunks = [];
+        let totalBytes = 0;
+        let seekPos = null;
+        const guardrailLimit = options.maxGuardrailBytes || MAX_FALLBACK_GUARDRAIL_BYTES;
+
         const stream = new WritableStream({
             async write(chunk) {
                 if (isClosed) throw new Error('Stream is already closed or cancelled');
                 const data = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
 
-                // Send chunk with backpressure: wait for ACK before resolving (bounds memory <= 4 MB)
-                await new Promise((resolve, reject) => {
-                    pendingAckResolve = resolve;
-                    pendingAckReject = reject;
-                    try {
-                        channel.port1.postMessage({ type: 'CHUNK', chunk: data }, [data.buffer]);
-                    } catch (postErr) {
-                        // In case transfer fails or buffer is detached
-                        channel.port1.postMessage({ type: 'CHUNK', chunk: data });
+                if (seekPos !== null) {
+                    if (seekPos > totalBytes) {
+                        const gap = seekPos - totalBytes;
+                        if (totalBytes + gap > guardrailLimit) {
+                            throw new Error(`StreamSaver: In-memory safety guardrail exceeded (${(guardrailLimit / 1048576).toFixed(0)} MB limit). Browser lacks streaming disk storage (FSA/SW/OPFS). Processing halted to prevent memory exhaustion.`);
+                        }
+                        chunks.push(new Uint8Array(gap));
+                        totalBytes += gap;
                     }
-                });
 
+                    let remaining = data.byteLength;
+                    let dataOffset = 0;
+                    let currentPos = 0;
+                    for (let i = 0; i < chunks.length && remaining > 0; i++) {
+                        const cLen = chunks[i].byteLength;
+                        if (seekPos < currentPos + cLen) {
+                            const chunkOffset = seekPos - currentPos;
+                            const copyLen = Math.min(remaining, cLen - chunkOffset);
+                            chunks[i].set(data.subarray(dataOffset, dataOffset + copyLen), chunkOffset);
+                            remaining -= copyLen;
+                            dataOffset += copyLen;
+                            seekPos += copyLen;
+                        }
+                        currentPos += cLen;
+                    }
+                    if (remaining > 0) {
+                        if (totalBytes + remaining > guardrailLimit) {
+                            throw new Error(`StreamSaver: In-memory safety guardrail exceeded (${(guardrailLimit / 1048576).toFixed(0)} MB limit). Browser lacks streaming disk storage (FSA/SW/OPFS). Processing halted to prevent memory exhaustion.`);
+                        }
+                        const remainder = data.slice(dataOffset);
+                        chunks.push(remainder);
+                        totalBytes += remainder.byteLength;
+                        seekPos += remainder.byteLength;
+                    }
+                    if (seekPos >= totalBytes) {
+                        seekPos = null;
+                    }
+                    return;
+                }
+
+                if (totalBytes + data.byteLength > guardrailLimit) {
+                    throw new Error(`StreamSaver: In-memory safety guardrail exceeded (${(guardrailLimit / 1048576).toFixed(0)} MB limit). Browser lacks streaming disk storage (FSA/SW/OPFS). Processing halted to prevent memory exhaustion.`);
+                }
+
+                const owned = new Uint8Array(data.byteLength);
+                owned.set(data);
+                chunks.push(owned);
+                totalBytes += owned.byteLength;
                 if (options.onProgress) options.onProgress(data.byteLength);
             },
             async close() {
                 if (isClosed) return;
                 isClosed = true;
+
+                // Stream assembled chunks with header to Service Worker
+                for (const c of chunks) {
+                    await new Promise((resolve, reject) => {
+                        let timer = setTimeout(() => {
+                            if (pendingAckResolve === resolve) {
+                                pendingAckResolve = null;
+                                pendingAckReject = null;
+                                resolve();
+                            }
+                        }, 5000);
+                        pendingAckResolve = () => { clearTimeout(timer); resolve(); };
+                        pendingAckReject = (err) => { clearTimeout(timer); reject(err); };
+                        try {
+                            channel.port1.postMessage({ type: 'CHUNK', chunk: c }, [c.buffer.slice(0)]);
+                        } catch (_) {
+                            channel.port1.postMessage({ type: 'CHUNK', chunk: c });
+                        }
+                    });
+                }
+
                 channel.port1.postMessage({ type: 'DONE' });
+                if (typeof Blob !== 'undefined') {
+                    stream.resultBlob = new Blob(chunks, { type: 'application/octet-stream' });
+                }
                 if (iframe) {
                     setTimeout(() => { try { iframe.remove(); } catch (_) {} }, 5000);
                 }
@@ -255,7 +360,12 @@
             async abort(reason) {
                 if (isClosed) return;
                 isClosed = true;
-                channel.port1.postMessage({ type: 'ABORT', reason: String(reason) });
+                chunks.length = 0;
+                try {
+                    if (channel.port1 && typeof channel.port1.postMessage === 'function') {
+                        channel.port1.postMessage({ type: 'ABORT', reason: String(reason) });
+                    }
+                } catch (_) {}
                 if (iframe) {
                     try { iframe.remove(); } catch (_) {}
                 }
@@ -264,6 +374,18 @@
 
         stream.tier = TIER_2_SW;
         stream.downloadId = downloadId;
+        stream.chunks = chunks;
+        stream.seek = (pos) => {
+            if (isClosed) {
+                return Promise.reject(new Error('Stream is already closed'));
+            }
+            if (typeof pos !== 'number' || pos < 0 || !Number.isFinite(pos)) {
+                return Promise.reject(new TypeError('Seek position must be a non-negative number'));
+            }
+            seekPos = Math.floor(pos);
+            return Promise.resolve();
+        };
+        stream.finalize = () => Promise.resolve();
         stream.writable = stream;
         return stream;
     }
@@ -271,15 +393,71 @@
     // ── Tier 3: OPFS Staging (iOS Safari 15.2+) ──────────────────────
     async function createTier3Writer(filename, expectedSize, options = {}) {
         const cleanName = sanitizeFilename(filename);
-        const getDirectoryFn = options.getDirectory || (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.getDirectory.bind(navigator.storage));
+        const nav = options.navigator || (typeof navigator !== 'undefined' ? navigator : null);
+        const getDirectoryFn = options.getDirectory || (nav && nav.storage && typeof nav.storage.getDirectory === 'function' && nav.storage.getDirectory.bind(nav.storage));
         if (!getDirectoryFn) {
             throw new Error('OPFS (navigator.storage.getDirectory) is not supported in this environment');
         }
+        if (expectedSize > 0 && nav && nav.storage && typeof nav.storage.estimate === 'function') {
+            try {
+                const est = await nav.storage.estimate();
+                if (est && typeof est.quota === 'number' && typeof est.usage === 'number' && !isNaN(est.quota) && !isNaN(est.usage)) {
+                    const available = Math.max(0, est.quota - est.usage);
+                    if (available < expectedSize) {
+                        throw new Error(`Insufficient OPFS storage quota (available: ${(available / 1048576).toFixed(1)} MB, required: ${(expectedSize / 1048576).toFixed(1)} MB)`);
+                    }
+                }
+            } catch (qErr) {
+                if (qErr.message && qErr.message.includes('Insufficient OPFS storage quota')) {
+                    throw qErr;
+                }
+            }
+        }
 
         const root = await getDirectoryFn();
+
+        // Proactive cleanup of any orphaned staging files from previous crashed runs
+        try {
+            const cleanupEntry = async (entryName) => {
+                if (entryName && entryName.startsWith('zevsafe_stage_')) {
+                    const match = entryName.match(/^zevsafe_stage_(\d+)_/);
+                    if (match) {
+                        let fileTime = parseInt(match[1], 10);
+                        if (fileTime < 10000000000) fileTime *= 1000;
+                        const ageMs = Date.now() - fileTime;
+                        if (ageMs > 30 * 60 * 1000) {
+                            try { await root.removeEntry(entryName); } catch (_) {}
+                        }
+                    } else {
+                        try { await root.removeEntry(entryName); } catch (_) {}
+                    }
+                }
+            };
+
+            if (typeof root.values === 'function') {
+                for await (const entry of root.values()) {
+                    if (entry && entry.name) await cleanupEntry(entry.name);
+                }
+            } else if (typeof root.entries === 'function') {
+                for await (const [name] of root.entries()) {
+                    if (name) await cleanupEntry(name);
+                }
+            } else if (typeof root[Symbol.asyncIterator] === 'function') {
+                for await (const [name] of root) {
+                    if (name) await cleanupEntry(name);
+                }
+            }
+        } catch (_) {}
+
         const tempName = `zevsafe_stage_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.tmp`;
         const fileHandle = await root.getFileHandle(tempName, { create: true });
-        const writable = await fileHandle.createWritable();
+        let writable;
+        try {
+            writable = await fileHandle.createWritable();
+        } catch (cwErr) {
+            try { await root.removeEntry(tempName); } catch (_) {}
+            throw cwErr;
+        }
         let isClosed = false;
 
         const stream = new WritableStream({
@@ -292,26 +470,42 @@
             async close() {
                 if (isClosed) return;
                 isClosed = true;
-                await writable.close();
+                try {
+                    await writable.close();
+                } catch (closeErr) {
+                    try { await root.removeEntry(tempName); } catch (_) {}
+                    throw closeErr;
+                }
 
                 // Obtain zero-RAM disk-backed File handle
-                const file = await fileHandle.getFile();
+                let file;
+                try {
+                    file = await fileHandle.getFile();
+                } catch (gfErr) {
+                    try { await root.removeEntry(tempName); } catch (_) {}
+                    throw gfErr;
+                }
                 stream.resultFile = file;
 
                 if (typeof URL !== 'undefined' && typeof document !== 'undefined' && document.createElement) {
                     const objectUrl = URL.createObjectURL(file);
                     const a = document.createElement('a');
+                    a.style.display = 'none';
                     a.href = objectUrl;
                     a.download = cleanName;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
+                    const container = document.body || document.documentElement;
+                    if (container) {
+                        container.appendChild(a);
+                        a.click();
+                        container.removeChild(a);
+                    }
 
-                    // Cleanup URL and OPFS staging file after delay
-                    setTimeout(async () => {
+                    // Cleanup URL and OPFS staging file after delay (5 minutes safe window for mobile download managers)
+                    const cleanTimer = setTimeout(async () => {
                         try { URL.revokeObjectURL(objectUrl); } catch (_) {}
                         try { await root.removeEntry(tempName); } catch (_) {}
-                    }, 60000);
+                    }, 300000);
+                    if (cleanTimer && typeof cleanTimer.unref === 'function') cleanTimer.unref();
                 }
             },
             async abort(reason) {
@@ -328,7 +522,26 @@
 
         stream.tier = TIER_3_OPFS;
         stream.fileHandle = fileHandle;
-        stream.seek = (pos) => (typeof writable.seek === 'function' ? writable.seek(pos) : Promise.resolve());
+        stream.seek = async (pos) => {
+            if (isClosed) {
+                throw new Error('Stream is already closed');
+            }
+            if (typeof pos !== 'number' || pos < 0 || !Number.isFinite(pos)) {
+                throw new TypeError('Seek position must be a non-negative number');
+            }
+            const seekOffset = Math.floor(pos);
+            if (typeof writable.seek === 'function') {
+                return await writable.seek(seekOffset);
+            } else if (typeof writable.write === 'function') {
+                try {
+                    return await writable.write({ type: 'seek', position: seekOffset });
+                } catch (wErr) {
+                    throw new Error(`Underlying writable stream does not support seek operations: ${wErr.message || wErr}`);
+                }
+            }
+            throw new Error('Underlying writable stream does not support seek operations');
+        };
+        stream.finalize = () => Promise.resolve();
         stream.writable = stream;
         return stream;
     }
@@ -339,6 +552,7 @@
         const chunks = [];
         let totalBytes = 0;
         let isClosed = false;
+        let seekPos = null;
         const guardrailLimit = options.maxGuardrailBytes || MAX_FALLBACK_GUARDRAIL_BYTES;
 
         const stream = new WritableStream({
@@ -346,12 +560,54 @@
                 if (isClosed) throw new Error('Stream is already closed');
                 const data = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
 
+                if (seekPos !== null) {
+                    if (seekPos > totalBytes) {
+                        const gap = seekPos - totalBytes;
+                        if (totalBytes + gap > guardrailLimit) {
+                            throw new Error(`StreamSaver: In-memory safety guardrail exceeded (${(guardrailLimit / 1048576).toFixed(0)} MB limit). Browser lacks streaming disk storage (FSA/SW/OPFS). Processing halted to prevent memory exhaustion.`);
+                        }
+                        chunks.push(new Uint8Array(gap));
+                        totalBytes += gap;
+                    }
+
+                    let remaining = data.byteLength;
+                    let dataOffset = 0;
+                    let currentPos = 0;
+                    for (let i = 0; i < chunks.length && remaining > 0; i++) {
+                        const cLen = chunks[i].byteLength;
+                        if (seekPos < currentPos + cLen) {
+                            const chunkOffset = seekPos - currentPos;
+                            const copyLen = Math.min(remaining, cLen - chunkOffset);
+                            chunks[i].set(data.subarray(dataOffset, dataOffset + copyLen), chunkOffset);
+                            remaining -= copyLen;
+                            dataOffset += copyLen;
+                            seekPos += copyLen;
+                        }
+                        currentPos += cLen;
+                    }
+                    if (remaining > 0) {
+                        if (totalBytes + remaining > guardrailLimit) {
+                            throw new Error(`StreamSaver: In-memory safety guardrail exceeded (${(guardrailLimit / 1048576).toFixed(0)} MB limit). Browser lacks streaming disk storage (FSA/SW/OPFS). Processing halted to prevent memory exhaustion.`);
+                        }
+                        const remainder = data.slice(dataOffset);
+                        chunks.push(remainder);
+                        totalBytes += remainder.byteLength;
+                        seekPos += remainder.byteLength;
+                    }
+                    if (seekPos >= totalBytes) {
+                        seekPos = null;
+                    }
+                    return;
+                }
+
                 if (totalBytes + data.byteLength > guardrailLimit) {
                     throw new Error(`StreamSaver: In-memory safety guardrail exceeded (${(guardrailLimit / 1048576).toFixed(0)} MB limit). Browser lacks streaming disk storage (FSA/SW/OPFS). Processing halted to prevent memory exhaustion.`);
                 }
 
-                chunks.push(data);
-                totalBytes += data.byteLength;
+                const owned = new Uint8Array(data.byteLength);
+                owned.set(data);
+                chunks.push(owned);
+                totalBytes += owned.byteLength;
                 if (options.onProgress) options.onProgress(data.byteLength);
             },
             async close() {
@@ -369,14 +625,19 @@
                 if (blob && typeof URL !== 'undefined' && typeof document !== 'undefined' && document.createElement) {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
+                    a.style.display = 'none';
                     a.href = url;
                     a.download = cleanName;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    setTimeout(() => {
+                    const container = document.body || document.documentElement;
+                    if (container) {
+                        container.appendChild(a);
+                        a.click();
+                        container.removeChild(a);
+                    }
+                    const timer = setTimeout(() => {
                         try { URL.revokeObjectURL(url); } catch (_) {}
                     }, 60000);
+                    if (timer && typeof timer.unref === 'function') timer.unref();
                 }
             },
             async abort() {
@@ -387,6 +648,17 @@
 
         stream.tier = TIER_4_FALLBACK;
         stream.chunks = chunks;
+        stream.seek = (pos) => {
+            if (isClosed) {
+                return Promise.reject(new Error('Stream is already closed'));
+            }
+            if (typeof pos !== 'number' || pos < 0 || !Number.isFinite(pos)) {
+                return Promise.reject(new TypeError('Seek position must be a non-negative number'));
+            }
+            seekPos = Math.floor(pos);
+            return Promise.resolve();
+        };
+        stream.finalize = () => Promise.resolve();
         stream.writable = stream;
         return stream;
     }
@@ -401,26 +673,43 @@
      */
     async function createStreamWriter(filename, expectedSize = 0, options = {}) {
         const opts = options || {};
-        const caps = detectCapabilities();
+        const caps = detectCapabilities(opts.navigator, opts.window);
         const requestedTier = opts.tier || caps.recommendedTier;
+        const failedTiers = new Set();
 
         if (typeof opts.onTierSelected === 'function') {
             opts.onTierSelected(requestedTier);
         }
 
         // Tier 1: FileSystem Access API
-        if (requestedTier === TIER_1_FSA && isTier1Supported()) {
-            return createTier1Writer(filename, expectedSize, opts);
+        if (requestedTier === TIER_1_FSA && (opts.picker || (isTier1Supported(opts.window) && !caps.isAndroid && !caps.isIOS))) {
+            try {
+                return await createTier1Writer(filename, expectedSize, opts);
+            } catch (t1Err) {
+                if (t1Err && t1Err.name === 'AbortError') throw t1Err;
+                failedTiers.add(TIER_1_FSA);
+                console.warn('[StreamSaver] Tier 1 FSA failed, downgrading:', t1Err);
+            }
         }
 
-        // Tier 2: Service Worker Stream Intercept
-        if (requestedTier === TIER_2_SW && isTier2Supported()) {
-            return createTier2Writer(filename, expectedSize, opts);
+        // Tier 2: Service Worker Stream Intercept (only on desktop browsers, never mobile)
+        if (requestedTier === TIER_2_SW && (opts.swController || isTier2Supported(opts.navigator)) && !caps.isAndroid && !caps.isIOS) {
+            try {
+                return await createTier2Writer(filename, expectedSize, opts);
+            } catch (t2Err) {
+                failedTiers.add(TIER_2_SW);
+                console.warn('[StreamSaver] Tier 2 SW failed, downgrading:', t2Err);
+            }
         }
 
         // Tier 3: OPFS Staging
-        if (requestedTier === TIER_3_OPFS && isTier3Supported()) {
-            return createTier3Writer(filename, expectedSize, opts);
+        if (requestedTier === TIER_3_OPFS && (opts.getDirectory || isTier3Supported(opts.navigator))) {
+            try {
+                return await createTier3Writer(filename, expectedSize, opts);
+            } catch (t3Err) {
+                failedTiers.add(TIER_3_OPFS);
+                console.warn('[StreamSaver] Tier 3 OPFS failed, downgrading:', t3Err);
+            }
         }
 
         // Tier 4: Fallback In-Memory Accumulator
@@ -428,18 +717,26 @@
             return createFallbackWriter(filename, expectedSize, opts);
         }
 
-        // Graceful automatic downgrade chain if requested tier not supported
-        if (isTier1Supported()) {
-            if (typeof opts.onTierSelected === 'function') opts.onTierSelected(TIER_1_FSA);
-            return createTier1Writer(filename, expectedSize, opts);
+        // Graceful automatic downgrade chain if requested tier failed or not supported
+        if (!failedTiers.has(TIER_1_FSA) && (opts.picker || (isTier1Supported(opts.window) && !caps.isAndroid && !caps.isIOS))) {
+            try {
+                if (typeof opts.onTierSelected === 'function') opts.onTierSelected(TIER_1_FSA);
+                return await createTier1Writer(filename, expectedSize, opts);
+            } catch (t1Err) {
+                if (t1Err && t1Err.name === 'AbortError') throw t1Err;
+            }
         }
-        if (isTier2Supported()) {
-            if (typeof opts.onTierSelected === 'function') opts.onTierSelected(TIER_2_SW);
-            return createTier2Writer(filename, expectedSize, opts);
+        if (!failedTiers.has(TIER_3_OPFS) && (opts.getDirectory || isTier3Supported(opts.navigator))) {
+            try {
+                if (typeof opts.onTierSelected === 'function') opts.onTierSelected(TIER_3_OPFS);
+                return await createTier3Writer(filename, expectedSize, opts);
+            } catch (_) {}
         }
-        if (isTier3Supported()) {
-            if (typeof opts.onTierSelected === 'function') opts.onTierSelected(TIER_3_OPFS);
-            return createTier3Writer(filename, expectedSize, opts);
+        if (!failedTiers.has(TIER_2_SW) && ((opts.swController || isTier2Supported(opts.navigator)) && !caps.isAndroid && !caps.isIOS)) {
+            try {
+                if (typeof opts.onTierSelected === 'function') opts.onTierSelected(TIER_2_SW);
+                return await createTier2Writer(filename, expectedSize, opts);
+            } catch (_) {}
         }
 
         if (typeof opts.onTierSelected === 'function') opts.onTierSelected(TIER_4_FALLBACK);
@@ -456,6 +753,7 @@
         isTier2Supported,
         isTier3Supported,
         isIOS,
+        isAndroid,
         createTier1Writer,
         createTier2Writer,
         createTier3Writer,

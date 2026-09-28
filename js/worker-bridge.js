@@ -393,6 +393,11 @@
                 try { handler = require('../js/crypto-worker.js'); } catch (__) {}
             }
         }
+        if (!handler && typeof window !== 'undefined' && window.CryptoWorker) {
+            handler = window.CryptoWorker;
+        } else if (!handler && typeof globalThis !== 'undefined' && globalThis.CryptoWorker) {
+            handler = globalThis.CryptoWorker;
+        }
 
         const shim = {
             onmessage: null,
@@ -714,6 +719,9 @@
         if (opts.writable) {
             if (typeof opts.writable.getWriter === 'function') {
                 writer = opts.writable.getWriter();
+                if (typeof opts.writable.seek === 'function' && typeof writer.seek !== 'function') {
+                    writer.seek = (pos) => opts.writable.seek(pos);
+                }
             } else if (typeof opts.writable.write === 'function') {
                 writer = opts.writable;
             }
@@ -1115,28 +1123,45 @@
                     manifestOffset
                 });
 
-                // Write final container header to byte 0 if writer is seekable
-                if (writer && typeof writer.seek === 'function') {
-                    try {
-                        await writer.seek(0);
-                        await writer.write(header);
-                    } catch (sErr) {
-                        console.warn('[WorkerBridge] Failed to seek to 0 for header update:', sErr);
+                // Write final container header to byte 0 if writer or writable is seekable
+                if (writer) {
+                    let seeked = false;
+                    if (typeof writer.seek === 'function') {
+                        try {
+                            await writer.seek(0);
+                            seeked = true;
+                        } catch (sErr) {
+                            throw new Error(`Failed to seek writer to byte 0 for header update: ${sErr.message || sErr}`);
+                        }
+                    } else if (opts.writable && typeof opts.writable.seek === 'function') {
+                        try {
+                            await opts.writable.seek(0);
+                            seeked = true;
+                        } catch (sErr) {
+                            throw new Error(`Failed to seek writable to byte 0 for header update: ${sErr.message || sErr}`);
+                        }
                     }
-                } else if (opts.writable && typeof opts.writable.seek === 'function') {
-                    try {
-                        await opts.writable.seek(0);
-                        await opts.writable.write(header);
-                    } catch (sErr) {
-                        console.warn('[WorkerBridge] Failed to seek writable to 0 for header update:', sErr);
-                    }
-                }
 
-                // Close writer if open
-                if (writer && typeof writer.close === 'function') {
-                    try {
-                        await writer.close();
-                    } catch (_) {}
+                    if (!seeked) {
+                        throw new Error('Streaming destination is not seekable: unable to write final container header at byte 0');
+                    }
+
+                    if (typeof writer.write === 'function') {
+                        await writer.write(header);
+                    } else {
+                        throw new Error('Writer does not support write operation for container header');
+                    }
+
+                    // Close writer if open
+                    if (typeof writer.close === 'function') {
+                        try {
+                            await writer.close();
+                        } catch (cErr) {
+                            if (!cErr.message || !cErr.message.includes('already closed')) {
+                                throw cErr;
+                            }
+                        }
+                    }
                 }
 
                 if (cancelled || hasError) return;
@@ -1217,6 +1242,9 @@
         if (opts.writable) {
             if (typeof opts.writable.getWriter === 'function') {
                 writer = opts.writable.getWriter();
+                if (typeof opts.writable.seek === 'function' && typeof writer.seek !== 'function') {
+                    writer.seek = (pos) => opts.writable.seek(pos);
+                }
             } else if (typeof opts.writable.write === 'function') {
                 writer = opts.writable;
             }
@@ -1326,6 +1354,29 @@
                         keyfileBytes,
                         ...opts
                     });
+
+                    if (cancelled || hasError) return;
+
+                    // Stream decrypted archive to output sink if writer was provided
+                    if (writer && typeof writer.write === 'function') {
+                        try {
+                            await writer.write(decryptedBytes);
+                        } catch (wErr) {
+                            await handleFatalError(wErr);
+                            return;
+                        }
+                    }
+
+                    if (writer && typeof writer.close === 'function') {
+                        try {
+                            await writer.close();
+                        } catch (cErr) {
+                            if (!cErr.message || !cErr.message.includes('already closed')) {
+                                await handleFatalError(cErr);
+                                return;
+                            }
+                        }
+                    }
 
                     if (cancelled || hasError) return;
 
@@ -1554,7 +1605,11 @@
                 if (writer && typeof writer.close === 'function') {
                     try {
                         await writer.close();
-                    } catch (_) {}
+                    } catch (cErr) {
+                        if (!cErr.message || !cErr.message.includes('already closed')) {
+                            throw cErr;
+                        }
+                    }
                 }
 
                 if (cancelled || hasError) return;
