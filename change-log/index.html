@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ZevSafe">
+    <meta name="application-name" content="ZevSafe">
+    <meta name="theme-color" content="#08091a">
+    <meta name="msapplication-TileColor" content="#08091a">
+    <meta name="msapplication-TileImage" content="../icon-512.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="../manifest.json">
+
+    <!-- Apple Touch Icon & Favicons -->
+    <link rel="apple-touch-icon" href="../icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="../icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="../icon-512.png">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
+
+    <!-- Primary SEO Meta Tags -->
+    <title>ZevSafe Changelog — Release Notes &amp; Updates History</title>
+    <meta name="description" content="Official release notes and update history for ZevSafe. Explore all new features, security updates, performance improvements, and offline architecture milestones.">
+    <meta name="keywords" content="zevsafe changelog, zevsafe release notes, zevsafe updates, offline folder encryption updates, AES-256-GCM release history, zero-knowledge encryption changelog, browser vault updates">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="zevbuild">
+    <link rel="canonical" href="https://zevsafe.pages.dev/change-log/">
+
+    <!-- Preconnect for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ZevSafe">
+    <meta property="og:url" content="https://zevsafe.pages.dev/change-log/">
+    <meta property="og:title" content="ZevSafe Changelog — Release Notes &amp; Updates History">
+    <meta property="og:description" content="Explore all updates, security enhancements, and architecture milestones in ZevSafe — 100% offline, zero-knowledge folder encryption.">
+    <meta property="og:image" content="https://zevsafe.pages.dev/zevsafe-og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="ZevSafe Release Notes &amp; Changelog">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://zevsafe.pages.dev/change-log/">
+    <meta name="twitter:title" content="ZevSafe Changelog — Release Notes &amp; Updates History">
+    <meta name="twitter:description" content="Explore all updates, security enhancements, and architecture milestones in ZevSafe — 100% offline, zero-knowledge folder encryption.">
+    <meta name="twitter:image" content="https://zevsafe.pages.dev/zevsafe-og.png">
+    <meta name="twitter:image:alt" content="ZevSafe Release Notes &amp; Changelog">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://zevsafe.pages.dev/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Changelog",
+              "item": "https://zevsafe.pages.dev/change-log/"
+            }
+          ]
+        },
+        {
+          "@type": "CollectionPage",
+          "@id": "https://zevsafe.pages.dev/change-log/#webpage",
+          "url": "https://zevsafe.pages.dev/change-log/",
+          "name": "ZevSafe Release Notes & Changelog",
+          "description": "Comprehensive chronological record of updates, performance upgrades, and security improvements in ZevSafe.",
+          "publisher": {
+            "@type": "Organization",
+            "name": "zevbuild",
+            "url": "https://github.com/zevbuild"
+          }
+        }
+      ]
+    }
+    </script>
+
+    <link rel="stylesheet" href="../styles.css">
+
+    <style>
+        /* ── Changelog Layout ──────────────────────────────── */
+        .cl-shell {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 1.5rem 6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hero */
+        .cl-hero {
+            text-align: center;
+            padding-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .cl-hero-icon {
+            font-size: 3.2rem;
+            filter: drop-shadow(0 0 18px rgba(139,92,246,0.5));
+            animation: clPulse 3.5s ease-in-out infinite;
+        }
+
+        @keyframes clPulse {
+            0%, 100% { transform: scale(1); }
+            50%      { transform: scale(1.06); }
+        }
+
+        .cl-hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #f8fafc 30%, var(--purple-light) 75%, var(--teal-light) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            line-height: 1.15;
+        }
+
+        .cl-hero p {
+            font-size: 1.05rem;
+            color: var(--text-2);
+            max-width: 580px;
+            line-height: 1.7;
+        }
+
+        /* Stats Grid */
+        .cl-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.9rem;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .cl-stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem 0.9rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: border-color var(--transition), transform var(--transition);
+        }
+
+        .cl-stat-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .cl-stat-val {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            letter-spacing: -0.02em;
+        }
+
+        .light-theme .cl-stat-val { color: #0f172a; }
+
+        .cl-stat-val--purple { color: var(--purple-light); }
+        .cl-stat-val--teal   { color: var(--teal-light); }
+        .cl-stat-val--green  { color: var(--success); }
+
+        .cl-stat-lbl {
+            font-size: 0.72rem;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        /* Filter & Search Bar */
+        .cl-toolbar {
+            position: sticky;
+            top: 1rem;
+            z-index: 100;
+            background: rgba(10, 12, 32, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 0.75rem 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            box-shadow: 0 16px 40px -8px rgba(0,0,0,0.5);
+            transition: border-color var(--transition);
+        }
+
+        .light-theme .cl-toolbar {
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.1);
+        }
+
+        .cl-search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            padding: 0.35rem 0.85rem;
+            flex: 1;
+            min-width: 220px;
+            gap: 0.5rem;
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .light-theme .cl-search-box {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .cl-search-box:focus-within {
+            border-color: var(--teal-light);
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+        }
+
+        .cl-search-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            width: 100%;
+        }
+
+        .cl-search-input::placeholder {
+            color: var(--text-3);
+        }
+
+        .cl-filter-chips {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .cl-filter-chips::-webkit-scrollbar { display: none; }
+
+        .cl-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-2);
+            font-family: var(--font-body);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.32rem 0.8rem;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all var(--transition);
+        }
+
+        .light-theme .cl-chip {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .cl-chip:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-hover);
+        }
+
+        .cl-chip.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(20, 184, 166, 0.25));
+            border-color: var(--teal-light);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(20, 184, 166, 0.25);
+        }
+
+        .light-theme .cl-chip.active {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        /* Timeline Container */
+        .cl-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            position: relative;
+        }
+
+        .cl-timeline::before {
+            content: '';
+            position: absolute;
+            top: 2rem;
+            bottom: 2rem;
+            left: 28px;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--purple-light), var(--teal-light), rgba(255,255,255,0.06));
+            z-index: 0;
+        }
+
+        /* Version Card */
+        .cl-card {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            position: relative;
+            z-index: 1;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .cl-card.hidden {
+            display: none !important;
+        }
+
+        /* Marker Icon on Timeline */
+        .cl-marker {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 24px rgba(0, 0, 0, 0.6);
+            transition: all var(--transition);
+        }
+
+        .cl-card--latest .cl-marker {
+            border-color: var(--teal-light);
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.45);
+            background: linear-gradient(135deg, rgba(13, 16, 38, 0.95), rgba(20, 184, 166, 0.15));
+        }
+
+        .cl-card--major .cl-marker {
+            border-color: var(--purple-light);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+            background: linear-gradient(135deg, rgba(13, 16, 38, 0.95), rgba(139, 92, 246, 0.15));
+        }
+
+        /* Card Content Box */
+        .cl-content {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 1.6rem 1.8rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+        }
+
+        .cl-content:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .cl-card--latest .cl-content {
+            border-color: rgba(20, 184, 166, 0.4);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(20, 184, 166, 0.12);
+        }
+
+        .cl-card-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding-bottom: 0.9rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cl-card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .cl-version-title {
+            font-family: var(--font-display);
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .cl-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.22rem 0.65rem;
+            border-radius: var(--radius-pill);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .cl-badge--latest {
+            background: rgba(20, 184, 166, 0.15);
+            border: 1px solid rgba(20, 184, 166, 0.4);
+            color: var(--teal-light);
+        }
+
+        .cl-badge--major {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            color: var(--purple-light);
+        }
+
+        .cl-badge--date {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-2);
+            font-weight: 500;
+        }
+
+        .cl-tags {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .cl-tag {
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-3);
+        }
+
+        /* Items list */
+        .cl-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .cl-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            font-size: 0.88rem;
+            line-height: 1.65;
+            color: var(--text-2);
+        }
+
+        .cl-item-bullet {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.18rem 0.55rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .cl-bullet--new {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: var(--success);
+        }
+
+        .cl-bullet--perf {
+            background: rgba(20, 184, 166, 0.15);
+            border: 1px solid rgba(20, 184, 166, 0.35);
+            color: var(--teal-light);
+        }
+
+        .cl-bullet--sec {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            color: var(--purple-light);
+        }
+
+        .cl-bullet--ui {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: var(--warn);
+        }
+
+        .cl-bullet--fix {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.35);
+            color: var(--danger);
+        }
+
+        .cl-item-text strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .cl-item-text code {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            color: var(--purple-light);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.82em;
+        }
+
+        .light-theme .cl-item-text code {
+            background: rgba(0, 0, 0, 0.05);
+            color: #7c3aed;
+        }
+
+        /* Empty Search State */
+        .cl-empty-state {
+            text-align: center;
+            padding: 4rem 1rem;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-2);
+        }
+
+        .cl-empty-state.visible {
+            display: flex;
+        }
+
+        .cl-empty-icon {
+            font-size: 2.8rem;
+            opacity: 0.6;
+        }
+
+        /* Call To Action */
+        .cl-cta {
+            background: linear-gradient(135deg, rgba(109,40,217,0.18), rgba(20,184,166,0.12));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: var(--radius-xl);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.6);
+        }
+
+        .cl-cta h2 {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: var(--text);
+        }
+
+        .cl-cta p {
+            font-size: 0.95rem;
+            color: var(--text-2);
+            max-width: 480px;
+            line-height: 1.65;
+        }
+
+        .cl-cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6, #14b8a6);
+            background-size: 200% 200%;
+            animation: gradientShift 4s ease infinite;
+            color: #fff;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 0.85rem 2.2rem;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            box-shadow: 0 8px 32px -4px rgba(109,40,217,0.5);
+            transition: transform var(--transition), box-shadow var(--transition);
+        }
+
+        .cl-cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px -4px rgba(109,40,217,0.65);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 640px) {
+            .cl-shell { padding: 0 1rem 4rem; gap: 2rem; }
+            .cl-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+            .cl-timeline::before { left: 20px; }
+            .cl-card { gap: 1rem; }
+            .cl-marker { width: 42px; height: 42px; font-size: 1.1rem; }
+            .cl-content { padding: 1.25rem 1.2rem; }
+            .cl-version-title { font-size: 1.2rem; }
+            .cl-toolbar { top: 0.5rem; padding: 0.6rem 0.85rem; }
+            .cl-search-box { min-width: 100%; }
+            .cl-filter-chips { width: 100%; justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="noise"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="../index.html" style="display:flex;align-items:center;gap:0.6rem;text-decoration:none;color:inherit;">
+                <img class="brand-logo" src="../zevsafe-logo.png" alt="ZevSafe Logo - Zero-Knowledge Encryption" width="32" height="32">
+                <span class="brand-name">ZevSafe</span>
+            </a>
+        </div>
+        <div class="navbar-links">
+            <a href="../index.html" class="nav-pill">← Back to App</a>
+            <a href="../how-to-use-zevsafe/index.html" class="nav-pill">📖 User Guide</a>
+            <a href="https://github.com/zevbuild/zevsafe" target="_blank" class="nav-pill nav-pill-ghost">GitHub ↗</a>
+        </div>
+    </nav>
+
+    <div class="cl-shell">
+
+        <!-- Hero Section -->
+        <header class="cl-hero">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                Official Release History &amp; Changelog
+            </div>
+            <span class="cl-hero-icon">✨</span>
+            <h1>ZevSafe Release Notes</h1>
+            <p>Every milestone, cryptographic audit, performance enhancement, and feature addition that powers your zero-knowledge client-side folder vault.</p>
+
+            <!-- Quick Stats -->
+            <div class="cl-stats-grid">
+                <div class="cl-stat-card">
+                    <span class="cl-stat-val cl-stat-val--teal">v6.0</span>
+                    <span class="cl-stat-lbl">Latest Version</span>
+                </div>
+                <div class="cl-stat-card">
+                    <span class="cl-stat-val cl-stat-val--purple">600K</span>
+                    <span class="cl-stat-lbl">PBKDF2 Rounds</span>
+                </div>
+                <div class="cl-stat-card">
+                    <span class="cl-stat-val cl-stat-val--green">5 GB</span>
+                    <span class="cl-stat-lbl">Streaming Engine</span>
+                </div>
+                <div class="cl-stat-card">
+                    <span class="cl-stat-val">100%</span>
+                    <span class="cl-stat-lbl">Client-Side Offline</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Interactive Toolbar (Filter Chips + Search) -->
+        <div class="cl-toolbar">
+            <div class="cl-search-box">
+                <span style="opacity:0.6;">🔍</span>
+                <input type="search" id="cl-search" class="cl-search-input" placeholder="Search updates (e.g. streaming, mobile, OPFS, UI)..." aria-label="Search changelog">
+            </div>
+            <div class="cl-filter-chips" role="group" aria-label="Filter by version">
+                <button type="button" class="cl-chip active" data-filter="all">All Releases</button>
+                <button type="button" class="cl-chip" data-filter="v6">v6 (Current)</button>
+                <button type="button" class="cl-chip" data-filter="v5">v5.x (Streaming)</button>
+                <button type="button" class="cl-chip" data-filter="v4">v4 (FSA &amp; D&amp;D)</button>
+                <button type="button" class="cl-chip" data-filter="v3">v3 (.zev Format)</button>
+                <button type="button" class="cl-chip" data-filter="v2">v2 (Keyfile 2FA)</button>
+                <button type="button" class="cl-chip" data-filter="v1">v1 (Genesis)</button>
+            </div>
+        </div>
+
+        <!-- Release Timeline -->
+        <main class="cl-timeline" id="cl-timeline">
+
+            <!-- ── VERSION 6 ── -->
+            <article class="cl-card cl-card--latest" data-version="v6">
+                <div class="cl-marker">🎨</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.0</h2>
+                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
+                            <span class="cl-badge cl-badge--date">September 28, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">UI Polish</span>
+                            <span class="cl-tag">Mobile UX</span>
+                            <span class="cl-tag">Contrast</span>
+                            <span class="cl-tag">PWA v26</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Mobile Micro-Hero:</strong> Replaced the hidden mobile header with an elegant, space-efficient micro-hero displaying the privacy badge, responsive title, and two-line clamped tagline so mobile visitors retain immediate context and security reassurance.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Glassmorphic Specular Card Elevation:</strong> Enhanced the primary encryption and decryption vault cards with top specular highlights (<code>box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12)</code>), multi-layer backdrop blurs, and tuned hover glows.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">Accessibility</span>
+                            <div class="cl-item-text">
+                                <strong>Light Mode Contrast Inversion Fixes:</strong> Re-scoped typography and border tokens across dark-surfaced modals (<code>.explorer-modal</code>, <code>.media-modal-container</code>), <code>.progress-panel-inner</code>, and the <code>.telemetry-hud</code> to ensure high-contrast white text against dark glass backgrounds in light theme.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Vault Explorer Breadcrumbs Navigation:</strong> Integrated an interactive breadcrumb location bar (<code>#explorer-breadcrumbs</code>) right below the category tabs to provide clear hierarchy awareness in deep folder vaults.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Empty File Size Pill Suppression:</strong> Applied <code>:empty { display: none !important; }</code> rules to prevent awkward blank capsule borders from rendering on 0-byte items or folder records.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">Mobile</span>
+                            <div class="cl-item-text">
+                                <strong>Cinema Player Mobile Control Deck:</strong> Re-structured the in-browser media player control bar on small screens (&le; 520px) into full-width stacked rows to avoid control clipping and guarantee comfortable touch targets.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v26</code> (<code>WEB-VERSION-26</code>).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 5.1 ── -->
+            <article class="cl-card" data-version="v5">
+                <div class="cl-marker">🔄</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 5.1</h2>
+                            <span class="cl-badge cl-badge--date">September 27, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">PWA Sync</span>
+                            <span class="cl-tag">Badge Maintenance</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>PWA Version Indicator Sync:</strong> Updated the hero tech-line badge in <code>index.html</code> to match the Service Worker cache version bumped in v5, ensuring accurate version transparency for all offline users.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 5.0 ── -->
+            <article class="cl-card cl-card--major" data-version="v5">
+                <div class="cl-marker">⚡</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 5.0</h2>
+                            <span class="cl-badge cl-badge--major">⭐ Major Milestone</span>
+                            <span class="cl-badge cl-badge--date">September 26, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">5 GB Streaming</span>
+                            <span class="cl-tag">ZV3 Format</span>
+                            <span class="cl-tag">ZIP64</span>
+                            <span class="cl-tag">Low RAM</span>
+                            <span class="cl-tag">OPFS</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>5 GB Low-RAM Streaming Engine (<code>ZV3\0</code>):</strong> Architected a chunked 4 MB STREAM AEAD (<code>AES-256-GCM</code>) pipeline capable of compressing, encrypting, and decrypting vaults up to 5 GB with strictly bounded heap RAM (&lt; 150 MB) on mobile (Android Chrome, iOS Safari) and desktop browsers.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Zero-Buffer Streaming ZIP64 Packager (<code>stream-packer.js</code>):</strong> Directly streams unencrypted source files via <code>file.stream()</code> and native <code>CompressionStream('deflate-raw')</code> with 24-byte ZIP64 Data Descriptors (<code>Bit 3</code>), dynamic <code>STORE</code>/<code>DEFLATE</code> evaluation, and an encrypted tail catalog.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Instant Vault Explorer &amp; Selective Chunk Extraction (<code>stream-unpacker.js</code>):</strong> Unlocks and catalogs 1,000+ files from a 5 GB vault in &lt; 100 ms using &lt; 15 MB RAM by reading only the 57-byte container header and encrypted tail manifest; extracts individual files or media streams by decrypting only their required 4 MB chunk span.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Off-Thread Web Worker &amp; Credit Backpressure (<code>crypto-worker.js</code>):</strong> Offloads 600,000-iteration PBKDF2-SHA512 key derivation, deflate compression, and AES-GCM chunk processing to a dedicated background worker with zero-copy <code>Transferable</code> buffers and 2-credit (~8 MB) flow control.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Multi-Tier Mobile &amp; Desktop Streaming Downloads (<code>stream-saver.js</code>):</strong> Implements Tier 1 FileSystem Access API (<code>showSaveFilePicker</code>), Tier 2 Service Worker <code>/_stream_download</code> stream interception, and Tier 3 OPFS disk staging to ensure massive outputs save reliably without hitting in-memory Blob limitations.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Verified</span>
+                            <div class="cl-item-text">
+                                <strong>Automated Verification Suite:</strong> Added 710 automated unit, integration, and 4-tier E2E tests verifying cryptographic integrity, tamper rejection, memory bounds, and backward compatibility.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 4.0 ── -->
+            <article class="cl-card" data-version="v4">
+                <div class="cl-marker">📁</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 4.0</h2>
+                            <span class="cl-badge cl-badge--date">September 15, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Drag &amp; Drop</span>
+                            <span class="cl-tag">FSA API</span>
+                            <span class="cl-tag">Explorer Overhaul</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Universal Drag-and-Drop:</strong> Removed restrictive single-folder drop constraints, allowing users to drop loose files, multiple files, or full directory structures directly into the vault creator.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Touchscreen Folder Selection:</strong> Resolved issue where touchscreen laptops (coarse pointer) routed "Browse Folder" to a file-only selector; folder browse now reliably opens native directory pickers across all pointer modes.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Native File System Access API:</strong> Added <code>window.showDirectoryPicker()</code> support for native OS directory selection with recursive hierarchy preservation on modern desktop browsers.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Simplified Decrypted Vault Explorer:</strong> Redesigned modal with clean, intuitive layout; eliminated unstyled white category buttons and awkward control wrapping.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Smart Visibility Adaptation:</strong> Hides redundant search bars, sort dropdowns, and checkboxes when viewing single-file vaults; automatically hides 0-count category tabs.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 3.0 ── -->
+            <article class="cl-card cl-card--major" data-version="v3">
+                <div class="cl-marker">🚀</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 3.0</h2>
+                            <span class="cl-badge cl-badge--major">⭐ Major Release</span>
+                            <span class="cl-badge cl-badge--date">July 5, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">.zev Format</span>
+                            <span class="cl-tag">Cinema Player</span>
+                            <span class="cl-tag">10x Speed</span>
+                            <span class="cl-tag">PC Setup</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Official <code>.zev</code> Vault Extension:</strong> Transitioned the encrypted container format from <code>.enc</code> to the standardized, branded <code>.zev</code> extension across all web and script tooling.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>10x Performance Speedup &amp; Smart Media Detection:</strong> Implemented automatic <code>STORE</code> mode detection for pre-compressed video, image, and archive files, dropping processing times for a 600 MB folder from 5 minutes to 3–5 seconds.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>In-Browser Decrypted Vault File Explorer:</strong> Introduced in-memory file browser upon decryption allowing instant single-file downloads, subfolder inspection, and real-time search filtering.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Dedicated Cinema Media Player:</strong> Embedded hardware-accelerated video (.mp4, .webm, .mkv) and audio (.mp3, .wav, .flac) streaming player with speed adjustments, +/-10s scrubbing, playlist navigation, and Fullscreen.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>1-Click PC Desktop Setup (25+ GB):</strong> Created downloadable <code>ZevSafe-PC-Setup-25GB.zip</code> package containing drag-and-drop batch launchers (<code>Encrypt-Vault.bat</code>, <code>Decrypt-Vault.bat</code>) for zero-RAM 25 GB to 100 GB+ datasets.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 2.0 ── -->
+            <article class="cl-card" data-version="v2">
+                <div class="cl-marker">🔐</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 2.0</h2>
+                            <span class="cl-badge cl-badge--date">March 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">PBKDF2-SHA512</span>
+                            <span class="cl-tag">Keyfile 2FA</span>
+                            <span class="cl-tag">600K Rounds</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>PBKDF2-SHA512 Key Derivation:</strong> Upgraded key stretching to SHA-512 with 600,000 iterations and a 32-byte cryptographically secure random salt, dramatically increasing resistance against GPU/ASIC brute-force attacks.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Optional Keyfile Two-Factor Authentication:</strong> Added physical keyfile support allowing users to require both a password and a secret file (USB token, image, or document) to unlock the vault.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Compat</span>
+                            <div class="cl-item-text">
+                                <strong>Backward Compatibility:</strong> Retained automatic magic-byte detection so legacy v1 vaults decrypt seamlessly without manual mode switching.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 1.0 ── -->
+            <article class="cl-card" data-version="v1">
+                <div class="cl-marker">🌱</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 1.0</h2>
+                            <span class="cl-badge cl-badge--date">Genesis Launch</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">First Release</span>
+                            <span class="cl-tag">AES-256-GCM</span>
+                            <span class="cl-tag">PWA</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">Launch</span>
+                            <div class="cl-item-text">
+                                <strong>Client-Side Zero-Knowledge Encryption:</strong> Initial release establishing the core philosophy: 100% offline in-browser folder compression, PBKDF2 key derivation, and AES-256-GCM authenticated encryption. Zero server communication.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">Launch</span>
+                            <div class="cl-item-text">
+                                <strong>Progressive Web App (PWA):</strong> Integrated Service Worker caching for instant offline boot without requiring network connectivity.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Empty Search Results Message -->
+            <div class="cl-empty-state" id="cl-empty">
+                <span class="cl-empty-icon">🔎</span>
+                <h3>No matching updates found</h3>
+                <p>Try searching for a different keyword like <em>streaming</em>, <em>mobile</em>, <em>OPFS</em>, or <em>encryption</em>.</p>
+                <button type="button" class="cl-chip" onclick="resetSearch()">Clear Search</button>
+            </div>
+
+        </main>
+
+        <!-- Call to Action -->
+        <section class="cl-cta">
+            <h2>Ready to Secure Your Files?</h2>
+            <p>Experience zero-knowledge folder encryption directly in your browser. No accounts, no servers, zero telemetry.</p>
+            <a href="../index.html" class="cl-cta-btn">🔐 Open ZevSafe Vault App</a>
+        </section>
+
+        <!-- Footer -->
+        <footer class="site-footer">
+            <div class="footer-brand">
+                <img class="footer-logo" src="../zevsafe-logo.png" alt="ZevSafe Logo" width="24" height="24">
+                <span>ZevSafe</span>
+            </div>
+            <p class="footer-tagline">Your files stay on your device. Always.</p>
+            <div class="footer-links">
+                <a href="../index.html">App</a>
+                <span>·</span>
+                <a href="../how-to-use-zevsafe/index.html">User Guide</a>
+                <span>·</span>
+                <a href="https://github.com/zevbuild/zevsafe" target="_blank">GitHub ↗</a>
+                <span>·</span>
+                <span>AES-256-GCM · PBKDF2-SHA512</span>
+            </div>
+            <p class="footer-copy">Built by <strong>zevbuild</strong> · MIT License</p>
+        </footer>
+
+    </div>
+
+    <!-- Client-Side Filtering & Search Script -->
+    <script>
+        // System Theme Synchronization
+        const themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        function applyTheme(isDark) {
+            document.documentElement.classList.toggle('light-theme', !isDark);
+        }
+        applyTheme(themeMediaQuery.matches);
+        themeMediaQuery.addEventListener('change', e => applyTheme(e.matches));
+
+        // Filter & Search Logic
+        const searchInput = document.getElementById('cl-search');
+        const filterChips = document.querySelectorAll('.cl-chip[data-filter]');
+        const cards = document.querySelectorAll('.cl-card');
+        const emptyState = document.getElementById('cl-empty');
+
+        let currentFilter = 'all';
+
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                filterChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                currentFilter = chip.getAttribute('data-filter');
+                filterChangelog();
+            });
+        });
+
+        searchInput.addEventListener('input', () => {
+            filterChangelog();
+        });
+
+        function filterChangelog() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const version = card.getAttribute('data-version');
+                const text = card.textContent.toLowerCase();
+
+                const matchesFilter = (currentFilter === 'all') || (version === currentFilter);
+                const matchesQuery = !query || text.includes(query);
+
+                if (matchesFilter && matchesQuery) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            if (visibleCount === 0) {
+                emptyState.classList.add('visible');
+            } else {
+                emptyState.classList.remove('visible');
+            }
+        }
+
+        function resetSearch() {
+            searchInput.value = '';
+            currentFilter = 'all';
+            filterChips.forEach(c => {
+                if (c.getAttribute('data-filter') === 'all') c.classList.add('active');
+                else c.classList.remove('active');
+            });
+            filterChangelog();
+        }
+
+        // Service Worker Offline Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js', { scope: '../' })
+                    .then(reg => {
+                        console.log('[ZevSafe PWA] SW registered on changelog page.');
+                        window.addEventListener('online', () => reg.update().catch(() => {}));
+                        setInterval(() => reg.update().catch(() => {}), 10 * 60 * 1000);
+                    })
+                    .catch(err => console.warn('[ZevSafe PWA] SW registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

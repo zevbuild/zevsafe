@@ -17,6 +17,7 @@ const SHELL_ASSETS = [
     './',
     './index.html',
     './how-to-use-zevsafe/index.html',
+    './change-log/index.html',
     './styles.css',
     './app.js',
     './jszip.min.js',
