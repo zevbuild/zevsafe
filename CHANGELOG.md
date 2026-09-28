@@ -1,9 +1,12 @@
 # Changelog
 
-## Version 6 — September 27, 2026 *(in progress)*
-> 🚧 Upcoming — features and fixes will be listed here as they land.
-
-- <!-- TODO: describe new features here -->
+## Version 6 — September 28, 2026
+- Mobile Micro-Hero (`styles.css`): Replaced hidden mobile hero with a sleek, compact micro-hero displaying the privacy badge, responsive title, and two-line clamped tagline so mobile visitors retain immediate context and orientation.
+- Glassmorphic Specular Card Elevation (`styles.css`): Added specular top highlights and tuned hover glows to primary encryption and decryption vault cards for greater visual depth.
+- Light Theme Dark Surface Contrast Fixes (`styles.css`): Scoped high-contrast light typography and controls to modals, cinema player deck, telemetry HUD, and progress panels, preventing contrast inversion under light theme.
+- Decrypted Vault Explorer Breadcrumbs & Empty Size Pill Suppression (`styles.css`, `index.html`): Added breadcrumbs navigation bar and eliminated awkward empty pill artifacts on 0-byte items.
+- Cinema Player Mobile Control Deck (`styles.css`): Optimized control buttons, scrubbers, and time counters for small screen viewports.
+- PWA Service Worker Cache Sync: Bumped cache to `v26` (`WEB-VERSION-26`).
 
 ---
 
