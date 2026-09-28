@@ -1432,16 +1432,6 @@ btnEncrypt.addEventListener('click', async () => {
             log('🔒 v3 STREAM AEAD mode: PBKDF2-SHA512 (600k rounds) · 4 MB Chunks · AES-256-GCM · Peak RAM < 150 MB' + (v2KeyfileEncrypt ? ' · Keyfile active' : ''), 'info');
             updateProgress('Initializing streaming engine...', 5);
 
-            let keyfileBytes = null;
-            if (v2KeyfileEncrypt) {
-                log('🗝️ Hashing keyfile (SHA-256)...', 'info');
-                keyfileBytes = await hashKeyfile(v2KeyfileEncrypt);
-                recoveryRecord.keyfileRequired = true;
-                recoveryRecord.keyfileName = v2KeyfileEncrypt.name;
-                recoveryRecord.keyfileFingerprint = bytesToHex(keyfileBytes);
-                log('Keyfile hash mixed into key material.', 'info');
-            }
-
             const filename = `${selectedEncryptFolderName}.zev`;
             recoveryRecord.vaultFilename = filename;
             recoveryRecord.version = 'v3 streaming (5 GB)';
@@ -1457,6 +1447,23 @@ btnEncrypt.addEventListener('click', async () => {
                         return;
                     }
                     console.warn('[StreamSaver] Fallback to buffered sink:', sErr);
+                }
+            }
+
+            let keyfileBytes = null;
+            if (v2KeyfileEncrypt) {
+                try {
+                    log('🗝️ Hashing keyfile (SHA-256)...', 'info');
+                    keyfileBytes = await hashKeyfile(v2KeyfileEncrypt);
+                    recoveryRecord.keyfileRequired = true;
+                    recoveryRecord.keyfileName = v2KeyfileEncrypt.name;
+                    recoveryRecord.keyfileFingerprint = bytesToHex(keyfileBytes);
+                    log('Keyfile hash mixed into key material.', 'info');
+                } catch (kfErr) {
+                    if (streamWriter && typeof streamWriter.abort === 'function') {
+                        try { await streamWriter.abort(kfErr); } catch (_) {}
+                    }
+                    throw kfErr;
                 }
             }
 

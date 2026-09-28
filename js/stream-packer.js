@@ -610,10 +610,8 @@
             return new ReadableStream({ start(ctrl) { ctrl.close(); } });
         }
 
-        let rawSource = file.stream;
-        if (typeof rawSource === 'function') {
-            rawSource = rawSource();
-        }
+        // Invoke file.stream() as a bound method on `file` so Web IDL Blob/File instances preserve `this`
+        let rawSource = typeof file.stream === 'function' ? file.stream() : file.stream;
 
         if (rawSource && typeof rawSource.getReader === 'function') {
             return rawSource;
@@ -636,6 +634,20 @@
             }
             return new ReadableStream({
                 start(controller) {
+                    if (u8.byteLength > 0) {
+                        controller.enqueue(u8);
+                    }
+                    controller.close();
+                }
+            });
+        }
+
+        // Fallback for Blob/File environments that expose .arrayBuffer() without .stream()
+        if (typeof file.arrayBuffer === 'function') {
+            return new ReadableStream({
+                async pull(controller) {
+                    const ab = await file.arrayBuffer();
+                    const u8 = new Uint8Array(ab);
                     if (u8.byteLength > 0) {
                         controller.enqueue(u8);
                     }
@@ -670,7 +682,8 @@
 
         for (let fileIdx = 0; fileIdx < files.length; fileIdx++) {
             const file = files[fileIdx];
-            const sanitizedName = sanitizeZipPath(file.name || `file_${fileIdx + 1}`);
+            const rawFilePath = file.relativeDir || file.webkitRelativePath || file.path || file.name || `file_${fileIdx + 1}`;
+            const sanitizedName = sanitizeZipPath(rawFilePath);
 
             // Adaptive compression decision:
             // 1. If file.size is known to be 0: use STORE (0 bytes payload)

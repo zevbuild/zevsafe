@@ -1186,6 +1186,52 @@ async function runAndroidEncryptionTests() {
         assert.deepStrictEqual(recordedTiers, [StreamSaverAdapter.TIER_3_OPFS, StreamSaverAdapter.TIER_4_FALLBACK]);
     });
 
+    await runTest('6.19: Native Web IDL File/Blob objects with strict this-binding on .stream() and 2FA keyfile encrypt & extract round-trip', async () => {
+        const nativeFile = new File(['Native Web IDL Blob stream payload for ZevSafe v3'], 'Raju.txt', {
+            type: 'text/plain',
+            lastModified: Date.now()
+        });
+        nativeFile.relativeDir = 'Raju/Raju.txt';
+        const nativeKeyfile = new File(['2fa-secret-keyfile-material'], 'raju.key');
+
+        const mockOPFS = createMockOPFS();
+        const streamWriter = await StreamSaverAdapter.createStreamWriter('Raju.zev', nativeFile.size, {
+            tier: StreamSaverAdapter.TIER_3_OPFS,
+            getDirectory: mockOPFS.getDirectory
+        });
+
+        await new Promise((resolve, reject) => {
+            WorkerBridge.startEncryption({
+                files: [nativeFile],
+                password: 'RajuPassword123',
+                keyfile: nativeKeyfile,
+                options: {
+                    writable: streamWriter,
+                    iterations: 1000,
+                    useShim: true
+                },
+                onComplete: resolve,
+                onError: reject
+            });
+        });
+
+        const vaultBytes = new Uint8Array(await streamWriter.resultFile.arrayBuffer());
+        const header = await StreamUnpacker.parseVaultHeader(vaultBytes);
+        assert.strictEqual(header.version, 3);
+        assert.strictEqual(header.hasKeyfile, true);
+
+        const rawKfBytes = new Uint8Array(await nativeKeyfile.arrayBuffer());
+        const manifest = await StreamUnpacker.readVaultManifest(vaultBytes, 'RajuPassword123', rawKfBytes, { iterations: 1000 });
+        assert.strictEqual(manifest.files.length, 1);
+        assert.strictEqual(manifest.files[0].path, 'Raju/Raju.txt');
+
+        const extracted = await StreamUnpacker.extractSingleFile(vaultBytes, 'RajuPassword123', manifest.files[0], {
+            keyfileBytes: rawKfBytes,
+            iterations: 1000
+        });
+        assert.strictEqual(new TextDecoder().decode(extracted), 'Native Web IDL Blob stream payload for ZevSafe v3');
+    });
+
     console.log(`\n===============================================================`);
     console.log(`  ANDRIOD ENCRYPTION TEST RESULTS: ${passedTests}/${totalTests} PASSED (100%)`);
     console.log(`  ALL ANDROID ENCRYPTION REGRESSION TESTS PASSED.`);

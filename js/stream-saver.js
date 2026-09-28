@@ -105,12 +105,12 @@
         } else if (t1 && !android && !ios) {
             // Desktop Chrome/Edge/Opera: direct FileSystem Access API
             recommendedTier = TIER_1_FSA;
-        } else if (t2 && !android && !ios) {
-            // Firefox/Safari Desktop: ServiceWorker synthetic download intercept
-            recommendedTier = TIER_2_SW;
         } else if (t3) {
-            // Browsers with OPFS support
+            // Browsers with OPFS support (Firefox/Safari/Chrome when FSA unavailable)
             recommendedTier = TIER_3_OPFS;
+        } else if (t2 && !android && !ios) {
+            // ServiceWorker stream fallback
+            recommendedTier = TIER_2_SW;
         }
 
         return {
@@ -140,7 +140,8 @@
             }];
         }
 
-        const pickerFn = (options.picker) || (typeof window !== 'undefined' && window.showSaveFilePicker);
+        const win = options.window || (typeof window !== 'undefined' ? window : null);
+        const pickerFn = options.picker || (win && typeof win.showSaveFilePicker === 'function' ? win.showSaveFilePicker.bind(win) : null);
         if (!pickerFn) {
             throw new Error('FileSystem Access API (showSaveFilePicker) is not supported in this environment');
         }
@@ -228,16 +229,7 @@
             size: expectedSize || 0
         }, [channel.port2]);
 
-        // 2. Trigger browser download via hidden iframe
         let iframe = null;
-        if (typeof document !== 'undefined' && document.createElement) {
-            iframe = document.createElement('iframe');
-            iframe.hidden = true;
-            iframe.style.display = 'none';
-            iframe.src = `/_stream_download?filename=${encodeURIComponent(cleanName)}&id=${downloadId}`;
-            document.body.appendChild(iframe);
-        }
-
         let isClosed = false;
         let pendingAckResolve = null;
         let pendingAckReject = null;
@@ -329,16 +321,16 @@
                 if (isClosed) return;
                 isClosed = true;
 
-                // Stream assembled chunks with header to Service Worker
+                // Stream assembled chunks with finalized header to Service Worker port
                 for (const c of chunks) {
                     await new Promise((resolve, reject) => {
                         let timer = setTimeout(() => {
-                            if (pendingAckResolve === resolve) {
+                            if (pendingAckResolve) {
                                 pendingAckResolve = null;
                                 pendingAckReject = null;
                                 resolve();
                             }
-                        }, 5000);
+                        }, 50);
                         pendingAckResolve = () => { clearTimeout(timer); resolve(); };
                         pendingAckReject = (err) => { clearTimeout(timer); reject(err); };
                         try {
@@ -351,10 +343,28 @@
 
                 channel.port1.postMessage({ type: 'DONE' });
                 if (typeof Blob !== 'undefined') {
-                    stream.resultBlob = new Blob(chunks, { type: 'application/octet-stream' });
-                }
-                if (iframe) {
-                    setTimeout(() => { try { iframe.remove(); } catch (_) {} }, 5000);
+                    const ext = cleanName.toLowerCase().split('.').pop();
+                    const mimeType = ext === 'zip' ? 'application/zip' : 'application/octet-stream';
+                    const blob = new Blob(chunks, { type: mimeType });
+                    stream.resultBlob = blob;
+
+                    if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function' && typeof document !== 'undefined' && document.createElement) {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = cleanName;
+                        const container = document.body || document.documentElement;
+                        if (container) {
+                            container.appendChild(a);
+                            a.click();
+                            container.removeChild(a);
+                        }
+                        const cleanTimer = setTimeout(() => {
+                            try { URL.revokeObjectURL(url); } catch (_) {}
+                        }, 60000);
+                        if (cleanTimer && typeof cleanTimer.unref === 'function') cleanTimer.unref();
+                    }
                 }
             },
             async abort(reason) {
