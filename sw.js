@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v27';
+const APP_VERSION    = 'v29';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
 const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
@@ -23,10 +23,14 @@ const SHELL_ASSETS = [
     './jszip.min.js',
     './manifest.json',
     './zevsafe-logo.png',
+    './zevsafe-logo.webp',
     './favicon.svg',
     './icon-192.png',
+    './icon-192.webp',
     './icon-512.png',
+    './icon-512.webp',
     './zevsafe-og.png',
+    './zevsafe-og.webp',
     './js/stream-crypto.js',
     './js/stream-packer.js',
     './js/stream-unpacker.js',

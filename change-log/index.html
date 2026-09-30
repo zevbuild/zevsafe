@@ -666,7 +666,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v6.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v6.2</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -692,7 +692,7 @@
             </div>
             <div class="cl-filter-chips" role="group" aria-label="Filter by version">
                 <button type="button" class="cl-chip active" data-filter="all">All Releases</button>
-                <button type="button" class="cl-chip" data-filter="v6">v6 (Current)</button>
+                <button type="button" class="cl-chip" data-filter="v6">v6.x (Current)</button>
                 <button type="button" class="cl-chip" data-filter="v5">v5.x (Streaming)</button>
                 <button type="button" class="cl-chip" data-filter="v4">v4 (FSA &amp; D&amp;D)</button>
                 <button type="button" class="cl-chip" data-filter="v3">v3 (.zev Format)</button>
@@ -704,14 +704,97 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 6 ── -->
+            <!-- ── VERSION 6.2 ── -->
             <article class="cl-card cl-card--latest" data-version="v6">
+                <div class="cl-marker">⚡</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.2</h2>
+                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
+                            <span class="cl-badge cl-badge--date">September 30, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Perf</span>
+                            <span class="cl-tag">Asset Compression</span>
+                            <span class="cl-tag">WebP</span>
+                            <span class="cl-tag">PWA v29</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Comprehensive Image &amp; Logo Compression (57%+ Reduction):</strong> Optimized and compressed all static image assets in-place across the application. <code>zevsafe-og.png</code> reduced from 257 KB down to 40.4 KB (84.2% reduction); <code>icon-192.png</code> compressed from 77 KB down to 10.7 KB (86% reduction); <code>icon-512.png</code> optimized from 435 KB to 276 KB lossless; and <code>zevsafe-logo.png</code> compressed by 48.4% to 20.5 KB progressive. Total web asset payload slashed by over 461 KB for lightning-fast page loading.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Next-Gen WebP Asset Generation &amp; PWA Manifest Integration:</strong> Generated ultra-lightweight WebP image variants (<code>icon-512.webp</code> at 26.6 KB [93.8% smaller], <code>icon-192.webp</code> at 7.3 KB [90.4% smaller], <code>zevsafe-logo.webp</code> at 16.3 KB, and <code>zevsafe-og.webp</code> at 42.0 KB). Integrated WebP icons directly into <code>manifest.json</code> for instant PWA installation and faster home-screen badge caching.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Vector Favicon Minification:</strong> Minified <code>favicon.svg</code> to strip redundant whitespace and comments, streamlining browser tab icon transfer.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v29</code> (<code>WEB-VERSION-29</code>) and updated <code>SHELL_ASSETS</code> in <code>sw.js</code> to precache all optimized PNG and WebP assets.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 6.1 ── -->
+            <article class="cl-card" data-version="v6">
+                <div class="cl-marker">📱</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.1</h2>
+                            <span class="cl-badge cl-badge--date">September 30, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Mobile UX</span>
+                            <span class="cl-tag">Auto-Hide</span>
+                            <span class="cl-tag">PWA v28</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Mobile Hero Section Auto-Hide:</strong> Automatically hides the top hero banner section (<code>&lt;header class="hero"&gt;</code>) on mobile viewports (&le; 600px), eliminating vertical viewport clutter and bringing the encryption/decryption vault drop-zones and controls directly to the top of the mobile screen.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Auto-Hiding Mobile Top Header &amp; Logo on Scroll:</strong> Added smart, hardware-accelerated scroll-direction tracking with <code>requestAnimationFrame</code> debouncing for mobile viewports (&le; 820px). When scrolling down, the top navigation bar and brand logo smoothly slide out of view (<code>translateY(-110%)</code>) to grant maximum screen real estate to the vault; scrolling up or reaching the top instantly slides the header and logo back into view.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v28</code> (<code>WEB-VERSION-28</code>).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 6.0 ── -->
+            <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🎨</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 6.0</h2>
-                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
                             <span class="cl-badge cl-badge--date">September 28, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1146,6 +1229,45 @@
             });
             filterChangelog();
         }
+
+        // Auto-hide header and logo on mobile scroll down
+        (function() {
+            const navbar = document.querySelector('.navbar');
+            if (!navbar) return;
+            let lastScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0);
+            let ticking = false;
+            const SCROLL_THRESHOLD = 8;
+            const TOP_THRESHOLD = 30;
+
+            function onScroll() {
+                const currentScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0);
+                if (window.innerWidth <= 820) {
+                    const diff = currentScrollY - lastScrollY;
+                    if (currentScrollY <= TOP_THRESHOLD) {
+                        navbar.classList.remove('navbar--hidden');
+                    } else if (diff > SCROLL_THRESHOLD) {
+                        navbar.classList.add('navbar--hidden');
+                    } else if (diff < -SCROLL_THRESHOLD) {
+                        navbar.classList.remove('navbar--hidden');
+                    }
+                } else {
+                    navbar.classList.remove('navbar--hidden');
+                }
+                lastScrollY = currentScrollY;
+                ticking = false;
+            }
+
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(onScroll);
+                    ticking = true;
+                }
+            }, { passive: true });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 820) navbar.classList.remove('navbar--hidden');
+            }, { passive: true });
+        })();
 
         // Service Worker Offline Registration
         if ('serviceWorker' in navigator) {

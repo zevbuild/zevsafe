@@ -1,5 +1,20 @@
 # Changelog
 
+## Version 6.2 — September 30, 2026
+- `Perf` (`zevsafe-og.png`, `icon-192.png`, `icon-512.png`, `zevsafe-logo.png`): High-efficiency compression of all brand images and logos in-place, slashing image transfer size from 809 KB to 348 KB (57%+ reduction) for lightning-fast first paint and instant offline PWA caching.
+- `New` (`zevsafe-logo.webp`, `icon-192.webp`, `icon-512.webp`, `zevsafe-og.webp`, `manifest.json`): Generated modern next-generation WebP variants and integrated them into PWA `manifest.json` (`icon-512.webp` at 26.6 KB [93.8% smaller], `icon-192.webp` at 7.3 KB [90.4% smaller]).
+- `Perf` (`favicon.svg`): Minified vector SVG favicon, stripping whitespace and comments.
+- `PWA` (`sw.js`, `index.html`, `change-log/index.html`): Bumped Service Worker offline shell cache to `v29` and synchronized release indicators to `WEB-VERSION-29`.
+
+---
+
+## Version 6.1 — September 30, 2026
+- `UI` (`styles.css`): Auto-hide hero section (`<header class="hero">`) on mobile screens (≤ 600px) to maximize vertical viewport space, bringing vault controls and drop-zones immediately to the top of mobile devices.
+- `UI` (`styles.css`, `app.js`, `change-log/index.html`, `how-to-use-zevsafe/index.html`): Added auto-hiding top header and brand logo on mobile scroll down (≤ 820px) with `requestAnimationFrame` debounced scroll-direction tracking and smooth hardware-accelerated slide transitions (`translateY(-110%)`); smoothly reappears when scrolling up or near the top.
+- `PWA` (`sw.js`, `index.html`, `change-log/index.html`): Bumped Service Worker offline shell cache to `v28` and synchronized app release badges to `WEB-VERSION-28`.
+
+---
+
 ## Version 6 — September 28, 2026
 - Mobile Micro-Hero (`styles.css`): Replaced hidden mobile hero with a sleek, compact micro-hero displaying the privacy badge, responsive title, and two-line clamped tagline so mobile visitors retain immediate context and orientation.
 - Glassmorphic Specular Card Elevation (`styles.css`): Added specular top highlights and tuned hover glows to primary encryption and decryption vault cards for greater visual depth.

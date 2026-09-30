@@ -223,8 +223,57 @@ window.addEventListener('resize', () => {
     }
 });
 
+// Auto-hide header and logo on mobile scroll down
+function initMobileAutoHideNavbar() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+
+    let lastScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0);
+    let ticking = false;
+    const SCROLL_THRESHOLD = 8;
+    const TOP_THRESHOLD = 30;
+
+    function onScroll() {
+        const currentScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0);
+
+        if (window.innerWidth <= 820) {
+            const diff = currentScrollY - lastScrollY;
+
+            if (currentScrollY <= TOP_THRESHOLD) {
+                // Near top of page: always keep visible
+                navbar.classList.remove('navbar--hidden');
+            } else if (diff > SCROLL_THRESHOLD) {
+                // Scrolling down: auto-hide header and logo
+                navbar.classList.add('navbar--hidden');
+            } else if (diff < -SCROLL_THRESHOLD) {
+                // Scrolling up: smoothly reveal header and logo
+                navbar.classList.remove('navbar--hidden');
+            }
+        } else {
+            navbar.classList.remove('navbar--hidden');
+        }
+
+        lastScrollY = currentScrollY;
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(onScroll);
+            ticking = true;
+        }
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 820) {
+            navbar.classList.remove('navbar--hidden');
+        }
+    }, { passive: true });
+}
+
 // Run on load
 initDeviceUI();
+initMobileAutoHideNavbar();
 
 // ============================================
 // SHOW / HIDE PASSWORD TOGGLE
