@@ -719,6 +719,7 @@
                             <span class="cl-tag">New</span>
                             <span class="cl-tag">Android APK</span>
                             <span class="cl-tag">Native App</span>
+                            <span class="cl-tag">Fix</span>
                             <span class="cl-tag">UI</span>
                             <span class="cl-tag">PWA v31</span>
                         </div>
@@ -728,6 +729,12 @@
                             <span class="cl-item-bullet cl-bullet--new">New</span>
                             <div class="cl-item-text">
                                 <strong>Dedicated Native Android App Release:</strong> Launched the official native companion application for Android (<a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener"><code>com.zevbuild.zevsafe</code></a>) built with Kotlin and Jetpack Compose. Delivers complete bit-identical <code>ZV3\0</code> chunked STREAM AEAD cipher compatibility, AndroidX Media3 ExoPlayer Cinema streaming video/audio player, persistent background encryption via Android 14 <code>ForegroundService</code>, and system share sheet integration (<code>ACTION_VIEW</code>, <code>ACTION_SEND</code>, <code>ACTION_SEND_MULTIPLE</code>). Pre-built APKs are available directly on GitHub Releases.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Android FileProvider Authority &amp; Automatic Downloads Saving:</strong> Synchronized dynamic <code>${applicationId}.fileprovider</code> authority across <code>AndroidManifest.xml</code> and share screens, wrapped completion callbacks on <code>Dispatchers.Main</code>, and added automatic saving of encrypted <code>.zev</code> vaults and exported <code>.zip</code> archives directly to the device's <code>Downloads</code> folder via <code>MediaStore.Downloads</code>.
                             </div>
                         </div>
                         <div class="cl-item">
