@@ -1,8 +1,9 @@
 # ZevSafe AI Agent Rules
 
 CRITICAL: Whenever you modify, add, refactor, or delete ANY file or code in this repository:
-1. Update `CHANGELOG.md` with the new changes under the appropriate version.
-2. Update `change-log/index.html` to mirror the changelog on the live web portal.
-3. Update `README.md` (version badge, current stable release banner, features table).
-4. Synchronize `sw.js` (APP_VERSION) and `index.html` (WEB-VERSION badge) if app files were modified.
-5. Verify all tests pass: `node test/test-android-encryption.js` and `node test/test-integration-m5.js`.
+1. Update `PROJECT_MEMORY.md` (and `../app-zevsafe/PROJECT_MEMORY.md` + `../app-zevsafe/PROJECT-MEMORY/` if Android code is touched) so any AI agent can immediately understand the project architecture and current state.
+2. Update `CHANGELOG.md` with the new changes under the appropriate version.
+3. Update `change-log/index.html` to mirror the changelog on the live web portal.
+4. Update `README.md` (version badge, current stable release banner, features table).
+5. Synchronize `sw.js` (APP_VERSION) and `index.html` (WEB-VERSION badge) if app files were modified.
+6. Verify all tests pass: `node test/test-android-encryption.js` and `node test/test-integration-m5.js`.

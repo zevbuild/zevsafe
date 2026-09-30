@@ -1,12 +1,15 @@
 # 🤖 Gemini / Antigravity Agent Guidelines for ZevSafe
 
 > **CRITICAL RULE FOR ALL AI AGENTS (Antigravity, Cursor, Windsurf, Claude, Copilot, etc.)**:
-> Whenever you modify, add, refactor, or delete ANY file or code in this repository (features, bug fixes, UI/UX improvements, crypto changes, streaming updates, styling, or scripts), you **MUST AUTOMATICALLY UPDATE BOTH THE CHANGELOG AND THE README BEFORE COMPLETING YOUR TASK.**
-> Never finish a task or prompt without completing this documentation sync.
+> Whenever you modify, add, refactor, or delete ANY file or code in this repository (features, bug fixes, UI/UX improvements, crypto changes, streaming updates, styling, or scripts), you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` BEFORE COMPLETING YOUR TASK.**
+> Never finish a task or prompt without completing this Project Memory and documentation sync so that any AI agent can immediately understand the project.
 
 ---
 
 ## 📋 Mandatory Rules When Changing Anything
+
+### 0. Update `PROJECT_MEMORY.md` (and `../app-zevsafe/PROJECT_MEMORY.md` if Android is touched)
+- Keep [`PROJECT_MEMORY.md`](./PROJECT_MEMORY.md) (and [`../app-zevsafe/PROJECT-MEMORY/`](../app-zevsafe/PROJECT-MEMORY/) when modifying Android features) synchronized with all architectural, cryptographic, UI, or version updates so any AI agent has complete context.
 
 ### 1. Update `CHANGELOG.md`
 - Add an entry under the current active version section (or create a new version section if bumping the release).
