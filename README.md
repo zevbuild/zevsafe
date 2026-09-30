@@ -3,17 +3,18 @@
 > **by [zevbuild](https://github.com/zevbuild) · Encrypt and decrypt files and entire folders directly in your browser — zero uploads, zero tracking, 100% private & offline.**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Cloudflare%20Pages-8b5cf6?style=for-the-badge&logo=cloudflare)](https://zevsafe.pages.dev)
+[![Android APK](https://img.shields.io/badge/Android%20APK-Download%20v6.3.0-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/zevbuild/app-zevsafe/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)](LICENSE)
 [![Security: AES-256-GCM](https://img.shields.io/badge/Security-AES--256--GCM-ef4444?style=for-the-badge)](#-cryptography)
 [![KDF: PBKDF2-SHA512](https://img.shields.io/badge/KDF-PBKDF2--SHA512%20(600k)-3b82f6?style=for-the-badge)](#-cryptography)
-[![PWA: Installable](https://img.shields.io/badge/PWA-Installable-8b5cf6?style=for-the-badge)](#-pwa--install-as-an-app)
+[![PWA: Installable](https://img.shields.io/badge/PWA-Installable-8b5cf6?style=for-the-badge)](#-pwa--install-as-an-offline-app)
 [![100% Offline](https://img.shields.io/badge/Mode-100%25%20Offline-f59e0b?style=for-the-badge)](#)
-[![Release: v6.3 / WEB-VERSION-30](https://img.shields.io/badge/Release-v6.3%20(WEB--VERSION--30)-06b6d4?style=for-the-badge)](CHANGELOG.md)
+[![Release: v6.3 / WEB-VERSION-31](https://img.shields.io/badge/Release-v6.3%20(WEB--VERSION--31)-06b6d4?style=for-the-badge)](CHANGELOG.md)
 
 ---
 
-> 🟢 **Current stable release — v6.3 (`.zev` format / WEB-VERSION-30):** military-grade security by default with 5 GB low-RAM streaming.  
-> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · 4 MB Chunked AES-256-GCM (`ZV3\0`) · optional keyfile 2FA · Instant <100ms Vault Explorer with breadcrumbs · Cinema Media Player · 5 GB mobile & desktop streaming (<150 MB RAM) · Universal auto-hiding header & logo across all browsers & devices · Ultra-lightweight WebP & compressed asset engine.**
+> 🟢 **Current stable release — v6.3 (`.zev` format / WEB-VERSION-31):** military-grade security by default with 5 GB low-RAM streaming and dedicated native Android APK (`com.zevbuild.zevsafe`).  
+> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · 4 MB Chunked AES-256-GCM (`ZV3\0`) · optional keyfile 2FA · Instant <100ms Vault Explorer with breadcrumbs · Cinema Media Player · 5 GB mobile & desktop streaming (<150 MB RAM) · Dedicated native Android app with ForegroundService & ExoPlayer · Universal auto-hiding header & logo across all browsers & devices · Ultra-lightweight WebP & compressed asset engine.**
 
 ---
 
@@ -48,11 +49,12 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | 🎬 **In-Browser Cinema Media Player** | Direct playback for decrypted video (`.mp4`, `.mov`, `.webm`, `.mkv`) and audio (`.mp3`, `.wav`, `.ogg`, `.flac`, `.aac`) with zero disk writes. |
 | 🎛️ **Advanced Cinema Controls** | Variable playback speed (0.5×–2.0×), ±10s scrubbing, track navigation, Picture-in-Picture (PiP), fullscreen, and "New Tab" streaming. |
 | 📦 **Smart Adaptive Compression** | Instant `STORE` mode for pre-compressed media/archives + streaming `DEFLATE` for compressible documents/code. |
+| 🤖 **Dedicated Native Android App** | Companion Android application ([`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe/releases/latest)) in Kotlin & Jetpack Compose with bit-identical v3 streaming encryption, AndroidX Media3 Cinema player, and background `ForegroundService`. |
 | 💻 **1-Click PC Setup (25+ GB)** | Includes Windows batch launchers (`Encrypt-Vault.bat`, `Decrypt-Vault.bat`) and streaming PowerShell scripts for zero-RAM 25 GB–100 GB+ datasets. |
 | 📊 **3-Stage 60 FPS Pipeline Tracker** | Visual progress pills (`Compress` → `Encrypt/Decrypt` → `Save`) with live throughput telemetry (MB/s, ETA, elapsed time). |
 | 🌐 **Universal Auto-Hiding Header & Logo** | Auto-hides sticky navbar and logo on downward scroll across all desktop, tablet, and mobile browsers with 60 FPS hardware-accelerated transitions to maximize screen workspace. |
 | ⚡ **Optimized WebP & Compressed Assets** | All brand icons, OG social images, and logos compressed in-place (57%+ payload reduction) with next-gen WebP support for high-speed loading. |
-| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v30`), auto-updating in background, fully functional offline. |
+| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v31`), auto-updating in background, fully functional offline. |
 | 📜 **Interactive Changelog Portal** | Dedicated in-app and web release notes page ([`change-log/`](https://zevsafe.pages.dev/change-log/)) with live filtering and search across all releases. |
 
 ---
@@ -209,6 +211,7 @@ Because ZevSafe performs all compression, key derivation, and cryptographic tran
 |---|---|---|
 | **Desktop (Chrome, Edge, Firefox, Brave)** | **Up to ~5 GB+** | In-Browser Web App (Zero-Copy Architecture) |
 | **Mobile (Android Chrome, iOS Safari)** | **Up to ~2.5 GB** | In-Browser Web App / PWA |
+| **Android Dedicated Native App** | **Multi-GB (Bounded Heap < 150 MB)** | **[Native Android APK](https://github.com/zevbuild/app-zevsafe/releases/latest)** |
 | **Large Datasets (25 GB – 100 GB+)** | **Unlimited (Zero-RAM Streaming)** | **1-Click PC Setup** (`Encrypt-Vault.bat` / PowerShell) |
 
 ### Need to Encrypt 25 GB to 100 GB+?
@@ -216,6 +219,21 @@ For massive datasets that exceed browser JavaScript heap allocations:
 1. Click **💻 PC Setup (25+ GB)** in the navigation bar to download the pre-configured Windows toolkit.
 2. Drag and drop any folder onto **`Encrypt-Vault.bat`** (or drag a `.zev` file onto **`Decrypt-Vault.bat`**).
 3. The PowerShell streaming engine (`encrypt.ps1` / `decrypt.ps1`) processes data chunk-by-chunk with **zero RAM footprint**, matching the exact v2 standard format.
+
+---
+
+## 🤖 Dedicated Android Native App (`app-zevsafe`)
+
+For Android users requiring background encryption, system file manager associations, and native hardware media playback, ZevSafe provides an official native Kotlin Android application:
+
+- 📦 **Releases & APK Downloads:** [https://github.com/zevbuild/app-zevsafe/releases/latest](https://github.com/zevbuild/app-zevsafe/releases/latest)
+  - **Release APK:** [`ZevSafe-release.apk`](https://github.com/zevbuild/app-zevsafe/releases/download/v6.3.0/ZevSafe-release.apk)
+  - **Debug APK:** [`ZevSafe-debug.apk`](https://github.com/zevbuild/app-zevsafe/releases/download/v6.3.0/ZevSafe-debug.apk)
+- 🔒 **100% Zero-Knowledge & Client-Side:** No internet permissions requested, zero network analytics, and zero plaintext file caching on disk during playback.
+- ⚡ **Full `ZV3\0` STREAM AEAD Compatibility:** Interoperates with vaults created in the browser or via desktop PowerShell toolkits.
+- 🎬 **ExoPlayer Cinema Media Player:** In-app streaming playback for multi-GB encrypted video and audio directly through AndroidX Media3 without temporary disk extraction.
+- ⚙️ **Persistent Background ForegroundService:** Lock multi-GB archives in the background with persistent notification progress, live speed telemetry, and wake-lock protection.
+- 📲 **System Share Sheet & File Integration:** Open `.zev` files directly from any file manager (`ACTION_VIEW`) or encrypt files/folders straight from Android's share menu (`ACTION_SEND`).
 
 ---
 
