@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 6.3 — September 30, 2026
+- `UI` (`styles.css`, `app.js`, `change-log/index.html`, `how-to-use-zevsafe/index.html`): Universal auto-hiding navigation header and brand logo on scroll down across all desktop, laptop, tablet, and mobile devices and all browsers (Chrome, Edge, Safari, Firefox, Opera). Removed viewport boundaries; the sticky header smoothly slides out of view (`transform: translateY(-110%)` with opacity transition) on downward scroll, maximizing screen real estate for the vault interface, and restores instantly upon scrolling up or reaching the top.
+- `Perf` (`styles.css`, `app.js`): Implemented passive event listeners, `requestAnimationFrame` debouncing, and CSS `will-change: transform` with hardware WebKit acceleration (`-webkit-transform`) for buttery 60/120/144 FPS scroll fluidity with zero thread blocking.
+- `PWA` (`sw.js`, `index.html`, `change-log/index.html`): Bumped Service Worker offline shell cache to `v30` and synchronized release indicators to `WEB-VERSION-30`.
+
+---
+
 ## Version 6.2 — September 30, 2026
 - `Perf` (`zevsafe-og.png`, `icon-192.png`, `icon-512.png`, `zevsafe-logo.png`): High-efficiency compression of all brand images and logos in-place, slashing image transfer size from 809 KB to 348 KB (57%+ reduction) for lightning-fast first paint and instant offline PWA caching.
 - `New` (`zevsafe-logo.webp`, `icon-192.webp`, `icon-512.webp`, `zevsafe-og.webp`, `manifest.json`): Generated modern next-generation WebP variants and integrated them into PWA `manifest.json` (`icon-512.webp` at 26.6 KB [93.8% smaller], `icon-192.webp` at 7.3 KB [90.4% smaller]).

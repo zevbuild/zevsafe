@@ -8,12 +8,12 @@
 [![KDF: PBKDF2-SHA512](https://img.shields.io/badge/KDF-PBKDF2--SHA512%20(600k)-3b82f6?style=for-the-badge)](#-cryptography)
 [![PWA: Installable](https://img.shields.io/badge/PWA-Installable-8b5cf6?style=for-the-badge)](#-pwa--install-as-an-app)
 [![100% Offline](https://img.shields.io/badge/Mode-100%25%20Offline-f59e0b?style=for-the-badge)](#)
-[![Release: v6.2 / WEB-VERSION-29](https://img.shields.io/badge/Release-v6.2%20(WEB--VERSION--29)-06b6d4?style=for-the-badge)](CHANGELOG.md)
+[![Release: v6.3 / WEB-VERSION-30](https://img.shields.io/badge/Release-v6.3%20(WEB--VERSION--30)-06b6d4?style=for-the-badge)](CHANGELOG.md)
 
 ---
 
-> 🟢 **Current stable release — v6.2 (`.zev` format / WEB-VERSION-29):** military-grade security by default with 5 GB low-RAM streaming.  
-> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · 4 MB Chunked AES-256-GCM (`ZV3\0`) · optional keyfile 2FA · Instant <100ms Vault Explorer with breadcrumbs · Cinema Media Player · 5 GB mobile & desktop streaming (<150 MB RAM) · Mobile auto-hiding header & logo on scroll · Ultra-lightweight WebP & compressed asset engine.**
+> 🟢 **Current stable release — v6.3 (`.zev` format / WEB-VERSION-30):** military-grade security by default with 5 GB low-RAM streaming.  
+> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · 4 MB Chunked AES-256-GCM (`ZV3\0`) · optional keyfile 2FA · Instant <100ms Vault Explorer with breadcrumbs · Cinema Media Player · 5 GB mobile & desktop streaming (<150 MB RAM) · Universal auto-hiding header & logo across all browsers & devices · Ultra-lightweight WebP & compressed asset engine.**
 
 ---
 
@@ -50,9 +50,9 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | 📦 **Smart Adaptive Compression** | Instant `STORE` mode for pre-compressed media/archives + streaming `DEFLATE` for compressible documents/code. |
 | 💻 **1-Click PC Setup (25+ GB)** | Includes Windows batch launchers (`Encrypt-Vault.bat`, `Decrypt-Vault.bat`) and streaming PowerShell scripts for zero-RAM 25 GB–100 GB+ datasets. |
 | 📊 **3-Stage 60 FPS Pipeline Tracker** | Visual progress pills (`Compress` → `Encrypt/Decrypt` → `Save`) with live throughput telemetry (MB/s, ETA, elapsed time). |
-| 📱 **Mobile Auto-Hiding Header & Logo** | Auto-hides top hero section on mobile viewports (≤ 600px) and smoothly slides sticky navbar & logo out of view on scroll down to maximize screen workspace. |
+| 🌐 **Universal Auto-Hiding Header & Logo** | Auto-hides sticky navbar and logo on downward scroll across all desktop, tablet, and mobile browsers with 60 FPS hardware-accelerated transitions to maximize screen workspace. |
 | ⚡ **Optimized WebP & Compressed Assets** | All brand icons, OG social images, and logos compressed in-place (57%+ payload reduction) with next-gen WebP support for high-speed loading. |
-| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v29`), auto-updating in background, fully functional offline. |
+| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v30`), auto-updating in background, fully functional offline. |
 | 📜 **Interactive Changelog Portal** | Dedicated in-app and web release notes page ([`change-log/`](https://zevsafe.pages.dev/change-log/)) with live filtering and search across all releases. |
 
 ---

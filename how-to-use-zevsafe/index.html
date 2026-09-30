@@ -822,7 +822,7 @@
             document.getElementById(id).classList.toggle('open');
         }
 
-        // Auto-hide header and logo on mobile scroll down
+        // Auto-hide header and logo on scroll across all browsers and devices
         (function() {
             const navbar = document.querySelector('.navbar');
             if (!navbar) return;
@@ -833,18 +833,16 @@
 
             function onScroll() {
                 const currentScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0);
-                if (window.innerWidth <= 820) {
-                    const diff = currentScrollY - lastScrollY;
-                    if (currentScrollY <= TOP_THRESHOLD) {
-                        navbar.classList.remove('navbar--hidden');
-                    } else if (diff > SCROLL_THRESHOLD) {
-                        navbar.classList.add('navbar--hidden');
-                    } else if (diff < -SCROLL_THRESHOLD) {
-                        navbar.classList.remove('navbar--hidden');
-                    }
-                } else {
+                const diff = currentScrollY - lastScrollY;
+
+                if (currentScrollY <= TOP_THRESHOLD) {
+                    navbar.classList.remove('navbar--hidden');
+                } else if (diff > SCROLL_THRESHOLD) {
+                    navbar.classList.add('navbar--hidden');
+                } else if (diff < -SCROLL_THRESHOLD) {
                     navbar.classList.remove('navbar--hidden');
                 }
+
                 lastScrollY = currentScrollY;
                 ticking = false;
             }
@@ -854,10 +852,6 @@
                     window.requestAnimationFrame(onScroll);
                     ticking = true;
                 }
-            }, { passive: true });
-
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 820) navbar.classList.remove('navbar--hidden');
             }, { passive: true });
         })();
         

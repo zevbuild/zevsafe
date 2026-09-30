@@ -223,8 +223,8 @@ window.addEventListener('resize', () => {
     }
 });
 
-// Auto-hide header and logo on mobile scroll down
-function initMobileAutoHideNavbar() {
+// Auto-hide header and logo on scroll across all browsers and devices
+function initUniversalAutoHideNavbar() {
     const navbar = document.querySelector('.navbar');
     if (!navbar) return;
 
@@ -235,21 +235,16 @@ function initMobileAutoHideNavbar() {
 
     function onScroll() {
         const currentScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0);
+        const diff = currentScrollY - lastScrollY;
 
-        if (window.innerWidth <= 820) {
-            const diff = currentScrollY - lastScrollY;
-
-            if (currentScrollY <= TOP_THRESHOLD) {
-                // Near top of page: always keep visible
-                navbar.classList.remove('navbar--hidden');
-            } else if (diff > SCROLL_THRESHOLD) {
-                // Scrolling down: auto-hide header and logo
-                navbar.classList.add('navbar--hidden');
-            } else if (diff < -SCROLL_THRESHOLD) {
-                // Scrolling up: smoothly reveal header and logo
-                navbar.classList.remove('navbar--hidden');
-            }
-        } else {
+        if (currentScrollY <= TOP_THRESHOLD) {
+            // Near top of page: always keep visible
+            navbar.classList.remove('navbar--hidden');
+        } else if (diff > SCROLL_THRESHOLD) {
+            // Scrolling down: auto-hide header and logo
+            navbar.classList.add('navbar--hidden');
+        } else if (diff < -SCROLL_THRESHOLD) {
+            // Scrolling up: smoothly reveal header and logo
             navbar.classList.remove('navbar--hidden');
         }
 
@@ -263,17 +258,11 @@ function initMobileAutoHideNavbar() {
             ticking = true;
         }
     }, { passive: true });
-
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 820) {
-            navbar.classList.remove('navbar--hidden');
-        }
-    }, { passive: true });
 }
 
 // Run on load
 initDeviceUI();
-initMobileAutoHideNavbar();
+initUniversalAutoHideNavbar();
 
 // ============================================
 // SHOW / HIDE PASSWORD TOGGLE
