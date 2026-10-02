@@ -92,17 +92,13 @@ function initDeviceUI() {
         const decryptDropText = document.querySelector('#decrypt-drop-zone .drop-primary');
         if (decryptDropText) decryptDropText.textContent = 'Tap to select .zev file';
 
-        // Show mobile tabs
-        const mobileTabs = document.getElementById('mobile-tabs');
-        if (mobileTabs) mobileTabs.style.display = 'flex';
-
-        // Default to encrypt tab on mobile
-        if (window.innerWidth <= 520) switchTab('encrypt', false);
+        // Default to encrypt tab on tablet and mobile
+        if (window.innerWidth <= 820) switchTab('encrypt', false);
     }
 }
 
 /**
- * Switch between Encrypt and Decrypt panels on mobile.
+ * Switch between Encrypt and Decrypt panels on tablet & mobile (<= 820px).
  * @param {'encrypt'|'decrypt'} tab
  * @param {boolean} animate - whether to animate the switch
  */
@@ -114,15 +110,18 @@ function switchTab(tab, animate = true) {
 
     if (!encSection || !decSection) return;
 
-    // Only switch panels on small screens; on tablet/desktop show both
-    if (window.innerWidth <= 520) {
+    // Switch panels on tablet and phone viewports; on desktop show both
+    if (window.innerWidth <= 820) {
         if (tab === 'encrypt') {
-            encSection.style.display = 'block';
+            encSection.style.display = 'flex';
             decSection.style.display = 'none';
         } else {
             encSection.style.display = 'none';
-            decSection.style.display = 'block';
+            decSection.style.display = 'flex';
         }
+    } else {
+        encSection.style.display = '';
+        decSection.style.display = '';
     }
 
     // Update top tab active state
@@ -138,6 +137,87 @@ function switchTab(tab, animate = true) {
         const target = tab === 'encrypt' ? encSection : decSection;
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+}
+
+// Window resize handler to maintain clean tab/card state across responsive transitions
+window.addEventListener('resize', () => {
+    const encSection = document.getElementById('encrypt-section');
+    const decSection = document.getElementById('decrypt-section');
+    if (!encSection || !decSection) return;
+
+    if (window.innerWidth > 820) {
+        encSection.style.display = '';
+        decSection.style.display = '';
+    } else {
+        const isDecrypt = document.getElementById('tab-decrypt')?.classList.contains('mobile-tab--active');
+        switchTab(isDecrypt ? 'decrypt' : 'encrypt', false);
+    }
+});
+
+/**
+ * Modern non-blocking glassmorphic toast notification system
+ * @param {string} message 
+ * @param {'info'|'warning'|'error'|'success'} type 
+ * @param {number} duration 
+ */
+function showToast(message, type = 'info', duration = 4000) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        container.setAttribute('aria-live', 'polite');
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-item--${type}`;
+
+    const icons = {
+        info: 'ℹ️',
+        warning: '⚠️',
+        error: '✕',
+        success: '✓'
+    };
+
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+        <div class="toast-body">${message}</div>
+        <button class="toast-close" type="button" aria-label="Dismiss notification">✕</button>
+    `;
+
+    const closeBtn = toast.querySelector('.toast-close');
+    let timer = null;
+
+    const dismiss = () => {
+        if (timer) clearTimeout(timer);
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-8px) scale(0.96)';
+        setTimeout(() => toast.remove(), 250);
+    };
+
+    closeBtn.addEventListener('click', dismiss);
+    container.appendChild(toast);
+
+    if (duration > 0) {
+        timer = setTimeout(dismiss, duration);
+    }
+}
+
+/**
+ * Shake an input element or drop zone to indicate validation failure
+ * @param {HTMLElement|string} el 
+ */
+function shakeField(el) {
+    const target = typeof el === 'string' ? document.getElementById(el) : el;
+    if (!target) return;
+    target.classList.remove('field-error-shake');
+    void target.offsetWidth; // Force reflow
+    target.classList.add('field-error-shake');
+    target.focus?.();
+    setTimeout(() => {
+        target.classList.remove('field-error-shake');
+    }, 800);
 }
 
 // ── Selection State Handlers ────────────────────────
@@ -868,7 +948,7 @@ function buildPasswordRecoveryText(record) {
 
 function downloadPasswordRecoverySheet(record = lastPasswordRecoveryRecord) {
     if (!record || !record.password) {
-        alert('No password recovery details are available yet. Encrypt a folder first.');
+        showToast('No password recovery details are available yet. Encrypt a folder first.', 'info');
         return;
     }
 
@@ -881,7 +961,7 @@ function downloadPasswordRecoverySheet(record = lastPasswordRecoveryRecord) {
 
 function printPasswordRecoverySheet(record = lastPasswordRecoveryRecord) {
     if (!record || !record.password) {
-        alert('No password recovery details are available yet. Encrypt a folder first.');
+        showToast('No password recovery details are available yet. Encrypt a folder first.', 'info');
         return;
     }
 
@@ -925,7 +1005,7 @@ function printPasswordRecoverySheet(record = lastPasswordRecoveryRecord) {
             printWindow.print();
             log(`Password recovery sheet opened for printing for "${record.folderName}".`, 'success');
         } catch (err) {
-            alert('Printing failed. Use Download Sheet and print the downloaded text file.');
+            showToast('Printing failed. Use Download Sheet and print the downloaded text file.', 'warning');
             console.error('[ZevSafe Print Recovery Sheet]', err);
         } finally {
             setTimeout(() => {
@@ -1413,7 +1493,8 @@ function isPreCompressedExtension(filename) {
 
 btnEncrypt.addEventListener('click', async () => {
     if (selectedEncryptFiles.length === 0) {
-        alert('⚠️ Please select or drop files or a folder first.');
+        shakeField('encrypt-drop-zone');
+        showToast('Please select or drop files or a folder to encrypt.', 'warning');
         return;
     }
 
@@ -1421,15 +1502,18 @@ btnEncrypt.addEventListener('click', async () => {
     const confirm  = encryptConfirm.value;
 
     if (!password) {
-        alert('⚠️ Please enter a password or PIN.');
+        shakeField('encrypt-password');
+        showToast('Please enter a password or PIN for your vault.', 'warning');
         return;
     }
     if (password.length < 4) {
-        alert('⚠️ Password must be at least 4 characters or digits long.');
+        shakeField('encrypt-password');
+        showToast('Password must be at least 4 characters or digits long.', 'warning');
         return;
     }
     if (password !== confirm) {
-        alert('⚠️ Passwords do not match. Please re-enter.');
+        shakeField('encrypt-confirm');
+        showToast('Passwords do not match. Please re-enter to confirm.', 'warning');
         return;
     }
 
@@ -1738,13 +1822,15 @@ btnEncrypt.addEventListener('click', async () => {
 
 btnDecrypt.addEventListener('click', async () => {
     if (!selectedDecryptFile) {
-        alert('⚠️ Please select or drop a .zev vault file first.');
+        shakeField('decrypt-drop-zone');
+        showToast('Please select or drop a .zev vault file to decrypt.', 'warning');
         return;
     }
 
     const password = decryptPassword.value;
     if (!password) {
-        alert('⚠️ Please enter your decryption password.');
+        shakeField('decrypt-password');
+        showToast('Please enter your vault password or PIN.', 'warning');
         return;
     }
 
@@ -2029,11 +2115,12 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await navigator.clipboard.writeText(passwordVal);
             btnCopyPw.textContent = '✅ Copied!';
+            showToast('Password copied to clipboard!', 'success');
             setTimeout(() => {
                 btnCopyPw.textContent = '📋 Copy';
             }, 2000);
         } catch (err) {
-            alert('Failed to copy password. Please select and copy manually.');
+            showToast('Failed to copy password. Please select and copy manually.', 'warning');
         }
     });
 
@@ -2058,10 +2145,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             await navigator.credentials.store(credential);
             log(`Password manager prompted for "${credentialId}".`, 'success');
+            showToast('Password saved to password manager!', 'success');
             closePwModal();
         } catch (err) {
             console.error('Credential storage failed:', err);
-            alert('Could not save to password manager. Please copy manually.');
+            showToast('Could not save to password manager. Please copy manually.', 'warning');
         }
     });
 
@@ -2435,7 +2523,7 @@ async function batchDownloadSelected() {
         }
     } catch (err) {
         console.error('[Batch Download Error]', err);
-        alert(`Failed to download selected: ${err.message}`);
+        showToast(`Failed to download selected: ${err.message}`, 'error');
         if (btn) btn.textContent = origText;
     }
 }
@@ -2635,7 +2723,7 @@ async function playMediaByIndex(index) {
         modal.style.display = 'flex';
     } catch (err) {
         console.error('[Media Play Error]', err);
-        alert(`Failed to load media: ${err.message}`);
+        showToast(`Failed to load media: ${err.message}`, 'error');
     }
 }
 
@@ -2787,7 +2875,7 @@ function renderExplorerFileList(query = '') {
                     setTimeout(() => { dlBtn.innerHTML = '⬇️'; }, 2000);
                 } catch (err) {
                     console.error('[Explorer Download]', err);
-                    alert(`Failed to extract file: ${err.message}`);
+                    showToast(`Failed to extract file: ${err.message}`, 'error');
                     dlBtn.innerHTML = '⬇️';
                 }
             });
@@ -2877,7 +2965,7 @@ function renderExplorerFileList(query = '') {
                     setTimeout(() => { dlBtn.innerHTML = '⬇️ Save'; }, 2000);
                 } catch (err) {
                     console.error('[Explorer Download]', err);
-                    alert(`Failed to extract file: ${err.message}`);
+                    showToast(`Failed to extract file: ${err.message}`, 'error');
                     dlBtn.innerHTML = '⬇️ Save';
                 }
             });
@@ -3055,7 +3143,7 @@ function initExplorerUI() {
                 });
             } catch (err) {
                 console.error('[Download All Error]', err);
-                alert(`Download failed: ${err.message}`);
+                showToast(`Download failed: ${err.message}`, 'error');
                 dlAllBtn.textContent = '⬇️ Download All (ZIP)';
             }
         }
@@ -3253,7 +3341,7 @@ COMPATIBILITY:
         }
     } catch (err) {
         console.error('[PC Setup Download Error]', err);
-        alert(`Failed to create PC toolkit: ${err.message}`);
+        showToast(`Failed to create PC toolkit: ${err.message}`, 'error');
         if (btn) btn.textContent = origText;
     }
 }

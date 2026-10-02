@@ -158,7 +158,12 @@
         <nav class="navbar">
             <div class="navbar-brand">
                 <img class="brand-logo" src="assets/zevsafe-logo.png" alt="ZevSafe Logo - Zero-Knowledge File Encryption" width="32" height="32">
-                <span class="brand-name">ZevSafe</span>
+                <span class="brand-name">
+                    ZevSafe
+                    <span class="brand-status-badge">
+                        <span class="status-pulse-dot"></span> 100% Offline
+                    </span>
+                </span>
             </div>
             <div class="navbar-links">
                 <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener" class="nav-pill nav-pill--android" title="Download Dedicated Native Android App (APK)">🤖 Android App</a>
@@ -174,17 +179,17 @@
             <div class="hero-content">
                 <div class="hero-badge">
                     <span class="badge-dot"></span>
-                    Zero-Knowledge · Zero-Tracking · 100% Offline
+                    Zero-Knowledge · Zero-Tracking · Client-Side Vaults
                 </div>
                 <h1 class="hero-title">
-                    Lock your Files | Folders.<br>
-                    <span class="gradient-text">Nobody else can see your data.</span>
+                    Encrypt Anything. Expose Nothing.<br>
+                    <span class="gradient-text">Private Folder Vaults Running 100% In-Browser.</span>
                 </h1>
                 <p class="hero-sub">
-                    AES-256  Folder Encryption. Runs entirely in your browser — your data and passwords never leave your device.
+                    Military-grade AES-256-GCM encryption with PBKDF2-SHA512. Your files, keys, and passwords never leave your device.
                 </p>
                 <div class="hero-tech-line phone-hide">
-                    🔐 AES-256-GCM &nbsp;·&nbsp; 🔑 <a href="./change-log/index.html" style="color:inherit;text-decoration:none;" title="View Release Changelog">WEB-VERSION-33</a> &nbsp;·&nbsp; 🤖 <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;" title="Download Dedicated Android App (APK)">Android APK</a> &nbsp;·&nbsp; 📁 Full Folders
+                    🔐 AES-256-GCM &nbsp;·&nbsp; 🔑 <a href="./change-log/index.html" style="color:inherit;text-decoration:none;" title="View Release Changelog">WEB-VERSION-34</a> &nbsp;·&nbsp; 🤖 <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;" title="Download Dedicated Android App (APK)">Android APK</a> &nbsp;·&nbsp; 📁 Full Folders
                 </div>
             </div>
         </header>
@@ -935,8 +940,8 @@
                 deferredInstallPrompt = e;
 
                 // Don't show again if user dismissed recently (7 days)
-                const dismissed = sessionStorage.getItem('pwa-install-dismissed');
-                if (!dismissed) {
+                const dismissedUntil = localStorage.getItem('pwa-install-dismissed');
+                if (!dismissedUntil || Date.now() > Number(dismissedUntil)) {
                     installBanner.style.display = 'block';
                     requestAnimationFrame(() => installBanner.classList.add('pwa-banner--visible'));
                 }
@@ -956,7 +961,7 @@
         btnDismiss?.addEventListener('click', () => {
             installBanner.classList.remove('pwa-banner--visible');
             setTimeout(() => { installBanner.style.display = 'none'; }, 350);
-            sessionStorage.setItem('pwa-install-dismissed', '1');
+            localStorage.setItem('pwa-install-dismissed', String(Date.now() + 7 * 24 * 60 * 60 * 1000));
         });
 
         // Clean up after successful install

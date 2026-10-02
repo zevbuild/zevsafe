@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v33';
+const APP_VERSION    = 'v34';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
 const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];

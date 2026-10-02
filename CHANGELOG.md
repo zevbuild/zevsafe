@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 6.6 (WEB-VERSION-34) — October 2, 2026
+- `UI` (`styles.css`, `index.html`): Streamlined above-the-fold visual experience. Reduced shell vertical gaps (`4rem` → `2.25rem`) and hero padding, bringing the core Encrypt and Decrypt drop zones directly above the fold on standard laptops without scrolling. Added an active status pulse badge beside the brand mark (`● 100% Offline`) and updated the headline to high-impact cybersecurity value proposition: *"Encrypt Anything. Expose Nothing. Private Folder Vaults Running 100% In-Browser."*
+- `UI` (`styles.css`, `app.js`): Replaced all blocking browser `window.alert()` dialogs with a modern, non-blocking glassmorphic Toast Notification System (`showToast`) featuring auto-dismiss, smooth entry/exit animations, status indicators (info, warning, error, success), and inline validation error shake (`@keyframes fieldShake`) on drop zones and password inputs.
+- `UI` (`styles.css`): Fixed card height asymmetry and CTA baseline alignment. Unified vault card heights using CSS Grid `align-items: stretch` and anchored primary action buttons (`#btn-encrypt`, `#btn-decrypt`) to the bottom via `margin-top: auto`.
+- `Fix` (`styles.css`): Resolved the 440px wide `.v2-badge` stretching glitch in the 5 GB Streaming Mode toggle container by setting `align-self: flex-start;` and `align-items: flex-start;`.
+- `Fix` (`styles.css`, `index.html`): Re-docked the PWA Install banner as a floating card in the bottom-right corner (`bottom: 24px; right: 24px; max-width: 380px;`) so it never obscures drop zones or action buttons. Added persistent 7-day dismissal memory via `localStorage`.
+- `UI` (`styles.css`, `app.js`): Fixed tablet (≤ 820px) tab switching synchronization. Clicking `[🔐 Encrypt]` and `[🔓 Decrypt]` now dynamically toggles single-panel visibility across tablet viewports, eliminating double-card vertical stacking and excessive page scrolling. Added clean resize state restoration.
+- `UI` (`styles.css`): Fixed mobile navbar overcrowding by hiding secondary desktop PC setup buttons on narrow screens (`≤ 640px`) and enforcing `white-space: nowrap;` on all navigation pills to eliminate multi-line text wrapping.
+- `UI` (`styles.css`): Neutralized dropzone empty state text (`.drop-selected`) color to a muted slate hue, resolving misleading green success styling when no files are loaded. Increased password field right padding to `3rem` to ensure comfortable clearance from the visibility toggle eye icon.
+- `PWA` (`sw.js`, `index.html`, `change-log/index.html`): Bumped Service Worker offline shell cache to `v34` and synchronized release indicators to `WEB-VERSION-34`.
+
+---
+
 ## Version 6.5 (WEB-VERSION-33) — October 2, 2026
 - `Brand` (`assets/zevsafe-logo.svg`, `assets/zevsafe-logo.png`, `assets/zevsafe-logo.webp`, `assets/icon-192.png`, `assets/icon-192.webp`, `assets/icon-512.png`, `assets/icon-512.webp`, `assets/zevsafe-og.png`, `assets/zevsafe-og.webp`, `assets/favicon.svg`, `favicon.svg`): Adopted the official "Orbit Concept" visual brand identity system representing a self-contained, air-gapped cryptographic ecosystem. Deployed mathematical SVG master vectors, high-efficiency quantized 512×512 brand marks, PWA launcher & splash icons (192×192, 512×512), 1200×630 OpenGraph social preview card, and matching SVG vector favicons.
 - `Refactor` (`assets/`): Organized brand logos (`zevsafe-logo.png`, `zevsafe-logo.webp`), PWA launcher icons (`icon-192.png`, `icon-192.webp`, `icon-512.png`, `icon-512.webp`), social share previews (`zevsafe-og.png`, `zevsafe-og.webp`), and vector favicon into a structured `assets/` directory with comprehensive usage documentation (`assets/README.md`). Preserved root `favicon.svg` for direct browser requests to eliminate 404s.

@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v6.5</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v6.6</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -705,14 +705,83 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 6.5 (WEB-VERSION-33) ── -->
+            <!-- ── VERSION 6.6 (WEB-VERSION-34) ── -->
             <article class="cl-card cl-card--latest" data-version="v6">
+                <div class="cl-marker">🛡️</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.6 (WEB-VERSION-34)</h2>
+                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
+                            <span class="cl-badge cl-badge--date">October 2, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">UI/UX</span>
+                            <span class="cl-tag">Toast System</span>
+                            <span class="cl-tag">Above-the-Fold</span>
+                            <span class="cl-tag">PWA v34</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Above-The-Fold Layout &amp; Hero Redesign:</strong> Tightened shell vertical gaps (4rem → 2.25rem) and hero spacing, bringing encryption drop zones directly above the fold on all standard laptop displays. Added a real-time status pulse badge (<code>● 100% Offline</code>) beside the brand mark and elevated the primary value proposition (<em>"Encrypt Anything. Expose Nothing. Private Folder Vaults Running 100% In-Browser."</em>).
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Non-Blocking Toast Notification System:</strong> Replaced all blocking native <code>window.alert()</code> prompts with a sleek glassmorphic toast notification component (<code>showToast</code>) featuring auto-dismiss, smooth entry animations, and contextual state indicators (info, warning, error, success).
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Interactive Validation &amp; Error Shake:</strong> Added animated inline field shake (<code>@keyframes fieldShake</code>) to drop zones and password inputs on validation errors, providing immediate visual feedback without halting JavaScript execution.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Card Symmetry &amp; CTA Baseline Alignment:</strong> Unified Encrypt and Decrypt card heights with CSS Grid stretch alignment and bottom-pinned primary action buttons via <code>margin-top: auto</code>, eliminating awkward vertical voids.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Streaming Mode Badge Stretched Width Fix:</strong> Resolved the 440px wide stretching bug in the Streaming Mode toggle container (<code>.v2-badge</code>) by enforcing <code>align-self: flex-start</code>.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Floating PWA Install Banner:</strong> Converted the full-width bottom PWA install banner into a discreet floating card docked to the bottom-right corner, backed by 7-day dismissal persistence in <code>localStorage</code> so it never blocks vault drop zones.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Tablet (≤ 820px) Tab Switching Synchronization:</strong> Enabled dynamic single-panel tab switching across tablet viewports, eliminating double-card vertical stacking and excessive page scrolling.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v34</code> (<code>WEB-VERSION-34</code>).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 6.5 (WEB-VERSION-33) ── -->
+            <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🎨</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 6.5 (WEB-VERSION-33)</h2>
-                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
                             <span class="cl-badge cl-badge--date">October 2, 2026</span>
                         </div>
                         <div class="cl-tags">
