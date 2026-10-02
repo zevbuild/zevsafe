@@ -43,9 +43,9 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 | File / Directory | Responsibility |
 |---|---|
-| `index.html` | Primary vault UI, Encrypt/Decrypt cards, Vault Explorer modal, Cinema Media Player, and Android APK navigation links (`WEB-VERSION-34`). |
+| `index.html` | Primary vault UI, Encrypt/Decrypt cards, Vault Explorer modal, Cinema Media Player, approved modern navbar, cryptographic trust strip, and Android APK navigation links (`WEB-VERSION-34`). |
 | `app.js` | Main-thread controller, drag-and-drop directory traversal, password entropy meter, Vault Explorer UI, Cinema streaming media player, universal 120 FPS auto-hiding navbar, and non-blocking glassmorphic toast notification system (`showToast`). |
-| `styles.css` | Glassmorphic dark/light theme system, `.nav-pill--android` styling, responsive micro-hero, hardware-accelerated header transitions, toast notifications, and baseline card alignment. |
+| `styles.css` | Glassmorphic dark/light theme system, modern navbar & hero trust strip, responsive micro-hero, hardware-accelerated header transitions, toast notifications, and baseline card alignment. |
 | `sw.js` | Offline-first PWA Service Worker (`APP_VERSION = 'v34'`) + Tier 2 `/_stream_download` streaming download interceptor + legacy root asset alias routing. |
 | `assets/` | Structured brand assets: high-res 3D metallic logos (`zevsafe-logo.png`, `.webp`), PWA icons (`icon-192`, `icon-512`), Open Graph social cards (`zevsafe-og`), and vector favicon (`favicon.svg`). |
 | `js/` | Modular client-side streaming engine: Web Worker cryptography (`crypto-worker.js`), worker bridge (`worker-bridge.js`), ZIP64 streaming packager (`stream-packer.js`), tail manifest unpacker (`stream-unpacker.js`), and 4-tier download engine (`stream-saver.js`). |

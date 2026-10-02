@@ -269,14 +269,78 @@ body {
     border-color: var(--border-hover);
 }
 
+.nav-link-subtle {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-2);
+    text-decoration: none;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-link-subtle:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-btn-secondary {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    text-decoration: none;
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.nav-btn-primary {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    box-shadow: 0 2px 10px rgba(109, 40, 217, 0.35);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-btn-primary:hover {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.5);
+    transform: translateY(-1px);
+}
+
 /* ── HERO ───────────────────────────────────────────── */
 .hero {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding-top: 0.6rem;
-    max-width: 720px;
+    padding: 0.6rem 0 0.5rem;
+    max-width: 820px;
     margin: 0 auto;
 }
 
@@ -285,6 +349,82 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 0.95rem;
+    width: 100%;
+}
+
+.hero-security-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.22);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.12);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #c4b5fd;
+}
+
+.hero-title-refined {
+    font-family: var(--font-display);
+    font-size: clamp(2.1rem, 4.5vw, 3.2rem);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+    color: #f8fafc;
+    margin: 0;
+}
+
+.hero-gradient-text {
+    background: linear-gradient(135deg, #a78bfa 0%, #2dd4bf 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.hero-sub-refined {
+    font-size: 0.98rem;
+    color: #94a3b8;
+    max-width: 620px;
+    line-height: 1.6;
+    font-weight: 400;
+    margin: 0;
+}
+
+.hero-trust-strip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-top: 0.25rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    flex-wrap: wrap;
+}
+
+.trust-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #cbd5e1;
+    white-space: nowrap;
+}
+
+.trust-pill-sep {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .hero-badge {
@@ -1527,7 +1667,8 @@ body {
 
     /* Compact navbar */
     .navbar { padding: 1rem 0.9rem; }
-    .navbar-links .nav-pill-ghost { display: none; }
+    .navbar-links .nav-pill-ghost,
+    .navbar-links a[href*="github"] { display: none !important; }
     .navbar-links #btn-download-pc-setup { display: none !important; }
     .brand-name { font-size: 1.05rem; }
     .brand-status-badge { display: none; }
@@ -1559,7 +1700,9 @@ body {
 
 @media (max-width: 480px) {
     .navbar-links { gap: 0.35rem; }
-    .navbar-links .nav-pill { padding: 0.35rem 0.65rem; font-size: 0.75rem; }
+    .navbar-links .nav-pill,
+    .navbar-links .nav-link-subtle,
+    .navbar-links .nav-btn-secondary { padding: 0.35rem 0.65rem; font-size: 0.75rem; }
 }
 
     /* Mobile-friendly smaller icons for compactness and better comfort */
