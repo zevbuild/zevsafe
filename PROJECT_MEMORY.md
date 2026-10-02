@@ -1,11 +1,11 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v6.3` (`WEB-VERSION-31`, Service Worker `v31`)  
+> **Web Portal Version:** `v6.4` (`WEB-VERSION-32`, Service Worker `v32`)  
 > **Companion Android App:** [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe) (`com.zevbuild.zevsafe` `v6.3.0`, Build `30`)
 
 > **🤖 MANDATORY AI AGENT RULE:**  
-> Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, and `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
+> Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
 
 ---
 
@@ -16,7 +16,7 @@ ZevSafe is a 100% client-side, zero-knowledge, military-grade file and folder en
 It consists of three bit-identically compatible platforms sharing the **`ZV3\0` STREAM AEAD** binary format:
 1. **Web PWA (`zevsafe`):** Browser-based vault application ([`zevsafe.pages.dev`](https://zevsafe.pages.dev)) using the Web Crypto API (`crypto.subtle`), Web Workers (`js/crypto-worker.js`), and a 4-tier streaming file saver (`js/stream-saver.js`).
 2. **Native Android App (`app-zevsafe`):** Standalone Kotlin + Jetpack Compose Android application (`com.zevbuild.zevsafe`) with AndroidX Media3 ExoPlayer Cinema streaming, Android 14 `VaultForegroundService`, `MediaStore.Downloads` auto-saving, and system share sheet integration. Detailed Android Project Memory lives in `../app-zevsafe/PROJECT_MEMORY.md` and `../app-zevsafe/PROJECT-MEMORY/`.
-3. **Emergency Desktop CLI Tools:** Standalone PowerShell (`tools/ZevSafe-Decrypt.ps1`), Bash, and Python scripts for zero-dependency offline recovery.
+3. **Emergency Desktop CLI Tools (`tools/`):** Standalone Windows batch launchers (`tools/Encrypt-Vault.bat`, `tools/Decrypt-Vault.bat`) and PowerShell streaming engines (`tools/encrypt.ps1`, `tools/decrypt.ps1`) for zero-RAM 25 GB – 100 GB+ datasets.
 
 ---
 
@@ -41,17 +41,16 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ## 3. Web PWA Architecture (`zevsafe`)
 
-| File | Responsibility |
+| File / Directory | Responsibility |
 |---|---|
-| `index.html` | Primary vault UI, Encrypt/Decrypt cards, Vault Explorer modal, Cinema Media Player, and Android APK navigation links (`WEB-VERSION-31`). |
+| `index.html` | Primary vault UI, Encrypt/Decrypt cards, Vault Explorer modal, Cinema Media Player, and Android APK navigation links (`WEB-VERSION-32`). |
 | `app.js` | Main-thread controller, drag-and-drop directory traversal, password entropy meter, Vault Explorer UI, Cinema streaming media player, and universal 120 FPS auto-hiding navbar. |
 | `styles.css` | Glassmorphic dark/light theme system, `.nav-pill--android` styling, responsive micro-hero, and hardware-accelerated header transitions. |
-| `sw.js` | Offline-first PWA Service Worker (`APP_VERSION = 'v31'`) + Tier 2 `/_stream_download` streaming download interceptor. |
-| `js/crypto-worker.js` | Dedicated Web Worker performing off-thread PBKDF2-SHA512, `CompressionStream('deflate-raw')`, and 4 MB chunked AES-256-GCM encryption/decryption with 2-credit (~8 MB) backpressure. |
-| `js/worker-bridge.js` | Promise/event bridge between `app.js` and `crypto-worker.js` using zero-copy `Transferable` `ArrayBuffer`s. |
-| `js/stream-packer.js` | Streaming ZIP64 packager with 24-byte Data Descriptors (Bit 3) and adaptive `STORE`/`DEFLATE` selection. |
-| `js/stream-unpacker.js` | Instant tail-manifest reader (< 100 ms unlock for 5 GB vaults) and selective chunk range extractor. |
-| `js/stream-saver.js` | 4-Tier streaming output writer: Tier 1 (`showSaveFilePicker` FSA), Tier 2 (Service Worker stream), Tier 3 (OPFS disk staging for Android Chrome & iOS Safari), Tier 4 (Memory-guarded Blob fallback). |
+| `sw.js` | Offline-first PWA Service Worker (`APP_VERSION = 'v32'`) + Tier 2 `/_stream_download` streaming download interceptor. |
+| `js/` | Modular client-side streaming engine: Web Worker cryptography (`crypto-worker.js`), worker bridge (`worker-bridge.js`), ZIP64 streaming packager (`stream-packer.js`), tail manifest unpacker (`stream-unpacker.js`), and 4-tier download engine (`stream-saver.js`). |
+| `docs/` | Internal engineering specifications: architecture (`ARCHITECTURE.md`), web app design (`WEB_APP_DESIGN.md`), test infrastructure (`TEST_INFRA.md`), readiness report (`TEST_READY.md`), and tasks (`task.md`). |
+| `tools/` | Standalone zero-RAM Windows streaming toolset: 1-click batch encryptor (`Encrypt-Vault.bat`), decryptor (`Decrypt-Vault.bat`), and PowerShell scripts (`encrypt.ps1`, `decrypt.ps1`). |
+| `test/` | Automated verification suites: mobile browser OPFS regression tests (`test-android-encryption.js`), Milestone 5 integration suite (`test-integration-m5.js`), and synthetic stream mocks. |
 | `change-log/index.html` | Interactive web release notes portal with live search and version filter chips. |
 | `how-to-use-zevsafe/index.html` | Comprehensive user & security guide with Android APK and offline usage instructions. |
 

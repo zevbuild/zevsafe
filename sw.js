@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v31';
+const APP_VERSION    = 'v32';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
 const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
@@ -31,6 +31,10 @@ const SHELL_ASSETS = [
     './icon-512.webp',
     './zevsafe-og.png',
     './zevsafe-og.webp',
+    './tools/encrypt.ps1',
+    './tools/decrypt.ps1',
+    './tools/Encrypt-Vault.bat',
+    './tools/Decrypt-Vault.bat',
     './js/stream-crypto.js',
     './js/stream-packer.js',
     './js/stream-unpacker.js',
@@ -128,9 +132,20 @@ self.addEventListener('fetch', event => {
  * 3. If offline and no cache → return a friendly offline response.
  */
 async function cacheFirst(request, cacheName) {
-    const cached = await caches.match(request, { cacheName });
+    let cached = await caches.match(request, { cacheName });
     if (cached) {
         return cached;
+    }
+
+    // Graceful alias for tools/ scripts if requested without prefix
+    const reqUrl = new URL(request.url);
+    if (reqUrl.pathname.endsWith('/encrypt.ps1') && !reqUrl.pathname.includes('/tools/')) {
+        const toolCached = await caches.match('./tools/encrypt.ps1', { cacheName });
+        if (toolCached) return toolCached;
+    }
+    if (reqUrl.pathname.endsWith('/decrypt.ps1') && !reqUrl.pathname.includes('/tools/')) {
+        const toolCached = await caches.match('./tools/decrypt.ps1', { cacheName });
+        if (toolCached) return toolCached;
     }
 
     try {

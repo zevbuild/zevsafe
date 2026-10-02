@@ -3209,9 +3209,9 @@ async function downloadPcSetupToolkit() {
         let encPs1 = '';
         let decPs1 = '';
         try {
-            const r1 = await fetch('encrypt.ps1');
+            const r1 = await (fetch('tools/encrypt.ps1').catch(() => fetch('encrypt.ps1')));
             encPs1 = await r1.text();
-            const r2 = await fetch('decrypt.ps1');
+            const r2 = await (fetch('tools/decrypt.ps1').catch(() => fetch('decrypt.ps1')));
             decPs1 = await r2.text();
         } catch (e) {
             console.warn('Could not fetch ps1 files dynamically', e);

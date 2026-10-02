@@ -268,27 +268,48 @@ zevsafe/
 ├── index.html                      # Main portal UI (Encrypt, Decrypt, Explorer, Media Player)
 ├── how-to-use-zevsafe/
 │   └── index.html                  # In-depth technical documentation & user guide
-├── app.js                          # Core engine: Web Crypto API, JSZip, UI state, Explorer
+├── change-log/
+│   └── index.html                  # Interactive release history and changelog portal
+├── js/                             # Modular streaming engine & Web Worker pipeline
+│   ├── crypto-worker.js            # Off-thread PBKDF2-SHA512, deflate compression, AES-GCM
+│   ├── stream-crypto.js            # v3 STREAM AEAD cryptographic primitives
+│   ├── stream-packer.js            # Streaming ZIP64 packager with 24B Data Descriptors
+│   ├── stream-saver.js             # 4-tier download engine (FSA, SW, OPFS, memory fallback)
+│   ├── stream-unpacker.js          # Tail-manifest reader & selective chunk range extractor
+│   └── worker-bridge.js            # Zero-copy Transferable buffer bridge with backpressure
+├── docs/                           # Internal architecture, design specs, and test documentation
+│   ├── README.md                   # Documentation directory index
+│   ├── ARCHITECTURE.md             # 5 GB streaming architecture specification
+│   ├── WEB_APP_DESIGN.md           # Web application design and cryptographic details
+│   ├── TEST_INFRA.md               # E2E test infrastructure specification
+│   ├── TEST_READY.md               # Test suite readiness report
+│   ├── ORIGINAL_REQUEST.md         # Milestone 5 requirements and memory bounds
+│   └── task.md                     # Development roadmap and historical task tracker
+├── tools/                          # Windows PC 1-click zero-RAM streaming tools (25GB - 100GB+)
+│   ├── README.md                   # Tools usage guide
+│   ├── Encrypt-Vault.bat           # 1-click drag-and-drop batch folder encryptor
+│   ├── Decrypt-Vault.bat           # 1-click drag-and-drop batch vault decryptor
+│   ├── encrypt.ps1                 # Streaming PowerShell encryption script
+│   └── decrypt.ps1                 # Streaming PowerShell decryption script
+├── test/                           # Automated regression, unit, and integration test suites
+│   ├── test-android-encryption.js  # Mobile browser OPFS & memory regression tests
+│   ├── test-integration-m5.js      # Milestone 5 streaming pipeline integration tests
+│   └── ...                         # E2E test runners and synthetic streaming mocks
+├── app.js                          # Main UI controller: state, drag & drop, Explorer, player
 ├── styles.css                      # Glassmorphic responsive styling, cinema player, dark theme
-├── sw.js                           # PWA Service Worker (Cache-First & SWR strategies)
+├── sw.js                           # PWA Service Worker (Cache-First & synthetic download route)
 ├── manifest.json                   # Web App Manifest for standalone desktop/mobile installation
 ├── jszip.min.js                    # Local offline JSZip library for folder archive packaging
-├── Encrypt-Vault.bat               # Windows 1-click drag-and-drop batch encryptor (25GB+)
-├── Decrypt-Vault.bat               # Windows 1-click drag-and-drop batch decryptor (25GB+)
-├── encrypt.ps1                     # Streaming PowerShell script for zero-RAM 25GB+ encryption
-├── decrypt.ps1                     # Streaming PowerShell script for zero-RAM 25GB+ decryption
 ├── favicon.svg                     # Vector brand favicon
-├── icon-192.png                    # PWA launcher icon (192×192)
-├── icon-512.png                    # PWA launcher icon (512×512)
-├── zevsafe-logo.png                # High-res 3D metallic lock-shield brand asset
-├── zevsafe-og.png                  # Open Graph social preview banner (1200×630)
-├── robots.txt                      # Search engine crawl rules
-├── sitemap.xml                     # Search engine XML index
+├── icon-192.png / .webp            # PWA launcher icons (192×192)
+├── icon-512.png / .webp            # PWA launcher icons (512×512)
+├── zevsafe-logo.png / .webp        # High-res 3D metallic lock-shield brand assets
+├── zevsafe-og.png / .webp          # Open Graph social preview banners (1200×630)
+├── robots.txt / sitemap.xml        # Search engine discovery and indexing rules
 ├── CHANGELOG.md                    # Release history and milestone documentation
-├── WEB_APP_DESIGN.md               # Technical architecture and cryptographic specification
-├── task.md                         # Current task tracker and roadmap
+├── PROJECT_MEMORY.md               # Cross-platform Project Memory knowledge base
 └── archive/
-    └── android-native-planning/    # Historical planning docs (native Kotlin concept prior to PWA)
+    └── android-native-planning/    # Historical planning docs
 ```
 
 ---

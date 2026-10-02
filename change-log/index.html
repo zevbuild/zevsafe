@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v6.3</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v6.4</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -705,14 +705,53 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 6.3 (WEB-VERSION-31) ── -->
+            <!-- ── VERSION 6.4 (WEB-VERSION-32) ── -->
             <article class="cl-card cl-card--latest" data-version="v6">
+                <div class="cl-marker">📁</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.4 (WEB-VERSION-32)</h2>
+                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
+                            <span class="cl-badge cl-badge--date">October 2, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Refactor</span>
+                            <span class="cl-tag">Tools</span>
+                            <span class="cl-tag">Docs</span>
+                            <span class="cl-tag">PWA v32</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Refactor</span>
+                            <div class="cl-item-text">
+                                <strong>Clean Codebase Organization (<code>tools/</code> &amp; <code>docs/</code>):</strong> Reorganized repository root into modular directories. Moved 1-click Windows PC batch launchers (<code>Encrypt-Vault.bat</code>, <code>Decrypt-Vault.bat</code>) and zero-RAM streaming PowerShell scripts (<code>encrypt.ps1</code>, <code>decrypt.ps1</code>) into a dedicated <code>tools/</code> directory with usage documentation. Moved internal architecture, web design, test infrastructure, and task trackers into a structured <code>docs/</code> folder with a documentation index. Removed empty legacy scratch files.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Dynamic PC Setup Packager &amp; Service Worker Aliasing:</strong> Updated in-browser 1-click PC setup zip generator in <code>app.js</code> to dynamically fetch streaming scripts from <code>tools/</code> with seamless fallback to root, and added <code>tools/</code> assets to the Service Worker offline precache with alias routing.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v32</code> (<code>WEB-VERSION-32</code>).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 6.3 (WEB-VERSION-31) ── -->
+            <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🤖</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 6.3 (WEB-VERSION-31)</h2>
-                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
                             <span class="cl-badge cl-badge--date">September 30, 2026</span>
                         </div>
                         <div class="cl-tags">

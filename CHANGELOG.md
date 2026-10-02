@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 6.4 (WEB-VERSION-32) — October 2, 2026
+- `Refactor` (`tools/`, `docs/`): Cleanly organized codebase files and folders across the repository. Moved standalone Windows batch launchers (`Encrypt-Vault.bat`, `Decrypt-Vault.bat`) and PowerShell streaming scripts (`encrypt.ps1`, `decrypt.ps1`) into a dedicated `tools/` folder with documentation. Moved internal engineering architecture, design specifications, test infrastructure, and task trackers (`PROJECT.md` → `docs/ARCHITECTURE.md`, `docs/WEB_APP_DESIGN.md`, `docs/TEST_INFRA.md`, `docs/TEST_READY.md`, `docs/ORIGINAL_REQUEST.md`, `docs/task.md`) into a structured `docs/` directory with a navigation index `README.md`. Removed empty scratch directories (`project-brain`).
+- `Fix` (`app.js`, `sw.js`): Updated in-browser 1-click PC setup packager in `app.js` to fetch PowerShell scripts from `tools/` with fallback to root, and added `tools/` assets to the Service Worker `SHELL_ASSETS` precache with alias routing.
+- `PWA` (`sw.js`, `index.html`, `change-log/index.html`): Bumped Service Worker offline shell cache to `v32` and synchronized release indicators to `WEB-VERSION-32`.
+
+---
+
 ## Version 6.3 (WEB-VERSION-31) — September 30, 2026
 - `New` (`app-zevsafe`): Launched the companion standalone native Android application ([`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe/releases/latest)) built in Kotlin and Jetpack Compose (`com.zevbuild.zevsafe` v6.3.0). Features bit-identical `ZV3\0` STREAM AEAD chunked cipher pipeline, AndroidX Media3 ExoPlayer Cinema streaming video/audio player, persistent background encryption via Android 14 `ForegroundService` with notification progress telemetry, and native system share sheet integration (`ACTION_VIEW`, `ACTION_SEND`, `ACTION_SEND_MULTIPLE`). Pre-compiled APKs are distributed via official GitHub Releases.
 - `Fix` (`app-zevsafe`: `AndroidManifest.xml`, `EncryptScreen.kt`, `DecryptScreen.kt`, `VaultBrowserScreen.kt`, `VaultViewModel.kt`): Resolved `FileProvider` authority mismatch (`com.zevbuild.zevsafe.fileprovider`), dispatched completion UI callbacks safely onto `Dispatchers.Main`, and added automatic saving of encrypted `.zev` vaults and exported `.zip` archives directly to the device's `Downloads` folder via `MediaStore.Downloads`.
