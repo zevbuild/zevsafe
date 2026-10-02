@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="orbitGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3987FF" />
+      <stop offset="100%" stop-color="#24D5C5" />
+    </linearGradient>
+    <radialGradient id="logoAmbient" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#3987FF" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#071426" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="116" fill="#071426" />
+  <circle cx="256" cy="210" r="180" fill="url(#logoAmbient)" />
+
+  <!-- Orbit Symbol (Centered in upper portion) -->
+  <g transform="translate(136, 60)">
+    <!-- Upper Orbital Arc -->
+    <path d="M 120 18 A 102 102 0 0 1 222 120 A 102 102 0 0 1 200 180"
+          fill="none"
+          stroke="url(#orbitGradLogo)"
+          stroke-width="28"
+          stroke-linecap="round" />
+
+    <!-- Lower Orbital Arc -->
+    <path d="M 120 222 A 102 102 0 0 1 18 120 A 102 102 0 0 1 40 60"
+          fill="none"
+          stroke="url(#orbitGradLogo)"
+          stroke-width="28"
+          stroke-linecap="round" />
+
+    <!-- Vault Core Disk -->
+    <circle cx="120" cy="120" r="54" fill="url(#orbitGradLogo)" />
+
+    <!-- Negative Space Cutout -->
+    <circle cx="120" cy="120" r="35" fill="#071426" />
+
+    <!-- Shutter Aperture -->
+    <path d="M 120 120 L 93 93 A 35 35 0 0 1 147 93 Z" fill="url(#orbitGradLogo)" opacity="0.9" />
+    <circle cx="120" cy="120" r="12" fill="#24D5C5" />
+  </g>
+
+  <!-- Typography "ZevSafe" -->
+  <text x="256" y="380"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="62"
+        font-weight="700"
+        letter-spacing="-1"
+        fill="#F7FAFF">Zev<tspan fill="#24D5C5">Safe</tspan></text>
+
+  <!-- Tagline -->
+  <text x="256" y="420"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="16"
+        font-weight="500"
+        letter-spacing="0.5"
+        fill="#64748B">Your files stay on your device. Always.</text>
+</svg>

@@ -1,7 +1,9 @@
 # Changelog
 
 ## Version 6.5 (WEB-VERSION-33) — October 2, 2026
+- `Brand` (`assets/zevsafe-logo.svg`, `assets/zevsafe-logo.png`, `assets/zevsafe-logo.webp`, `assets/icon-192.png`, `assets/icon-192.webp`, `assets/icon-512.png`, `assets/icon-512.webp`, `assets/zevsafe-og.png`, `assets/zevsafe-og.webp`, `assets/favicon.svg`, `favicon.svg`): Adopted the official "Orbit Concept" visual brand identity system representing a self-contained, air-gapped cryptographic ecosystem. Deployed mathematical SVG master vectors, high-efficiency quantized 512×512 brand marks, PWA launcher & splash icons (192×192, 512×512), 1200×630 OpenGraph social preview card, and matching SVG vector favicons.
 - `Refactor` (`assets/`): Organized brand logos (`zevsafe-logo.png`, `zevsafe-logo.webp`), PWA launcher icons (`icon-192.png`, `icon-192.webp`, `icon-512.png`, `icon-512.webp`), social share previews (`zevsafe-og.png`, `zevsafe-og.webp`), and vector favicon into a structured `assets/` directory with comprehensive usage documentation (`assets/README.md`). Preserved root `favicon.svg` for direct browser requests to eliminate 404s.
+
 - `Fix` (`sw.js`, `manifest.json`, `index.html`, `how-to-use-zevsafe/index.html`, `change-log/index.html`): Updated all image paths, Open Graph meta tags, and Web App Manifest icons to `./assets/`. Enhanced Service Worker cache routing with regex alias fallback to serve legacy root image requests from `assets/` seamlessly.
 - `PWA` (`sw.js`, `index.html`, `change-log/index.html`): Bumped Service Worker offline shell cache to `v33` and synchronized release indicators to `WEB-VERSION-33`.
 
