@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v32';
+const APP_VERSION    = 'v33';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
 const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
@@ -22,15 +22,16 @@ const SHELL_ASSETS = [
     './app.js',
     './jszip.min.js',
     './manifest.json',
-    './zevsafe-logo.png',
-    './zevsafe-logo.webp',
     './favicon.svg',
-    './icon-192.png',
-    './icon-192.webp',
-    './icon-512.png',
-    './icon-512.webp',
-    './zevsafe-og.png',
-    './zevsafe-og.webp',
+    './assets/favicon.svg',
+    './assets/zevsafe-logo.png',
+    './assets/zevsafe-logo.webp',
+    './assets/icon-192.png',
+    './assets/icon-192.webp',
+    './assets/icon-512.png',
+    './assets/icon-512.webp',
+    './assets/zevsafe-og.png',
+    './assets/zevsafe-og.webp',
     './tools/encrypt.ps1',
     './tools/decrypt.ps1',
     './tools/Encrypt-Vault.bat',
@@ -146,6 +147,13 @@ async function cacheFirst(request, cacheName) {
     if (reqUrl.pathname.endsWith('/decrypt.ps1') && !reqUrl.pathname.includes('/tools/')) {
         const toolCached = await caches.match('./tools/decrypt.ps1', { cacheName });
         if (toolCached) return toolCached;
+    }
+
+    // Graceful alias for assets/ images if requested from root without prefix
+    const imgMatch = reqUrl.pathname.match(/\/(icon-\d+\.(?:png|webp)|zevsafe-(?:logo|og)\.(?:png|webp)|favicon\.svg)$/);
+    if (imgMatch && !reqUrl.pathname.includes('/assets/')) {
+        const assetCached = await caches.match('./assets/' + imgMatch[1], { cacheName });
+        if (assetCached) return assetCached;
     }
 
     try {

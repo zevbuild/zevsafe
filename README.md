@@ -9,12 +9,12 @@
 [![KDF: PBKDF2-SHA512](https://img.shields.io/badge/KDF-PBKDF2--SHA512%20(600k)-3b82f6?style=for-the-badge)](#-cryptography)
 [![PWA: Installable](https://img.shields.io/badge/PWA-Installable-8b5cf6?style=for-the-badge)](#-pwa--install-as-an-offline-app)
 [![100% Offline](https://img.shields.io/badge/Mode-100%25%20Offline-f59e0b?style=for-the-badge)](#)
-[![Release: v6.3 / WEB-VERSION-31](https://img.shields.io/badge/Release-v6.3%20(WEB--VERSION--31)-06b6d4?style=for-the-badge)](CHANGELOG.md)
+[![Release: v6.5 / WEB-VERSION-33](https://img.shields.io/badge/Release-v6.5%20(WEB--VERSION--33)-06b6d4?style=for-the-badge)](CHANGELOG.md)
 
 ---
 
-> 🟢 **Current stable release — v6.3 (`.zev` format / WEB-VERSION-31):** military-grade security by default with 5 GB low-RAM streaming and dedicated native Android APK (`com.zevbuild.zevsafe`).  
-> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · 4 MB Chunked AES-256-GCM (`ZV3\0`) · optional keyfile 2FA · Instant <100ms Vault Explorer with breadcrumbs · Cinema Media Player · 5 GB mobile & desktop streaming (<150 MB RAM) · Dedicated native Android app with ForegroundService & ExoPlayer · Universal auto-hiding header & logo across all browsers & devices · Ultra-lightweight WebP & compressed asset engine.**
+> 🟢 **Current stable release — v6.5 (`.zev` format / WEB-VERSION-33):** military-grade security by default with 5 GB low-RAM streaming and dedicated native Android APK (`com.zevbuild.zevsafe`).  
+> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · 4 MB Chunked AES-256-GCM (`ZV3\0`) · optional keyfile 2FA · Instant <100ms Vault Explorer with breadcrumbs · Cinema Media Player · 5 GB mobile & desktop streaming (<150 MB RAM) · Dedicated native Android app with ForegroundService & ExoPlayer · Universal auto-hiding header & logo across all browsers & devices · Ultra-lightweight WebP & compressed asset engine · Structured asset directory (`assets/`).**
 
 ---
 
@@ -54,7 +54,7 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | 📊 **3-Stage 60 FPS Pipeline Tracker** | Visual progress pills (`Compress` → `Encrypt/Decrypt` → `Save`) with live throughput telemetry (MB/s, ETA, elapsed time). |
 | 🌐 **Universal Auto-Hiding Header & Logo** | Auto-hides sticky navbar and logo on downward scroll across all desktop, tablet, and mobile browsers with 60 FPS hardware-accelerated transitions to maximize screen workspace. |
 | ⚡ **Optimized WebP & Compressed Assets** | All brand icons, OG social images, and logos compressed in-place (57%+ payload reduction) with next-gen WebP support for high-speed loading. |
-| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v31`), auto-updating in background, fully functional offline. |
+| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v33`), auto-updating in background, fully functional offline. |
 | 📜 **Interactive Changelog Portal** | Dedicated in-app and web release notes page ([`change-log/`](https://zevsafe.pages.dev/change-log/)) with live filtering and search across all releases. |
 
 ---
@@ -299,12 +299,15 @@ zevsafe/
 ├── styles.css                      # Glassmorphic responsive styling, cinema player, dark theme
 ├── sw.js                           # PWA Service Worker (Cache-First & synthetic download route)
 ├── manifest.json                   # Web App Manifest for standalone desktop/mobile installation
+├── assets/                         # Brand logos, PWA launcher icons & vector assets
+│   ├── README.md                   # Asset specifications & dimensions reference
+│   ├── icon-192.png / .webp        # PWA launcher icons (192×192)
+│   ├── icon-512.png / .webp        # PWA launcher icons (512×512)
+│   ├── zevsafe-logo.png / .webp    # High-res 3D metallic lock-shield brand assets
+│   ├── zevsafe-og.png / .webp      # Open Graph social preview banners (1200×630)
+│   └── favicon.svg                 # Vector brand favicon (minified)
+├── favicon.svg                     # Root fallback vector brand favicon
 ├── jszip.min.js                    # Local offline JSZip library for folder archive packaging
-├── favicon.svg                     # Vector brand favicon
-├── icon-192.png / .webp            # PWA launcher icons (192×192)
-├── icon-512.png / .webp            # PWA launcher icons (512×512)
-├── zevsafe-logo.png / .webp        # High-res 3D metallic lock-shield brand assets
-├── zevsafe-og.png / .webp          # Open Graph social preview banners (1200×630)
 ├── robots.txt / sitemap.xml        # Search engine discovery and indexing rules
 ├── CHANGELOG.md                    # Release history and milestone documentation
 ├── PROJECT_MEMORY.md               # Cross-platform Project Memory knowledge base

@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 6.5 (WEB-VERSION-33) — October 2, 2026
+- `Refactor` (`assets/`): Organized brand logos (`zevsafe-logo.png`, `zevsafe-logo.webp`), PWA launcher icons (`icon-192.png`, `icon-192.webp`, `icon-512.png`, `icon-512.webp`), social share previews (`zevsafe-og.png`, `zevsafe-og.webp`), and vector favicon into a structured `assets/` directory with comprehensive usage documentation (`assets/README.md`). Preserved root `favicon.svg` for direct browser requests to eliminate 404s.
+- `Fix` (`sw.js`, `manifest.json`, `index.html`, `how-to-use-zevsafe/index.html`, `change-log/index.html`): Updated all image paths, Open Graph meta tags, and Web App Manifest icons to `./assets/`. Enhanced Service Worker cache routing with regex alias fallback to serve legacy root image requests from `assets/` seamlessly.
+- `PWA` (`sw.js`, `index.html`, `change-log/index.html`): Bumped Service Worker offline shell cache to `v33` and synchronized release indicators to `WEB-VERSION-33`.
+
+---
+
 ## Version 6.4 (WEB-VERSION-32) — October 2, 2026
 - `Refactor` (`tools/`, `docs/`): Cleanly organized codebase files and folders across the repository. Moved standalone Windows batch launchers (`Encrypt-Vault.bat`, `Decrypt-Vault.bat`) and PowerShell streaming scripts (`encrypt.ps1`, `decrypt.ps1`) into a dedicated `tools/` folder with documentation. Moved internal engineering architecture, design specifications, test infrastructure, and task trackers (`PROJECT.md` → `docs/ARCHITECTURE.md`, `docs/WEB_APP_DESIGN.md`, `docs/TEST_INFRA.md`, `docs/TEST_READY.md`, `docs/ORIGINAL_REQUEST.md`, `docs/task.md`) into a structured `docs/` directory with a navigation index `README.md`. Removed empty scratch directories (`project-brain`).
 - `Fix` (`app.js`, `sw.js`): Updated in-browser 1-click PC setup packager in `app.js` to fetch PowerShell scripts from `tools/` with fallback to root, and added `tools/` assets to the Service Worker `SHELL_ASSETS` precache with alias routing.
