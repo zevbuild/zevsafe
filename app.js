@@ -787,6 +787,7 @@ if (btnClearEncrypt) {
 if (btnClearDecrypt) {
     btnClearDecrypt.addEventListener('click', (e) => {
         e.stopPropagation();
+        lockV3VaultSession();
         clearDecryptSelection();
     });
 }
@@ -862,6 +863,87 @@ function updateProgress(title, percent) {
 function resetProgress() {
     progressBarFill.style.width = '0%';
     progressPercentage.textContent = '0%';
+}
+
+/** Formats seconds into MM:SS or HH:MM:SS format */
+function formatTime(seconds) {
+    if (!seconds || isNaN(seconds) || seconds < 0) return '00:00';
+    const s = Math.floor(seconds);
+    const m = Math.floor(s / 60);
+    const remS = s % 60;
+    if (m >= 60) {
+        const h = Math.floor(m / 60);
+        const remM = m % 60;
+        return `${String(h).padStart(2, '0')}:${String(remM).padStart(2, '0')}:${String(remS).padStart(2, '0')}`;
+    }
+    return `${String(m).padStart(2, '0')}:${String(remS).padStart(2, '0')}`;
+}
+
+// ── 60 FPS Telemetry HUD State ──
+let currentStreamingOp = null; // Active WorkerBridge operation handle { cancel, getFlowStats }
+let smoothedSpeedEMA = 0;
+const EMA_ALPHA = 0.25; // Exponential Moving Average smoothing factor
+
+function updateTelemetryHUD(telemetry) {
+    const hud = document.getElementById('telemetry-hud');
+    if (!hud) return;
+    if (hud.style.display === 'none') {
+        hud.style.display = 'grid';
+    }
+
+    const rawSpeed = telemetry.throughputMBs || 0;
+    if (smoothedSpeedEMA === 0) {
+        smoothedSpeedEMA = rawSpeed;
+    } else {
+        smoothedSpeedEMA = (EMA_ALPHA * rawSpeed) + ((1 - EMA_ALPHA) * smoothedSpeedEMA);
+    }
+
+    const speedEl = document.getElementById('telemetry-speed');
+    if (speedEl) speedEl.textContent = `${smoothedSpeedEMA.toFixed(1)} MB/s`;
+
+    const elapsedEl = document.getElementById('telemetry-elapsed');
+    if (elapsedEl) elapsedEl.textContent = formatTime(telemetry.elapsedSec || 0);
+
+    const etaEl = document.getElementById('telemetry-eta');
+    if (etaEl) {
+        if (telemetry.percent >= 100 || telemetry.stage === 'Complete') {
+            etaEl.textContent = '00:00';
+        } else if (telemetry.etaSec > 0) {
+            etaEl.textContent = formatTime(telemetry.etaSec);
+        } else {
+            etaEl.textContent = '--:--';
+        }
+    }
+
+    const bytesEl = document.getElementById('telemetry-bytes');
+    if (bytesEl) {
+        const proc = formatBytes(telemetry.processedBytes || 0);
+        const tot = formatBytes(telemetry.totalBytes || 0);
+        bytesEl.textContent = `${proc} / ${tot}`;
+    }
+
+    const workersEl = document.getElementById('telemetry-workers');
+    if (workersEl) {
+        const count = telemetry.workerCount || 
+            (typeof WorkerBridge !== 'undefined' && WorkerBridge.getPoolSize ? WorkerBridge.getPoolSize() : (typeof navigator !== 'undefined' && navigator.hardwareConcurrency ? Math.min(8, Math.max(2, navigator.hardwareConcurrency)) : 4));
+        workersEl.textContent = `${count} Active Core${count > 1 ? 's' : ''}`;
+    }
+}
+
+function resetTelemetryHUD() {
+    smoothedSpeedEMA = 0;
+    const hud = document.getElementById('telemetry-hud');
+    if (hud) hud.style.display = 'none';
+    const act = document.getElementById('progress-actions');
+    if (act) act.style.display = 'none';
+    const speedEl = document.getElementById('telemetry-speed');
+    if (speedEl) speedEl.textContent = '0.0 MB/s';
+    const elapsedEl = document.getElementById('telemetry-elapsed');
+    if (elapsedEl) elapsedEl.textContent = '00:00';
+    const etaEl = document.getElementById('telemetry-eta');
+    if (etaEl) etaEl.textContent = '--:--';
+    const bytesEl = document.getElementById('telemetry-bytes');
+    if (bytesEl) bytesEl.textContent = '0 MB / 0 MB';
 }
 
 function clearLogs() {
@@ -1591,9 +1673,12 @@ btnEncrypt.addEventListener('click', async () => {
 
             ProgressTracker.onCompressProgress(10, _origTotalBytes);
 
+            const progActions = document.getElementById('progress-actions');
+            if (progActions) progActions.style.display = 'flex';
+
             let totalVaultBytes = 0;
             await new Promise((resolve, reject) => {
-                WorkerBridge.startEncryption({
+                currentStreamingOp = WorkerBridge.startEncryption({
                     files: selectedEncryptFiles,
                     password,
                     keyfile: keyfileBytes,
@@ -1602,10 +1687,11 @@ btnEncrypt.addEventListener('click', async () => {
                         bufferChunks: !streamWriter
                     },
                     onProgress(telemetry) {
-                        const { percent, stage, throughputMBs, elapsedSec, etaSec } = telemetry;
+                        const { percent, stage, throughputMBs, etaSec } = telemetry;
                         const speed = throughputMBs > 0 ? ` (${throughputMBs.toFixed(1)} MB/s)` : '';
                         const eta = etaSec > 0 ? ` · ETA ${Math.ceil(etaSec)}s` : '';
                         updateProgress(`${stage}${speed}${eta}`, percent);
+                        updateTelemetryHUD(telemetry);
 
                         if (percent < 50) {
                             ProgressTracker.onCompressProgress(percent * 2, _origTotalBytes);
@@ -1615,6 +1701,8 @@ btnEncrypt.addEventListener('click', async () => {
                     },
                     async onComplete(result) {
                         try {
+                            resetTelemetryHUD();
+                            currentStreamingOp = null;
                             totalVaultBytes = result.totalBytes;
                             if (streamWriter && typeof streamWriter.finalize === 'function') {
                                 await streamWriter.finalize();
@@ -1628,6 +1716,8 @@ btnEncrypt.addEventListener('click', async () => {
                         }
                     },
                     onError(err) {
+                        resetTelemetryHUD();
+                        currentStreamingOp = null;
                         reject(err);
                     }
                 });
@@ -1870,13 +1960,17 @@ btnDecrypt.addEventListener('click', async () => {
 
             const catalog = await StreamUnpacker.readVaultManifest(selectedDecryptFile, password, keyfileBytes);
             const folderName = selectedDecryptFile.name.replace(/\.zev$/i, '');
+            const masterKey = catalog.masterKey;
+
+            // Zero-Knowledge: wipe plaintext password from input element immediately
+            if (decryptPassword) decryptPassword.value = '';
 
             log(`✅ Authenticated! Loaded catalog with ${catalog.fileCount} file(s) (${formatBytes(catalog.totalSize)}) with zero RAM buffering!`, 'success');
             updateProgress('✅ Decryption complete!', 100);
             ProgressTracker.onCryptoDone(true, 'v3');
             ProgressTracker.onSaveDone(`${folderName}_decrypted`, catalog.totalSize, 'v3');
 
-            openV3VaultExplorer(folderName, catalog, selectedDecryptFile, password, keyfileBytes);
+            openV3VaultExplorer(folderName, catalog, selectedDecryptFile, null, keyfileBytes, masterKey);
 
             clearDecryptSelection();
             v2KeyfileDecrypt = null;
@@ -2263,7 +2357,7 @@ let currentDecryptedZip = null;
 let currentDecryptedFolderName = '';
 let currentDecryptedBlob = null;
 let currentDecryptedFileList = [];
-let currentV3Vault = null; // { folderName, catalog, file, password, keyfileBytes }
+let currentV3Vault = null; // { folderName, catalog, file, password, keyfileBytes, masterKey, chunkCache }
 
 /**
  * Retrieves a decrypted file Blob from either memory JSZip (v1/v2) or on-demand stream extraction (v3).
@@ -2277,13 +2371,18 @@ async function getDecryptedFileBlob(filePath) {
     if (currentV3Vault && typeof StreamUnpacker !== 'undefined') {
         const entry = currentV3Vault.catalog.files.find(f => f.path === filePath);
         if (!entry) throw new Error(`File not found in vault catalog: ${filePath}`);
+
+        // Fast-Path: Pass cached non-extractable CryptoKey to bypass 600,000 PBKDF2 iterations (< 15 ms)
+        const keyOrPassword = currentV3Vault.masterKey || currentV3Vault.password;
         const extracted = await StreamUnpacker.extractSingleFile(
             currentV3Vault.file,
-            currentV3Vault.password,
+            keyOrPassword,
             entry,
             {
                 keyfileBytes: currentV3Vault.keyfileBytes,
-                manifest: currentV3Vault.catalog
+                manifest: currentV3Vault.catalog,
+                header: currentV3Vault.catalog.header,
+                chunkCache: currentV3Vault.chunkCache
             }
         );
         return new Blob([extracted.data || extracted]);
@@ -2294,7 +2393,7 @@ async function getDecryptedFileBlob(filePath) {
 /**
  * Opens Decrypted Vault Explorer for a v3 streaming vault without loading full archive into RAM.
  */
-function openV3VaultExplorer(folderName, catalog, vaultFile, password, keyfileBytes) {
+function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, keyfileBytes = null, masterKey = null) {
     currentDecryptedFolderName = folderName;
     currentDecryptedZip = null;
     currentDecryptedBlob = null;
@@ -2302,8 +2401,10 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password, keyfileBy
         folderName,
         catalog,
         file: vaultFile,
-        password,
-        keyfileBytes
+        password: password || null,
+        keyfileBytes: keyfileBytes ? new Uint8Array(keyfileBytes) : null,
+        masterKey: masterKey || catalog.masterKey || null,
+        chunkCache: new Map() // LRU cache for decrypted 4 MB chunk spans
     };
     explorerSelectedFiles.clear();
 
@@ -2617,9 +2718,58 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
     modal.style.display = 'flex';
 }
 
+/**
+ * Zero-Knowledge Session Zeroization Protocol
+ * Securely wipes active cryptographic keys, byte buffers, and temporary object URLs from memory.
+ */
+function lockV3VaultSession() {
+    if (!currentV3Vault) return;
+
+    // 1. Explicitly zeroize sensitive keyfile byte buffers in RAM
+    if (currentV3Vault.keyfileBytes && typeof currentV3Vault.keyfileBytes.fill === 'function') {
+        currentV3Vault.keyfileBytes.fill(0);
+    }
+
+    // 2. Wipe cached decrypted plaintexts
+    if (currentV3Vault.chunkCache) {
+        for (const [_, chunk] of currentV3Vault.chunkCache.entries()) {
+            if (chunk && typeof chunk.fill === 'function') {
+                chunk.fill(0);
+            }
+        }
+        currentV3Vault.chunkCache.clear();
+    }
+
+    // 3. Nullify cryptographic key and container reference handles
+    currentV3Vault.masterKey = null;
+    currentV3Vault.password = null;
+    currentV3Vault.keyfileBytes = null;
+    currentV3Vault.catalog = null;
+    currentV3Vault.file = null;
+    currentV3Vault = null;
+
+    // 4. Reset explorer UI state
+    currentDecryptedFolderName = '';
+    currentDecryptedFileList = [];
+    currentMediaPlaylist = [];
+    explorerSelectedFiles.clear();
+
+    // 5. Revoke media blob URLs and plug media blob memory leak
+    if (currentMediaBlobUrl) {
+        URL.revokeObjectURL(currentMediaBlobUrl);
+        currentMediaBlobUrl = null;
+    }
+    currentMediaBlob = null;
+    currentMediaFilename = '';
+
+    // 6. Scrub password input field in DOM
+    if (decryptPassword) decryptPassword.value = '';
+}
+
 function closeVaultExplorer() {
     const modal = document.getElementById('vault-explorer-modal');
     if (modal) modal.style.display = 'none';
+    lockV3VaultSession();
 }
 
 /**
@@ -2634,18 +2784,35 @@ async function playMediaByIndex(index) {
     const badge = document.getElementById('media-modal-badge');
     const title = document.getElementById('media-modal-title');
     const counter = document.getElementById('media-modal-counter');
-    const body = document.getElementById('media-modal-body');
     const prevBtn = document.getElementById('btn-media-prev');
     const nextBtn = document.getElementById('btn-media-next');
-    const speedSelect = document.getElementById('media-speed-select');
-    const timeDisplay = document.getElementById('media-time-display');
+    const videoEl = document.getElementById('cinema-video');
+    const audioEl = document.getElementById('cinema-audio');
+    const loader = document.getElementById('media-loading-indicator');
+    const loaderText = document.getElementById('media-loading-text');
 
-    if (!modal || !body || (!currentDecryptedZip && !currentV3Vault)) return;
+    if (!modal || (!currentDecryptedZip && !currentV3Vault)) return;
 
+    // Clean up previous blob URL
     if (currentMediaBlobUrl) {
         URL.revokeObjectURL(currentMediaBlobUrl);
         currentMediaBlobUrl = null;
     }
+
+    if (badge) badge.textContent = item.category === 'video' ? '🎬 Video' : '🎵 Audio';
+    if (title) title.textContent = item.name;
+    if (counter) counter.textContent = `${index + 1} of ${currentMediaPlaylist.length}`;
+    if (prevBtn) prevBtn.disabled = index <= 0;
+    if (nextBtn) nextBtn.disabled = index >= currentMediaPlaylist.length - 1;
+
+    // Show loader, hide players
+    if (loader) {
+        loader.style.display = 'flex';
+        if (loaderText) loaderText.textContent = `Extracting ${item.name} (${formatBytes(item.size)})…`;
+    }
+    if (videoEl) videoEl.style.display = 'none';
+    if (audioEl) audioEl.style.display = 'none';
+    modal.style.display = 'flex';
 
     try {
         const rawBlob = await getDecryptedFileBlob(item.path);
@@ -2653,75 +2820,28 @@ async function playMediaByIndex(index) {
         currentMediaFilename = item.name;
         currentMediaBlobUrl = URL.createObjectURL(currentMediaBlob);
 
-        if (badge) badge.textContent = item.category === 'video' ? '🎬 Video' : '🎵 Audio';
-        if (title) title.textContent = item.name;
-        if (counter) counter.textContent = `${index + 1} of ${currentMediaPlaylist.length}`;
+        if (loader) loader.style.display = 'none';
 
-        if (prevBtn) prevBtn.disabled = index <= 0;
-        if (nextBtn) nextBtn.disabled = index >= currentMediaPlaylist.length - 1;
+        const speedSelect = document.getElementById('media-speed-select');
+        const rate = parseFloat(speedSelect?.value || '1');
 
-        body.innerHTML = '';
-
-        if (item.category === 'video') {
-            const video = document.createElement('video');
-            video.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
-            video.controls = true;
-            video.autoplay = true;
-            video.playsInline = true;
-            video.setAttribute('webkit-playsinline', 'true');
-            video.setAttribute('preload', 'auto');
-            video.src = currentMediaBlobUrl;
-
-            if (speedSelect) video.playbackRate = parseFloat(speedSelect.value || '1');
-
-            video.addEventListener('timeupdate', () => {
-                if (timeDisplay) {
-                    timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
-                }
-            });
-            video.addEventListener('loadedmetadata', () => {
-                if (timeDisplay) {
-                    timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
-                }
-            });
-            video.addEventListener('ended', () => {
-                if (currentMediaIndex < currentMediaPlaylist.length - 1) {
-                    playMediaByIndex(currentMediaIndex + 1);
-                }
-            });
-
-            body.appendChild(video);
-        } else {
-            const audio = document.createElement('audio');
-            audio.className = 'media-player-element';
-            audio.controls = true;
-            audio.autoplay = true;
-            audio.setAttribute('preload', 'auto');
-            audio.src = currentMediaBlobUrl;
-
-            if (speedSelect) audio.playbackRate = parseFloat(speedSelect.value || '1');
-
-            audio.addEventListener('timeupdate', () => {
-                if (timeDisplay) {
-                    timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
-                }
-            });
-            audio.addEventListener('loadedmetadata', () => {
-                if (timeDisplay) {
-                    timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
-                }
-            });
-            audio.addEventListener('ended', () => {
-                if (currentMediaIndex < currentMediaPlaylist.length - 1) {
-                    playMediaByIndex(currentMediaIndex + 1);
-                }
-            });
-
-            body.appendChild(audio);
+        if (item.category === 'video' && videoEl) {
+            if (audioEl) { audioEl.pause(); audioEl.src = ''; audioEl.style.display = 'none'; }
+            videoEl.style.display = 'block';
+            videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
+            videoEl.src = currentMediaBlobUrl;
+            videoEl.playbackRate = rate;
+            videoEl.play().catch(() => {});
+        } else if (audioEl) {
+            if (videoEl) { videoEl.pause(); videoEl.src = ''; videoEl.style.display = 'none'; }
+            audioEl.style.display = 'block';
+            audioEl.className = 'media-player-element';
+            audioEl.src = currentMediaBlobUrl;
+            audioEl.playbackRate = rate;
+            audioEl.play().catch(() => {});
         }
-
-        modal.style.display = 'flex';
     } catch (err) {
+        if (loader) loader.style.display = 'none';
         console.error('[Media Play Error]', err);
         showToast(`Failed to load media: ${err.message}`, 'error');
     }
@@ -2729,7 +2849,6 @@ async function playMediaByIndex(index) {
 
 function openMediaPlayerByPath(filePath) {
     if (!currentMediaPlaylist || currentMediaPlaylist.length === 0) {
-        // Build playlist if not built
         currentMediaPlaylist = [];
         for (const fileItem of currentDecryptedFileList) {
             const mediaCat = getMediaCategory(fileItem.name);
@@ -2752,19 +2871,37 @@ function openMediaPlayerByPath(filePath) {
 
 function closeMediaPlayer() {
     const modal = document.getElementById('vault-media-modal');
-    const body = document.getElementById('media-modal-body');
+    const videoEl = document.getElementById('cinema-video');
+    const audioEl = document.getElementById('cinema-audio');
+    const loader = document.getElementById('media-loading-indicator');
+
     if (modal) modal.style.display = 'none';
-    if (body) {
-        const mediaElem = body.querySelector('video, audio');
-        if (mediaElem) {
-            mediaElem.pause();
-            mediaElem.src = '';
-        }
-        body.innerHTML = '';
+    if (loader) loader.style.display = 'none';
+
+    if (videoEl) {
+        videoEl.pause();
+        videoEl.src = '';
+        videoEl.style.display = 'none';
     }
+    if (audioEl) {
+        audioEl.pause();
+        audioEl.src = '';
+        audioEl.style.display = 'none';
+    }
+
     if (currentMediaBlobUrl) {
         URL.revokeObjectURL(currentMediaBlobUrl);
         currentMediaBlobUrl = null;
+    }
+
+    // Memory Leak Fix: scrub global media blob reference
+    currentMediaBlob = null;
+    currentMediaFilename = '';
+
+    const playBtn = document.getElementById('btn-media-play');
+    if (playBtn) {
+        playBtn.innerHTML = '▶️ Play';
+        playBtn.title = 'Play (Space)';
     }
 }
 
@@ -3171,6 +3308,84 @@ function initExplorerUI() {
         }
     });
 
+    function getActiveCinemaMedia() {
+        const v = document.getElementById('cinema-video');
+        const a = document.getElementById('cinema-audio');
+        if (v && v.style.display !== 'none') return v;
+        if (a && a.style.display !== 'none') return a;
+        return null;
+    }
+
+    function updatePlayBtnUI(isPlaying) {
+        const btn = document.getElementById('btn-media-play');
+        if (btn) {
+            btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
+            btn.title = isPlaying ? 'Pause (Space)' : 'Play (Space)';
+        }
+    }
+
+    function updateVolumeMuteUI(media) {
+        if (!media) return;
+        const muteBtn = document.getElementById('btn-media-mute');
+        const volSlider = document.getElementById('media-volume-slider');
+        if (volSlider) volSlider.value = media.muted ? '0' : String(media.volume);
+        if (muteBtn) {
+            const isMuted = media.muted || media.volume === 0;
+            muteBtn.textContent = isMuted ? '🔇' : (media.volume < 0.5 ? '🔉' : '🔊');
+            muteBtn.title = isMuted ? 'Unmute (M)' : 'Mute (M)';
+        }
+    }
+
+    // Bind video & audio sync events
+    ['cinema-video', 'cinema-audio'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('play', () => updatePlayBtnUI(true));
+        el.addEventListener('pause', () => updatePlayBtnUI(false));
+        el.addEventListener('ended', () => {
+            updatePlayBtnUI(false);
+            if (currentMediaIndex < currentMediaPlaylist.length - 1) {
+                playMediaByIndex(currentMediaIndex + 1);
+            }
+        });
+        el.addEventListener('timeupdate', () => {
+            const timeDisplay = document.getElementById('media-time-display');
+            if (timeDisplay && el.duration) {
+                timeDisplay.textContent = `${formatTime(el.currentTime)} / ${formatTime(el.duration)}`;
+            }
+        });
+        el.addEventListener('volumechange', () => updateVolumeMuteUI(el));
+    });
+
+    // Play / Pause Button
+    const playBtn = document.getElementById('btn-media-play');
+    playBtn?.addEventListener('click', () => {
+        const media = getActiveCinemaMedia();
+        if (!media) return;
+        if (media.paused) media.play(); else media.pause();
+    });
+
+    // Mute Button
+    const muteBtn = document.getElementById('btn-media-mute');
+    muteBtn?.addEventListener('click', () => {
+        const media = getActiveCinemaMedia();
+        if (!media) return;
+        media.muted = !media.muted;
+        updateVolumeMuteUI(media);
+    });
+
+    // Volume Slider
+    const volSlider = document.getElementById('media-volume-slider');
+    volSlider?.addEventListener('input', (e) => {
+        const media = getActiveCinemaMedia();
+        if (!media) return;
+        const val = parseFloat(e.target.value);
+        media.volume = val;
+        if (val > 0 && media.muted) media.muted = false;
+        else if (val === 0) media.muted = true;
+        updateVolumeMuteUI(media);
+    });
+
     mediaPrevBtn?.addEventListener('click', () => {
         if (currentMediaIndex > 0) playMediaByIndex(currentMediaIndex - 1);
     });
@@ -3180,29 +3395,29 @@ function initExplorerUI() {
     });
 
     mediaRewind10Btn?.addEventListener('click', () => {
-        const media = document.querySelector('#media-modal-body video, #media-modal-body audio');
+        const media = getActiveCinemaMedia();
         if (media) media.currentTime = Math.max(0, media.currentTime - 10);
     });
 
     mediaForward10Btn?.addEventListener('click', () => {
-        const media = document.querySelector('#media-modal-body video, #media-modal-body audio');
+        const media = getActiveCinemaMedia();
         if (media) media.currentTime = Math.min(media.duration || 0, media.currentTime + 10);
     });
 
     mediaSpeedSelect?.addEventListener('change', (e) => {
-        const media = document.querySelector('#media-modal-body video, #media-modal-body audio');
+        const media = getActiveCinemaMedia();
         if (media) media.playbackRate = parseFloat(e.target.value || '1');
     });
 
     mediaFitBtn?.addEventListener('click', () => {
         currentMediaFitCover = !currentMediaFitCover;
-        const video = document.querySelector('#media-modal-body video');
+        const video = document.getElementById('cinema-video');
         if (video) video.classList.toggle('media-player-element--cover', currentMediaFitCover);
         if (mediaFitBtn) mediaFitBtn.textContent = currentMediaFitCover ? '↔️ Fill' : '↔️ Fit';
     });
 
     mediaPipBtn?.addEventListener('click', async () => {
-        const video = document.querySelector('#media-modal-body video');
+        const video = document.getElementById('cinema-video');
         if (!video) return;
         try {
             if (document.pictureInPictureElement) {
@@ -3216,7 +3431,7 @@ function initExplorerUI() {
     });
 
     mediaFullscreenBtn?.addEventListener('click', () => {
-        const container = document.querySelector('.media-modal-container') || document.querySelector('#media-modal-body video');
+        const container = document.querySelector('.media-modal-container') || document.getElementById('cinema-video');
         if (!container) return;
         if (!document.fullscreenElement) {
             container.requestFullscreen?.() || container.webkitRequestFullscreen?.();
@@ -3225,12 +3440,29 @@ function initExplorerUI() {
         }
     });
 
+    // Wire Cancel Operation Button
+    const btnCancelOp = document.getElementById('btn-cancel-op');
+    btnCancelOp?.addEventListener('click', async () => {
+        if (currentStreamingOp && typeof currentStreamingOp.cancel === 'function') {
+            log('⚠️ Cancelling operation on user request...', 'warn');
+            updateProgress('Cancelling operation…', 0);
+            btnCancelOp.disabled = true;
+            try {
+                await currentStreamingOp.cancel();
+            } catch (_) {}
+            btnCancelOp.disabled = false;
+            resetTelemetryHUD();
+            currentStreamingOp = null;
+            log('❌ Operation cancelled.', 'error');
+        }
+    });
+
     // Keyboard Shortcuts for Media Player
     window.addEventListener('keydown', (e) => {
         const mediaModalEl = document.getElementById('vault-media-modal');
         if (!mediaModalEl || mediaModalEl.style.display === 'none') return;
 
-        const media = document.querySelector('#media-modal-body video, #media-modal-body audio');
+        const media = getActiveCinemaMedia();
         if (!media) return;
 
         if (e.key === ' ' || e.code === 'Space') {
@@ -3250,10 +3482,13 @@ function initExplorerUI() {
             media.currentTime = Math.min(media.duration || 0, media.currentTime + 10);
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            media.volume = Math.min(1, media.volume + 0.1);
+            media.volume = Math.min(1, +(media.volume + 0.05).toFixed(2));
+            if (media.muted) media.muted = false;
+            updateVolumeMuteUI(media);
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
-            media.volume = Math.max(0, media.volume - 0.1);
+            media.volume = Math.max(0, +(media.volume - 0.05).toFixed(2));
+            updateVolumeMuteUI(media);
         } else if (e.key === 'f' || e.key === 'F') {
             e.preventDefault();
             mediaFullscreenBtn?.click();
@@ -3263,10 +3498,15 @@ function initExplorerUI() {
         } else if (e.key === 'm' || e.key === 'M') {
             e.preventDefault();
             media.muted = !media.muted;
+            updateVolumeMuteUI(media);
         } else if (e.key === 'Escape') {
             closeMediaPlayer();
         }
     });
+
+    // Lifecycle Zeroization Listeners
+    window.addEventListener('beforeunload', () => lockV3VaultSession());
+    window.addEventListener('pagehide', () => lockV3VaultSession());
 }
 
 if (document.readyState === 'loading') {

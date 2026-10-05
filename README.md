@@ -9,12 +9,12 @@
 [![KDF: PBKDF2-SHA512](https://img.shields.io/badge/KDF-PBKDF2--SHA512%20(600k)-3b82f6?style=for-the-badge)](#-cryptography)
 [![PWA: Installable](https://img.shields.io/badge/PWA-Installable-8b5cf6?style=for-the-badge)](#-pwa--install-as-an-offline-app)
 [![100% Offline](https://img.shields.io/badge/Mode-100%25%20Offline-f59e0b?style=for-the-badge)](#)
-[![Release: v6.6 / WEB-VERSION-34](https://img.shields.io/badge/Release-v6.6%20(WEB--VERSION--34)-06b6d4?style=for-the-badge)](CHANGELOG.md)
+[![Release: v6.7 / WEB-VERSION-35](https://img.shields.io/badge/Release-v6.7%20(WEB--VERSION--35)-06b6d4?style=for-the-badge)](CHANGELOG.md)
 
 ---
 
-> 🟢 **Current stable release — v6.6 (`.zev` format / WEB-VERSION-34):** military-grade security by default with 5 GB low-RAM streaming, non-blocking glassmorphic toast notification system, streamlined above-the-fold UI with active status pulse, and dedicated native Android APK (`com.zevbuild.zevsafe`).  
-> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · 4 MB Chunked AES-256-GCM (`ZV3\0`) · optional keyfile 2FA · Glassmorphic Toast Notifications & Field Validation Shake · Symmetrical Card Baseline Alignment · Instant <100ms Vault Explorer with breadcrumbs · Cinema Media Player · 5 GB mobile & desktop streaming (<150 MB RAM) · Dedicated native Android app with ForegroundService & ExoPlayer · Universal auto-hiding header & logo across all browsers & devices · Ultra-lightweight WebP & compressed asset engine · Structured asset directory (`assets/`).**
+> 🟢 **Current stable release — v6.7 (`.zev` format / WEB-VERSION-35):** military-grade security by default with multi-worker parallel AEAD streaming pipeline, zero-copy transferable buffers, ephemeral session key caching, zero-knowledge session zeroization, active telemetry HUD with worker core count and ETA, enhanced Cinema player controls, and dedicated native Android APK (`com.zevbuild.zevsafe`).  
+> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · Multi-Worker 4 MB Chunked AES-256-GCM (`ZV3\0`) · Parallel WorkerPool (4–8 threads) with bounded backpressure (<105 MB RAM) · Zero-Copy Transferable ArrayBuffers · Instant <100ms Vault Explorer with Ephemeral CryptoKey Caching (<15ms extraction) · Zero-Knowledge Memory Scrubbing & Zeroization (`.fill(0)`) · Real-Time Telemetry HUD (MB/s, Worker Badge, Live ETA) · In-Browser Cinema Media Player with Static DOM Preservation, Volume Slider & Full Keyboard Shortcuts · Dedicated native Android app with ForegroundService & ExoPlayer · Progressive Web App (v35).**
 
 ---
 
@@ -38,25 +38,26 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | Feature | Description |
 |---|---|
 | 🔐 **AES-256-GCM Authenticated Encryption** | Military-grade authenticated cipher guaranteeing confidentiality and detecting any bit-flipping, chunk reordering, or file tampering. |
-| ⚡ **v3 5 GB Low-RAM Streaming Engine (`ZV3\0`)** | Streams ZIP64 compression (`CompressionStream('deflate-raw')`) and 4 MB chunked AES-256-GCM in a background Web Worker with 2-credit (~8 MB) backpressure, keeping peak browser heap under 150 MB. |
+| ⚡ **Multi-Worker Streaming Pipeline (`ZV3\0`)** | Streams ZIP64 compression (`CompressionStream('deflate-raw')`) and parallel 4 MB chunked AES-256-GCM across a dynamic Web Worker pool (clamped to 4–8 cores with credit-based flow control), utilizing zero-copy `Transferable` buffers to keep peak browser heap under 105 MB. |
 | 🛡️ **PBKDF2-SHA512 (600,000 Iterations)** | Key stretching with **600,000 iterations** and a 32-byte CSPRNG random salt offloaded to a Web Worker so the UI stays at 60 FPS. |
 | 🗝️ **Keyfile Two-Factor Authentication (2FA)** | Mixes a SHA-256 hash of any file (image, key, binary) into derived key material via XOR as a physical second factor. |
 | 🔑 **Automatic v1 / v2 / v3 Compatibility** | Sniffs the container header (`ZV3\0`, `ZV2\0`, or legacy v1) from the first 57 bytes to transparently decrypt all vault generations. |
 | 📁 **Dual File & Full Directory Support** | Select individual files, multi-file selections, or complete directory trees using "Browse Folder" or "Browse Files". |
 | ⚡ **Native File System Access API** | Uses `window.showDirectoryPicker()` with recursive folder hierarchy capture and seamless fallback to HTML5 `webkitdirectory`. |
-| 📂 **Instant Decrypted Vault Explorer (< 100 ms)** | Reads only the 57-byte header and encrypted tail manifest (`file.slice(manifestOffset)`) to list 1,000+ files in < 100 ms without buffering the vault. |
+| 📂 **Instant Decrypted Vault Explorer (< 100 ms)** | Reads only the 57-byte header and encrypted tail manifest in < 100 ms without buffering the vault. Caches pre-derived ephemeral `CryptoKey` in memory to unlock single-file extractions in < 15 ms without repeating 600,000 PBKDF2 rounds. |
+| 🛡️ **Zero-Knowledge Session Zeroization** | Securely zeroes raw keyfile byte arrays with `.fill(0)` on vault close, lock, or tab unload. Completely nullifies session keys, chunk caches, and media blobs in volatile RAM, and scrubs password inputs from the DOM. |
 | ⬇️ **Multi-Tier Mobile & Desktop Streaming Saves** | Routes 5 GB downloads via Tier 1 FileSystem Access API, Tier 2 Service Worker `/_stream_download` stream intercept, and Tier 3 OPFS staging. |
 | 🎬 **In-Browser Cinema Media Player** | Direct playback for decrypted video (`.mp4`, `.mov`, `.webm`, `.mkv`) and audio (`.mp3`, `.wav`, `.ogg`, `.flac`, `.aac`) with zero disk writes. |
-| 🎛️ **Advanced Cinema Controls** | Variable playback speed (0.5×–2.0×), ±10s scrubbing, track navigation, Picture-in-Picture (PiP), fullscreen, and "New Tab" streaming. |
+| 🎛️ **Advanced Cinema Controls & Deck** | Dedicated volume slider, mute toggle, variable speed (0.5×–2.0×), ±10s scrubbing, track navigation, PiP, fullscreen, static DOM preservation, media loading spinner, and comprehensive keyboard shortcuts (`Space`, `←`/`→`, `↑`/`↓`, `M`, `F`, `P`, `Esc`). |
 | 📦 **Smart Adaptive Compression** | Instant `STORE` mode for pre-compressed media/archives + streaming `DEFLATE` for compressible documents/code. |
 | 🤖 **Dedicated Native Android App** | Companion Android application ([`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe/releases/latest)) in Kotlin & Jetpack Compose with bit-identical v3 streaming encryption, AndroidX Media3 Cinema player, and background `ForegroundService`. |
 | 💻 **1-Click PC Setup (25+ GB)** | Includes Windows batch launchers (`Encrypt-Vault.bat`, `Decrypt-Vault.bat`) and streaming PowerShell scripts for zero-RAM 25 GB–100 GB+ datasets. |
-| 📊 **3-Stage 60 FPS Pipeline Tracker** | Visual progress pills (`Compress` → `Encrypt/Decrypt` → `Save`) with live throughput telemetry (MB/s, ETA, elapsed time). |
+| 📊 **Real-Time Telemetry HUD & Pipeline Tracker** | Visual progress pills (`Compress` → `Encrypt/Decrypt` → `Save`) with live EMA-smoothed throughput (MB/s), active worker thread count badge, live countdown ETA, and an instant operation cancellation controller. |
 | 🌐 **Universal Auto-Hiding Header & Logo** | Auto-hides sticky navbar and logo on downward scroll across all desktop, tablet, and mobile browsers with 60 FPS hardware-accelerated transitions to maximize screen workspace. |
 | 🔔 **Non-Blocking Glassmorphic Toasts** | Replaces all intrusive browser alerts with smooth, dark-glass toast notifications and animated inline field shakes (`@keyframes fieldShake`) on validation failures. |
 | 📐 **Symmetrical Above-The-Fold Layout** | Optimized vertical shell spacing and CSS Grid stretch alignment with bottom-anchored CTA action buttons for seamless laptop drop-zone visibility. |
 | ⚡ **Optimized WebP & Compressed Assets** | All brand icons, OG social images, and logos compressed in-place (57%+ payload reduction) with next-gen WebP support for high-speed loading. |
-| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v34`), floating non-intrusive install banner, auto-updating in background, fully functional offline. |
+| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v35`), floating non-intrusive install banner, auto-updating in background, fully functional offline. |
 | 📜 **Interactive Changelog Portal** | Dedicated in-app and web release notes page ([`change-log/`](https://zevsafe.pages.dev/change-log/)) with live filtering and search across all releases. |
 
 ---
@@ -197,6 +198,7 @@ When viewing decrypted media, use the full-featured cinema player:
 |---|---|
 | <kbd>Space</kbd> | Play / Pause |
 | <kbd>←</kbd> / <kbd>→</kbd> | Rewind 10s / Forward 10s |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Volume Up / Volume Down (5%) |
 | <kbd>Shift</kbd> + <kbd>←</kbd> / <kbd>→</kbd> | Previous Track / Next Track |
 | <kbd>F</kbd> | Toggle Fullscreen |
 | <kbd>P</kbd> | Toggle Picture-in-Picture (PiP) |

@@ -216,6 +216,70 @@
                 }
 
                 // -------------------------------------------------------------
+                // 2b. INIT_SESSION: Multi-worker session setup & pre-derived key distribution
+                // -------------------------------------------------------------
+                case 'INIT_SESSION': {
+                    const {
+                        cryptoKey,
+                        masterKey,
+                        password,
+                        salt,
+                        iterations = 600000,
+                        keyfile,
+                        baseIVPrefix,
+                        chunkSize
+                    } = data;
+
+                    const k = cryptoKey || masterKey;
+                    if (k) {
+                        session.masterKey = k;
+                    } else if (password) {
+                        if (!salt) throw new TypeError('salt is required for key derivation in INIT_SESSION');
+                        const saltBytes = salt instanceof Uint8Array ? salt : new Uint8Array(salt);
+                        const kfBytes = keyfile ? (keyfile instanceof Uint8Array ? keyfile : new Uint8Array(keyfile)) : null;
+                        session.masterKey = await StreamCrypto.deriveMasterKey(password, saltBytes, iterations, kfBytes);
+                        session.salt = saltBytes;
+                        session.iterations = iterations;
+                    }
+
+                    if (baseIVPrefix) {
+                        session.baseIVPrefix = baseIVPrefix instanceof Uint8Array ? baseIVPrefix : new Uint8Array(baseIVPrefix);
+                    }
+                    if (salt && !session.salt) {
+                        session.salt = salt instanceof Uint8Array ? salt : new Uint8Array(salt);
+                    }
+                    if (chunkSize) {
+                        session.chunkSize = chunkSize;
+                    }
+                    session.isCancelled = false;
+
+                    replyFn({
+                        id,
+                        type: 'ACK',
+                        success: true,
+                        sessionId,
+                        keyDerived: true
+                    }, []);
+                    break;
+                }
+
+                // -------------------------------------------------------------
+                // 2c. CLEANUP_SESSION: Explicit session teardown and purge
+                // -------------------------------------------------------------
+                case 'CLEANUP_SESSION': {
+                    clearSession(session);
+                    if (sessionId && sessions.has(sessionId)) {
+                        sessions.delete(sessionId);
+                    }
+                    replyFn({
+                        id,
+                        type: 'ACK',
+                        success: true
+                    }, []);
+                    break;
+                }
+
+                // -------------------------------------------------------------
                 // 3. ENCRYPT_CHUNK: Encrypts chunk via STREAM AEAD with Transferable
                 // -------------------------------------------------------------
                 case 'ENCRYPT_CHUNK': {
@@ -226,12 +290,13 @@
                         throw new Error('Master key not initialized. Call INIT_KEY first.');
                     }
 
-                    const { chunk, chunkIndex, isLast, baseIVPrefix, salt } = data;
-                    if (!chunk) {
+                    const chunkData = data.plainChunk || data.chunk;
+                    if (!chunkData) {
                         throw new TypeError('chunk buffer is required');
                     }
 
-                    const plainBytes = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
+                    const { chunkIndex, isLast, baseIVPrefix, salt } = data;
+                    const plainBytes = chunkData instanceof Uint8Array ? chunkData : new Uint8Array(chunkData);
                     const ivPrefix = baseIVPrefix
                         ? (baseIVPrefix instanceof Uint8Array ? baseIVPrefix : new Uint8Array(baseIVPrefix))
                         : session.baseIVPrefix;
@@ -251,19 +316,20 @@
                         s
                     );
 
-                    // Zero-copy transfer of encrypted buffer
-                    const encBuffer = encryptedBytes.buffer.slice(
-                        encryptedBytes.byteOffset,
-                        encryptedBytes.byteOffset + encryptedBytes.byteLength
-                    );
+                    // Pure zero-copy Transferable ArrayBuffer: avoids redundant buffer.slice()
+                    const encBuffer = (encryptedBytes.byteOffset === 0 && encryptedBytes.byteLength === encryptedBytes.buffer.byteLength)
+                        ? encryptedBytes.buffer
+                        : encryptedBytes.buffer.slice(encryptedBytes.byteOffset, encryptedBytes.byteOffset + encryptedBytes.byteLength);
 
                     replyFn({
                         id,
                         type: 'ACK',
                         success: true,
                         chunk: encBuffer,
+                        encryptedChunk: encBuffer,
                         chunkIndex,
                         isLast,
+                        sessionId,
                         byteLength: encryptedBytes.byteLength
                     }, [encBuffer]);
                     break;
@@ -280,12 +346,13 @@
                         throw new Error('Master key not initialized. Call INIT_KEY first.');
                     }
 
-                    const { chunk, chunkIndex, isLast, baseIVPrefix, salt } = data;
-                    if (!chunk) {
+                    const chunkData = data.cipherChunk || data.chunk;
+                    if (!chunkData) {
                         throw new TypeError('chunk buffer is required');
                     }
 
-                    const encBytes = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
+                    const { chunkIndex, isLast, baseIVPrefix, salt } = data;
+                    const encBytes = chunkData instanceof Uint8Array ? chunkData : new Uint8Array(chunkData);
                     const ivPrefix = baseIVPrefix
                         ? (baseIVPrefix instanceof Uint8Array ? baseIVPrefix : new Uint8Array(baseIVPrefix))
                         : session.baseIVPrefix;
@@ -305,19 +372,20 @@
                         s
                     );
 
-                    // Zero-copy transfer of decrypted buffer
-                    const plainBuffer = plainBytes.buffer.slice(
-                        plainBytes.byteOffset,
-                        plainBytes.byteOffset + plainBytes.byteLength
-                    );
+                    // Pure zero-copy Transferable ArrayBuffer: avoids redundant buffer.slice()
+                    const plainBuffer = (plainBytes.byteOffset === 0 && plainBytes.byteLength === plainBytes.buffer.byteLength)
+                        ? plainBytes.buffer
+                        : plainBytes.buffer.slice(plainBytes.byteOffset, plainBytes.byteOffset + plainBytes.byteLength);
 
                     replyFn({
                         id,
                         type: 'ACK',
                         success: true,
                         chunk: plainBuffer,
+                        plainChunk: plainBuffer,
                         chunkIndex,
                         isLast,
+                        sessionId,
                         byteLength: plainBytes.byteLength
                     }, [plainBuffer]);
                     break;
@@ -373,10 +441,9 @@
                         session.masterKey
                     );
 
-                    const envBuffer = envelopeBytes.buffer.slice(
-                        envelopeBytes.byteOffset,
-                        envelopeBytes.byteOffset + envelopeBytes.byteLength
-                    );
+                    const envBuffer = (envelopeBytes.byteOffset === 0 && envelopeBytes.byteLength === envelopeBytes.buffer.byteLength)
+                        ? envelopeBytes.buffer
+                        : envelopeBytes.buffer.slice(envelopeBytes.byteOffset, envelopeBytes.byteOffset + envelopeBytes.byteLength);
 
                     replyFn({
                         id,
@@ -491,10 +558,9 @@
                         }
                     }
 
-                    const outBuf = extractedBytes.buffer.slice(
-                        extractedBytes.byteOffset,
-                        extractedBytes.byteOffset + extractedBytes.byteLength
-                    );
+                    const outBuf = (extractedBytes.byteOffset === 0 && extractedBytes.byteLength === extractedBytes.buffer.byteLength)
+                        ? extractedBytes.buffer
+                        : extractedBytes.buffer.slice(extractedBytes.byteOffset, extractedBytes.byteOffset + extractedBytes.byteLength);
 
                     replyFn({
                         id,

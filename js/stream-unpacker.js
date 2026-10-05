@@ -945,7 +945,8 @@
             totalSize,
             fileCount,
             files: filesArray,
-            header
+            header,
+            masterKey
         };
     }
 
@@ -999,9 +1000,10 @@
             }
         }
 
-        // 1. Read vault container header (57 bytes)
-        const headerBytes = await readRange(vaultSource, 0, V3_HEADER_SIZE);
-        const header = await parseVaultHeader(headerBytes, opts);
+        // 1. Read vault container header (57 bytes) or reuse pre-parsed header
+        const header = (opts.header || (opts.manifest && opts.manifest.header))
+            ? (opts.header || opts.manifest.header)
+            : await parseVaultHeader(await readRange(vaultSource, 0, V3_HEADER_SIZE), opts);
 
         if (header.version !== 3) {
             throw createOperationError(`Selective extraction is only supported for v3 streaming vaults (found v${header.version})`);

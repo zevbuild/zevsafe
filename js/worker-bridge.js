@@ -676,6 +676,267 @@
     }
 
     // =========================================================================
+    // MULTI-WORKER POOL & SEQUENCING REASSEMBLY QUEUE (MILESTONE 1)
+    // =========================================================================
+
+    /**
+     * Resolves the optimal number of background workers for the current environment.
+     * Scales up to navigator.hardwareConcurrency, clamped safely between 4 and 8 workers.
+     * Falls back to 1 on single-core devices or when testing with the in-process async shim.
+     *
+     * @param {Object} [options={}]
+     * @param {number} [options.workerCount] - Explicit worker count override
+     * @param {boolean} [options.useShim] - Force single in-process worker shim
+     * @returns {number}
+     */
+    function resolveOptimalWorkerCount(options = {}) {
+        if (options && options.workerCount && Number.isInteger(options.workerCount)) {
+            return Math.max(1, options.workerCount);
+        }
+        if (options && (options.useShim || options.manifestOnly || options.mode === 'manifest-only')) {
+            return 1;
+        }
+
+        let concurrency = 4;
+        if (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) {
+            concurrency = navigator.hardwareConcurrency;
+        } else if (typeof require === 'function') {
+            try {
+                const os = require('node:os');
+                concurrency = os.cpus().length;
+            } catch (_) {}
+        }
+
+        // Single-core or restricted environment
+        if (concurrency <= 1) return 1;
+
+        // Dual/Triple core mobile devices
+        if (concurrency < 4) return concurrency;
+
+        // Safely clamp between 4 and 8 workers on quad+ core systems
+        return Math.min(8, Math.max(4, concurrency));
+    }
+
+    /**
+     * Obtains an ArrayBuffer suitable for zero-copy Transferable transfer.
+     * If the TypedArray views its entire underlying ArrayBuffer (byteOffset === 0
+     * and byteLength === buffer.byteLength), returns the ArrayBuffer directly without copying.
+     * Only slices if viewing a sub-region of a larger buffer.
+     *
+     * @param {Uint8Array|ArrayBufferView|ArrayBuffer} data
+     * @returns {ArrayBuffer}
+     */
+    function toTransferableArrayBuffer(data) {
+        if (!data) return new ArrayBuffer(0);
+        if (data instanceof ArrayBuffer) return data;
+        if (ArrayBuffer.isView(data)) {
+            if (data.byteOffset === 0 && data.byteLength === data.buffer.byteLength) {
+                return data.buffer;
+            }
+            return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+        }
+        return new Uint8Array(data).buffer;
+    }
+
+    /**
+     * Elastic Web Worker Pool managing N background worker threads.
+     * Provides worker acquisition, releasing, synchronized session broadcasting,
+     * and clean termination.
+     */
+    class WorkerPool {
+        /**
+         * @param {number} size - Number of workers to spawn
+         * @param {Object} [workerOptions={}] - Options forwarded to createWorker()
+         */
+        constructor(size, workerOptions = {}) {
+            this.size = Math.max(1, size);
+            this.workerOptions = workerOptions;
+            this.workers = [];
+            this.idleWorkers = [];
+            this.waiters = [];
+            this.isTerminated = false;
+        }
+
+        /**
+         * Spawns all workers in the pool and registers them as idle.
+         */
+        init() {
+            for (let i = 0; i < this.size; i++) {
+                const w = createWorker(this.workerOptions);
+                w._poolIndex = i;
+                this.workers.push(w);
+                this.idleWorkers.push(w);
+            }
+        }
+
+        /**
+         * Acquires an idle worker. If all workers are busy, suspends until one is released.
+         * @returns {Promise<UnifiedWorkerWrapper|Object>}
+         */
+        async acquireWorker() {
+            if (this.isTerminated) {
+                throw new Error('Worker pool has been terminated');
+            }
+            if (this.idleWorkers.length > 0) {
+                return this.idleWorkers.pop();
+            }
+            return new Promise((resolve, reject) => {
+                if (this.isTerminated) {
+                    reject(new Error('Worker pool has been terminated'));
+                    return;
+                }
+                this.waiters.push(resolve);
+            });
+        }
+
+        /**
+         * Releases a worker back to the idle queue or hands it directly to the next queued task.
+         * @param {UnifiedWorkerWrapper|Object} worker
+         */
+        releaseWorker(worker) {
+            if (!worker || this.isTerminated) return;
+            if (this.waiters.length > 0) {
+                const nextWaiter = this.waiters.shift();
+                nextWaiter(worker);
+            } else {
+                this.idleWorkers.push(worker);
+            }
+        }
+
+        /**
+         * Broadcasts a message to all workers in the pool concurrently.
+         * Essential for session initialization (INIT_KEY, SET_PARAMS, INIT_SESSION, CANCEL).
+         *
+         * @param {Function|Object} messageFactory - (worker, index) => messageObject
+         * @param {Function} [getTransferList=null] - (worker, message, index) => Transferable[]
+         * @returns {Promise<Array<any>>}
+         */
+        async broadcast(messageFactory, getTransferList = null) {
+            if (this.isTerminated) {
+                throw new Error('Worker pool has been terminated');
+            }
+            const promises = this.workers.map((worker, index) => {
+                const msg = typeof messageFactory === 'function' ? messageFactory(worker, index) : { ...messageFactory };
+                const xfers = typeof getTransferList === 'function' ? getTransferList(worker, msg, index) : [];
+                return sendWorkerRequest(worker, msg, xfers);
+            });
+            return Promise.all(promises);
+        }
+
+        /**
+         * Terminates all background worker threads and cleans up queues.
+         */
+        terminate() {
+            this.isTerminated = true;
+            for (const resolve of this.waiters) {
+                try { resolve(null); } catch (_) {}
+            }
+            this.waiters = [];
+            for (const w of this.workers) {
+                try { w.terminate(); } catch (_) {}
+            }
+            this.workers = [];
+            this.idleWorkers = [];
+        }
+    }
+
+    /**
+     * Strictly ordered reassembly queue for concurrent multi-worker pipelines.
+     * Buffers chunks that complete out-of-order and guarantees that onChunkReady()
+     * is called in strictly ascending sequential order (0, 1, 2, ...).
+     */
+    class OrderedReassemblyQueue {
+        /**
+         * @param {Object} options
+         * @param {Function} options.onChunkReady - async (chunkItem) => void
+         * @param {Function} [options.onError] - (err) => void
+         */
+        constructor({ onChunkReady, onError }) {
+            this.onChunkReady = onChunkReady;
+            this.onError = onError;
+            this.nextExpectedIndex = 0;
+            this.buffer = new Map();
+            this.isProcessing = false;
+            this.drainWaiters = [];
+            this.hasError = false;
+        }
+
+        /**
+         * Pushes a completed chunk into the sequencing queue and flushes available sequential chunks.
+         * @param {number} chunkIndex - Monotonic chunk sequence index
+         * @param {Object} item - Payload containing { encChunk/plainChunk, chunkIndex, isLast, ... }
+         * @returns {Promise<void>}
+         */
+        async push(chunkIndex, item) {
+            if (this.hasError) return;
+            this.buffer.set(chunkIndex, item);
+            await this.flush();
+        }
+
+        /**
+         * Sequentially emits contiguous chunks starting from nextExpectedIndex.
+         */
+        async flush() {
+            if (this.isProcessing || this.hasError) return;
+            this.isProcessing = true;
+
+            try {
+                while (this.buffer.has(this.nextExpectedIndex) && !this.hasError) {
+                    const item = this.buffer.get(this.nextExpectedIndex);
+                    this.buffer.delete(this.nextExpectedIndex);
+
+                    // Strictly sequential consumer execution
+                    await this.onChunkReady(item);
+                    this.nextExpectedIndex++;
+                }
+            } catch (err) {
+                this.hasError = true;
+                if (typeof this.onError === 'function') {
+                    this.onError(err);
+                }
+            } finally {
+                this.isProcessing = false;
+
+                // Re-check in case a new sequential chunk arrived while awaiting onChunkReady
+                if (this.buffer.has(this.nextExpectedIndex) && !this.hasError) {
+                    return this.flush();
+                }
+
+                // Resolve drain waiters if the queue has fully caught up
+                if (this.buffer.size === 0 && this.drainWaiters.length > 0) {
+                    const waiters = this.drainWaiters;
+                    this.drainWaiters = [];
+                    for (const resolve of waiters) {
+                        try { resolve(); } catch (_) {}
+                    }
+                }
+            }
+        }
+
+        /**
+         * Suspends caller until all pending chunks have been processed and the queue is completely empty.
+         * @returns {Promise<void>}
+         */
+        async waitUntilDrained() {
+            if (this.buffer.size === 0 && !this.isProcessing) return;
+            return new Promise(resolve => {
+                this.drainWaiters.push(resolve);
+            });
+        }
+
+        /**
+         * Resets the queue state.
+         */
+        reset() {
+            this.nextExpectedIndex = 0;
+            this.buffer.clear();
+            this.isProcessing = false;
+            this.hasError = false;
+            this.drainWaiters = [];
+        }
+    }
+
+    // =========================================================================
     // PUBLIC API IMPLEMENTATIONS
     // =========================================================================
 
@@ -710,7 +971,7 @@
         let cancelled = false;
         let hasError = false;
         let fatalError = null;
-        let worker = null;
+        let pool = null;
         let flowController = null;
         let telemetry = null;
         let zipReader = null;
@@ -748,8 +1009,8 @@
                 try { await opts.writable.abort(err).catch(() => {}); } catch (_) {}
             }
 
-            if (worker) {
-                try { worker.terminate(); } catch (_) {}
+            if (pool) {
+                try { pool.terminate(); } catch (_) {}
             }
 
             if (typeof onError === 'function') {
@@ -787,11 +1048,11 @@
                 } else if (opts.writable && typeof opts.writable.abort === 'function') {
                     try { await opts.writable.abort('Operation cancelled').catch(() => {}); } catch (_) {}
                 }
-                if (worker) {
+                if (pool) {
                     try {
-                        await sendWorkerRequest(worker, { type: 'CANCEL', timeoutMs: 2000 });
+                        await pool.broadcast(() => ({ type: 'CANCEL', timeoutMs: 2000 })).catch(() => {});
                     } catch (_) {}
-                    worker.terminate();
+                    pool.terminate();
                 }
             } finally {
                 if (telemetry) telemetry.dispose();
@@ -816,7 +1077,10 @@
 
                 const totalPlainBytes = files.reduce((sum, f) => sum + (f.size || 0), 0);
                 const chunkSize = opts.chunkSize || StreamCrypto.DEFAULT_CHUNK_SIZE;
-                const maxCredits = opts.maxCredits || 2;
+
+                // Elastic pool sizing and bounded credit flow calculation
+                const poolSize = resolveOptimalWorkerCount(opts);
+                const maxCredits = opts.maxCredits || Math.max(2, Math.min(12, poolSize * 2));
 
                 telemetry = new TelemetryCalculator({
                     totalBytes: totalPlainBytes,
@@ -826,9 +1090,10 @@
 
                 flowController = new CreditFlowController(maxCredits);
 
-                // 1. Spawn Worker
+                // 1. Spawn Worker Pool
                 telemetry.setStage('Spawning worker...', true);
-                worker = createWorker(opts);
+                pool = new WorkerPool(poolSize, opts);
+                pool.init();
 
                 // 2. Prepare salt & base IV prefix
                 const salt = StreamCrypto.generateSalt(StreamCrypto.SALT_LENGTH);
@@ -846,36 +1111,40 @@
                     }
                 }
 
-                // 3. Derive key off main thread in background worker
+                // 3. Derive key off main thread across the worker pool
                 await transitionStage('Deriving key...');
-                const saltBuf = salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength);
-                const kfBuf = keyfileBytes
-                    ? keyfileBytes.buffer.slice(keyfileBytes.byteOffset, keyfileBytes.byteOffset + keyfileBytes.byteLength)
-                    : null;
+                const sessionId = 's_enc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
-                const initKeyTransfers = [saltBuf.slice(0)];
-                if (kfBuf) initKeyTransfers.push(kfBuf.slice(0));
+                await pool.broadcast(() => {
+                    const sCopy = salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength);
+                    const kCopy = keyfileBytes
+                        ? keyfileBytes.buffer.slice(keyfileBytes.byteOffset, keyfileBytes.byteOffset + keyfileBytes.byteLength)
+                        : null;
+                    return {
+                        type: 'INIT_KEY',
+                        sessionId,
+                        password,
+                        salt: sCopy,
+                        iterations: opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
+                        keyfile: kCopy
+                    };
+                }, (w, msg) => {
+                    const xfers = [msg.salt];
+                    if (msg.keyfile) xfers.push(msg.keyfile);
+                    return xfers;
+                });
 
                 if (cancelled || hasError) return;
 
-                await sendWorkerRequest(worker, {
-                    type: 'INIT_KEY',
-                    password,
-                    salt: saltBuf,
-                    iterations: opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
-                    keyfile: kfBuf
-                }, initKeyTransfers);
-
-                if (cancelled || hasError) return;
-
-                // 4. Set streaming parameters in worker
-                const ivBuf = baseIVPrefix.buffer.slice(baseIVPrefix.byteOffset, baseIVPrefix.byteOffset + baseIVPrefix.byteLength);
-                if (cancelled || hasError) return;
-                await sendWorkerRequest(worker, {
-                    type: 'SET_PARAMS',
-                    baseIVPrefix: ivBuf,
-                    salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength),
-                    chunkSize
+                // 4. Set streaming parameters across pool
+                await pool.broadcast(() => {
+                    return {
+                        type: 'SET_PARAMS',
+                        sessionId,
+                        baseIVPrefix: baseIVPrefix.buffer.slice(baseIVPrefix.byteOffset, baseIVPrefix.byteOffset + baseIVPrefix.byteLength),
+                        salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength),
+                        chunkSize
+                    };
                 });
 
                 if (cancelled || hasError) return;
@@ -911,6 +1180,47 @@
                     }
                 }
 
+                // Strictly ordered reassembly queue guarantees sequential output writes (0, 1, 2, ...)
+                const reassemblyQueue = new OrderedReassemblyQueue({
+                    onChunkReady: async (item) => {
+                        const { encChunk, chunkIndex: idx, isLast: last, plainChunkSize } = item;
+                        totalEncryptedBytes += encChunk.byteLength;
+
+                        if (opts.onChunk) {
+                            try {
+                                const p = opts.onChunk(encChunk, idx, last);
+                                if (p && typeof p.then === 'function') await p;
+                            } catch (cErr) {
+                                flowController.release();
+                                await handleFatalError(cErr);
+                                return;
+                            }
+                        }
+
+                        if (writer && typeof writer.write === 'function') {
+                            try {
+                                await writer.write(encChunk);
+                            } catch (wErr) {
+                                flowController.release();
+                                await handleFatalError(wErr);
+                                return;
+                            }
+                        }
+
+                        if (shouldBuffer) {
+                            encryptedChunks[idx] = encChunk;
+                        }
+
+                        telemetry.recordProgress(plainChunkSize);
+
+                        // Credit released strictly AFTER chunk is processed and physically written
+                        flowController.release();
+                    },
+                    onError: async (err) => {
+                        await handleFatalError(err);
+                    }
+                });
+
                 while (!cancelled && !hasError) {
                     let readResult;
                     try {
@@ -936,7 +1246,8 @@
 
                         // While buffer strictly exceeds chunkSize, emit non-final chunk
                         while (currentPlainBuffer.byteLength > chunkSize && !cancelled && !hasError) {
-                            const sliceToEncrypt = currentPlainBuffer.slice(0, chunkSize);
+                            const sliceToEncrypt = currentPlainBuffer.subarray(0, chunkSize);
+                            const rawBuf = toTransferableArrayBuffer(sliceToEncrypt);
                             currentPlainBuffer = currentPlainBuffer.slice(chunkSize);
 
                             // Acquire flow control credit
@@ -944,56 +1255,41 @@
                             if (cancelled || hasError) return;
 
                             const currIdx = chunkIndex++;
-                            const rawBuf = sliceToEncrypt.buffer.slice(
-                                sliceToEncrypt.byteOffset,
-                                sliceToEncrypt.byteOffset + sliceToEncrypt.byteLength
-                            );
+                            const worker = await pool.acquireWorker();
+                            if (cancelled || hasError) {
+                                pool.releaseWorker(worker);
+                                flowController.release();
+                                return;
+                            }
 
                             sendWorkerRequest(worker, {
                                 type: 'ENCRYPT_CHUNK',
+                                sessionId,
                                 chunk: rawBuf,
+                                plainChunk: rawBuf,
                                 chunkIndex: currIdx,
                                 isLast: false,
                                 baseIVPrefix: baseIVPrefix.buffer.slice(baseIVPrefix.byteOffset, baseIVPrefix.byteOffset + baseIVPrefix.byteLength),
                                 salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength)
                             }, [rawBuf]).then(async res => {
+                                pool.releaseWorker(worker);
+
                                 if (hasError || cancelled) {
                                     flowController.release();
                                     return;
                                 }
 
-                                const encChunk = new Uint8Array(res.chunk);
-                                totalEncryptedBytes += encChunk.byteLength;
+                                const encBuf = res.encryptedChunk || res.chunk;
+                                const encChunk = new Uint8Array(encBuf);
 
-                                if (opts.onChunk) {
-                                    try {
-                                        const p = opts.onChunk(encChunk, currIdx, false);
-                                        if (p && typeof p.then === 'function') await p;
-                                    } catch (cErr) {
-                                        flowController.release();
-                                        await handleFatalError(cErr);
-                                        return;
-                                    }
-                                }
-
-                                if (writer && typeof writer.write === 'function') {
-                                    try {
-                                        await writer.write(encChunk);
-                                    } catch (wErr) {
-                                        flowController.release();
-                                        await handleFatalError(wErr);
-                                        return;
-                                    }
-                                }
-
-                                // Release flow control credit only AFTER consumer has processed the chunk
-                                flowController.release();
-
-                                if (shouldBuffer) {
-                                    encryptedChunks[currIdx] = encChunk;
-                                }
-                                telemetry.recordProgress(chunkSize);
+                                await reassemblyQueue.push(currIdx, {
+                                    encChunk,
+                                    chunkIndex: currIdx,
+                                    isLast: false,
+                                    plainChunkSize: chunkSize
+                                });
                             }).catch(async err => {
+                                pool.releaseWorker(worker);
                                 flowController.release();
                                 await handleFatalError(err);
                             });
@@ -1009,68 +1305,51 @@
                     await new Promise(r => setTimeout(r, 10));
                     if (cancelled || hasError) return;
                 }
+                await reassemblyQueue.waitUntilDrained();
+
+                if (cancelled || hasError) return;
 
                 // Encrypt the final chunk with isLast = true
                 await flowController.acquire();
                 if (cancelled || hasError) return;
 
                 const finalIdx = chunkIndex++;
-                const finalRaw = currentPlainBuffer.buffer.slice(
-                    currentPlainBuffer.byteOffset,
-                    currentPlainBuffer.byteOffset + currentPlainBuffer.byteLength
-                );
+                const finalRaw = toTransferableArrayBuffer(currentPlainBuffer);
+                const finalWorker = await pool.acquireWorker();
 
                 let finalRes;
                 try {
-                    finalRes = await sendWorkerRequest(worker, {
+                    finalRes = await sendWorkerRequest(finalWorker, {
                         type: 'ENCRYPT_CHUNK',
+                        sessionId,
                         chunk: finalRaw,
+                        plainChunk: finalRaw,
                         chunkIndex: finalIdx,
                         isLast: true,
                         baseIVPrefix: baseIVPrefix.buffer.slice(baseIVPrefix.byteOffset, baseIVPrefix.byteOffset + baseIVPrefix.byteLength),
                         salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength)
                     }, [finalRaw]);
                 } catch (fErr) {
+                    pool.releaseWorker(finalWorker);
                     flowController.release();
                     await handleFatalError(fErr);
                     return;
                 }
 
+                pool.releaseWorker(finalWorker);
                 if (cancelled || hasError) {
                     flowController.release();
                     return;
                 }
 
-                const finalEnc = new Uint8Array(finalRes.chunk);
-                totalEncryptedBytes += finalEnc.byteLength;
-
-                if (opts.onChunk) {
-                    try {
-                        const p = opts.onChunk(finalEnc, finalIdx, true);
-                        if (p && typeof p.then === 'function') await p;
-                    } catch (cErr) {
-                        flowController.release();
-                        await handleFatalError(cErr);
-                        return;
-                    }
-                }
-
-                if (writer && typeof writer.write === 'function') {
-                    try {
-                        await writer.write(finalEnc);
-                    } catch (wErr) {
-                        flowController.release();
-                        await handleFatalError(wErr);
-                        return;
-                    }
-                }
-
-                flowController.release();
-
-                if (shouldBuffer) {
-                    encryptedChunks[finalIdx] = finalEnc;
-                }
-                telemetry.recordProgress(currentPlainBuffer.byteLength);
+                const finalEnc = new Uint8Array(finalRes.encryptedChunk || finalRes.chunk);
+                await reassemblyQueue.push(finalIdx, {
+                    encChunk: finalEnc,
+                    chunkIndex: finalIdx,
+                    isLast: true,
+                    plainChunkSize: currentPlainBuffer.byteLength
+                });
+                await reassemblyQueue.waitUntilDrained();
 
                 if (cancelled || hasError) return;
 
@@ -1090,8 +1369,9 @@
 
                 let manifestRes;
                 try {
-                    manifestRes = await sendWorkerRequest(worker, {
+                    manifestRes = await sendWorkerRequest(pool.workers[0], {
                         type: 'BUILD_MANIFEST',
+                        sessionId,
                         catalog: manifestCatalog
                     });
                 } catch (mErr) {
@@ -1193,8 +1473,8 @@
                 await handleFatalError(err);
             } finally {
                 if (telemetry) telemetry.dispose();
-                if (worker && !opts.keepWorkerAlive) {
-                    worker.terminate();
+                if (pool && !opts.keepWorkerAlive) {
+                    pool.terminate();
                 }
             }
         })();
@@ -1234,7 +1514,7 @@
         let cancelled = false;
         let hasError = false;
         let fatalError = null;
-        let worker = null;
+        let pool = null;
         let flowController = null;
         let telemetry = null;
         let writer = null;
@@ -1267,8 +1547,8 @@
                 try { await opts.writable.abort(err).catch(() => {}); } catch (_) {}
             }
 
-            if (worker) {
-                try { worker.terminate(); } catch (_) {}
+            if (pool) {
+                try { pool.terminate(); } catch (_) {}
             }
 
             if (typeof onError === 'function') {
@@ -1303,11 +1583,11 @@
                 } else if (opts.writable && typeof opts.writable.abort === 'function') {
                     try { await opts.writable.abort('Operation cancelled').catch(() => {}); } catch (_) {}
                 }
-                if (worker) {
+                if (pool) {
                     try {
-                        await sendWorkerRequest(worker, { type: 'CANCEL', timeoutMs: 2000 });
+                        await pool.broadcast(() => ({ type: 'CANCEL', timeoutMs: 2000 })).catch(() => {});
                     } catch (_) {}
-                    worker.terminate();
+                    pool.terminate();
                 }
             } finally {
                 if (telemetry) telemetry.dispose();
@@ -1326,8 +1606,9 @@
                 if (!vaultSource) {
                     throw new Error('vaultSource is required');
                 }
-                if (typeof password !== 'string') {
-                    throw new TypeError('password must be a string');
+                const isCryptoKey = password && typeof password === 'object' && password.algorithm;
+                if (typeof password !== 'string' && !isCryptoKey) {
+                    throw new TypeError('password must be a string or CryptoKey');
                 }
 
                 // Detect vault format version
@@ -1428,44 +1709,70 @@
                     onProgress
                 });
 
-                // 2. Spawn worker
+                const poolSize = resolveOptimalWorkerCount(opts);
+                const maxCredits = opts.maxCredits || Math.max(2, Math.min(12, poolSize * 2));
+
+                // 2. Spawn worker pool
                 telemetry.setStage('Spawning worker...', true);
-                worker = createWorker(opts);
+                pool = new WorkerPool(poolSize, opts);
+                pool.init();
 
-                // 3. Derive key off main thread in worker
+                // 3. Derive key off main thread across the worker pool or distribute pre-derived key
                 await transitionStage('Deriving key...');
-                const saltBuf = header.salt.buffer.slice(header.salt.byteOffset, header.salt.byteOffset + header.salt.byteLength);
-                const kfBuf = keyfileBytes
-                    ? keyfileBytes.buffer.slice(keyfileBytes.byteOffset, keyfileBytes.byteOffset + keyfileBytes.byteLength)
-                    : null;
+                const sessionId = 's_dec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
-                const initTransfers = [saltBuf.slice(0)];
-                if (kfBuf) initTransfers.push(kfBuf.slice(0));
+                if (isCryptoKey) {
+                    await pool.broadcast(() => ({
+                        type: 'INIT_SESSION',
+                        sessionId,
+                        cryptoKey: password
+                    }));
+                } else {
+                    await pool.broadcast(() => {
+                        const sCopy = header.salt.buffer.slice(header.salt.byteOffset, header.salt.byteOffset + header.salt.byteLength);
+                        const kCopy = keyfileBytes
+                            ? keyfileBytes.buffer.slice(keyfileBytes.byteOffset, keyfileBytes.byteOffset + keyfileBytes.byteLength)
+                            : null;
+                        return {
+                            type: 'INIT_KEY',
+                            sessionId,
+                            password,
+                            salt: sCopy,
+                            iterations: opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
+                            keyfile: kCopy
+                        };
+                    }, (w, msg) => {
+                        const xfers = [msg.salt];
+                        if (msg.keyfile) xfers.push(msg.keyfile);
+                        return xfers;
+                    });
+                }
 
                 if (cancelled || hasError) return;
 
-                await sendWorkerRequest(worker, {
-                    type: 'INIT_KEY',
-                    password,
-                    salt: saltBuf,
-                    iterations: opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
-                    keyfile: kfBuf
-                }, initTransfers);
+                // Set params across pool
+                await pool.broadcast(() => {
+                    return {
+                        type: 'SET_PARAMS',
+                        sessionId,
+                        baseIVPrefix: header.baseIVPrefix.buffer.slice(header.baseIVPrefix.byteOffset, header.baseIVPrefix.byteOffset + header.baseIVPrefix.byteLength),
+                        salt: header.salt.buffer.slice(header.salt.byteOffset, header.salt.byteOffset + header.salt.byteLength),
+                        chunkSize
+                    };
+                });
 
                 if (cancelled || hasError) return;
 
                 // 4. Read & Decrypt Manifest Trailer
                 await transitionStage('Reading manifest...');
                 const manifestEnvelopeBytes = await StreamUnpacker.readRange(vaultSource, manifestOffset, undefined);
-                const envBuf = manifestEnvelopeBytes.buffer.slice(
-                    manifestEnvelopeBytes.byteOffset,
-                    manifestEnvelopeBytes.byteOffset + manifestEnvelopeBytes.byteLength
-                );
+                const envBuf = toTransferableArrayBuffer(manifestEnvelopeBytes);
 
                 let manifestRes;
                 try {
-                    manifestRes = await sendWorkerRequest(worker, {
+                    manifestRes = await sendWorkerRequest(pool.workers[0], {
                         type: 'DECRYPT_MANIFEST',
+                        sessionId,
                         envelope: envBuf
                     }, [envBuf]);
                 } catch (mErr) {
@@ -1476,6 +1783,9 @@
                 if (cancelled || hasError) return;
 
                 const manifest = manifestRes.manifest;
+                if (manifestRes.masterKey) {
+                    manifest.masterKey = new Uint8Array(manifestRes.masterKey);
+                }
                 const files = manifestRes.files;
 
                 await transitionStage('Manifest ready');
@@ -1503,7 +1813,6 @@
 
                 // 5. Full Streaming Decryption Pipeline
                 await transitionStage('Decrypting stream...');
-                const maxCredits = opts.maxCredits || 2;
                 flowController = new CreditFlowController(maxCredits);
 
                 const numChunks = Math.ceil(totalEncryptedBytes / totalFramedChunkSize);
@@ -1513,6 +1822,40 @@
                 const shouldBuffer = !opts.writable && opts.bufferChunks !== false;
                 const decryptedChunks = shouldBuffer ? [] : null;
                 let totalDecryptedBytes = 0;
+
+                const reassemblyQueue = new OrderedReassemblyQueue({
+                    onChunkReady: async (chunkData) => {
+                        if (cancelled || hasError) return;
+                        const { plainChunk, chunkIndex, isLast } = chunkData;
+                        totalDecryptedBytes += plainChunk.byteLength;
+
+                        if (opts.onChunk) {
+                            try {
+                                const p = opts.onChunk(plainChunk, chunkIndex, isLast);
+                                if (p && typeof p.then === 'function') await p;
+                            } catch (cErr) {
+                                await handleFatalError(cErr);
+                                return;
+                            }
+                        }
+
+                        if (writer && typeof writer.write === 'function') {
+                            try {
+                                await writer.write(plainChunk);
+                            } catch (wErr) {
+                                await handleFatalError(wErr);
+                                return;
+                            }
+                        }
+
+                        if (shouldBuffer) {
+                            decryptedChunks[chunkIndex] = plainChunk;
+                        }
+
+                        // Release flow control credit AFTER consumer has processed it
+                        flowController.release();
+                    }
+                });
 
                 for (let i = 0; i < numChunks && !cancelled && !hasError; i++) {
                     const isLast = (i === lastChunkIndex);
@@ -1537,56 +1880,40 @@
                         return;
                     }
 
-                    const rawBuf = chunkBytes.buffer.slice(
-                        chunkBytes.byteOffset,
-                        chunkBytes.byteOffset + chunkBytes.byteLength
-                    );
+                    const rawBuf = toTransferableArrayBuffer(chunkBytes);
+                    const assignedWorker = await pool.acquireWorker();
+                    if (cancelled || hasError) {
+                        pool.releaseWorker(assignedWorker);
+                        flowController.release();
+                        return;
+                    }
 
-                    sendWorkerRequest(worker, {
+                    sendWorkerRequest(assignedWorker, {
                         type: 'DECRYPT_CHUNK',
+                        sessionId,
                         chunk: rawBuf,
                         chunkIndex: i,
                         isLast,
                         baseIVPrefix: header.baseIVPrefix.buffer.slice(header.baseIVPrefix.byteOffset, header.baseIVPrefix.byteOffset + header.baseIVPrefix.byteLength),
                         salt: header.salt.buffer.slice(header.salt.byteOffset, header.salt.byteOffset + header.salt.byteLength)
                     }, [rawBuf]).then(async res => {
+                        pool.releaseWorker(assignedWorker);
+
                         if (hasError || cancelled) {
                             flowController.release();
                             return;
                         }
 
-                        const plainChunk = new Uint8Array(res.chunk);
-                        totalDecryptedBytes += plainChunk.byteLength;
-
-                        if (opts.onChunk) {
-                            try {
-                                const p = opts.onChunk(plainChunk, i, isLast);
-                                if (p && typeof p.then === 'function') await p;
-                            } catch (cErr) {
-                                flowController.release();
-                                await handleFatalError(cErr);
-                                return;
-                            }
-                        }
-
-                        if (writer && typeof writer.write === 'function') {
-                            try {
-                                await writer.write(plainChunk);
-                            } catch (wErr) {
-                                flowController.release();
-                                await handleFatalError(wErr);
-                                return;
-                            }
-                        }
-
-                        // Release flow control credit AFTER consumer has processed it
-                        flowController.release();
-
-                        if (shouldBuffer) {
-                            decryptedChunks[i] = plainChunk;
-                        }
+                        const plainChunk = new Uint8Array(res.plainChunk || res.chunk);
                         telemetry.recordProgress(chunkBytes.byteLength);
+
+                        await reassemblyQueue.push(i, {
+                            plainChunk,
+                            chunkIndex: i,
+                            isLast
+                        });
                     }).catch(async err => {
+                        pool.releaseWorker(assignedWorker);
                         flowController.release();
                         await handleFatalError(err);
                     });
@@ -1594,12 +1921,16 @@
 
                 if (cancelled || hasError) return;
 
-                // Wait for all in-flight chunks
+                // Wait for all in-flight worker requests to push into reassembly queue
                 while (flowController.inFlight > 0) {
                     if (cancelled || hasError) return;
                     await new Promise(r => setTimeout(r, 10));
                     if (cancelled || hasError) return;
                 }
+
+                // Wait for reassembly queue to drain strictly in order
+                await reassemblyQueue.waitUntilDrained();
+                if (cancelled || hasError) return;
 
                 // Close stream writer if provided
                 if (writer && typeof writer.close === 'function') {
@@ -1634,8 +1965,8 @@
                 await handleFatalError(err);
             } finally {
                 if (telemetry) telemetry.dispose();
-                if (worker && !opts.keepWorkerAlive) {
-                    worker.terminate();
+                if (pool && !opts.keepWorkerAlive) {
+                    pool.terminate();
                 }
             }
         })();
@@ -1679,16 +2010,19 @@
         let telemetry = null;
 
         try {
-            // 1. Read v3 Container Header
-            const headerBytes = await StreamUnpacker.readRange(vaultSource, 0, StreamCrypto.V3_HEADER_SIZE);
-            const header = StreamCrypto.parseContainerHeader(headerBytes);
+            // 1. Read v3 Container Header (reuse cached header if available)
+            let header = opts.header || (opts.manifest && opts.manifest.header);
+            if (!header) {
+                const headerBytes = await StreamUnpacker.readRange(vaultSource, 0, StreamCrypto.V3_HEADER_SIZE);
+                header = StreamCrypto.parseContainerHeader(headerBytes);
+            }
 
             if (header.version !== 3) {
                 throw new Error(`Selective extraction requires v3 streaming vault (found v${header.version})`);
             }
 
             const hasKeyfileFlag = (header.flags & StreamCrypto.V3_FLAG_KEYFILE) !== 0;
-            if (hasKeyfileFlag && !keyfile && !opts.keyfileBytes) {
+            if (hasKeyfileFlag && !keyfile && !opts.keyfileBytes && !opts.masterKey) {
                 throw new Error('This vault requires a keyfile for 2FA authentication, but none was provided');
             }
 
@@ -1710,23 +2044,34 @@
             telemetry.setStage('Spawning worker...', true);
             worker = createWorker(opts);
 
-            // 3. Derive key off main thread in worker
+            // 3. Derive key or initialize session off main thread in worker
             telemetry.setStage('Deriving key...', true);
-            const saltBuf = header.salt.buffer.slice(header.salt.byteOffset, header.salt.byteOffset + header.salt.byteLength);
-            const kfBuf = keyfileBytes
-                ? keyfileBytes.buffer.slice(keyfileBytes.byteOffset, keyfileBytes.byteOffset + keyfileBytes.byteLength)
-                : null;
+            if (opts.masterKey) {
+                const mkBuf = toTransferableArrayBuffer(opts.masterKey);
+                await sendWorkerRequest(worker, {
+                    type: 'INIT_SESSION',
+                    masterKey: mkBuf,
+                    baseIVPrefix: header.baseIVPrefix.buffer.slice(header.baseIVPrefix.byteOffset, header.baseIVPrefix.byteOffset + header.baseIVPrefix.byteLength),
+                    salt: header.salt.buffer.slice(header.salt.byteOffset, header.salt.byteOffset + header.salt.byteLength),
+                    chunkSize: header.chunkSize || StreamCrypto.DEFAULT_CHUNK_SIZE
+                }, [mkBuf]);
+            } else {
+                const saltBuf = header.salt.buffer.slice(header.salt.byteOffset, header.salt.byteOffset + header.salt.byteLength);
+                const kfBuf = keyfileBytes
+                    ? keyfileBytes.buffer.slice(keyfileBytes.byteOffset, keyfileBytes.byteOffset + keyfileBytes.byteLength)
+                    : null;
 
-            const initTransfers = [saltBuf.slice(0)];
-            if (kfBuf) initTransfers.push(kfBuf.slice(0));
+                const initTransfers = [saltBuf.slice(0)];
+                if (kfBuf) initTransfers.push(kfBuf.slice(0));
 
-            await sendWorkerRequest(worker, {
-                type: 'INIT_KEY',
-                password,
-                salt: saltBuf,
-                iterations: opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
-                keyfile: kfBuf
-            }, initTransfers);
+                await sendWorkerRequest(worker, {
+                    type: 'INIT_KEY',
+                    password,
+                    salt: saltBuf,
+                    iterations: opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
+                    keyfile: kfBuf
+                }, initTransfers);
+            }
 
             // 4. Resolve targetEntry if provided as string
             let entry = targetEntry;
@@ -1739,10 +2084,7 @@
                     // Decrypt manifest envelope first
                     const mOffset = Number(header.manifestOffset);
                     const manifestEnvelopeBytes = await StreamUnpacker.readRange(vaultSource, mOffset, undefined);
-                    const envBuf = manifestEnvelopeBytes.buffer.slice(
-                        manifestEnvelopeBytes.byteOffset,
-                        manifestEnvelopeBytes.byteOffset + manifestEnvelopeBytes.byteLength
-                    );
+                    const envBuf = toTransferableArrayBuffer(manifestEnvelopeBytes);
                     const mRes = await sendWorkerRequest(worker, {
                         type: 'DECRYPT_MANIFEST',
                         envelope: envBuf
@@ -1775,7 +2117,7 @@
                 const cEnd = isLast ? Number(manifestOffset) : cStart + totalFramedChunkSize;
 
                 const cBytes = await StreamUnpacker.readRange(vaultSource, cStart, cEnd);
-                const ab = cBytes.buffer.slice(cBytes.byteOffset, cBytes.byteOffset + cBytes.byteLength);
+                const ab = toTransferableArrayBuffer(cBytes);
                 chunkBuffers.push({
                     index: i,
                     buffer: ab,
@@ -1815,11 +2157,16 @@
         CreditFlowController,
         TelemetryCalculator,
         UnifiedWorkerWrapper,
+        WorkerPool,
+        OrderedReassemblyQueue,
 
         // Worker Spawning & Messaging
         createWorker,
         createAsyncWorkerShim,
         sendWorkerRequest,
+        resolveOptimalWorkerCount,
+        toTransferableArrayBuffer,
+        getPoolSize: (opts) => resolveOptimalWorkerCount(opts),
 
         // Public APIs
         startEncryption,
