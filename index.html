@@ -167,7 +167,7 @@
             </div>
             <div class="navbar-links">
                 <a href="./how-to-use-zevsafe/index.html" class="nav-link-subtle">Documentation</a>
-                <a href="./change-log/index.html" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-35)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v6.7</span></a>
+                <a href="./change-log/index.html" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-36)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v6.8</span></a>
                 <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="nav-link-subtle">
                     GitHub <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
                 </a>
@@ -846,6 +846,83 @@
                     <button class="media-ctrl-btn" id="btn-media-fit" title="Toggle aspect ratio (Fit/Fill)">↔️ Fit</button>
                     <button class="media-ctrl-btn" id="btn-media-pip" title="Picture-in-Picture (P)">📺 PiP</button>
                     <button class="media-ctrl-btn" id="btn-media-fullscreen" title="Fullscreen (F)">⛶ Fullscreen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dedicated In-Browser Image Lightbox Modal -->
+    <div class="media-modal-overlay image-modal-overlay" id="vault-image-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="image-modal-title">
+        <div class="media-modal-container image-modal-container">
+            <header class="media-modal-header">
+                <div class="media-modal-info">
+                    <span class="media-type-badge image-type-badge" id="image-modal-badge">🖼️ Photo</span>
+                    <h3 class="media-modal-title" id="image-modal-title">Image Preview</h3>
+                    <span class="media-track-counter" id="image-modal-counter">1 of 1</span>
+                    <span class="image-dim-badge" id="image-modal-dims">-- × --</span>
+                </div>
+                <div class="media-modal-actions">
+                    <button class="media-btn-action" id="btn-image-open-tab" title="Open image in separate browser tab">↗️ New Tab</button>
+                    <button class="media-btn-action" id="btn-image-download" title="Save image to device">⬇️ Save</button>
+                    <button class="explorer-btn-close" id="btn-close-image-modal" title="Close Image Viewer" aria-label="Close Image Viewer">✕</button>
+                </div>
+            </header>
+
+            <div class="image-modal-body" id="image-modal-body">
+                <div class="image-viewport" id="image-viewport">
+                    <img id="lightbox-image" class="lightbox-img" alt="Decrypted Vault Image Preview" draggable="false">
+                </div>
+                <div id="image-loading-indicator" style="display:none;flex-direction:column;align-items:center;gap:12px;color:var(--text-2);padding:40px;">
+                    <div class="status-dot" style="width:16px;height:16px;background:var(--teal);"></div>
+                    <span id="image-loading-text">Extracting image on demand…</span>
+                </div>
+            </div>
+
+            <!-- Image Zoom & Navigation Controls Bar -->
+            <div class="media-cinema-bar image-controls-bar" id="image-controls-bar">
+                <div class="media-cinema-left">
+                    <button class="media-ctrl-btn" id="btn-image-prev" title="Previous photo (Left Arrow)">⏮️ Prev</button>
+                    <button class="media-ctrl-btn" id="btn-image-next" title="Next photo (Right Arrow)">⏭️ Next</button>
+                </div>
+                <div class="media-cinema-center">
+                    <button class="media-ctrl-btn" id="btn-image-zoom-out" title="Zoom out (−)">🔍−</button>
+                    <span class="image-zoom-badge" id="image-zoom-badge">100%</span>
+                    <button class="media-ctrl-btn" id="btn-image-zoom-in" title="Zoom in (+)">🔍+</button>
+                    <button class="media-ctrl-btn" id="btn-image-zoom-reset" title="Reset zoom (0)">1:1 Fit</button>
+                    <button class="media-ctrl-btn" id="btn-image-rotate" title="Rotate 90 degrees">↻ 90°</button>
+                </div>
+                <div class="media-cinema-right">
+                    <button class="media-ctrl-btn" id="btn-image-fullscreen" title="Toggle Fullscreen (F)">⛶ Fullscreen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dedicated In-Browser Text & Code Document Viewer Modal -->
+    <div class="media-modal-overlay text-modal-overlay" id="vault-text-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="text-modal-title">
+        <div class="media-modal-container text-modal-container">
+            <header class="media-modal-header">
+                <div class="media-modal-info">
+                    <span class="media-type-badge text-type-badge" id="text-modal-badge">📄 Document</span>
+                    <h3 class="media-modal-title" id="text-modal-title">Code &amp; Document Viewer</h3>
+                    <span class="media-track-counter" id="text-modal-meta">0 lines · 0 KB</span>
+                </div>
+                <div class="media-modal-actions">
+                    <button class="media-btn-action" id="btn-text-wrap" title="Toggle word wrap">↩️ Wrap</button>
+                    <button class="media-btn-action" id="btn-text-copy" title="Copy entire document to clipboard">📋 Copy</button>
+                    <button class="media-btn-action" id="btn-text-download" title="Save document to device">⬇️ Save</button>
+                    <button class="explorer-btn-close" id="btn-close-text-modal" title="Close Document Viewer" aria-label="Close Document Viewer">✕</button>
+                </div>
+            </header>
+
+            <div class="text-modal-body" id="text-modal-body">
+                <div id="text-loading-indicator" style="display:none;flex-direction:column;align-items:center;gap:12px;color:var(--text-2);padding:40px;">
+                    <div class="status-dot" style="width:16px;height:16px;background:var(--purple-light);"></div>
+                    <span>Extracting document on demand…</span>
+                </div>
+                <div class="text-editor-view" id="text-editor-view">
+                    <div class="text-line-numbers" id="text-line-numbers" aria-hidden="true"></div>
+                    <pre class="text-code-content" id="text-code-content" tabindex="0"></pre>
                 </div>
             </div>
         </div>

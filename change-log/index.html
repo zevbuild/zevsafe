@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v6.7</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v6.8</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -705,14 +705,66 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 6.7 (WEB-VERSION-35) ── -->
+            <!-- ── VERSION 6.8 (WEB-VERSION-36) ── -->
             <article class="cl-card cl-card--latest" data-version="v6">
+                <div class="cl-marker">🖼️</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.8 (WEB-VERSION-36)</h2>
+                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
+                            <span class="cl-badge cl-badge--date">October 15, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Image Lightbox</span>
+                            <span class="cl-tag">Code &amp; Text Viewer</span>
+                            <span class="cl-tag">Pan &amp; Zoom</span>
+                            <span class="cl-tag">Line Numbers</span>
+                            <span class="cl-tag">PWA v36</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Dedicated In-Vault Image Lightbox Modal:</strong> Embedded an interactive cinema-grade image viewer (<code>#vault-image-modal</code>) directly inside the browser vault. Supports smooth zoom scaling from 25% to 500%, mouse drag-to-pan when enlarged, mouse wheel zooming, double-click 2.5× toggle, 90-degree rotation (<code>↻ 90°</code>), live pixel dimensions badge, and prev/next playlist carousel navigation across all decrypted photos.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Dedicated In-Vault Code &amp; Text Document Viewer:</strong> Added a high-ergonomics code reader modal (<code>#vault-text-modal</code>) with numbered lines gutter, monospace syntax layout, word wrap toggle, 1-tap clipboard copying, and bounded memory protection (up to 5 MB live previews). Inspect markdown, JSON, source code, configs, and logs without downloading.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Vault Explorer Direct Preview Triggers:</strong> Enhanced list rows and grid cards in Vault Explorer with dedicated preview actions (<code>👁️ View</code> for photos, <code>📄 Read</code> for code and docs) and row/card tap triggers that immediately open the corresponding media player, image lightbox, or code viewer without leaving the vault.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Zero-Knowledge Memory Cleanup:</strong> Updated <code>lockV3VaultSession</code> to revoke temporary image object URLs (<code>URL.revokeObjectURL</code>), reset image playlist handles, and sanitize open viewer states upon modal dismissal or session termination.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker Shell Cache v36:</strong> Bumped PWA offline cache to <code>v36</code> and synchronized release indicators to <code>WEB-VERSION-36</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 6.7 (WEB-VERSION-35) ── -->
+            <article class="cl-card" data-version="v6">
                 <div class="cl-marker">⚡</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 6.7 (WEB-VERSION-35)</h2>
-                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
                             <span class="cl-badge cl-badge--date">October 4, 2026</span>
                         </div>
                         <div class="cl-tags">

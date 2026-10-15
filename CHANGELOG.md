@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 6.8 (WEB-VERSION-36) — October 15, 2026
+- `New` (`index.html`, `app.js`, `styles.css`): Rich In-Vault Image Lightbox Viewer Modal (`#vault-image-modal`) with interactive zoom (25%–500%), mouse drag-pan, wheel zoom, double-click zoom toggle, 90° rotation, dimensions/resolution badge, and seamless prev/next image playlist navigation without leaving the vault.
+- `New` (`index.html`, `app.js`, `styles.css`): Rich In-Vault Code & Text Document Viewer Modal (`#vault-text-modal`) with numbered line gutter, monospace formatting, memory-bounded preview safety (up to 5 MB), word wrap toggle, and 1-tap clipboard copying.
+- `UI` (`app.js`, `styles.css`): Vault Explorer list rows and grid cards now feature dedicated preview action buttons (`👁️ View` for photos, `📄 Read` for code/text files) and row/card click triggers that open the corresponding cinema player, image lightbox, or code viewer directly.
+- `Security` (`app.js`): Extended Zero-Knowledge Session Zeroization Protocol (`lockV3VaultSession`) to clean up ephemeral image blob URLs (`URL.revokeObjectURL`), reset image playlist handles, and scrub open viewer states upon modal dismissal or session termination.
+- `PWA` (`sw.js`, `index.html`): Bumped Service Worker cache to `v36` and synchronized release indicators to `WEB-VERSION-36` / `v6.8`.
+
 ## Version 6.7 (WEB-VERSION-35) — October 4, 2026
 - `Perf` (`js/worker-bridge.js`, `js/crypto-worker.js`): Implemented Elastic Multi-Worker Parallel AEAD Pipeline (`WorkerPool`) scaling up to `navigator.hardwareConcurrency` (clamped between 4 and 8 workers), multiplexing independent 4 MB `ZV3\0` STREAM AEAD chunks (AES-256-GCM) across all available CPU cores instead of serializing on a single worker thread. Automatically collapses to 1 worker for single-core devices, in-process shims, or manifest-only operations.
 - `Perf` (`js/worker-bridge.js`): Built strictly ordered sequencing reassembly queue (`OrderedReassemblyQueue`) ensuring that out-of-order chunk completion across concurrent workers is reassembled monotonically ($0, 1, 2, \dots$) before writing to output sinks, strictly preserving binary container integrity and bit-level compatibility.

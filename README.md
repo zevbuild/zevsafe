@@ -9,12 +9,12 @@
 [![KDF: PBKDF2-SHA512](https://img.shields.io/badge/KDF-PBKDF2--SHA512%20(600k)-3b82f6?style=for-the-badge)](#-cryptography)
 [![PWA: Installable](https://img.shields.io/badge/PWA-Installable-8b5cf6?style=for-the-badge)](#-pwa--install-as-an-offline-app)
 [![100% Offline](https://img.shields.io/badge/Mode-100%25%20Offline-f59e0b?style=for-the-badge)](#)
-[![Release: v6.7 / WEB-VERSION-35](https://img.shields.io/badge/Release-v6.7%20(WEB--VERSION--35)-06b6d4?style=for-the-badge)](CHANGELOG.md)
+[![Release: v6.8 / WEB-VERSION-36](https://img.shields.io/badge/Release-v6.8%20(WEB--VERSION--36)-06b6d4?style=for-the-badge)](CHANGELOG.md)
 
 ---
 
-> 🟢 **Current stable release — v6.7 (`.zev` format / WEB-VERSION-35):** military-grade security by default with multi-worker parallel AEAD streaming pipeline, zero-copy transferable buffers, ephemeral session key caching, zero-knowledge session zeroization, active telemetry HUD with worker core count and ETA, enhanced Cinema player controls, and dedicated native Android APK (`com.zevbuild.zevsafe`).  
-> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · Multi-Worker 4 MB Chunked AES-256-GCM (`ZV3\0`) · Parallel WorkerPool (4–8 threads) with bounded backpressure (<105 MB RAM) · Zero-Copy Transferable ArrayBuffers · Instant <100ms Vault Explorer with Ephemeral CryptoKey Caching (<15ms extraction) · Zero-Knowledge Memory Scrubbing & Zeroization (`.fill(0)`) · Real-Time Telemetry HUD (MB/s, Worker Badge, Live ETA) · In-Browser Cinema Media Player with Static DOM Preservation, Volume Slider & Full Keyboard Shortcuts · Dedicated native Android app with ForegroundService & ExoPlayer · Progressive Web App (v35).**
+> 🟢 **Current stable release — v6.8 (`.zev` format / WEB-VERSION-36):** military-grade security by default with multi-worker parallel AEAD streaming pipeline, zero-copy transferable buffers, ephemeral session key caching, rich in-vault image lightbox with pan/zoom/rotate, code & text document viewer with line numbers and 1-tap copy, zero-knowledge session zeroization, active telemetry HUD with worker core count and ETA, enhanced Cinema player controls, and dedicated native Android APK (`com.zevbuild.zevsafe`).  
+> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · Multi-Worker 4 MB Chunked AES-256-GCM (`ZV3\0`) · Parallel WorkerPool (4–8 threads) with bounded backpressure (<105 MB RAM) · Zero-Copy Transferable ArrayBuffers · Instant <100ms Vault Explorer with Ephemeral CryptoKey Caching (<15ms extraction) · In-Vault Image Lightbox Viewer (25%–500% zoom, pan, rotate, dimensions) · In-Vault Code & Text Document Viewer (line numbers, wrap, 1-tap copy) · Zero-Knowledge Memory Scrubbing & Zeroization (`.fill(0)`) · Real-Time Telemetry HUD (MB/s, Worker Badge, Live ETA) · In-Browser Cinema Media Player with Static DOM Preservation, Volume Slider & Full Keyboard Shortcuts · Dedicated native Android app with ForegroundService & ExoPlayer · Progressive Web App (v36).**
 
 ---
 
@@ -22,13 +22,14 @@
 
 **ZevSafe** is a zero-trust, client-side encryption portal designed to lock sensitive files and directory hierarchies into single portable encrypted vaults (`.zev`). It executes entirely within your browser sandbox leveraging the native W3C [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) — **no backend servers, no cloud telemetry, no accounts, and no data transmission over the network**.
 
-Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-RAM Streaming (`ZV3\0` / PBKDF2-SHA512 / 600,000 rounds)** by default so users can compress, encrypt, and decrypt up to **5 GB** on mobile and desktop browsers without out-of-memory crashes, supports an optional **Keyfile second factor**, provides an instant **Decrypted Vault Explorer** with an **in-browser Cinema Media Player**, and maintains 100% backward compatibility with **v2 Standard** and **v1 Legacy** vaults.
+Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-RAM Streaming (`ZV3\0` / PBKDF2-SHA512 / 600,000 rounds)** by default so users can compress, encrypt, and decrypt up to **5 GB** on mobile and desktop browsers without out-of-memory crashes, supports an optional **Keyfile second factor**, provides an instant **Decrypted Vault Explorer** with an **in-browser Cinema Media Player**, a **high-res Image Lightbox**, a **Code & Text Document Viewer**, and maintains 100% backward compatibility with **v2 Standard** and **v1 Legacy** vaults.
 
 ### Ideal For:
 - **Zero-knowledge backup:** Encrypting personal archives before storing on USB flash drives, external SSDs, or public cloud storage.
 - **Air-gapped security:** Encrypting and decrypting data on completely offline machines or in airplane mode.
 - **Two-factor protection:** Pairing a passphrase with a physical keyfile (e.g., a photo, key file, or document) so neither factor alone can unlock the vault.
 - **Instant media streaming:** Playing encrypted multi-GB videos and audio files directly inside the browser without downloading decrypted files to disk.
+- **In-vault photo and code inspection:** Zooming into decrypted high-resolution photos and inspecting source code / text documents directly in the browser with zero disk persistence.
 - **Selective file extraction:** Unlocking a 5 GB vault catalog in **< 100 ms** (`< 15 MB RAM`) and extracting single files by decrypting only their specific 4 MB chunk span.
 
 ---
@@ -45,7 +46,9 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | 📁 **Dual File & Full Directory Support** | Select individual files, multi-file selections, or complete directory trees using "Browse Folder" or "Browse Files". |
 | ⚡ **Native File System Access API** | Uses `window.showDirectoryPicker()` with recursive folder hierarchy capture and seamless fallback to HTML5 `webkitdirectory`. |
 | 📂 **Instant Decrypted Vault Explorer (< 100 ms)** | Reads only the 57-byte header and encrypted tail manifest in < 100 ms without buffering the vault. Caches pre-derived ephemeral `CryptoKey` in memory to unlock single-file extractions in < 15 ms without repeating 600,000 PBKDF2 rounds. |
-| 🛡️ **Zero-Knowledge Session Zeroization** | Securely zeroes raw keyfile byte arrays with `.fill(0)` on vault close, lock, or tab unload. Completely nullifies session keys, chunk caches, and media blobs in volatile RAM, and scrubs password inputs from the DOM. |
+| 🖼️ **In-Vault Image Lightbox Viewer** | High-res image preview modal with smooth 25%–500% zoom scaling, mouse drag-to-pan, wheel zoom, double-click zoom toggle, 90° rotation, pixel resolution badge, and seamless prev/next image navigation. |
+| 📄 **In-Vault Code & Text Document Viewer** | Developer-friendly code viewer featuring numbered line gutters, monospace syntax formatting, word wrap toggle, memory-bounded preview safety (up to 5 MB), and 1-tap clipboard copying. |
+| 🛡️ **Zero-Knowledge Session Zeroization** | Securely zeroes raw keyfile byte arrays with `.fill(0)` on vault close, lock, or tab unload. Completely nullifies session keys, chunk caches, and media/image blobs in volatile RAM, and scrubs password inputs from the DOM. |
 | ⬇️ **Multi-Tier Mobile & Desktop Streaming Saves** | Routes 5 GB downloads via Tier 1 FileSystem Access API, Tier 2 Service Worker `/_stream_download` stream intercept, and Tier 3 OPFS staging. |
 | 🎬 **In-Browser Cinema Media Player** | Direct playback for decrypted video (`.mp4`, `.mov`, `.webm`, `.mkv`) and audio (`.mp3`, `.wav`, `.ogg`, `.flac`, `.aac`) with zero disk writes. |
 | 🎛️ **Advanced Cinema Controls & Deck** | Dedicated volume slider, mute toggle, variable speed (0.5×–2.0×), ±10s scrubbing, track navigation, PiP, fullscreen, static DOM preservation, media loading spinner, and comprehensive keyboard shortcuts (`Space`, `←`/`→`, `↑`/`↓`, `M`, `F`, `P`, `Esc`). |
@@ -57,7 +60,7 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | 🔔 **Non-Blocking Glassmorphic Toasts** | Replaces all intrusive browser alerts with smooth, dark-glass toast notifications and animated inline field shakes (`@keyframes fieldShake`) on validation failures. |
 | 📐 **Symmetrical Above-The-Fold Layout** | Optimized vertical shell spacing and CSS Grid stretch alignment with bottom-anchored CTA action buttons for seamless laptop drop-zone visibility. |
 | ⚡ **Optimized WebP & Compressed Assets** | All brand icons, OG social images, and logos compressed in-place (57%+ payload reduction) with next-gen WebP support for high-speed loading. |
-| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v35`), floating non-intrusive install banner, auto-updating in background, fully functional offline. |
+| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v36`), floating non-intrusive install banner, auto-updating in background, fully functional offline. |
 | 📜 **Interactive Changelog Portal** | Dedicated in-app and web release notes page ([`change-log/`](https://zevsafe.pages.dev/change-log/)) with live filtering and search across all releases. |
 
 ---

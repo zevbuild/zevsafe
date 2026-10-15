@@ -2421,6 +2421,7 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
 
     currentDecryptedFileList = [];
     currentMediaPlaylist = [];
+    currentImagePlaylist = [];
     let totalBytes = catalog.totalSize || 0;
 
     for (const f of catalog.files) {
@@ -2440,6 +2441,14 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
                 name: fileItem.name,
                 category: mediaCat,
                 mimeType: getMediaMimeType(fileItem.name),
+                size: fileItem.size
+            });
+        }
+
+        if (getFileCategory(fileItem.name) === 'photo') {
+            currentImagePlaylist.push({
+                path: fileItem.path,
+                name: fileItem.name,
                 size: fileItem.size
             });
         }
@@ -2496,6 +2505,26 @@ let currentMediaPlaylist = []; // [{ path, name, category, mimeType, size }]
 let currentMediaIndex = -1;
 let currentMediaFitCover = false;
 
+// Dedicated Image Lightbox Viewer State
+let currentImageBlobUrl = null;
+let currentImageFilename = '';
+let currentImageBlob = null;
+let currentImagePlaylist = []; // [{ path, name, size }]
+let currentImageIndex = -1;
+let imageZoomLevel = 1.0;
+let imageRotationDeg = 0;
+let imagePanX = 0;
+let imagePanY = 0;
+let isPanningImage = false;
+let panStartX = 0;
+let panStartY = 0;
+
+// Dedicated Text Document Viewer State
+let currentTextBlob = null;
+let currentTextFilename = '';
+let currentTextContent = '';
+let isTextWordWrapped = false;
+
 /**
  * Classify file category based on extension.
  */
@@ -2515,6 +2544,16 @@ function getFileCategory(filename) {
     if (codeExts.includes(ext)) return 'code';
     if (archiveExts.includes(ext)) return 'archive';
     return 'other';
+}
+
+function isTextOrCodeFile(filename) {
+    const ext = (filename || '').split('.').pop().toLowerCase();
+    const textExts = [
+        'txt', 'md', 'json', 'xml', 'yaml', 'yml', 'csv', 'log', 'js', 'ts', 'jsx', 'tsx',
+        'html', 'css', 'py', 'c', 'cpp', 'h', 'cs', 'java', 'kt', 'go', 'rs', 'php', 'rb',
+        'sh', 'bat', 'ps1', 'sql', 'env', 'toml', 'ini', 'rtf', 'conf', 'gradle', 'properties'
+    ];
+    return textExts.includes(ext);
 }
 
 function getMediaCategory(filename) {
@@ -2675,6 +2714,7 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
     // Parse all files from JSZip
     currentDecryptedFileList = [];
     currentMediaPlaylist = [];
+    currentImagePlaylist = [];
     let totalBytes = 0;
 
     zipInstance.forEach((relativePath, zipEntry) => {
@@ -2697,6 +2737,14 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
                     name: fileItem.name,
                     category: mediaCat,
                     mimeType: getMediaMimeType(fileItem.name),
+                    size: fileItem.size
+                });
+            }
+
+            if (getFileCategory(fileItem.name) === 'photo') {
+                currentImagePlaylist.push({
+                    path: fileItem.path,
+                    name: fileItem.name,
                     size: fileItem.size
                 });
             }
@@ -2752,6 +2800,7 @@ function lockV3VaultSession() {
     currentDecryptedFolderName = '';
     currentDecryptedFileList = [];
     currentMediaPlaylist = [];
+    currentImagePlaylist = [];
     explorerSelectedFiles.clear();
 
     // 5. Revoke media blob URLs and plug media blob memory leak
@@ -2762,7 +2811,11 @@ function lockV3VaultSession() {
     currentMediaBlob = null;
     currentMediaFilename = '';
 
-    // 6. Scrub password input field in DOM
+    // 6. Close image lightbox and text viewer modals
+    closeImageViewer();
+    closeTextViewer();
+
+    // 7. Scrub password input field in DOM
     if (decryptPassword) decryptPassword.value = '';
 }
 
@@ -2905,6 +2958,243 @@ function closeMediaPlayer() {
     }
 }
 
+// ============================================
+// IN-VAULT IMAGE LIGHTBOX VIEWER
+// ============================================
+
+function applyImageTransform() {
+    const img = document.getElementById('lightbox-image');
+    const badge = document.getElementById('image-zoom-badge');
+    if (img) {
+        img.style.transform = `translate(${imagePanX}px, ${imagePanY}px) scale(${imageZoomLevel}) rotate(${imageRotationDeg}deg)`;
+    }
+    if (badge) {
+        badge.textContent = `${Math.round(imageZoomLevel * 100)}%`;
+    }
+}
+
+function zoomImage(delta) {
+    const newZoom = Math.max(0.25, Math.min(5.0, imageZoomLevel + delta));
+    imageZoomLevel = Math.round(newZoom * 100) / 100;
+    applyImageTransform();
+}
+
+function resetImageZoom() {
+    imageZoomLevel = 1.0;
+    imagePanX = 0;
+    imagePanY = 0;
+    applyImageTransform();
+}
+
+function rotateImage() {
+    imageRotationDeg = (imageRotationDeg + 90) % 360;
+    applyImageTransform();
+}
+
+async function showImageByIndex(index) {
+    if (!currentImagePlaylist || index < 0 || index >= currentImagePlaylist.length) return;
+    currentImageIndex = index;
+    const item = currentImagePlaylist[index];
+
+    const modal = document.getElementById('vault-image-modal');
+    const title = document.getElementById('image-modal-title');
+    const counter = document.getElementById('image-modal-counter');
+    const dims = document.getElementById('image-modal-dims');
+    const img = document.getElementById('lightbox-image');
+    const loader = document.getElementById('image-loading-indicator');
+
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    if (title) title.textContent = item.name;
+    if (counter) counter.textContent = `${index + 1} of ${currentImagePlaylist.length}`;
+    if (dims) dims.textContent = 'Loading...';
+
+    // Reset zoom and panning
+    imageZoomLevel = 1.0;
+    imageRotationDeg = 0;
+    imagePanX = 0;
+    imagePanY = 0;
+    applyImageTransform();
+
+    if (loader) loader.style.display = 'flex';
+    if (img) {
+        img.style.display = 'none';
+        img.src = '';
+    }
+
+    try {
+        const blob = await getDecryptedFileBlob(item.path);
+        currentImageBlob = blob;
+        currentImageFilename = item.name;
+
+        if (currentImageBlobUrl) {
+            URL.revokeObjectURL(currentImageBlobUrl);
+            currentImageBlobUrl = null;
+        }
+
+        currentImageBlobUrl = URL.createObjectURL(blob);
+
+        if (img) {
+            img.onload = () => {
+                if (dims) dims.textContent = `${img.naturalWidth} × ${img.naturalHeight} · ${formatBytes(blob.size)}`;
+                if (loader) loader.style.display = 'none';
+                img.style.display = 'block';
+            };
+            img.onerror = () => {
+                if (loader) loader.style.display = 'none';
+                if (dims) dims.textContent = `Error loading image · ${formatBytes(blob.size)}`;
+                showToast(`Could not render image: ${item.name}`, 'error');
+            };
+            img.src = currentImageBlobUrl;
+        }
+    } catch (err) {
+        console.error('[Image Viewer Error]', err);
+        if (loader) loader.style.display = 'none';
+        showToast(`Failed to extract image: ${err.message}`, 'error');
+    }
+}
+
+function openImageViewerByPath(filePath) {
+    const idx = currentImagePlaylist.findIndex(p => p.path === filePath);
+    if (idx !== -1) {
+        showImageByIndex(idx);
+    } else {
+        const fileItem = currentDecryptedFileList.find(f => f.path === filePath);
+        if (!fileItem) return;
+        currentImagePlaylist = [{ path: fileItem.path, name: fileItem.name, size: fileItem.size }];
+        showImageByIndex(0);
+    }
+}
+
+function closeImageViewer() {
+    const modal = document.getElementById('vault-image-modal');
+    const img = document.getElementById('lightbox-image');
+    const loader = document.getElementById('image-loading-indicator');
+
+    if (modal) modal.style.display = 'none';
+    if (loader) loader.style.display = 'none';
+    if (img) {
+        img.src = '';
+        img.style.display = 'none';
+    }
+
+    if (currentImageBlobUrl) {
+        URL.revokeObjectURL(currentImageBlobUrl);
+        currentImageBlobUrl = null;
+    }
+    currentImageBlob = null;
+    currentImageFilename = '';
+}
+
+// ============================================
+// IN-VAULT CODE & TEXT DOCUMENT VIEWER
+// ============================================
+
+async function openTextViewerByPath(filePath) {
+    const fileItem = currentDecryptedFileList.find(f => f.path === filePath);
+    if (!fileItem) return;
+
+    const modal = document.getElementById('vault-text-modal');
+    const title = document.getElementById('text-modal-title');
+    const badge = document.getElementById('text-modal-badge');
+    const meta = document.getElementById('text-modal-meta');
+    const codeEl = document.getElementById('text-code-content');
+    const linesEl = document.getElementById('text-line-numbers');
+    const loader = document.getElementById('text-loading-indicator');
+    const editorView = document.getElementById('text-editor-view');
+
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    const ext = (fileItem.name || '').split('.').pop().toUpperCase();
+    if (badge) badge.textContent = `📄 ${ext || 'TXT'}`;
+    if (title) title.textContent = fileItem.name;
+    if (meta) meta.textContent = `Loading · ${formatBytes(fileItem.size)}`;
+
+    if (loader) loader.style.display = 'flex';
+    if (editorView) editorView.style.display = 'none';
+    if (codeEl) codeEl.textContent = '';
+    if (linesEl) linesEl.innerHTML = '';
+
+    try {
+        const blob = await getDecryptedFileBlob(filePath);
+        currentTextBlob = blob;
+        currentTextFilename = fileItem.name;
+
+        // Bounded memory protection: limit live text preview to 5 MB
+        if (blob.size > 5 * 1024 * 1024) {
+            currentTextContent = '⚠️ This document is larger than 5 MB. Please download the file to inspect complete contents.';
+        } else {
+            currentTextContent = await blob.text();
+        }
+
+        const lines = currentTextContent.split('\n');
+        const lineCount = lines.length;
+
+        if (meta) meta.textContent = `${lineCount} lines · ${formatBytes(blob.size)}`;
+        if (codeEl) {
+            codeEl.textContent = currentTextContent;
+            codeEl.className = `text-code-content ${isTextWordWrapped ? 'is-wrapped' : ''}`;
+        }
+        if (linesEl) {
+            linesEl.textContent = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
+        }
+
+        if (loader) loader.style.display = 'none';
+        if (editorView) editorView.style.display = 'flex';
+    } catch (err) {
+        console.error('[Text Viewer Error]', err);
+        if (loader) loader.style.display = 'none';
+        showToast(`Failed to extract text document: ${err.message}`, 'error');
+    }
+}
+
+function closeTextViewer() {
+    const modal = document.getElementById('vault-text-modal');
+    const loader = document.getElementById('text-loading-indicator');
+    const codeEl = document.getElementById('text-code-content');
+    const linesEl = document.getElementById('text-line-numbers');
+
+    if (modal) modal.style.display = 'none';
+    if (loader) loader.style.display = 'none';
+    if (codeEl) codeEl.textContent = '';
+    if (linesEl) linesEl.textContent = '';
+    currentTextBlob = null;
+    currentTextFilename = '';
+    currentTextContent = '';
+}
+
+async function copyTextToClipboard() {
+    if (!currentTextContent) return;
+    const btn = document.getElementById('btn-text-copy');
+    const orig = btn ? btn.innerHTML : '📋 Copy';
+    try {
+        await navigator.clipboard.writeText(currentTextContent);
+        if (btn) {
+            btn.innerHTML = '✅ Copied!';
+            setTimeout(() => { btn.innerHTML = orig; }, 2000);
+        }
+        showToast('Document copied to clipboard!', 'success');
+    } catch (err) {
+        console.error('[Copy Error]', err);
+        showToast('Failed to copy to clipboard', 'error');
+    }
+}
+
+function toggleTextWrap() {
+    isTextWordWrapped = !isTextWordWrapped;
+    const codeEl = document.getElementById('text-code-content');
+    const btn = document.getElementById('btn-text-wrap');
+    if (codeEl) {
+        if (isTextWordWrapped) codeEl.classList.add('is-wrapped');
+        else codeEl.classList.remove('is-wrapped');
+    }
+    if (btn) {
+        btn.textContent = isTextWordWrapped ? '↔️ Unwrap' : '↩️ Wrap';
+    }
+}
+
 /**
  * Render file list with search, category filtering, sorting, and view mode (list/grid).
  */
@@ -2986,6 +3276,9 @@ function renderExplorerFileList(query = '') {
             const actions = document.createElement('div');
             actions.className = 'explorer-grid-actions';
 
+            const isPhoto = getFileCategory(file.name) === 'photo';
+            const isTextDoc = isTextOrCodeFile(file.name);
+
             if (mediaCategory) {
                 const playBtn = document.createElement('button');
                 playBtn.className = 'explorer-file-play-btn';
@@ -2996,6 +3289,26 @@ function renderExplorerFileList(query = '') {
                     openMediaPlayerByPath(file.path);
                 });
                 actions.appendChild(playBtn);
+            } else if (isPhoto) {
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'explorer-file-view-btn';
+                viewBtn.title = `View ${file.name}`;
+                viewBtn.innerHTML = '👁️';
+                viewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openImageViewerByPath(file.path);
+                });
+                actions.appendChild(viewBtn);
+            } else if (isTextDoc) {
+                const readBtn = document.createElement('button');
+                readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
+                readBtn.title = `Read ${file.name}`;
+                readBtn.innerHTML = '📄';
+                readBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openTextViewerByPath(file.path);
+                });
+                actions.appendChild(readBtn);
             }
 
             const dlBtn = document.createElement('button');
@@ -3019,6 +3332,18 @@ function renderExplorerFileList(query = '') {
             actions.appendChild(dlBtn);
 
             card.appendChild(actions);
+
+            // Allow clicking card to preview directly
+            if (mediaCategory || isPhoto || isTextDoc) {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('button') || e.target.closest('input')) return;
+                    if (mediaCategory) openMediaPlayerByPath(file.path);
+                    else if (isPhoto) openImageViewerByPath(file.path);
+                    else if (isTextDoc) openTextViewerByPath(file.path);
+                });
+            }
+
             listEl.appendChild(card);
 
         } else {
@@ -3076,6 +3401,9 @@ function renderExplorerFileList(query = '') {
             size.textContent = file.size > 0 ? formatBytes(file.size) : '';
             right.appendChild(size);
 
+            const isPhoto = getFileCategory(file.name) === 'photo';
+            const isTextDoc = isTextOrCodeFile(file.name);
+
             if (mediaCategory) {
                 const playBtn = document.createElement('button');
                 playBtn.className = 'explorer-file-play-btn';
@@ -3086,6 +3414,26 @@ function renderExplorerFileList(query = '') {
                     openMediaPlayerByPath(file.path);
                 });
                 right.appendChild(playBtn);
+            } else if (isPhoto) {
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'explorer-file-view-btn';
+                viewBtn.title = `View ${file.name} in high-res lightbox`;
+                viewBtn.innerHTML = '👁️ View';
+                viewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openImageViewerByPath(file.path);
+                });
+                right.appendChild(viewBtn);
+            } else if (isTextDoc) {
+                const readBtn = document.createElement('button');
+                readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
+                readBtn.title = `Read ${file.name} document`;
+                readBtn.innerHTML = '📄 Read';
+                readBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openTextViewerByPath(file.path);
+                });
+                right.appendChild(readBtn);
             }
 
             const dlBtn = document.createElement('button');
@@ -3108,12 +3456,15 @@ function renderExplorerFileList(query = '') {
             });
             right.appendChild(dlBtn);
 
-            // Allow clicking row to play media or download
-            if (mediaCategory) {
+            // Allow clicking row to play media or view document
+            if (mediaCategory || isPhoto || isTextDoc) {
                 row.style.cursor = 'pointer';
+                row.title = isPhoto ? 'Click to view photo' : (isTextDoc ? 'Click to read document' : 'Click to play media');
                 row.addEventListener('click', (e) => {
                     if (e.target.closest('button') || e.target.closest('input')) return;
-                    openMediaPlayerByPath(file.path);
+                    if (mediaCategory) openMediaPlayerByPath(file.path);
+                    else if (isPhoto) openImageViewerByPath(file.path);
+                    else if (isTextDoc) openTextViewerByPath(file.path);
                 });
             }
 
@@ -3501,6 +3852,164 @@ function initExplorerUI() {
             updateVolumeMuteUI(media);
         } else if (e.key === 'Escape') {
             closeMediaPlayer();
+        }
+    });
+
+    // ── Image Lightbox Modal Events ──
+    const imageModal = document.getElementById('vault-image-modal');
+    const closeImageBtn = document.getElementById('btn-close-image-modal');
+    const imageOpenTabBtn = document.getElementById('btn-image-open-tab');
+    const imageDlBtn = document.getElementById('btn-image-download');
+    const imagePrevBtn = document.getElementById('btn-image-prev');
+    const imageNextBtn = document.getElementById('btn-image-next');
+    const imageZoomInBtn = document.getElementById('btn-image-zoom-in');
+    const imageZoomOutBtn = document.getElementById('btn-image-zoom-out');
+    const imageZoomResetBtn = document.getElementById('btn-image-zoom-reset');
+    const imageRotateBtn = document.getElementById('btn-image-rotate');
+    const imageFullscreenBtn = document.getElementById('btn-image-fullscreen');
+    const imageViewport = document.getElementById('image-viewport');
+
+    closeImageBtn?.addEventListener('click', closeImageViewer);
+    imageModal?.addEventListener('click', (e) => {
+        if (e.target.id === 'vault-image-modal') closeImageViewer();
+    });
+
+    imageOpenTabBtn?.addEventListener('click', () => {
+        if (currentImageBlobUrl) {
+            window.open(currentImageBlobUrl, '_blank', 'noopener,noreferrer');
+        }
+    });
+
+    imageDlBtn?.addEventListener('click', () => {
+        if (currentImageBlob && currentImageFilename) {
+            triggerDownload(currentImageBlob, currentImageFilename);
+            showToast(`Saved "${currentImageFilename}"`, 'success');
+        }
+    });
+
+    imagePrevBtn?.addEventListener('click', () => {
+        if (currentImageIndex > 0) showImageByIndex(currentImageIndex - 1);
+    });
+
+    imageNextBtn?.addEventListener('click', () => {
+        if (currentImageIndex < currentImagePlaylist.length - 1) showImageByIndex(currentImageIndex + 1);
+    });
+
+    imageZoomInBtn?.addEventListener('click', () => zoomImage(0.25));
+    imageZoomOutBtn?.addEventListener('click', () => zoomImage(-0.25));
+    imageZoomResetBtn?.addEventListener('click', resetImageZoom);
+    imageRotateBtn?.addEventListener('click', rotateImage);
+
+    imageFullscreenBtn?.addEventListener('click', () => {
+        const container = document.querySelector('.image-modal-container') || imageViewport;
+        if (!container) return;
+        if (!document.fullscreenElement) {
+            container.requestFullscreen?.() || container.webkitRequestFullscreen?.();
+        } else {
+            document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+        }
+    });
+
+    // Image Viewport Drag-to-Pan
+    imageViewport?.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        isPanningImage = true;
+        panStartX = e.clientX - imagePanX;
+        panStartY = e.clientY - imagePanY;
+        imageViewport.classList.add('is-dragging');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isPanningImage) return;
+        imagePanX = e.clientX - panStartX;
+        imagePanY = e.clientY - panStartY;
+        applyImageTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (isPanningImage) {
+            isPanningImage = false;
+            imageViewport?.classList.remove('is-dragging');
+        }
+    });
+
+    // Image Viewport Mouse Wheel Zoom
+    imageViewport?.addEventListener('wheel', (e) => {
+        const modal = document.getElementById('vault-image-modal');
+        if (!modal || modal.style.display === 'none') return;
+        e.preventDefault();
+        if (e.deltaY < 0) zoomImage(0.15);
+        else zoomImage(-0.15);
+    }, { passive: false });
+
+    // Double-click to toggle 1x and 2.5x zoom
+    imageViewport?.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        if (imageZoomLevel > 1.2) resetImageZoom();
+        else {
+            imageZoomLevel = 2.5;
+            applyImageTransform();
+        }
+    });
+
+    // ── Text / Code Viewer Modal Events ──
+    const textModal = document.getElementById('vault-text-modal');
+    const closeTextBtn = document.getElementById('btn-close-text-modal');
+    const textWrapBtn = document.getElementById('btn-text-wrap');
+    const textCopyBtn = document.getElementById('btn-text-copy');
+    const textDlBtn = document.getElementById('btn-text-download');
+
+    closeTextBtn?.addEventListener('click', closeTextViewer);
+    textModal?.addEventListener('click', (e) => {
+        if (e.target.id === 'vault-text-modal') closeTextViewer();
+    });
+
+    textWrapBtn?.addEventListener('click', toggleTextWrap);
+    textCopyBtn?.addEventListener('click', copyTextToClipboard);
+
+    textDlBtn?.addEventListener('click', () => {
+        if (currentTextBlob && currentTextFilename) {
+            triggerDownload(currentTextBlob, currentTextFilename);
+            showToast(`Saved "${currentTextFilename}"`, 'success');
+        }
+    });
+
+    // Keyboard Shortcuts for Image and Text Modals
+    window.addEventListener('keydown', (e) => {
+        const imgModalEl = document.getElementById('vault-image-modal');
+        const isImgActive = imgModalEl && imgModalEl.style.display !== 'none';
+        const txtModalEl = document.getElementById('vault-text-modal');
+        const isTxtActive = txtModalEl && txtModalEl.style.display !== 'none';
+
+        if (isImgActive) {
+            if (e.key === 'Escape') {
+                closeImageViewer();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentImageIndex > 0) showImageByIndex(currentImageIndex - 1);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (currentImageIndex < currentImagePlaylist.length - 1) showImageByIndex(currentImageIndex + 1);
+            } else if (e.key === '+' || e.key === '=') {
+                e.preventDefault();
+                zoomImage(0.25);
+            } else if (e.key === '-' || e.key === '_') {
+                e.preventDefault();
+                zoomImage(-0.25);
+            } else if (e.key === '0') {
+                e.preventDefault();
+                resetImageZoom();
+            } else if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                rotateImage();
+            } else if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                imageFullscreenBtn?.click();
+            }
+        } else if (isTxtActive) {
+            if (e.key === 'Escape') {
+                closeTextViewer();
+            }
         }
     });
 

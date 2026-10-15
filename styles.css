@@ -3989,6 +3989,191 @@ audio.media-player-element {
 }
 
 /* =====================================================
+   DEDICATED IN-BROWSER IMAGE LIGHTBOX MODAL
+   ===================================================== */
+
+.image-modal-container {
+    max-width: 980px;
+    max-height: 94vh;
+    border-color: rgba(20, 184, 166, 0.45);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(20, 184, 166, 0.25);
+}
+
+.image-type-badge {
+    background: rgba(20, 184, 166, 0.2);
+    border-color: rgba(20, 184, 166, 0.4);
+    color: var(--teal);
+}
+
+.image-dim-badge {
+    font-size: 0.72rem;
+    color: var(--teal);
+    background: rgba(20, 184, 166, 0.12);
+    border: 1px solid rgba(20, 184, 166, 0.25);
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono, monospace);
+    flex-shrink: 0;
+}
+
+.image-modal-body {
+    padding: 0;
+    position: relative;
+    background: #020309;
+    min-height: 300px;
+    max-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.image-viewport {
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+    max-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.image-viewport.is-dragging {
+    cursor: grabbing;
+}
+
+.lightbox-img {
+    max-width: 100%;
+    max-height: 68vh;
+    object-fit: contain;
+    transition: transform 0.1s ease-out;
+    transform-origin: center center;
+    pointer-events: auto;
+    border-radius: 4px;
+}
+
+.image-controls-bar {
+    background: rgba(6, 8, 22, 0.92);
+}
+
+.image-zoom-badge {
+    font-size: 0.74rem;
+    color: var(--teal);
+    background: rgba(20, 184, 166, 0.12);
+    border: 1px solid rgba(20, 184, 166, 0.25);
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono, monospace);
+    margin: 0 0.35rem;
+}
+
+/* =====================================================
+   DEDICATED IN-BROWSER TEXT & CODE VIEWER MODAL
+   ===================================================== */
+
+.text-modal-container {
+    max-width: 960px;
+    height: 85vh;
+    max-height: 85vh;
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(56, 189, 248, 0.2);
+}
+
+.text-type-badge {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: rgba(56, 189, 248, 0.45);
+    color: #38bdf8;
+}
+
+.text-modal-body {
+    flex: 1;
+    padding: 0;
+    background: #040510;
+    overflow: hidden;
+    display: flex;
+    position: relative;
+}
+
+.text-editor-view {
+    flex: 1;
+    display: flex;
+    overflow: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+}
+
+.text-line-numbers {
+    padding: 1rem 0.75rem 1rem 1rem;
+    color: rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.4);
+    text-align: right;
+    user-select: none;
+    -webkit-user-select: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: pre;
+    min-width: 3.2rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.text-code-content {
+    flex: 1;
+    padding: 1rem 1.25rem;
+    margin: 0;
+    color: #e2e8f0;
+    background: transparent;
+    overflow-x: auto;
+    white-space: pre;
+    outline: none;
+    tab-size: 4;
+}
+
+.text-code-content.is-wrapped {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* Explorer Preview Buttons */
+.explorer-file-view-btn {
+    background: rgba(20, 184, 166, 0.15);
+    border: 1px solid rgba(20, 184, 166, 0.35);
+    color: var(--teal);
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 0.28rem 0.55rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all var(--transition);
+}
+
+.explorer-file-view-btn:hover {
+    background: rgba(20, 184, 166, 0.3);
+    border-color: var(--teal);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.explorer-file-view-btn--doc {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.35);
+    color: #38bdf8;
+}
+
+.explorer-file-view-btn--doc:hover {
+    background: rgba(56, 189, 248, 0.3);
+    border-color: #38bdf8;
+    color: #fff;
+}
+
+/* =====================================================
    MULTI-DISPLAY SCREEN SIZE RESPONSIVE OPTIMIZATION
    ===================================================== */
 
