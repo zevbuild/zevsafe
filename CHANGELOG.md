@@ -5,6 +5,7 @@
 - `New` (`index.html`, `app.js`, `styles.css`): Rich In-Vault Code & Text Document Viewer Modal (`#vault-text-modal`) with numbered line gutter, monospace formatting, memory-bounded preview safety (up to 5 MB), word wrap toggle, and 1-tap clipboard copying.
 - `UI` (`app.js`, `styles.css`): Vault Explorer list rows and grid cards now feature dedicated preview action buttons (`👁️ View` for photos, `📄 Read` for code/text files) and row/card click triggers that open the corresponding cinema player, image lightbox, or code viewer directly.
 - `Security` (`app.js`): Extended Zero-Knowledge Session Zeroization Protocol (`lockV3VaultSession`) to clean up ephemeral image blob URLs (`URL.revokeObjectURL`), reset image playlist handles, and scrub open viewer states upon modal dismissal or session termination.
+- `Fix` (`app.js`): Resolved `TypeError: password must be a string or CryptoKey` when clicking "⬇️ Download All (ZIP)" in Decrypted Vault Explorer by passing the master password into `openV3VaultExplorer` and adding `masterKey` fallback in `WorkerBridge.startDecryption`.
 - `PWA` (`sw.js`, `index.html`): Bumped Service Worker cache to `v36` and synchronized release indicators to `WEB-VERSION-36` / `v6.8`.
 
 ## Version 6.7 (WEB-VERSION-35) — October 4, 2026

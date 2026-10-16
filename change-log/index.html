@@ -749,6 +749,12 @@
                             </div>
                         </div>
                         <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Decrypted Vault Download All Password Resolution:</strong> Resolved <code>TypeError: password must be a string or CryptoKey</code> when clicking &ldquo;⬇️ Download All (ZIP)&rdquo; in the Decrypted Vault Explorer. Preserves the user's master password in <code>currentV3Vault</code> across the active explorer session and provides automatic <code>CryptoKey</code> fallback for background multi-worker stream decryption.
+                            </div>
+                        </div>
+                        <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
                             <div class="cl-item-text">
                                 <strong>Service Worker Shell Cache v36:</strong> Bumped PWA offline cache to <code>v36</code> and synchronized release indicators to <code>WEB-VERSION-36</code>.

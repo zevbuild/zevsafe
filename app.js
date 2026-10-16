@@ -1970,7 +1970,7 @@ btnDecrypt.addEventListener('click', async () => {
             ProgressTracker.onCryptoDone(true, 'v3');
             ProgressTracker.onSaveDone(`${folderName}_decrypted`, catalog.totalSize, 'v3');
 
-            openV3VaultExplorer(folderName, catalog, selectedDecryptFile, null, keyfileBytes, masterKey);
+            openV3VaultExplorer(folderName, catalog, selectedDecryptFile, password, keyfileBytes, masterKey);
 
             clearDecryptSelection();
             v2KeyfileDecrypt = null;
@@ -3599,7 +3599,7 @@ function initExplorerUI() {
                 await new Promise((resolve, reject) => {
                     WorkerBridge.startDecryption({
                         vaultSource: currentV3Vault.file,
-                        password: currentV3Vault.password,
+                        password: currentV3Vault.password || currentV3Vault.masterKey,
                         keyfile: currentV3Vault.keyfileBytes,
                         options: {
                             writable: streamWriter ? (streamWriter.writable || streamWriter) : null,

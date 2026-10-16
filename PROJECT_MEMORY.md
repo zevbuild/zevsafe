@@ -53,9 +53,10 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Credit Flow Control:** Adaptive credit window $W = \max(2, \min(12, N \times 2))$ with deferred release: credits are released only after chunks are written to the sink, bounding peak process heap strictly below 105 MB.
 - **Zero-Copy Transferable Buffers:** Eliminates redundant `.slice()` duplications across worker boundaries using `toTransferableArrayBuffer(data)`, saving over 20 GB of memory allocations on 5 GB vaults.
 - **Ephemeral Session Key Caching:** `readVaultManifest` returns non-extractable `CryptoKey` in catalog result; Vault Explorer reuses this cached key for single-file extractions, image lightbox viewing, and media playback, reducing file access latency from ~2,500 ms to < 15 ms (> 150× faster).
-- **In-Vault File Viewers (v6.8):**
+- **In-Vault File Viewers & Stream Extraction (v6.8):**
   - **Image Lightbox Modal (`#vault-image-modal`):** Smooth zoom (25%–500%), mouse drag-pan, wheel zoom, double-click zoom toggle, 90° rotation, dimensions badge, and prev/next playlist carousel.
   - **Text & Code Document Viewer Modal (`#vault-text-modal`):** Monospace syntax display with line numbers gutter, memory-bounded preview (up to 5 MB), word wrap toggle, and 1-tap clipboard copying.
+  - **Download All Stream Decryption:** Vault Explorer preserves the active master password string in `currentV3Vault.password` (with fallback to `currentV3Vault.masterKey`) for `WorkerBridge.startDecryption`, resolving `TypeError: password must be a string or CryptoKey` when streaming full ZIP archives to disk.
 - **Zero-Knowledge Session Teardown (`lockV3VaultSession`):** Explicitly wipes keyfile bytes via `.fill(0)`, nullifies all key/catalog references, revokes media/image blob URLs, and scrubs password fields on modal close, file clear, or window unload.
 
 ### 3.2 Component Directory
