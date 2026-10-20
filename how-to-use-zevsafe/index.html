@@ -946,8 +946,62 @@ rawKeyBytes.fill(<span class="hl-num">0</span>); <span class="hl-comment">// Eph
                     <li><strong>Zero-Copy Transferable Buffers:</strong> Buffer ownership is transferred directly across worker contexts via <code>postMessage(msg, [transferable])</code> without memory duplication, saving over 20 GB of RAM churn on large vaults.</li>
                 </ul>
 
-                <!-- 5. Formal Security Audit Attestation -->
-                <h3 class="tech-subheading">5. Formal Security Audit Attestation (Score: 96/100, Grade A+)</h3>
+                <!-- 5. Bounded Chunk Cache (chunkCache) Architecture -->
+                <h3 class="tech-subheading">5. Bounded Chunk Cache (<code>chunkCache</code>) &amp; Memory Bounds</h3>
+                <p class="tech-desc">
+                    ZevSafe implements a high-performance, 4-chunk LRU (Least Recently Used) cache (<code>StreamUnpacker.createBoundedChunkCache(4)</code>) capped at exactly <strong>16 MB</strong> RAM (4 &times; 4 MB chunks) for instant video seeking and image zoom:
+                </p>
+
+                <div class="code-block">
+<span class="hl-comment">// Bounded 16 MB LRU Cache Factory (SEC-HIGH-07 Hardened)</span>
+StreamUnpacker.createBoundedChunkCache = <span class="hl-key">function</span>(maxChunks = <span class="hl-num">4</span>) {
+    <span class="hl-key">const</span> cache = <span class="hl-key">new</span> Map();
+    <span class="hl-key">return</span> {
+        get(chunkIndex) {
+            <span class="hl-key">if</span> (!cache.has(chunkIndex)) <span class="hl-key">return</span> <span class="hl-key">null</span>;
+            <span class="hl-key">const</span> chunk = cache.get(chunkIndex);
+            cache.delete(chunkIndex);
+            cache.set(chunkIndex, chunk); <span class="hl-comment">// LRU refresh</span>
+            <span class="hl-key">return</span> chunk;
+        },
+        set(chunkIndex, chunkBytes) {
+            <span class="hl-key">if</span> (cache.has(chunkIndex)) cache.delete(chunkIndex);
+            <span class="hl-key">else while</span> (cache.size &gt;= maxChunks) {
+                <span class="hl-key">const</span> oldestKey = cache.keys().next().value;
+                cache.delete(oldestKey); <span class="hl-comment">// Eviction drops reference without buffer-aliasing corruption</span>
+            }
+            cache.set(chunkIndex, chunkBytes);
+        },
+        clear() {
+            <span class="hl-key">for</span> (<span class="hl-key">const</span> [_, chunk] <span class="hl-key">of</span> cache.entries()) {
+                <span class="hl-key">if</span> (chunk &amp;&amp; chunk.fill) chunk.fill(<span class="hl-num">0</span>); <span class="hl-comment">// Full zeroization strictly on session lock</span>
+            }
+            cache.clear();
+        }
+    };
+};
+                </div>
+
+                <ul class="guide-body-ul" style="margin-left: 1.2rem;">
+                    <li><strong>Buffer Aliasing Immunity:</strong> During active multi-chunk extractions (&gt; 16 MB), cache eviction drops the oldest key reference rather than executing in-place <code>.fill(0)</code> zeroization. This prevents buffer corruption when earlier chunks are still being assembled by downstream streams.</li>
+                    <li><strong>Strict RAM Bound:</strong> Caps plaintext memory accumulation to 16 MB, strictly adhering to the &lt; 150 MB total process RAM ceiling.</li>
+                    <li><strong>Cryptographic Zeroization:</strong> When the vault is locked (<code>lockV3VaultSession</code>), all remaining cached chunks are securely wiped with <code>.fill(0)</code> before cache clearing.</li>
+                </ul>
+
+                <!-- 6. Service Worker Offline Shell Caching Architecture -->
+                <h3 class="tech-subheading">6. PWA Service Worker Shell Cache &amp; Storage Architecture</h3>
+                <p class="tech-desc">
+                    The ZevSafe Service Worker (<code>sw.js</code>) manages offline caching and streaming download interception under strict security constraints:
+                </p>
+                <ul class="guide-body-ul" style="margin-left: 1.2rem;">
+                    <li><strong>App Shell Cache-First Strategy:</strong> Pre-caches application code (<code>HTML</code>, <code>CSS</code>, <code>JS</code>, icons) into <code>zevsafe-shell-v42</code> for instant, air-gapped offline loading without network access.</li>
+                    <li><strong>Strict Vault Bypass Rule:</strong> The Service Worker <em>never</em> caches sensitive <code>.zev</code> vault files. A case-insensitive filter (<code>url.pathname.toLowerCase().endsWith('.zev')</code>) bypasses the cache entirely.</li>
+                    <li><strong>Synthetic Tier-2 Download Route:</strong> Intercepts <code>/_stream_download</code> with <code>Sec-Fetch-Site</code> validation, rejecting any cross-site request forgery attempts with <code>403 Forbidden</code>.</li>
+                    <li><strong>Automatic Cache Invalidation:</strong> Whenever a new version is released, the Service Worker automatically purges previous cache generations and claims active clients.</li>
+                </ul>
+
+                <!-- 7. Formal Security Audit Attestation -->
+                <h3 class="tech-subheading">7. Formal Security Audit Attestation (Score: 96/100, Grade A+)</h3>
                 <p class="tech-desc">
                     ZevSafe has undergone an exhaustive multi-agent security audit evaluating 20 threat vectors across cryptography, concurrency, client-side DOM XSS, and stream interception. Complete audit diffs and interactive verification reports are published at <a href="../security-audit/index.html" style="color:var(--teal-light);font-weight:600;text-decoration:underline;">/security-audit/</a>.
                 </p>

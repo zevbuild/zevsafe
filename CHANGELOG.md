@@ -1,7 +1,8 @@
 # Changelog
 
-## Version 6.9.0 (WEB-VERSION-41) — October 20, 2026
-- `Docs` (`how-to-use-zevsafe/index.html`): Redesigned the official documentation guide with simple, step-by-step instructions for everyday users (folder locking, recovery sheet backup, Vault Explorer media viewing) and added an in-depth Technical Architecture section for developers/cryptographers covering `ZV3\0` STREAM AEAD wire formatting, 12-byte IV & 42-byte AAD construction, PBKDF2 memory zeroization, and multi-worker credit flow control.
+## Version 6.9.0 (WEB-VERSION-42) — October 20, 2026
+- `Docs` (`how-to-use-zevsafe/index.html`): Redesigned the official documentation guide with simple, step-by-step instructions for everyday users (folder locking, recovery sheet backup, Vault Explorer media viewing) and added an in-depth Technical Architecture section for developers covering `ZV3\0` STREAM AEAD wire formatting, 12-byte IV & 42-byte AAD construction, PBKDF2 memory zeroization, 16 MB bounded `chunkCache` with buffer-aliasing-safe eviction, and Service Worker storage routing.
+- `PWA` (`sw.js`, `index.html`, `README.md`): Bumped Service Worker offline shell cache to `v42` and synchronized version indicators to `WEB-VERSION-42` / `v6.9` to force-refresh all client PWA caches with the new documentation.
 - `Security` (`app.js`): Sanitized batch download ZIP archive base filenames via `sanitizeFilenamePart(currentDecryptedFolderName, 'vault')`, ensuring generated multi-file archives are safe across all desktop operating systems (`SEC-HIGH-02`).
 - `Security` (`app.js`): Verified DOM XSS prevention in `showToast` via programmatic `document.createElement('div')` and `.textContent` against script, SVG, and HTML image payloads (`SEC-HIGH-01`).
 - `Security` (`js/stream-crypto.js`, `test/test-adversarial-challenger1.js`): Verified zeroization of ephemeral cryptographic precursor buffers (`passwordBytes`, `rawKeyBytes`, `mixedKey`, `keyfileHash`) with `.fill(0)` and confirmed minimum PBKDF2 iteration floors ($\ge 100,000$ rounds in browser) (`SEC-HIGH-04`).
