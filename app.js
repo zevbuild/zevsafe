@@ -2725,7 +2725,8 @@ async function batchDownloadSelected() {
                 batchZip.file(sanitizedPath, rawBlob);
             }
             const outBlob = await batchZip.generateAsync({ type: 'blob' });
-            triggerDownload(outBlob, `${currentDecryptedFolderName}_selected.zip`);
+            const safeZipBaseName = sanitizeFilenamePart(currentDecryptedFolderName, 'vault');
+            triggerDownload(outBlob, `${safeZipBaseName}_selected.zip`);
         }
         if (btn) {
             btn.textContent = '✅ Downloaded!';
