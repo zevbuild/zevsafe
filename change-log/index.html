@@ -642,16 +642,16 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="navbar-brand">
-            <a href="../index.html" style="display:flex;align-items:center;gap:0.6rem;text-decoration:none;color:inherit;">
+            <a href="../" style="display:flex;align-items:center;gap:0.6rem;text-decoration:none;color:inherit;">
                 <img class="brand-logo" src="../assets/zevsafe-logo.png" alt="ZevSafe Logo - Zero-Knowledge Encryption" width="32" height="32">
                 <span class="brand-name">ZevSafe</span>
             </a>
         </div>
         <div class="navbar-links">
             <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener" class="nav-pill nav-pill--android" title="Download Dedicated Native Android App (APK)">🤖 Android APK</a>
-            <a href="../index.html" class="nav-pill">← Back to App</a>
-            <a href="../how-to-use-zevsafe/index.html" class="nav-pill">📖 User Guide</a>
-            <a href="../security-audit/index.html" class="nav-pill">🛡️ Security Audit</a>
+            <a href="../" class="nav-pill">← Back to App</a>
+            <a href="../how-to-use-zevsafe/" class="nav-pill">📖 User Guide</a>
+            <a href="../security-audit/" class="nav-pill">🛡️ Security Audit</a>
             <a href="https://github.com/zevbuild/zevsafe" target="_blank" class="nav-pill nav-pill-ghost">GitHub ↗</a>
         </div>
     </nav>
@@ -709,7 +709,53 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 6.9 (WEB-VERSION-41) ── -->
+            <!-- ── VERSION 6.9.2 (WEB-VERSION-43) ── -->
+            <article class="cl-card" data-version="v6">
+                <div class="cl-marker">🚀</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.9.2 (WEB-VERSION-43)</h2>
+                            <span class="cl-badge cl-badge--date">October 20, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Chrome Navigation Fix</span>
+                            <span class="cl-tag">Cache API Hardening</span>
+                            <span class="cl-tag">Subfolder Routing</span>
+                            <span class="cl-tag">Service Worker</span>
+                            <span class="cl-tag">PWA v43</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Chrome Subfolder Navigation &amp; Redirected Response Cache Fix:</strong> Resolved an issue where loading subfolder pages (<code>/how-to-use-zevsafe/</code>, <code>/change-log/</code>, <code>/security-audit/</code>) in Google Chrome failed or erroneously fell back to the root vault homepage. Handled Cloudflare 308 Permanent Redirects by cloning redirected responses into fresh <code>Response</code> instances prior to <code>cache.put()</code>, eliminating the strict Chromium Cache API <code>TypeError: Failed to execute 'put' on 'Cache': Cannot cache a redirected response</code>.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Canonical Trailing Slash URL Normalization:</strong> Standardized internal navigation links across all HTML files to canonical directory paths (<code>./how-to-use-zevsafe/</code>, <code>./change-log/</code>, <code>./security-audit/</code>) to avoid unnecessary 308 redirect roundtrips.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Section-Aware Service Worker Routing &amp; Offline Fallbacks:</strong> Enhanced <code>sw.js</code> with subfolder path normalization and section-specific offline matching, guaranteeing that navigating to documentation, changelog, or security audit pages offline or during network latency returns the corresponding cached section instead of falling back to the root app shell.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker Scope &amp; Reload Loop Prevention:</strong> Harmonized subfolder service worker registration with root scope <code>{ scope: '/' }</code> and decoupled aggressive <code>controllerchange</code> window reloads on subpages, preventing reload flickers in Chromium browsers.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 6.9.0 (WEB-VERSION-42) ── -->
             <article class="cl-card cl-card--latest" data-version="v6">
                 <div class="cl-marker">🛡️</div>
                 <div class="cl-content">
@@ -733,13 +779,13 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--new">Docs</span>
                             <div class="cl-item-text">
-                                <strong>Redesigned User Guide &amp; Technical Deep-Dive (<a href="../how-to-use-zevsafe/index.html" style="color:#a78bfa; text-decoration:underline;">/how-to-use-zevsafe/</a>):</strong> Upgraded the documentation portal with clear, jargon-free step-by-step instructions for everyday users (folder locking, recovery sheet backup, Vault Explorer media viewing) and a dedicated Technical Architecture section for engineers covering <code>ZV3\0</code> STREAM AEAD wire layout, deterministic 12-byte IV &amp; 42-byte AAD binding, ephemeral memory scrubbing, and multi-worker credit flow control.
+                                <strong>Redesigned User Guide &amp; Technical Deep-Dive (<a href="../how-to-use-zevsafe/" style="color:#a78bfa; text-decoration:underline;">/how-to-use-zevsafe/</a>):</strong> Upgraded the documentation portal with clear, jargon-free step-by-step instructions for everyday users (folder locking, recovery sheet backup, Vault Explorer media viewing) and a dedicated Technical Architecture section for engineers covering <code>ZV3\0</code> STREAM AEAD wire layout, deterministic 12-byte IV &amp; 42-byte AAD binding, ephemeral memory scrubbing, and multi-worker credit flow control.
                             </div>
                         </div>
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--new">New</span>
                             <div class="cl-item-text">
-                                <strong>Interactive Security Audit Portal (<a href="../security-audit/index.html" style="color:#34d399; text-decoration:underline;">/security-audit/</a>):</strong> Launched dedicated responsive web presentation of the official Security Audit Report featuring live severity filter chips (Critical, High, Medium, Low), instant search, scorecard metrics (Score: 96/100, Grade A+), and code diffs.
+                                <strong>Interactive Security Audit Portal (<a href="../security-audit/" style="color:#34d399; text-decoration:underline;">/security-audit/</a>):</strong> Launched dedicated responsive web presentation of the official Security Audit Report featuring live severity filter chips (Critical, High, Medium, Low), instant search, scorecard metrics (Score: 96/100, Grade A+), and code diffs.
                             </div>
                         </div>
                         <div class="cl-item">
@@ -1589,7 +1635,7 @@
         <section class="cl-cta">
             <h2>Ready to Secure Your Files?</h2>
             <p>Experience zero-knowledge folder encryption directly in your browser. No accounts, no servers, zero telemetry.</p>
-            <a href="../index.html" class="cl-cta-btn">🔐 Open ZevSafe Vault App</a>
+            <a href="../" class="cl-cta-btn">🔐 Open ZevSafe Vault App</a>
         </section>
 
         <!-- Footer -->
@@ -1600,13 +1646,13 @@
             </div>
             <p class="footer-tagline">Your files stay on your device. Always.</p>
             <div class="footer-links">
-                <a href="../index.html">App</a>
+                <a href="../">App</a>
                 <span>·</span>
-                <a href="../security-audit/index.html" style="color: #34d399; font-weight: 600;">Security Audit</a>
+                <a href="../security-audit/" style="color: #34d399; font-weight: 600;">Security Audit</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener">Android App (APK)</a>
                 <span>·</span>
-                <a href="../how-to-use-zevsafe/index.html">User Guide</a>
+                <a href="../how-to-use-zevsafe/">User Guide</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild/zevsafe" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1720,7 +1766,7 @@
         // Service Worker Offline Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('../sw.js', { scope: '../' })
+                navigator.serviceWorker.register('../sw.js', { scope: '/' })
                     .then(reg => {
                         console.log('[ZevSafe PWA] SW registered on changelog page.');
                         window.addEventListener('online', () => reg.update().catch(() => {}));

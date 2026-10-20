@@ -666,9 +666,9 @@
             <span class="nav-badge-offline" title="Air-gapped zero network execution">● 100% Offline</span>
         </div>
         <div class="navbar-links">
-            <a href="../index.html" class="nav-link-subtle">← Back to App</a>
-            <a href="../security-audit/index.html" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 96/100)">Security Audit <span style="font-size: 0.72rem; opacity: 0.9; padding: 2px 6px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); color: #34d399; margin-left: 2px; font-weight: 700;">96/100</span></a>
-            <a href="../change-log/index.html" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-41)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v6.9</span></a>
+            <a href="../" class="nav-link-subtle">← Back to App</a>
+            <a href="../security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 96/100)">Security Audit <span style="font-size: 0.72rem; opacity: 0.9; padding: 2px 6px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); color: #34d399; margin-left: 2px; font-weight: 700;">96/100</span></a>
+            <a href="../change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-43)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v6.9.2</span></a>
             <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener" class="nav-btn-secondary" title="Download Dedicated Native Android App (APK)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #2dd4bf;"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
                 Android App
@@ -1003,7 +1003,7 @@ StreamUnpacker.createBoundedChunkCache = <span class="hl-key">function</span>(ma
                 <!-- 7. Formal Security Audit Attestation -->
                 <h3 class="tech-subheading">7. Formal Security Audit Attestation (Score: 96/100, Grade A+)</h3>
                 <p class="tech-desc">
-                    ZevSafe has undergone an exhaustive multi-agent security audit evaluating 20 threat vectors across cryptography, concurrency, client-side DOM XSS, and stream interception. Complete audit diffs and interactive verification reports are published at <a href="../security-audit/index.html" style="color:var(--teal-light);font-weight:600;text-decoration:underline;">/security-audit/</a>.
+                    ZevSafe has undergone an exhaustive multi-agent security audit evaluating 20 threat vectors across cryptography, concurrency, client-side DOM XSS, and stream interception. Complete audit diffs and interactive verification reports are published at <a href="../security-audit/" style="color:var(--teal-light);font-weight:600;text-decoration:underline;">/security-audit/</a>.
                 </p>
             </div>
         </section>
@@ -1057,7 +1057,7 @@ StreamUnpacker.createBoundedChunkCache = <span class="hl-key">function</span>(ma
             <span style="font-size:2.6rem; filter:drop-shadow(0 0 16px rgba(139,92,246,0.5))">🔐</span>
             <h2>Ready to Secure Your Files?</h2>
             <p>Lock your private photos, videos, and documents with zero uploads and military-grade encryption.</p>
-            <a href="../index.html" class="cta-btn">Open ZevSafe Web App</a>
+            <a href="../" class="cta-btn">Open ZevSafe Web App</a>
         </div>
 
         <!-- Site Footer -->
@@ -1068,13 +1068,13 @@ StreamUnpacker.createBoundedChunkCache = <span class="hl-key">function</span>(ma
             </div>
             <p class="footer-tagline">Your files stay on your device. Expose nothing.</p>
             <div class="footer-links">
-                <a href="../index.html">App</a>
+                <a href="../">App</a>
                 <span>·</span>
-                <a href="../security-audit/index.html" style="color: #34d399; font-weight: 600;">Security Audit (Grade A+)</a>
+                <a href="../security-audit/" style="color: #34d399; font-weight: 600;">Security Audit (Grade A+)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener">Android App (APK)</a>
                 <span>·</span>
-                <a href="../change-log/index.html">Changelog (v6.9.0)</a>
+                <a href="../change-log/">Changelog (v6.9.2)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1126,26 +1126,12 @@ StreamUnpacker.createBoundedChunkCache = <span class="hl-key">function</span>(ma
         // Service Worker registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('../sw.js', { scope: '../' })
+                navigator.serviceWorker.register('../sw.js', { scope: '/' })
                     .then(reg => {
                         window.addEventListener('online', () => reg.update().catch(() => {}));
                         setInterval(() => reg.update().catch(() => {}), 10 * 60 * 1000);
-                        reg.addEventListener('updatefound', () => {
-                            const nw = reg.installing;
-                            if (!nw) return;
-                            nw.addEventListener('statechange', () => {
-                                if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-                                    nw.postMessage({ type: 'SKIP_WAITING' });
-                                }
-                            });
-                        });
                     })
                     .catch(err => console.warn('[ZevSafe PWA] SW registration failed:', err));
-
-                let refreshing = false;
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    if (!refreshing) { refreshing = true; window.location.reload(); }
-                });
             });
         }
     </script>

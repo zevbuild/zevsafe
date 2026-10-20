@@ -597,7 +597,7 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="navbar-brand">
-            <a href="../index.html" style="display:flex;align-items:center;gap:0.6rem;text-decoration:none;color:inherit;">
+            <a href="../" style="display:flex;align-items:center;gap:0.6rem;text-decoration:none;color:inherit;">
                 <img class="brand-logo" src="../assets/zevsafe-logo.png" alt="ZevSafe Logo - Zero-Knowledge Encryption" width="32" height="32">
                 <span class="brand-name">ZevSafe</span>
             </a>
@@ -606,9 +606,9 @@
             </span>
         </div>
         <div class="navbar-links">
-            <a href="../index.html" class="nav-pill">← Back to Vault</a>
-            <a href="../how-to-use-zevsafe/index.html" class="nav-pill">📖 User Guide</a>
-            <a href="../change-log/index.html" class="nav-pill">✨ Changelog</a>
+            <a href="../" class="nav-pill">← Back to Vault</a>
+            <a href="../how-to-use-zevsafe/" class="nav-pill">📖 User Guide</a>
+            <a href="../change-log/" class="nav-pill">✨ Changelog</a>
             <a href="https://github.com/zevbuild/zevsafe/blob/main/SECURITY_AUDIT_REPORT.md" target="_blank" rel="noopener" class="nav-pill nav-pill-ghost">Raw Markdown ↗</a>
             <a href="https://github.com/zevbuild/zevsafe" target="_blank" rel="noopener" class="nav-pill nav-pill-ghost">GitHub ↗</a>
         </div>
@@ -1341,7 +1341,7 @@ node test/test-adversarial-challenger2.js</code></pre>
                     The ZevSafe Web PWA (`zevsafe/`) has successfully satisfied all security audit requirements. The application operates 100% offline with zero network calls, guarantees zero-knowledge in-memory handling, bounds memory consumption strictly below 150 MB across multi-gigabyte vaults, and provides robust defense-in-depth against client-side web vulnerabilities.
                 </p>
                 <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin-top:0.5rem;">
-                    <a href="../index.html" class="sa-btn-primary">Launch ZevSafe Vault App</a>
+                    <a href="../" class="sa-btn-primary">Launch ZevSafe Vault App</a>
                     <a href="https://github.com/zevbuild/zevsafe/blob/main/SECURITY_AUDIT_REPORT.md" target="_blank" rel="noopener" class="nav-pill nav-pill-ghost" style="padding:0.85rem 1.75rem; font-size:0.95rem;">Download Raw Report (.md) ↗</a>
                 </div>
             </div>
@@ -1355,15 +1355,15 @@ node test/test-adversarial-challenger2.js</code></pre>
             </div>
             <p class="footer-tagline">Your files stay on your device. Always.</p>
             <div class="footer-links">
-                <a href="../index.html">Vault App</a>
+                <a href="../">Vault App</a>
                 <span>·</span>
-                <a href="../how-to-use-zevsafe/index.html">How To Use</a>
+                <a href="../how-to-use-zevsafe/">How To Use</a>
                 <span>·</span>
-                <a href="./index.html" style="color:#34d399; font-weight:700;">Security Audit</a>
+                <a href="./" style="color:#34d399; font-weight:700;">Security Audit</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener">Android App (APK)</a>
                 <span>·</span>
-                <a href="../change-log/index.html">Changelog</a>
+                <a href="../change-log/">Changelog</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild/zevsafe" target="_blank" rel="noopener">GitHub ↗</a>
             </div>
@@ -1443,6 +1443,18 @@ node test/test-adversarial-challenger2.js</code></pre>
                     }
                 });
             }, { passive: true });
+
+            // Service Worker Offline Registration
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('../sw.js', { scope: '/' })
+                        .then(reg => {
+                            window.addEventListener('online', () => reg.update().catch(() => {}));
+                            setInterval(() => reg.update().catch(() => {}), 10 * 60 * 1000);
+                        })
+                        .catch(err => console.warn('[ZevSafe PWA] SW registration failed:', err));
+                });
+            }
         });
     </script>
 </body>

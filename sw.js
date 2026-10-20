@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v42';
+const APP_VERSION    = 'v43';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
 const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
@@ -16,8 +16,11 @@ const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
 const SHELL_ASSETS = [
     './',
     './index.html',
+    './how-to-use-zevsafe/',
     './how-to-use-zevsafe/index.html',
+    './change-log/',
     './change-log/index.html',
+    './security-audit/',
     './security-audit/index.html',
     './styles.css',
     './app.js',
@@ -50,10 +53,30 @@ self.addEventListener('install', event => {
     console.log(`[ZevSafe SW ${APP_VERSION}] Installing...`);
     event.waitUntil(
         caches.open(SHELL_CACHE)
-            .then(cache => {
+            .then(async cache => {
                 console.log(`[ZevSafe SW] Precaching ${SHELL_ASSETS.length} shell assets`);
-                // addAll is atomic — if any asset fails, install fails cleanly
-                return cache.addAll(SHELL_ASSETS);
+                const precachePromises = SHELL_ASSETS.map(async asset => {
+                    try {
+                        const response = await fetch(asset, { redirect: 'follow' });
+                        if (response && (response.status === 200 || response.type === 'opaque')) {
+                            // If response was redirected, wrap in new Response to prevent Chrome Cache API TypeError:
+                            // "Failed to execute 'put' on 'Cache': Cannot cache a redirected response"
+                            const responseToCache = response.redirected
+                                ? new Response(response.body, {
+                                      status: response.status,
+                                      statusText: response.statusText,
+                                      headers: response.headers
+                                  })
+                                : response.clone();
+                            await cache.put(asset, responseToCache);
+                        } else {
+                            console.warn(`[ZevSafe SW] Non-200 status precaching ${asset}: ${response ? response.status : 'null'}`);
+                        }
+                    } catch (err) {
+                        console.warn(`[ZevSafe SW] Failed to precache ${asset}:`, err);
+                    }
+                });
+                await Promise.all(precachePromises);
             })
             .then(() => {
                 console.log(`[ZevSafe SW] Install complete. Activating immediately.`);
@@ -137,8 +160,9 @@ self.addEventListener('fetch', event => {
 /**
  * Cache-First strategy.
  * 1. Return cached response immediately if found.
- * 2. Otherwise fetch from network, cache it, then return.
- * 3. If offline and no cache → return a friendly offline response.
+ * 2. Handle canonical subfolder routing aliases (/how-to-use-zevsafe/, /change-log/, /security-audit/).
+ * 3. Fetch from network, sanitize redirected responses for Cache API, cache safely.
+ * 4. Section-specific offline fallbacks so Chrome never redirects to homepage erroneously.
  */
 async function cacheFirst(request, cacheName) {
     let cached = await caches.match(request, { cacheName });
@@ -146,20 +170,44 @@ async function cacheFirst(request, cacheName) {
         return cached;
     }
 
-    // Graceful alias for tools/ scripts if requested without prefix
     const reqUrl = new URL(request.url);
-    if (reqUrl.pathname.endsWith('/encrypt.ps1') && !reqUrl.pathname.includes('/tools/')) {
+    const pathname = reqUrl.pathname.replace(/\/+$/, ''); // strips trailing slashes
+
+    // ── Subfolder canonical alias resolution ─────────────────────────
+    if (pathname.endsWith('/how-to-use-zevsafe') || pathname.endsWith('/how-to-use-zevsafe/index.html')) {
+        const subCached = await caches.match('./how-to-use-zevsafe/index.html', { cacheName })
+                       || await caches.match('./how-to-use-zevsafe/', { cacheName });
+        if (subCached) return subCached;
+    }
+    if (pathname.endsWith('/change-log') || pathname.endsWith('/change-log/index.html')) {
+        const subCached = await caches.match('./change-log/index.html', { cacheName })
+                       || await caches.match('./change-log/', { cacheName });
+        if (subCached) return subCached;
+    }
+    if (pathname.endsWith('/security-audit') || pathname.endsWith('/security-audit/index.html')) {
+        const subCached = await caches.match('./security-audit/index.html', { cacheName })
+                       || await caches.match('./security-audit/', { cacheName });
+        if (subCached) return subCached;
+    }
+    if (pathname === '' || pathname === '/' || pathname.endsWith('/index.html')) {
+        const rootCached = await caches.match('./index.html', { cacheName })
+                        || await caches.match('./', { cacheName });
+        if (rootCached) return rootCached;
+    }
+
+    // Graceful alias for tools/ scripts if requested without prefix
+    if (pathname.endsWith('/encrypt.ps1') && !pathname.includes('/tools/')) {
         const toolCached = await caches.match('./tools/encrypt.ps1', { cacheName });
         if (toolCached) return toolCached;
     }
-    if (reqUrl.pathname.endsWith('/decrypt.ps1') && !reqUrl.pathname.includes('/tools/')) {
+    if (pathname.endsWith('/decrypt.ps1') && !pathname.includes('/tools/')) {
         const toolCached = await caches.match('./tools/decrypt.ps1', { cacheName });
         if (toolCached) return toolCached;
     }
 
     // Graceful alias for assets/ images if requested from root without prefix
-    const imgMatch = reqUrl.pathname.match(/\/(icon-\d+\.(?:png|webp)|zevsafe-(?:logo|og)\.(?:png|webp)|favicon\.svg)$/);
-    if (imgMatch && !reqUrl.pathname.includes('/assets/')) {
+    const imgMatch = pathname.match(/\/(icon-\d+\.(?:png|webp)|zevsafe-(?:logo|og)\.(?:png|webp)|favicon\.svg)$/);
+    if (imgMatch && !pathname.includes('/assets/')) {
         const assetCached = await caches.match('./assets/' + imgMatch[1], { cacheName });
         if (assetCached) return assetCached;
     }
@@ -168,13 +216,41 @@ async function cacheFirst(request, cacheName) {
         const networkResponse = await fetch(request);
         if (networkResponse && networkResponse.status === 200) {
             const cache = await caches.open(cacheName);
-            // Clone before consuming — a Response body can only be read once
-            cache.put(request, networkResponse.clone());
+            // CRITICAL FIX FOR CHROME: If response was redirected, wrapping it in new Response prevents:
+            // "TypeError: Failed to execute 'put' on 'Cache': Cannot cache a redirected response"
+            const responseToCache = networkResponse.redirected
+                ? new Response(networkResponse.body, {
+                      status: networkResponse.status,
+                      statusText: networkResponse.statusText,
+                      headers: networkResponse.headers
+                  })
+                : networkResponse.clone();
+            cache.put(request, responseToCache).catch(err => {
+                console.warn('[ZevSafe SW] Cache put failed:', err);
+            });
         }
         return networkResponse;
     } catch {
-        // Offline and not in cache — return the shell as fallback
-        const fallback = await caches.match('./index.html', { cacheName });
+        // Offline or network error: return section-specific fallback
+        if (pathname.endsWith('/how-to-use-zevsafe') || pathname.endsWith('/how-to-use-zevsafe/index.html')) {
+            const subCached = await caches.match('./how-to-use-zevsafe/index.html', { cacheName })
+                           || await caches.match('./how-to-use-zevsafe/', { cacheName });
+            if (subCached) return subCached;
+        }
+        if (pathname.endsWith('/change-log') || pathname.endsWith('/change-log/index.html')) {
+            const subCached = await caches.match('./change-log/index.html', { cacheName })
+                           || await caches.match('./change-log/', { cacheName });
+            if (subCached) return subCached;
+        }
+        if (pathname.endsWith('/security-audit') || pathname.endsWith('/security-audit/index.html')) {
+            const subCached = await caches.match('./security-audit/index.html', { cacheName })
+                           || await caches.match('./security-audit/', { cacheName });
+            if (subCached) return subCached;
+        }
+
+        // Fallback for root app
+        const fallback = await caches.match('./index.html', { cacheName })
+                      || await caches.match('./', { cacheName });
         if (fallback) return fallback;
 
         // Last resort: basic offline page
@@ -202,7 +278,14 @@ async function staleWhileRevalidate(request, cacheName) {
     const networkFetch = fetch(request)
         .then(networkResponse => {
             if (networkResponse && networkResponse.status === 200) {
-                cache.put(request, networkResponse.clone());
+                const responseToCache = networkResponse.redirected
+                    ? new Response(networkResponse.body, {
+                          status: networkResponse.status,
+                          statusText: networkResponse.statusText,
+                          headers: networkResponse.headers
+                      })
+                    : networkResponse.clone();
+                cache.put(request, responseToCache).catch(() => {});
             }
             return networkResponse;
         })

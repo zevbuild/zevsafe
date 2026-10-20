@@ -11,8 +11,20 @@
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/how-to-use-zevsafe/</loc>
-        <lastmod>2026-09-16</lastmod>
+        <lastmod>2026-10-20</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://zevsafe.pages.dev/security-audit/</loc>
+        <lastmod>2026-10-20</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://zevsafe.pages.dev/change-log/</loc>
+        <lastmod>2026-10-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
     </url>
 </urlset>
