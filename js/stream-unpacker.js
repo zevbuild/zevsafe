@@ -996,6 +996,59 @@
     // =========================================================================
 
     /**
+     * Creates an LRU bounded memory cache for decrypted plaintext chunks.
+     * Enforces the < 150 MB memory ceiling (default 4 chunks = 16 MB max).
+     *
+     * Dual-Lifecycle Behavior:
+     * - Eviction drops reference without in-place zeroization to avoid buffer aliasing
+     *   during active multi-chunk extractions (> 16 MB).
+     * - clear() and delete() perform cryptographic byte scrubbing with .fill(0).
+     *
+     * @param {number} [maxChunks=4] - Maximum number of 4 MB chunks to cache in RAM
+     * @returns {Object} Bounded LRU cache interface compatible with Map
+     */
+    function createBoundedChunkCache(maxChunks = 4) {
+        const map = new Map();
+        const limit = Math.max(1, Number(maxChunks) || 4);
+        return {
+            _map: map,
+            _maxChunks: limit,
+            has(key) { return map.has(key); },
+            get(key) {
+                if (!map.has(key)) return undefined;
+                const val = map.get(key);
+                map.delete(key);
+                map.set(key, val);
+                return val;
+            },
+            set(key, val) {
+                if (map.has(key)) map.delete(key);
+                else if (map.size >= limit) {
+                    const oldestKey = map.keys().next().value;
+                    map.delete(oldestKey);
+                }
+                map.set(key, val);
+                return this;
+            },
+            delete(key) {
+                const val = map.get(key);
+                if (val && typeof val.fill === 'function') val.fill(0);
+                return map.delete(key);
+            },
+            clear() {
+                for (const chunk of map.values()) {
+                    if (chunk && typeof chunk.fill === 'function') chunk.fill(0);
+                }
+                map.clear();
+            },
+            entries() { return map.entries(); },
+            values() { return map.values(); },
+            keys() { return map.keys(); },
+            get size() { return map.size; }
+        };
+    }
+
+    /**
      * Extracts a single file selectively on-demand:
      * - Reads only chunks [chunkStart, chunkEnd] from the vault file using byte range slicing.
      * - Decrypts only those chunks via StreamCrypto.decryptChunk.
@@ -1204,22 +1257,28 @@
             throw new TypeError('targetEntries must be an Array');
         }
 
-        const chunkCache = opts.chunkCache || new Map();
+        const isInternalCache = !opts.chunkCache;
+        const chunkCache = opts.chunkCache || createBoundedChunkCache(4);
         const results = [];
 
-        for (const entry of targetEntries) {
-            const data = await extractSingleFile(vaultSource, passwordOrKey, entry, {
-                ...opts,
-                chunkCache
-            });
-            results.push({
-                entry,
-                path: entry.path || entry.name,
-                data
-            });
+        try {
+            for (const entry of targetEntries) {
+                const data = await extractSingleFile(vaultSource, passwordOrKey, entry, {
+                    ...opts,
+                    chunkCache
+                });
+                results.push({
+                    entry,
+                    path: entry.path || entry.name,
+                    data
+                });
+            }
+            return results;
+        } finally {
+            if (isInternalCache && typeof chunkCache.clear === 'function') {
+                chunkCache.clear();
+            }
         }
-
-        return results;
     }
 
     // =========================================================================
@@ -1516,6 +1575,7 @@
         sanitizeEntryPath,
 
         // Selective Extraction
+        createBoundedChunkCache,
         extractSingleFile,
         extractMultipleFiles,
 

@@ -2415,45 +2415,47 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
         password: password || null,
         keyfileBytes: keyfileBytes ? new Uint8Array(keyfileBytes) : null,
         masterKey: masterKey || catalog.masterKey || null,
-        chunkCache: {
-            _map: new Map(),
-            _maxChunks: 4, // Strict bound: max 16 MB plaintext in memory
-            has(key) { return this._map.has(key); },
-            get(key) {
-                if (!this._map.has(key)) return undefined;
-                const val = this._map.get(key);
-                this._map.delete(key);
-                this._map.set(key, val); // Refresh recency
-                return val;
-            },
-            set(key, val) {
-                if (this._map.has(key)) this._map.delete(key);
-                else if (this._map.size >= this._maxChunks) {
-                    const oldestKey = this._map.keys().next().value;
-                    // Do not zeroize evicted chunk in-place; decryptedChunks in StreamUnpacker
-                    // maintains a reference to earlier chunks during multi-chunk extractions (>16MB).
-                    // In-place zeroization is strictly performed in clear() when session locks.
-                    this._map.delete(oldestKey);
-                }
-                this._map.set(key, val);
-                return this;
-            },
-            delete(key) {
-                const val = this._map.get(key);
-                if (val && typeof val.fill === 'function') val.fill(0);
-                return this._map.delete(key);
-            },
-            clear() {
-                for (const chunk of this._map.values()) {
-                    if (chunk && typeof chunk.fill === 'function') chunk.fill(0);
-                }
-                this._map.clear();
-            },
-            entries() { return this._map.entries(); },
-            values() { return this._map.values(); },
-            keys() { return this._map.keys(); },
-            get size() { return this._map.size; }
-        }
+        chunkCache: (typeof StreamUnpacker !== 'undefined' && typeof StreamUnpacker.createBoundedChunkCache === 'function')
+            ? StreamUnpacker.createBoundedChunkCache(4)
+            : {
+                _map: new Map(),
+                _maxChunks: 4, // Strict bound: max 16 MB plaintext in memory
+                has(key) { return this._map.has(key); },
+                get(key) {
+                    if (!this._map.has(key)) return undefined;
+                    const val = this._map.get(key);
+                    this._map.delete(key);
+                    this._map.set(key, val); // Refresh recency
+                    return val;
+                },
+                set(key, val) {
+                    if (this._map.has(key)) this._map.delete(key);
+                    else if (this._map.size >= this._maxChunks) {
+                        const oldestKey = this._map.keys().next().value;
+                        // Do not zeroize evicted chunk in-place; decryptedChunks in StreamUnpacker
+                        // maintains a reference to earlier chunks during multi-chunk extractions (>16MB).
+                        // In-place zeroization is strictly performed in clear() when session locks.
+                        this._map.delete(oldestKey);
+                    }
+                    this._map.set(key, val);
+                    return this;
+                },
+                delete(key) {
+                    const val = this._map.get(key);
+                    if (val && typeof val.fill === 'function') val.fill(0);
+                    return this._map.delete(key);
+                },
+                clear() {
+                    for (const chunk of this._map.values()) {
+                        if (chunk && typeof chunk.fill === 'function') chunk.fill(0);
+                    }
+                    this._map.clear();
+                },
+                entries() { return this._map.entries(); },
+                values() { return this._map.values(); },
+                keys() { return this._map.keys(); },
+                get size() { return this._map.size; }
+            }
     };
     explorerSelectedFiles.clear();
 
