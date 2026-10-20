@@ -20,6 +20,8 @@ $testEntries = @(
     '\absolute\evil.txt',
     'valid_dir/valid_file.txt',
     "test`0null.txt",
+    'file.txt:hidden_stream.exe',
+    'folder/payload.txt::$DATA',
     'CON',
     'PRN.txt',
     'AUX',
@@ -32,6 +34,11 @@ Write-Host "--------------------------------------------------------------------
 foreach ($entryFullName in $testEntries) {
     try {
         $cleanName = $entryFullName.Replace('\', '/').TrimStart('/')
+
+        if ([System.Text.RegularExpressions.Regex]::IsMatch($cleanName, '[\x00-\x1F\x7F]') -or ($cleanName.IndexOf(':') -ge 0)) {
+            throw [System.Security.SecurityException]::new("Invalid characters or NTFS alternate data stream detected: $entryFullName")
+        }
+
         $destPath = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($targetFolder, $cleanName))
         if (-not $destPath.StartsWith($targetFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
             throw [System.Security.SecurityException]::new("Zip-Slip detected: Attempted extraction outside destination directory: $entryFullName")

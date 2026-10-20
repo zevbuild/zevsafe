@@ -121,6 +121,13 @@ public static class FolderCryptor
                                 foreach (var entry in archive.Entries)
                                 {
                                     string cleanName = entry.FullName.Replace('\\', '/').TrimStart('/');
+
+                                    // Reject null bytes, ASCII control characters, and NTFS Alternate Data Streams (:)
+                                    if (System.Text.RegularExpressions.Regex.IsMatch(cleanName, @"[\x00-\x1F\x7F]") || cleanName.IndexOf(':') >= 0)
+                                    {
+                                        throw new System.Security.SecurityException("Invalid characters or NTFS alternate data stream detected in archive entry: " + entry.FullName);
+                                    }
+
                                     string destPath = Path.GetFullPath(Path.Combine(targetFolder, cleanName));
                                     if (!destPath.StartsWith(targetFullPath, StringComparison.OrdinalIgnoreCase))
                                     {
@@ -144,10 +151,21 @@ public static class FolderCryptor
                                     if (!string.IsNullOrEmpty(destDir))
                                     {
                                         Directory.CreateDirectory(destDir);
+                                        var dirInfo = new DirectoryInfo(destDir);
+                                        if (dirInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                                        {
+                                            throw new System.Security.SecurityException("Directory reparse point or symlink detected: " + destDir);
+                                        }
                                     }
 
                                     if (!entry.FullName.EndsWith("/") && !entry.FullName.EndsWith("\\"))
                                     {
+                                        var fileInfo = new FileInfo(destPath);
+                                        if (fileInfo.Exists && fileInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                                        {
+                                            throw new System.Security.SecurityException("File reparse point or symlink detected: " + destPath);
+                                        }
+
                                         using (var entryStream = entry.Open())
                                         using (var outStream = new FileStream(destPath, FileMode.Create, FileAccess.Write))
                                         {
