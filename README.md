@@ -2,8 +2,8 @@
 
 > **by [zevbuild](https://github.com/zevbuild) · Encrypt and decrypt files and entire folders directly in your browser — zero uploads, zero tracking, 100% private & offline.**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Cloudflare%20Pages-8b5cf6?style=for-the-badge&logo=cloudflare)](https://zevsafe.pages.dev)
-[![Android APK](https://img.shields.io/badge/Android%20APK-Download%20v6.4.2-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/zevbuild/app-zevsafe/releases/latest)
+[![Official Web App](https://img.shields.io/badge/Official%20Web%20App-zevsafe.pages.dev-8b5cf6?style=for-the-badge&logo=cloudflare)](https://zevsafe.pages.dev)
+[![Android APK](https://img.shields.io/badge/Android%20APK-Download%20v6.4.3-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/zevbuild/app-zevsafe/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)](LICENSE)
 [![Security: AES-256-GCM](https://img.shields.io/badge/Security-AES--256--GCM-ef4444?style=for-the-badge)](#-cryptography)
 [![KDF: PBKDF2-SHA512](https://img.shields.io/badge/KDF-PBKDF2--SHA512%20(600k)-3b82f6?style=for-the-badge)](#-cryptography)
