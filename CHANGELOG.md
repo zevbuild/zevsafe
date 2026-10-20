@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 6.9 (WEB-VERSION-41) — October 20, 2026
+## Version 6.9.0 (WEB-VERSION-41) — October 20, 2026
 - `Security` (`app.js`): Sanitized batch download ZIP archive base filenames via `sanitizeFilenamePart(currentDecryptedFolderName, 'vault')`, ensuring generated multi-file archives are safe across all desktop operating systems (`SEC-HIGH-02`).
 - `Security` (`app.js`): Verified DOM XSS prevention in `showToast` via programmatic `document.createElement('div')` and `.textContent` against script, SVG, and HTML image payloads (`SEC-HIGH-01`).
 - `Security` (`js/stream-crypto.js`, `test/test-adversarial-challenger1.js`): Verified zeroization of ephemeral cryptographic precursor buffers (`passwordBytes`, `rawKeyBytes`, `mixedKey`, `keyfileHash`) with `.fill(0)` and confirmed minimum PBKDF2 iteration floors ($\ge 100,000$ rounds in browser) (`SEC-HIGH-04`).
@@ -16,7 +16,7 @@
 - `Security` (`app.js`): Replaced all dynamic `toast.innerHTML` assignments with safe DOM construction (`document.createElement`, `textContent`) preventing DOM XSS injection; hardened batch export zip entry path sanitization with safe stack-based fallback preventing single-pass traversal evasion; reduced transient decrypted blob URL revocation delay to 3,000 ms.
 - `Fix` (`js/worker-bridge.js`): Added robust cooperative cancellation and fatal error handling with `CreditFlowController.abort()` and `OrderedReassemblyQueue.abort()`; guarded worker releases with boolean flags to prevent double worker release under error cascades; eliminated transferable buffer detachment race conditions by caching `chunkByteLength` prior to worker handoff; rejected pending waiters upon `WorkerPool.terminate()`.
 - `Perf` & `Security` (`app.js`): Implemented 4-chunk (16 MB) memory-bounded LRU eviction cache (`chunkCache`) with lifecycle-aware eviction (eviction drops oldest key to prevent buffer aliasing corruption in `StreamUnpacker.extractSingleFile` on files > 16 MB, while full cryptographic zeroization `.fill(0)` is strictly performed in `clear()` during `lockV3VaultSession()`), guaranteeing strict compliance with the < 150 MB RAM ceiling.
-- `PWA` (`sw.js`, `js/stream-saver.js`): Case-insensitive `.zev` cache-bypass filter; `Sec-Fetch-Site` origin protection on streaming service worker interceptor; CSPRNG `downloadId` token generation with 5-second rapid session reclamation; precached `security-audit/index.html`; bumped Service Worker offline shell cache to `v39`.
+- `PWA` (`sw.js`, `js/stream-saver.js`): Case-insensitive `.zev` cache-bypass filter; `Sec-Fetch-Site` origin protection on streaming service worker interceptor; CSPRNG `downloadId` token generation with 5-second rapid session reclamation; precached `security-audit/index.html`; bumped Service Worker offline shell cache to `v41`.
 - `Docs` (`SECURITY_AUDIT_REPORT.md`, `security-audit/index.html`): Published formal 7-section Security Audit & Hardening Attestation Report covering all 20 audit findings, CVSS v3.1 ratings, mechanics, verification diffs, and 100% test pass attestation across 774 test cases. Interlinked across all platform navigation headers and footers.
 
 ## Version 6.8 (WEB-VERSION-36) — October 15, 2026
