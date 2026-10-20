@@ -9,12 +9,12 @@
 [![KDF: PBKDF2-SHA512](https://img.shields.io/badge/KDF-PBKDF2--SHA512%20(600k)-3b82f6?style=for-the-badge)](#-cryptography)
 [![PWA: Installable](https://img.shields.io/badge/PWA-Installable-8b5cf6?style=for-the-badge)](#-pwa--install-as-an-offline-app)
 [![100% Offline](https://img.shields.io/badge/Mode-100%25%20Offline-f59e0b?style=for-the-badge)](#)
-[![Release: v6.9 / WEB-VERSION-38](https://img.shields.io/badge/Release-v6.9%20(WEB--VERSION--38)-06b6d4?style=for-the-badge)](CHANGELOG.md)
+[![Release: v6.9 / WEB-VERSION-39](https://img.shields.io/badge/Release-v6.9%20(WEB--VERSION--39)-06b6d4?style=for-the-badge)](CHANGELOG.md)
 
 ---
 
-> 🟢 **Current stable release — v6.9 (`.zev` format / WEB-VERSION-38):** military-grade security by default with multi-worker parallel AEAD streaming pipeline, zero-copy transferable buffers, ephemeral session key caching, rich in-vault image lightbox with pan/zoom/rotate, code & text document viewer with line numbers and 1-tap copy, zero-knowledge session zeroization, active telemetry HUD with worker core count and ETA, enhanced Cinema player controls, formal security audit attestation (Grade A+ 96/100, CSP defense, Zip-Slip mitigation), and dedicated native Android APK (`com.zevbuild.zevsafe`).  
-> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · Multi-Worker 4 MB Chunked AES-256-GCM (`ZV3\0`) · Parallel WorkerPool (4–8 threads) with bounded backpressure (<105 MB RAM) · Zero-Copy Transferable ArrayBuffers · Instant <100ms Vault Explorer with Ephemeral CryptoKey Caching (<15ms extraction) · In-Vault Image Lightbox Viewer (25%–500% zoom, pan, rotate, dimensions) · In-Vault Code & Text Document Viewer (line numbers, wrap, 1-tap copy) · Zero-Knowledge Memory Scrubbing & Zeroization (`.fill(0)`) · Real-Time Telemetry HUD (MB/s, Worker Badge, Live ETA) · In-Browser Cinema Media Player with Static DOM Preservation, Volume Slider & Full Keyboard Shortcuts · Dedicated native Android app with ForegroundService & ExoPlayer · Progressive Web App (v38).**
+> 🟢 **Current stable release — v6.9 (`.zev` format / WEB-VERSION-39):** military-grade security by default with multi-worker parallel AEAD streaming pipeline, zero-copy transferable buffers, ephemeral session key caching, rich in-vault image lightbox with pan/zoom/rotate, code & text document viewer with line numbers and 1-tap copy, zero-knowledge session zeroization, active telemetry HUD with worker core count and ETA, enhanced Cinema player controls, formal security audit attestation (Grade A+ 96/100, CSP defense, Zip-Slip mitigation, [Interactive Web Report](https://zevsafe.pages.dev/security-audit/)), and dedicated native Android APK (`com.zevbuild.zevsafe`).  
+> **PBKDF2-SHA512 · 600,000 iterations · 32-byte salt · Multi-Worker 4 MB Chunked AES-256-GCM (`ZV3\0`) · Parallel WorkerPool (4–8 threads) with bounded backpressure (<105 MB RAM) · Zero-Copy Transferable ArrayBuffers · Instant <100ms Vault Explorer with Ephemeral CryptoKey Caching (<15ms extraction) · In-Vault Image Lightbox Viewer (25%–500% zoom, pan, rotate, dimensions) · In-Vault Code & Text Document Viewer (line numbers, wrap, 1-tap copy) · Zero-Knowledge Memory Scrubbing & Zeroization (`.fill(0)`) · Real-Time Telemetry HUD (MB/s, Worker Badge, Live ETA) · In-Browser Cinema Media Player with Static DOM Preservation, Volume Slider & Full Keyboard Shortcuts · Dedicated native Android app with ForegroundService & ExoPlayer · Progressive Web App (v39).**
 
 ---
 
@@ -39,7 +39,7 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | Feature | Description |
 |---|---|
 | 🔐 **AES-256-GCM Authenticated Encryption** | Military-grade authenticated cipher guaranteeing confidentiality and detecting any bit-flipping, chunk reordering, or file tampering. |
-| 🛡️ **Formal Security Audit ([`SECURITY_AUDIT_REPORT.md`](SECURITY_AUDIT_REPORT.md))** | Comprehensive defense-in-depth audit (Score: 96/100, Grade A+) with CSP enforcement, DOM XSS immunity, PBKDF2 iteration floor, Zip-Slip path traversal elimination, and strict buffer zeroization. |
+| 🛡️ **Formal Security Audit ([`SECURITY_AUDIT_REPORT.md`](SECURITY_AUDIT_REPORT.md) / [Interactive Web Report](https://zevsafe.pages.dev/security-audit/))** | Comprehensive defense-in-depth audit (Score: 96/100, Grade A+) with CSP enforcement, DOM XSS immunity, PBKDF2 iteration floor, Zip-Slip path traversal elimination, and strict buffer zeroization. |
 | 📦 **Open Binary Container Standard ([`FORMAT.md`](FORMAT.md))** | Fully documented bit-level container specification detailing 57-byte v3 headers, 4 MB STREAM AEAD framing, deterministic 12-byte IV & 42-byte AAD binding math, and tail manifest JSON schemas. |
 | ⚡ **Multi-Worker Streaming Pipeline (`ZV3\0`)** | Streams ZIP64 compression (`CompressionStream('deflate-raw')`) and parallel 4 MB chunked AES-256-GCM across a dynamic Web Worker pool (clamped to 4–8 cores with credit-based flow control), utilizing zero-copy `Transferable` buffers to keep peak browser heap under 105 MB. |
 | 🛡️ **PBKDF2-SHA512 (600,000 Iterations)** | Key stretching with **600,000 iterations** and a 32-byte CSPRNG random salt offloaded to a Web Worker so the UI stays at 60 FPS. |
@@ -62,7 +62,7 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | 🔔 **Non-Blocking Glassmorphic Toasts** | Replaces all intrusive browser alerts with smooth, dark-glass toast notifications and animated inline field shakes (`@keyframes fieldShake`) on validation failures. |
 | 📐 **Symmetrical Above-The-Fold Layout** | Optimized vertical shell spacing and CSS Grid stretch alignment with bottom-anchored CTA action buttons for seamless laptop drop-zone visibility. |
 | ⚡ **Optimized WebP & Compressed Assets** | All brand icons, OG social images, and logos compressed in-place (57%+ payload reduction) with next-gen WebP support for high-speed loading. |
-| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v38`), floating non-intrusive install banner, auto-updating in background, fully functional offline. |
+| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v39`), floating non-intrusive install banner, auto-updating in background, fully functional offline. |
 | 📜 **Interactive Changelog Portal** | Dedicated in-app and web release notes page ([`change-log/`](https://zevsafe.pages.dev/change-log/)) with live filtering and search across all releases. |
 
 ---
