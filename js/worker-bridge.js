@@ -85,6 +85,8 @@
             this.maxInFlightObserved = 0;
             this.totalAcquired = 0;
             this.totalReleased = 0;
+            this.isAborted = false;
+            this.abortReason = null;
         }
 
         /**
@@ -93,6 +95,9 @@
          * @returns {Promise<void>}
          */
         async acquire() {
+            if (this.isAborted) {
+                throw (this.abortReason || new Error('Flow controller has been aborted'));
+            }
             if (this.availableCredits > 0 && this.waiters.length === 0) {
                 this.availableCredits--;
                 this.inFlight++;
@@ -103,8 +108,12 @@
                 return;
             }
 
-            await new Promise((resolve) => {
-                this.waiters.push(resolve);
+            await new Promise((resolve, reject) => {
+                if (this.isAborted) {
+                    reject(this.abortReason || new Error('Flow controller has been aborted'));
+                    return;
+                }
+                this.waiters.push({ resolve, reject });
             });
 
             this.totalAcquired++;
@@ -122,11 +131,32 @@
             this.totalReleased++;
 
             if (this.waiters.length > 0) {
-                const nextWaiter = this.waiters.shift();
-                nextWaiter();
+                const waiter = this.waiters.shift();
+                if (typeof waiter === 'function') {
+                    waiter();
+                } else if (waiter && waiter.resolve) {
+                    waiter.resolve();
+                }
             } else {
                 this.inFlight = Math.max(0, this.inFlight - 1);
                 this.availableCredits = Math.min(this.maxCredits, this.availableCredits + 1);
+            }
+        }
+
+        /**
+         * Aborts the controller, immediately rejecting all pending waiters.
+         * @param {Error} [reason]
+         */
+        abort(reason = new Error('Flow controller aborted')) {
+            this.isAborted = true;
+            this.abortReason = reason;
+            while (this.waiters.length > 0) {
+                const waiter = this.waiters.shift();
+                try {
+                    if (waiter && typeof waiter.reject === 'function') {
+                        waiter.reject(reason);
+                    }
+                } catch (_) {}
             }
         }
 
@@ -785,7 +815,7 @@
                     reject(new Error('Worker pool has been terminated'));
                     return;
                 }
-                this.waiters.push(resolve);
+                this.waiters.push({ resolve, reject });
             });
         }
 
@@ -797,7 +827,11 @@
             if (!worker || this.isTerminated) return;
             if (this.waiters.length > 0) {
                 const nextWaiter = this.waiters.shift();
-                nextWaiter(worker);
+                if (typeof nextWaiter === 'function') {
+                    nextWaiter(worker);
+                } else if (nextWaiter && typeof nextWaiter.resolve === 'function') {
+                    nextWaiter.resolve(worker);
+                }
             } else {
                 this.idleWorkers.push(worker);
             }
@@ -828,8 +862,14 @@
          */
         terminate() {
             this.isTerminated = true;
-            for (const resolve of this.waiters) {
-                try { resolve(null); } catch (_) {}
+            for (const waiter of this.waiters) {
+                try {
+                    if (typeof waiter === 'function') {
+                        waiter(null);
+                    } else if (waiter && typeof waiter.reject === 'function') {
+                        waiter.reject(new Error('Worker pool has been terminated'));
+                    }
+                } catch (_) {}
             }
             this.waiters = [];
             for (const w of this.workers) {
@@ -859,6 +899,7 @@
             this.isProcessing = false;
             this.drainWaiters = [];
             this.hasError = false;
+            this.abortReason = null;
         }
 
         /**
@@ -891,6 +932,7 @@
                 }
             } catch (err) {
                 this.hasError = true;
+                this.abortReason = err;
                 if (typeof this.onError === 'function') {
                     this.onError(err);
                 }
@@ -906,8 +948,14 @@
                 if (this.buffer.size === 0 && this.drainWaiters.length > 0) {
                     const waiters = this.drainWaiters;
                     this.drainWaiters = [];
-                    for (const resolve of waiters) {
-                        try { resolve(); } catch (_) {}
+                    for (const waiter of waiters) {
+                        try {
+                            if (typeof waiter === 'function') {
+                                waiter();
+                            } else if (waiter && typeof waiter.resolve === 'function') {
+                                waiter.resolve();
+                            }
+                        } catch (_) {}
                     }
                 }
             }
@@ -918,10 +966,36 @@
          * @returns {Promise<void>}
          */
         async waitUntilDrained() {
+            if (this.hasError) {
+                throw (this.abortReason || new Error('Reassembly queue encountered an error'));
+            }
             if (this.buffer.size === 0 && !this.isProcessing) return;
-            return new Promise(resolve => {
-                this.drainWaiters.push(resolve);
+            return new Promise((resolve, reject) => {
+                this.drainWaiters.push({ resolve, reject });
             });
+        }
+
+        /**
+         * Aborts the queue, scrubs buffered plaintext, and rejects all pending drain waiters.
+         * @param {Error} [reason]
+         */
+        abort(reason = new Error('Reassembly queue aborted')) {
+            this.hasError = true;
+            this.abortReason = reason;
+            for (const [, item] of this.buffer.entries()) {
+                if (item && item.plainChunk && typeof item.plainChunk.fill === 'function') {
+                    item.plainChunk.fill(0);
+                }
+            }
+            this.buffer.clear();
+            while (this.drainWaiters.length > 0) {
+                const waiter = this.drainWaiters.shift();
+                try {
+                    if (waiter && typeof waiter.reject === 'function') {
+                        waiter.reject(reason);
+                    }
+                } catch (_) {}
+            }
         }
 
         /**
@@ -932,6 +1006,7 @@
             this.buffer.clear();
             this.isProcessing = false;
             this.hasError = false;
+            this.abortReason = null;
             this.drainWaiters = [];
         }
     }
@@ -973,6 +1048,7 @@
         let fatalError = null;
         let pool = null;
         let flowController = null;
+        let reassemblyQueue = null;
         let telemetry = null;
         let zipReader = null;
         let writer = null;
@@ -993,6 +1069,9 @@
             hasError = true;
             cancelled = true;
             fatalError = err;
+
+            if (flowController) flowController.abort(err);
+            if (reassemblyQueue) reassemblyQueue.abort(err);
 
             if (telemetry) {
                 try { telemetry.setStage('Error', true); } catch (_) {}
@@ -1038,6 +1117,8 @@
         const cancel = async () => {
             if (cancelled || hasError) return;
             cancelled = true;
+            if (flowController) flowController.abort(new Error('Operation cancelled'));
+            if (reassemblyQueue) reassemblyQueue.abort(new Error('Operation cancelled'));
             try {
                 if (telemetry) telemetry.setStage('Cancelled', true);
                 if (zipReader) {
@@ -1181,7 +1262,7 @@
                 }
 
                 // Strictly ordered reassembly queue guarantees sequential output writes (0, 1, 2, ...)
-                const reassemblyQueue = new OrderedReassemblyQueue({
+                reassemblyQueue = new OrderedReassemblyQueue({
                     onChunkReady: async (item) => {
                         const { encChunk, chunkIndex: idx, isLast: last, plainChunkSize } = item;
                         totalEncryptedBytes += encChunk.byteLength;
@@ -1262,6 +1343,7 @@
                                 return;
                             }
 
+                            let workerReleased = false;
                             sendWorkerRequest(worker, {
                                 type: 'ENCRYPT_CHUNK',
                                 sessionId,
@@ -1272,7 +1354,10 @@
                                 baseIVPrefix: baseIVPrefix.buffer.slice(baseIVPrefix.byteOffset, baseIVPrefix.byteOffset + baseIVPrefix.byteLength),
                                 salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength)
                             }, [rawBuf]).then(async res => {
-                                pool.releaseWorker(worker);
+                                if (!workerReleased) {
+                                    workerReleased = true;
+                                    pool.releaseWorker(worker);
+                                }
 
                                 if (hasError || cancelled) {
                                     flowController.release();
@@ -1289,8 +1374,11 @@
                                     plainChunkSize: chunkSize
                                 });
                             }).catch(async err => {
-                                pool.releaseWorker(worker);
-                                flowController.release();
+                                if (!workerReleased) {
+                                    workerReleased = true;
+                                    pool.releaseWorker(worker);
+                                    flowController.release();
+                                }
                                 await handleFatalError(err);
                             });
                         }
@@ -1516,6 +1604,7 @@
         let fatalError = null;
         let pool = null;
         let flowController = null;
+        let reassemblyQueue = null;
         let telemetry = null;
         let writer = null;
 
@@ -1535,6 +1624,9 @@
             hasError = true;
             cancelled = true;
             fatalError = err;
+
+            if (flowController) flowController.abort(err);
+            if (reassemblyQueue) reassemblyQueue.abort(err);
 
             if (telemetry) {
                 try { telemetry.setStage('Error', true); } catch (_) {}
@@ -1576,6 +1668,8 @@
         const cancel = async () => {
             if (cancelled || hasError) return;
             cancelled = true;
+            if (flowController) flowController.abort(new Error('Operation cancelled'));
+            if (reassemblyQueue) reassemblyQueue.abort(new Error('Operation cancelled'));
             try {
                 if (telemetry) telemetry.setStage('Cancelled', true);
                 if (writer && typeof writer.abort === 'function') {
@@ -1823,7 +1917,7 @@
                 const decryptedChunks = shouldBuffer ? [] : null;
                 let totalDecryptedBytes = 0;
 
-                const reassemblyQueue = new OrderedReassemblyQueue({
+                reassemblyQueue = new OrderedReassemblyQueue({
                     onChunkReady: async (chunkData) => {
                         if (cancelled || hasError) return;
                         const { plainChunk, chunkIndex, isLast } = chunkData;
@@ -1880,6 +1974,7 @@
                         return;
                     }
 
+                    const chunkByteLength = chunkBytes.byteLength;
                     const rawBuf = toTransferableArrayBuffer(chunkBytes);
                     const assignedWorker = await pool.acquireWorker();
                     if (cancelled || hasError) {
@@ -1888,6 +1983,7 @@
                         return;
                     }
 
+                    let workerReleased = false;
                     sendWorkerRequest(assignedWorker, {
                         type: 'DECRYPT_CHUNK',
                         sessionId,
@@ -1897,7 +1993,10 @@
                         baseIVPrefix: header.baseIVPrefix.buffer.slice(header.baseIVPrefix.byteOffset, header.baseIVPrefix.byteOffset + header.baseIVPrefix.byteLength),
                         salt: header.salt.buffer.slice(header.salt.byteOffset, header.salt.byteOffset + header.salt.byteLength)
                     }, [rawBuf]).then(async res => {
-                        pool.releaseWorker(assignedWorker);
+                        if (!workerReleased) {
+                            workerReleased = true;
+                            pool.releaseWorker(assignedWorker);
+                        }
 
                         if (hasError || cancelled) {
                             flowController.release();
@@ -1905,7 +2004,7 @@
                         }
 
                         const plainChunk = new Uint8Array(res.plainChunk || res.chunk);
-                        telemetry.recordProgress(chunkBytes.byteLength);
+                        telemetry.recordProgress(chunkByteLength);
 
                         await reassemblyQueue.push(i, {
                             plainChunk,
@@ -1913,8 +2012,11 @@
                             isLast
                         });
                     }).catch(async err => {
-                        pool.releaseWorker(assignedWorker);
-                        flowController.release();
+                        if (!workerReleased) {
+                            workerReleased = true;
+                            pool.releaseWorker(assignedWorker);
+                            flowController.release();
+                        }
                         await handleFatalError(err);
                     });
                 }

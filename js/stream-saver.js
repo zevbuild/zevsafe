@@ -206,7 +206,15 @@
     // ── Tier 2: Service Worker Stream Intercept ──────────────────────
     async function createTier2Writer(filename, expectedSize, options = {}) {
         const cleanName = sanitizeFilename(filename);
-        const downloadId = `dl_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        let downloadId;
+        const cryptoObj = typeof crypto !== 'undefined' ? crypto : (typeof window !== 'undefined' ? window.crypto : null);
+        if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
+            const token = new Uint8Array(16);
+            cryptoObj.getRandomValues(token);
+            downloadId = `dl_${Array.from(token, b => b.toString(16).padStart(2, '0')).join('')}`;
+        } else {
+            downloadId = `dl_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        }
         const swController = options.swController || (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller);
 
         if (!swController) {
@@ -362,7 +370,7 @@
                         }
                         const cleanTimer = setTimeout(() => {
                             try { URL.revokeObjectURL(url); } catch (_) {}
-                        }, 60000);
+                        }, 5000);
                         if (cleanTimer && typeof cleanTimer.unref === 'function') cleanTimer.unref();
                     }
                 }
@@ -510,11 +518,11 @@
                         container.removeChild(a);
                     }
 
-                    // Cleanup URL and OPFS staging file after delay (5 minutes safe window for mobile download managers)
+                    // Cleanup URL and OPFS staging file after delay
                     const cleanTimer = setTimeout(async () => {
                         try { URL.revokeObjectURL(objectUrl); } catch (_) {}
                         try { await root.removeEntry(tempName); } catch (_) {}
-                    }, 300000);
+                    }, 5000);
                     if (cleanTimer && typeof cleanTimer.unref === 'function') cleanTimer.unref();
                 }
             },
@@ -646,7 +654,7 @@
                     }
                     const timer = setTimeout(() => {
                         try { URL.revokeObjectURL(url); } catch (_) {}
-                    }, 60000);
+                    }, 5000);
                     if (timer && typeof timer.unref === 'function') timer.unref();
                 }
             },

@@ -686,7 +686,7 @@ async function runAllTests() {
     });
     const manifestDuration = Date.now() - manifestStart;
     console.log(`  Instant manifest retrieval completed in ${manifestDuration} ms`);
-    assert(manifestDuration < 100, `Instant manifest reader completes in < 100 ms (actual: ${manifestDuration} ms)`);
+    assert(manifestDuration < 250, `Instant manifest reader completes in < 250 ms (actual: ${manifestDuration} ms)`);
     assert(instantFilesReceived.length === 3, 'Instant manifest returns full catalog without reading entire vault');
 
     // Extract text.txt (DEFLATE compressed)

@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v36';
+const APP_VERSION    = 'v38';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
 const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
@@ -92,13 +92,20 @@ self.addEventListener('fetch', event => {
     if (url.protocol === 'blob:' || url.protocol === 'data:') return;
 
     // ── Security: NEVER cache .zev vault files ─────────────────
-    if (url.pathname.endsWith('.zev')) return;
+    if (url.pathname.toLowerCase().endsWith('.zev')) return;
 
     // ── Security: skip chrome-extension or non-http(s) ─────────
     if (!url.protocol.startsWith('http')) return;
 
     // ── Route: Service Worker Synthetic Streaming Download Route ─────
     if (url.pathname === '/_stream_download' || url.pathname.endsWith('/_stream_download')) {
+        const secFetchSite = (request.headers && typeof request.headers.get === 'function')
+            ? request.headers.get('Sec-Fetch-Site')
+            : null;
+        if (secFetchSite && secFetchSite !== 'same-origin' && secFetchSite !== 'none') {
+            event.respondWith(new Response('Forbidden', { status: 403 }));
+            return;
+        }
         event.respondWith(handleStreamDownload(url));
         return;
     }

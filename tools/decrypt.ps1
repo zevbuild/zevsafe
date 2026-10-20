@@ -112,9 +112,34 @@ public static class FolderCryptor
                         {
                             using (var archive = new ZipArchive(cryptoStream, ZipArchiveMode.Read))
                             {
+                                string targetFullPath = Path.GetFullPath(targetFolder);
+                                if (!targetFullPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                                {
+                                    targetFullPath += Path.DirectorySeparatorChar;
+                                }
+
                                 foreach (var entry in archive.Entries)
                                 {
-                                    string destPath = Path.Combine(targetFolder, entry.FullName);
+                                    string cleanName = entry.FullName.Replace('\\', '/').TrimStart('/');
+                                    string destPath = Path.GetFullPath(Path.Combine(targetFolder, cleanName));
+                                    if (!destPath.StartsWith(targetFullPath, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        throw new System.Security.SecurityException("Zip-Slip detected: Attempted extraction outside destination directory: " + entry.FullName);
+                                    }
+
+                                    string fileNameOnly = Path.GetFileName(cleanName);
+                                    if (System.Text.RegularExpressions.Regex.IsMatch(fileNameOnly, @"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                                    {
+                                        throw new System.Security.SecurityException("Reserved Windows device name detected in archive entry: " + entry.FullName);
+                                    }
+                                    foreach (string seg in cleanName.Split('/'))
+                                    {
+                                        if (System.Text.RegularExpressions.Regex.IsMatch(seg, @"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                                        {
+                                            throw new System.Security.SecurityException("Reserved Windows device name detected in archive entry: " + entry.FullName);
+                                        }
+                                    }
+
                                     string destDir = Path.GetDirectoryName(destPath);
                                     if (!string.IsNullOrEmpty(destDir))
                                     {

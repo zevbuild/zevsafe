@@ -795,8 +795,49 @@
     /**
      * Normalizes a file entry from the catalog for uniform properties.
      */
+    /**
+     * Sanitizes a path string against directory traversal, drive letters, control characters,
+     * colons, and Windows reserved device names (aligned with StreamPacker.sanitizeZipPath).
+     */
+    function sanitizeEntryPath(rawPath) {
+        if (!rawPath || typeof rawPath !== 'string') return 'unnamed_file';
+
+        // Filter null bytes and control characters (\x00-\x1F, \x7F)
+        const stripped = rawPath.replace(/[\x00-\x1F\x7F]/g, '');
+
+        // Normalize backslashes and strip Windows drive prefix (e.g. C:)
+        const normalized = stripped.replace(/\\/g, '/').replace(/^[a-zA-Z]:/, '');
+
+        const reservedNames = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$/i;
+
+        // Resolve segments with stack to collapse '.' and '..'
+        const rawSegments = normalized.split('/');
+        const stack = [];
+        for (const seg of rawSegments) {
+            const s = seg.trim();
+            if (!s || s === '.') {
+                continue;
+            }
+            if (s === '..') {
+                if (stack.length > 0) {
+                    stack.pop();
+                }
+            } else if (!reservedNames.test(s)) {
+                // Replace NTFS stream colons with underscore
+                stack.push(s.replace(/:/g, '_'));
+            }
+        }
+
+        if (stack.length === 0) {
+            return 'unnamed_file';
+        }
+
+        return stack.join('/');
+    }
+
     function normalizeCatalogEntry(entry, defaultChunkSize = DEFAULT_CHUNK_SIZE) {
-        const path = entry.path || entry.name || 'unnamed';
+        const rawPath = entry.path || entry.name || 'unnamed';
+        const path = sanitizeEntryPath(rawPath);
         const uncompressedSize = entry.size !== undefined ? entry.size : (entry.uncompressedSize !== undefined ? entry.uncompressedSize : 0);
         const compressedSize = entry.compressedSize !== undefined ? entry.compressedSize : uncompressedSize;
         const localHeaderOffset = entry.localHeaderOffset !== undefined ? entry.localHeaderOffset : (entry.offset !== undefined ? entry.offset : 0);
@@ -1472,6 +1513,7 @@
         // Manifest Reading & Instant Browsing
         parseManifestEnvelope,
         readVaultManifest,
+        sanitizeEntryPath,
 
         // Selective Extraction
         extractSingleFile,

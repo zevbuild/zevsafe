@@ -153,7 +153,7 @@ public static class FolderCryptor
 
         foreach (var file in dirInfo.GetFiles())
         {
-            string entryName = Path.Combine(entryPrefix, file.Name);
+            string entryName = string.IsNullOrEmpty(entryPrefix) ? file.Name : (entryPrefix.Replace('\\', '/') + "/" + file.Name);
             string ext = file.Extension;
             var compressionLevel = PreCompressedExts.Contains(ext) ? CompressionLevel.NoCompression : CompressionLevel.Fastest;
             var entry = archive.CreateEntry(entryName, compressionLevel);
@@ -166,7 +166,7 @@ public static class FolderCryptor
 
         foreach (var subDir in dirInfo.GetDirectories())
         {
-            string newPrefix = Path.Combine(entryPrefix, subDir.Name);
+            string newPrefix = string.IsNullOrEmpty(entryPrefix) ? subDir.Name : (entryPrefix.Replace('\\', '/') + "/" + subDir.Name);
             AddDirectoryToArchive(archive, subDir.FullName, newPrefix);
         }
     }

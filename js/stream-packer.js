@@ -237,8 +237,13 @@
     function sanitizeZipPath(path) {
         if (!path || typeof path !== 'string') return 'unnamed_file';
 
+        // Filter null bytes and control characters
+        const stripped = path.replace(/[\x00-\x1F\x7F]/g, '');
+
         // Normalize backslashes and strip Windows drive prefix (e.g. C:)
-        const normalized = path.replace(/\\/g, '/').replace(/^[a-zA-Z]:/, '');
+        const normalized = stripped.replace(/\\/g, '/').replace(/^[a-zA-Z]:/, '');
+
+        const reservedNames = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$/i;
 
         // Resolve segments with stack to collapse '.' and '..'
         const rawSegments = normalized.split('/');
@@ -252,8 +257,9 @@
                 if (stack.length > 0) {
                     stack.pop();
                 }
-            } else {
-                stack.push(s);
+            } else if (!reservedNames.test(s)) {
+                // Replace NTFS stream colons with underscore
+                stack.push(s.replace(/:/g, '_'));
             }
         }
 

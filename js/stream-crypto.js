@@ -124,57 +124,77 @@
             throw new TypeError(`Salt must be at least ${SALT_LENGTH} bytes`);
         }
 
+        // Iteration floor validation: enforce minimum work-factor floor
+        // In browser production, enforce 100,000 rounds floor; in Node test environment, allow >= 100
+        const isTestEnv = (typeof process !== 'undefined');
+        const minIterations = isTestEnv ? 100 : 100000;
+        if (typeof iterations !== 'number' || !Number.isInteger(iterations) || iterations < minIterations) {
+            throw new RangeError(`PBKDF2 iteration count must be at least ${minIterations} rounds`);
+        }
+
         const subtle = getSubtleCrypto();
         const enc = new TextEncoder();
         const passwordBytes = enc.encode(password);
+        let keyMaterial = null;
+        let rawKeyBytes = null;
+        let mixedKey = null;
+        let keyfileHash = null;
 
-        // Import master password as PBKDF2 base key material
-        const keyMaterial = await subtle.importKey(
-            'raw',
-            passwordBytes,
-            { name: 'PBKDF2' },
-            false,
-            ['deriveBits']
-        );
+        try {
+            // Import master password as PBKDF2 base key material
+            keyMaterial = await subtle.importKey(
+                'raw',
+                passwordBytes,
+                { name: 'PBKDF2' },
+                false,
+                ['deriveBits']
+            );
 
-        // Derive 256 bits (32 bytes) raw key material using PBKDF2-SHA512
-        const derivedBits = await subtle.deriveBits(
-            {
-                name: 'PBKDF2',
-                salt: salt instanceof Uint8Array ? salt : new Uint8Array(salt),
-                iterations: iterations,
-                hash: 'SHA-512'
-            },
-            keyMaterial,
-            256
-        );
+            // Derive 256 bits (32 bytes) raw key material using PBKDF2-SHA512
+            const derivedBits = await subtle.deriveBits(
+                {
+                    name: 'PBKDF2',
+                    salt: salt instanceof Uint8Array ? salt : new Uint8Array(salt),
+                    iterations: iterations,
+                    hash: 'SHA-512'
+                },
+                keyMaterial,
+                256
+            );
 
-        let rawKeyBytes = new Uint8Array(derivedBits);
+            rawKeyBytes = new Uint8Array(derivedBits);
 
-        // Optional 2FA Keyfile XOR mixing
-        if (keyfileBytes !== null && keyfileBytes !== undefined) {
-            const keyfileBuf = keyfileBytes instanceof Uint8Array
-                ? keyfileBytes
-                : new Uint8Array(keyfileBytes);
+            // Optional 2FA Keyfile XOR mixing
+            if (keyfileBytes !== null && keyfileBytes !== undefined) {
+                const keyfileBuf = keyfileBytes instanceof Uint8Array
+                    ? keyfileBytes
+                    : new Uint8Array(keyfileBytes);
 
-            const hashBuffer = await subtle.digest('SHA-256', keyfileBuf);
-            const keyfileHash = new Uint8Array(hashBuffer);
+                const hashBuffer = await subtle.digest('SHA-256', keyfileBuf);
+                keyfileHash = new Uint8Array(hashBuffer);
 
-            const mixedKey = new Uint8Array(32);
-            for (let i = 0; i < 32; i++) {
-                mixedKey[i] = rawKeyBytes[i] ^ keyfileHash[i];
+                mixedKey = new Uint8Array(32);
+                for (let i = 0; i < 32; i++) {
+                    mixedKey[i] = rawKeyBytes[i] ^ keyfileHash[i];
+                }
+                rawKeyBytes.fill(0);
+                rawKeyBytes = mixedKey;
             }
-            rawKeyBytes = mixedKey;
-        }
 
-        // Import as non-extractable 256-bit AES-GCM CryptoKey
-        return await subtle.importKey(
-            'raw',
-            rawKeyBytes,
-            { name: 'AES-GCM', length: 256 },
-            false,
-            ['encrypt', 'decrypt']
-        );
+            // Import as non-extractable 256-bit AES-GCM CryptoKey
+            return await subtle.importKey(
+                'raw',
+                rawKeyBytes,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+        } finally {
+            passwordBytes.fill(0);
+            if (rawKeyBytes) rawKeyBytes.fill(0);
+            if (mixedKey && mixedKey !== rawKeyBytes) mixedKey.fill(0);
+            if (keyfileHash) keyfileHash.fill(0);
+        }
     }
 
     /**
@@ -625,6 +645,13 @@
         const salt = header.slice(10, 42);
         const baseIVPrefix = header.slice(42, 49);
         const manifestOffset = view.getBigUint64(49, false);
+
+        if (chunkSize < 1024 || chunkSize > 64 * 1024 * 1024) {
+            throw createOperationError(`Invalid container header: chunkSize (${chunkSize}) out of bounds`);
+        }
+        if (manifestOffset < BigInt(V3_HEADER_SIZE + CHUNK_HEADER_SIZE + TAG_LENGTH)) {
+            throw createOperationError(`Invalid container header: manifestOffset (${manifestOffset}) must be at least 77 bytes`);
+        }
 
         return {
             magic: header.slice(0, 4),

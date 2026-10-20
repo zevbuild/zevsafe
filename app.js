@@ -180,13 +180,24 @@ function showToast(message, type = 'info', duration = 4000) {
         success: '✓'
     };
 
-    toast.innerHTML = `
-        <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
-        <div class="toast-body">${message}</div>
-        <button class="toast-close" type="button" aria-label="Dismiss notification">✕</button>
-    `;
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'toast-icon';
+    iconSpan.textContent = icons[type] || 'ℹ️';
 
-    const closeBtn = toast.querySelector('.toast-close');
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'toast-body';
+    bodyDiv.textContent = String(message || '');
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Dismiss notification');
+    closeBtn.textContent = '✕';
+
+    toast.appendChild(iconSpan);
+    toast.appendChild(bodyDiv);
+    toast.appendChild(closeBtn);
+
     let timer = null;
 
     const dismiss = () => {
@@ -951,7 +962,7 @@ function clearLogs() {
 }
 
 /** Revoke an object URL after a short delay to prevent memory leaks */
-function revokeAfterDelay(url, delayMs = 60000) {
+function revokeAfterDelay(url, delayMs = 3000) {
     setTimeout(() => URL.revokeObjectURL(url), delayMs);
 }
 
@@ -2404,7 +2415,45 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
         password: password || null,
         keyfileBytes: keyfileBytes ? new Uint8Array(keyfileBytes) : null,
         masterKey: masterKey || catalog.masterKey || null,
-        chunkCache: new Map() // LRU cache for decrypted 4 MB chunk spans
+        chunkCache: {
+            _map: new Map(),
+            _maxChunks: 4, // Strict bound: max 16 MB plaintext in memory
+            has(key) { return this._map.has(key); },
+            get(key) {
+                if (!this._map.has(key)) return undefined;
+                const val = this._map.get(key);
+                this._map.delete(key);
+                this._map.set(key, val); // Refresh recency
+                return val;
+            },
+            set(key, val) {
+                if (this._map.has(key)) this._map.delete(key);
+                else if (this._map.size >= this._maxChunks) {
+                    const oldestKey = this._map.keys().next().value;
+                    // Do not zeroize evicted chunk in-place; decryptedChunks in StreamUnpacker
+                    // maintains a reference to earlier chunks during multi-chunk extractions (>16MB).
+                    // In-place zeroization is strictly performed in clear() when session locks.
+                    this._map.delete(oldestKey);
+                }
+                this._map.set(key, val);
+                return this;
+            },
+            delete(key) {
+                const val = this._map.get(key);
+                if (val && typeof val.fill === 'function') val.fill(0);
+                return this._map.delete(key);
+            },
+            clear() {
+                for (const chunk of this._map.values()) {
+                    if (chunk && typeof chunk.fill === 'function') chunk.fill(0);
+                }
+                this._map.clear();
+            },
+            entries() { return this._map.entries(); },
+            values() { return this._map.values(); },
+            keys() { return this._map.keys(); },
+            get size() { return this._map.size; }
+        }
     };
     explorerSelectedFiles.clear();
 
@@ -2652,7 +2701,26 @@ async function batchDownloadSelected() {
             const batchZip = new JSZip();
             for (const path of explorerSelectedFiles) {
                 const rawBlob = await getDecryptedFileBlob(path);
-                batchZip.file(path, rawBlob);
+                const sanitizedPath = (typeof StreamPacker !== 'undefined' && StreamPacker.sanitizeZipPath)
+                    ? StreamPacker.sanitizeZipPath(path)
+                    : (() => {
+                        if (!path || typeof path !== 'string') return 'unnamed_file';
+                        const stripped = path.replace(/[\x00-\x1F\x7F]/g, '');
+                        const normalized = stripped.replace(/\\/g, '/').replace(/^[a-zA-Z]:/, '');
+                        const reservedNames = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$/i;
+                        const stack = [];
+                        for (const seg of normalized.split('/')) {
+                            const s = seg.trim();
+                            if (!s || s === '.') continue;
+                            if (s === '..') {
+                                if (stack.length > 0) stack.pop();
+                            } else if (!reservedNames.test(s)) {
+                                stack.push(s.replace(/:/g, '_'));
+                            }
+                        }
+                        return stack.length > 0 ? stack.join('/') : 'unnamed_file';
+                    })();
+                batchZip.file(sanitizedPath, rawBlob);
             }
             const outBlob = await batchZip.generateAsync({ type: 'blob' });
             triggerDownload(outBlob, `${currentDecryptedFolderName}_selected.zip`);
@@ -3649,7 +3717,7 @@ function initExplorerUI() {
 
     mediaOpenTabBtn?.addEventListener('click', () => {
         if (currentMediaBlobUrl) {
-            window.open(currentMediaBlobUrl, '_blank');
+            window.open(currentMediaBlobUrl, '_blank', 'noopener,noreferrer');
         }
     });
 
@@ -3876,6 +3944,11 @@ function initExplorerUI() {
 
     imageOpenTabBtn?.addEventListener('click', () => {
         if (currentImageBlobUrl) {
+            const isSvg = (currentImageFilename || '').toLowerCase().endsWith('.svg');
+            if (isSvg) {
+                showToast('Opening SVG in a new tab is restricted for security. Please save to inspect.', 'info');
+                return;
+            }
             window.open(currentImageBlobUrl, '_blank', 'noopener,noreferrer');
         }
     });
