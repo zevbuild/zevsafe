@@ -709,6 +709,53 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
+            <!-- ── VERSION 6.9.3 (WEB-VERSION-44) ── -->
+            <article class="cl-card cl-card--latest" data-version="v6">
+                <div class="cl-marker">⚡</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.9.3 (WEB-VERSION-44)</h2>
+                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
+                            <span class="cl-badge cl-badge--date">October 20, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Mobile Perf Optimization</span>
+                            <span class="cl-tag">GPU Fill-Rate Fix</span>
+                            <span class="cl-tag">Blur Removal</span>
+                            <span class="cl-tag">Touch Momentum</span>
+                            <span class="cl-tag">PWA v44</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Mobile GPU &amp; Fill-Rate Acceleration:</strong> Completely eliminated severe mobile frame drops and thermal throttling caused by continuous 80px Gaussian blur convolutions on animated ambient orbs (<code>.orb</code>) and full-screen procedural SVG fractal noise filters (<code>.noise</code>). On mobile viewports and touchscreens (<code>&le; 820px</code>), orbs and SVG noise are cleanly deactivated, replaced with zero-cost static CSS radial gradients.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Backdrop-Filter Elimination on Mobile:</strong> Removed stacked <code>backdrop-filter: blur(24px)</code> and <code>blur(20px)</code> across cards, modals, and navigation bars on mobile, substituting lightweight opaque dark backgrounds (<code>rgba(13, 17, 28, 0.94)</code>) to guarantee silky 60/120 FPS scrolling response.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Removed Universal Mobile Transition Bottleneck:</strong> Deleted the catastrophic wildcard rule <code>* { transition-duration: 0.15s !important; }</code> that forced mobile browsers to compute transition states on every single DOM element during touch events; restored native momentum scrolling (<code>scroll-behavior: auto; -webkit-overflow-scrolling: touch</code>) for 1:1 finger tracking.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Idle CPU Cycle Reclamation:</strong> Deactivated continuous <code>background-position</code> keyframe shifts (<code>gradientShift</code>) and continuous rotating rings (<code>drop-ring</code>) on mobile touchscreens, allowing mobile CPUs and GPUs to rest in low-power idle states.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
             <!-- ── VERSION 6.9.2 (WEB-VERSION-43) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🚀</div>

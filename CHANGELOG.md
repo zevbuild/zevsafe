@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 6.9.3 (WEB-VERSION-44) — October 20, 2026
+- `Perf` (`styles.css`): Mobile GPU fill-rate and rendering bottleneck elimination. Completely deactivated continuous 80px Gaussian blur convolutions on floating orbs (`.orb`) and full-screen procedural SVG fractal noise filters (`.noise`) on mobile viewports and touchscreens ($\le 820\text{px}$). Replaced with zero-cost static CSS radial gradients that preserve the deep ambient atmosphere without exhausting mobile GPU memory bandwidth.
+- `Perf` (`styles.css`): Stripped heavy `backdrop-filter: blur(24px)` and `blur(20px)` rules on mobile `.vault-card`, `.navbar`, and modals, replacing them with performant high-opacity dark surfaces (`rgba(13, 17, 28, 0.94)`), eliminating severe scroll stutter and dropped frames.
+- `Fix` (`styles.css`): Removed catastrophic universal wildcard rule `* { transition-duration: 0.15s !important; }` in mobile media query that forced style recalculation and state-machine transitions across all DOM elements during touch events; restored native momentum scrolling (`scroll-behavior: auto; -webkit-overflow-scrolling: touch`) for responsive 1:1 finger tracking.
+- `Perf` (`styles.css`): Deactivated continuous `background-position` animations (`gradientShift`) and spinning rings (`drop-ring`) on mobile touch devices, allowing mobile CPUs and GPUs to rest in low-power idle states.
+- `Fix` (`styles.css`): Corrected broken `@media (max-width: 480px)` bracket nesting and promoted desktop `.orb` elements to isolated hardware compositor layers via `will-change: transform; transform: translate3d(0, 0, 0)`.
+- `PWA` (`sw.js`, `index.html`, `how-to-use-zevsafe/index.html`, `change-log/index.html`): Bumped Service Worker offline shell cache to `v44` and synchronized version indicators to `WEB-VERSION-44` / `v6.9.3`.
+
 ## Version 6.9.2 (WEB-VERSION-43) — October 20, 2026
 - `Fix` (`sw.js`): Resolved Google Chrome subfolder page loading failure (`/how-to-use-zevsafe/`, `/change-log/`, `/security-audit/`). When Cloudflare Pages issued HTTP 308 Permanent Redirects for directory index paths, Chrome threw `TypeError: Failed to execute 'put' on 'Cache': Cannot cache a redirected response`. Remediated by reconstructing fresh `Response` instances with identical headers and bodies prior to `cache.put()`, safely stripping the `redirected` flag and ensuring seamless cache storage.
 - `UI` (`index.html`, `how-to-use-zevsafe/index.html`, `change-log/index.html`, `security-audit/index.html`): Standardized all internal site navigation links to canonical directory paths with trailing slashes (`./how-to-use-zevsafe/`, `./change-log/`, `./security-audit/`), eliminating unnecessary HTTP 308 redirect roundtrips across all browsers.
