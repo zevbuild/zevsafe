@@ -216,9 +216,18 @@ The audit adhered to the following rigorous assessment methodologies:
 - **Affected Files:** `index.html`, `how-to-use-zevsafe/index.html`, `change-log/index.html`
 - **Root Cause:** No CSP header or meta tag was present, allowing unrestricted outbound network calls or script execution in the event of an XSS flaw.
 - **Remediation Implementation:**
-  Configured strict Content-Security-Policy meta tags across all HTML pages:
+  Configured strict Content-Security-Policy meta tags and HTTP response headers (`_headers`) across all portal pages:
   ```html
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; base-uri 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+  ```
+  And deployed server-level HTTP response headers (`_headers`) for Cloudflare Pages:
+  ```http
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
   ```
 - **Verification:** Evaluated in browser DOM; restricts unauthorized external endpoints, plugin objects, and base-uri spoofing.
 
