@@ -90,7 +90,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 | `tools/` | Standalone zero-RAM Windows streaming toolset: 1-click batch encryptor (`Encrypt-Vault.bat`), decryptor (`Decrypt-Vault.bat`), and PowerShell engines. |
 | `test/` | Automated test suites (33 Android tests, 5 M5 tests, 74 worker bridge tests, 95 stream crypto tests, 142 packager tests, 99 unpacker tests, 250 E2E tests). |
 | `change-log/index.html` | Interactive web release notes portal with live search and version filter chips. |
-| `how-to-use-zevsafe/index.html` | Comprehensive user & security guide with Android APK and offline usage instructions. |
+| `how-to-use-zevsafe/index.html` | Comprehensive documentation portal with simple step-by-step guides (folder locking, recovery sheets, Vault Explorer media viewing) and an exhaustive Technical Architecture section (`ZV3\0` STREAM AEAD wire layout, deterministic 12B IV, 42B AAD, memory zeroization, worker flow control). |
 
 ---
 

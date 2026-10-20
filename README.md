@@ -62,7 +62,8 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | 🔔 **Non-Blocking Glassmorphic Toasts** | Replaces all intrusive browser alerts with smooth, dark-glass toast notifications and animated inline field shakes (`@keyframes fieldShake`) on validation failures. |
 | 📐 **Symmetrical Above-The-Fold Layout** | Optimized vertical shell spacing and CSS Grid stretch alignment with bottom-anchored CTA action buttons for seamless laptop drop-zone visibility. |
 | ⚡ **Optimized WebP & Compressed Assets** | All brand icons, OG social images, and logos compressed in-place (57%+ payload reduction) with next-gen WebP support for high-speed loading. |
-| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v40`), floating non-intrusive install banner, auto-updating in background, fully functional offline. |
+| 📲 **Installable Offline PWA** | Progressive Web App with Cache-First Service Worker (`v41`), floating non-intrusive install banner, auto-updating in background, fully functional offline. |
+| 📖 **Comprehensive Documentation & Technical Guide** | In-depth portal ([`how-to-use-zevsafe/`](https://zevsafe.pages.dev/how-to-use-zevsafe/)) with simple step-by-step instructions for everyday users and complete technical specifications (`ZV3\0` STREAM AEAD, 12B IV, 42B AAD, worker flow control). |
 | 📜 **Interactive Changelog Portal** | Dedicated in-app and web release notes page ([`change-log/`](https://zevsafe.pages.dev/change-log/)) with live filtering and search across all releases. |
 
 ---
