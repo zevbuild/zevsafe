@@ -39,6 +39,7 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | Feature | Description |
 |---|---|
 | 🔐 **AES-256-GCM Authenticated Encryption** | Military-grade authenticated cipher guaranteeing confidentiality and detecting any bit-flipping, chunk reordering, or file tampering. |
+| 📦 **Open Binary Container Standard ([`FORMAT.md`](FORMAT.md))** | Fully documented bit-level container specification detailing 57-byte v3 headers, 4 MB STREAM AEAD framing, deterministic 12-byte IV & 42-byte AAD binding math, and tail manifest JSON schemas. |
 | ⚡ **Multi-Worker Streaming Pipeline (`ZV3\0`)** | Streams ZIP64 compression (`CompressionStream('deflate-raw')`) and parallel 4 MB chunked AES-256-GCM across a dynamic Web Worker pool (clamped to 4–8 cores with credit-based flow control), utilizing zero-copy `Transferable` buffers to keep peak browser heap under 105 MB. |
 | 🛡️ **PBKDF2-SHA512 (600,000 Iterations)** | Key stretching with **600,000 iterations** and a 32-byte CSPRNG random salt offloaded to a Web Worker so the UI stays at 60 FPS. |
 | 🗝️ **Keyfile Two-Factor Authentication (2FA)** | Mixes a SHA-256 hash of any file (image, key, binary) into derived key material via XOR as a physical second factor. |
