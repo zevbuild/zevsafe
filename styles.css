@@ -2099,6 +2099,47 @@ body {
     border-color: rgba(20, 184, 166, 0.3) !important;
 }
 
+.light-theme .explorer-breadcrumbs {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.light-theme .breadcrumb-item {
+    color: #475569 !important;
+}
+
+.light-theme .breadcrumb-item:hover {
+    color: #0d9488 !important;
+    background: rgba(13, 148, 136, 0.1) !important;
+}
+
+.light-theme .breadcrumb-item--root {
+    color: #0d9488 !important;
+}
+
+.light-theme .breadcrumb-item--current {
+    color: #0f172a !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+}
+
+.light-theme .explorer-folder-item {
+    background: rgba(13, 148, 136, 0.05) !important;
+    border-left-color: #0d9488 !important;
+}
+
+.light-theme .explorer-folder-name {
+    color: #0f766e !important;
+}
+
+.light-theme .explorer-parent-item {
+    background: rgba(124, 58, 237, 0.05) !important;
+    border-left-color: #7c3aed !important;
+}
+
+.light-theme .explorer-parent-item .explorer-item-name {
+    color: #6d28d9 !important;
+}
+
 .light-theme .explorer-item-name {
     color: #f8fafc !important;
 }
@@ -3752,34 +3793,192 @@ body {
     display: none !important;
 }
 
-/* Explorer Breadcrumbs */
+/* Explorer Breadcrumbs Navigation */
 .explorer-breadcrumbs {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 1.5rem;
-    background: rgba(0, 0, 0, 0.15);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    font-size: 0.78rem;
+    gap: 0.35rem;
+    padding: 0.55rem 1.4rem;
+    background: rgba(8, 10, 26, 0.55);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    font-size: 0.82rem;
     color: var(--text-2);
     overflow-x: auto;
     white-space: nowrap;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
 }
 .explorer-breadcrumbs::-webkit-scrollbar { display: none; }
+
 .breadcrumb-item {
+    background: none;
+    border: none;
+    padding: 0.22rem 0.5rem;
+    border-radius: var(--radius-sm, 6px);
+    color: #94a3b8;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    color: var(--text-2);
+    text-decoration: none;
+    line-height: 1.3;
+}
+.breadcrumb-item:hover {
+    color: #2dd4bf;
+    background: rgba(45, 212, 191, 0.1);
 }
 .breadcrumb-item--root {
     color: var(--teal-light, #2dd4bf);
     font-weight: 600;
 }
+.breadcrumb-item--current {
+    color: #f8fafc;
+    font-weight: 600;
+    cursor: default;
+    background: rgba(255, 255, 255, 0.05);
+}
+.breadcrumb-item--current:hover {
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.05);
+}
 .breadcrumb-sep {
-    opacity: 0.4;
+    color: #475569;
+    font-size: 0.75rem;
+    user-select: none;
+    opacity: 0.6;
+}
+.breadcrumb-search-title {
+    color: #cbd5e1;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.breadcrumb-btn-clear {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #f87171;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
     font-size: 0.7rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.4rem;
+    transition: all 0.15s ease;
+}
+.breadcrumb-btn-clear:hover {
+    background: rgba(239, 68, 68, 0.35);
+    color: #ffffff;
+    transform: scale(1.08);
+}
+
+/* ── Hierarchical Directory Navigation Items ── */
+
+/* Folder Rows in List Mode */
+.explorer-folder-item {
+    cursor: pointer;
+    border-left: 3px solid #14b8a6;
+    background: rgba(20, 184, 166, 0.04);
+}
+.explorer-folder-item:hover {
+    background: rgba(20, 184, 166, 0.12);
+    border-color: #2dd4bf;
+    transform: translateX(2px);
+}
+.explorer-folder-name {
+    color: #2dd4bf !important;
+    font-weight: 600;
+}
+.explorer-folder-arrow {
+    font-size: 0.78rem;
+    color: #2dd4bf;
+    opacity: 0.85;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.28rem 0.65rem;
+    border-radius: var(--radius-sm);
+    background: rgba(20, 184, 166, 0.12);
+    border: 1px solid rgba(20, 184, 166, 0.25);
+    transition: all 0.15s ease;
+}
+.explorer-folder-item:hover .explorer-folder-arrow {
+    opacity: 1;
+    background: rgba(20, 184, 166, 0.25);
+    border-color: #2dd4bf;
+    transform: translateX(3px);
+}
+
+/* Parent Directory Navigation Item (".. [Parent Folder]") */
+.explorer-parent-item {
+    cursor: pointer;
+    border-left: 3px solid #8b5cf6;
+    background: rgba(139, 92, 246, 0.05);
+}
+.explorer-parent-item:hover {
+    background: rgba(139, 92, 246, 0.14);
+    border-color: #a78bfa;
+    transform: translateX(2px);
+}
+.explorer-parent-item .explorer-item-name {
+    color: #c4b5fd !important;
+}
+
+/* Folder Cards in Grid Mode */
+.explorer-grid-folder {
+    cursor: pointer;
+    border-color: rgba(20, 184, 166, 0.25);
+    background: rgba(20, 184, 166, 0.04);
+}
+.explorer-grid-folder:hover {
+    background: rgba(20, 184, 166, 0.14);
+    border-color: #2dd4bf;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(20, 184, 166, 0.2);
+}
+.explorer-grid-folder .explorer-grid-icon {
+    font-size: 2.7rem;
+    filter: drop-shadow(0 2px 8px rgba(20, 184, 166, 0.3));
+}
+.explorer-grid-folder .explorer-grid-name {
+    color: #2dd4bf;
+}
+.explorer-grid-meta {
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+
+/* Parent Card in Grid Mode */
+.explorer-grid-parent {
+    cursor: pointer;
+    border-color: rgba(139, 92, 246, 0.25);
+    background: rgba(139, 92, 246, 0.05);
+}
+.explorer-grid-parent:hover {
+    background: rgba(139, 92, 246, 0.14);
+    border-color: #a78bfa;
+    transform: translateY(-3px);
+}
+.explorer-grid-parent .explorer-grid-icon {
+    font-size: 2.3rem;
+}
+.explorer-grid-parent .explorer-grid-name {
+    color: #c4b5fd;
+}
+
+/* In-Modal PDF Document Preview Frame */
+.pdf-preview-frame {
+    width: 100%;
+    height: 100%;
+    min-height: 540px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: #0f172a;
 }
 
 .explorer-grid-actions {

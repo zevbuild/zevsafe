@@ -2458,6 +2458,7 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
             }
     };
     explorerSelectedFiles.clear();
+    explorerCurrentDir = '';
 
     const modal = document.getElementById('vault-explorer-modal');
     const modalTitle = document.getElementById('explorer-modal-title');
@@ -2547,6 +2548,30 @@ let explorerViewMode = 'list'; // 'list' | 'grid'
 let explorerFilterCategory = 'all'; // 'all' | 'video' | 'audio' | 'photo' | 'doc' | 'code' | 'archive'
 let explorerSortMode = 'name-asc';
 let explorerSelectedFiles = new Set(); // Set of file.path strings
+let explorerCurrentDir = ''; // Active browsing directory path, relative to vault root ('' = root)
+
+// Strict blob URL lifetime bounds & memory scrubbing registry
+const activeBlobUrls = new Set();
+
+function createTrackedBlobUrl(blob) {
+    const url = URL.createObjectURL(blob);
+    activeBlobUrls.add(url);
+    return url;
+}
+
+function revokeTrackedBlobUrl(url) {
+    if (url) {
+        try { URL.revokeObjectURL(url); } catch (_) {}
+        activeBlobUrls.delete(url);
+    }
+}
+
+function revokeAllActiveBlobUrls() {
+    for (const url of activeBlobUrls) {
+        try { URL.revokeObjectURL(url); } catch (_) {}
+    }
+    activeBlobUrls.clear();
+}
 
 // Cinema Media Player State
 let currentMediaBlobUrl = null;
@@ -2575,6 +2600,194 @@ let currentTextBlob = null;
 let currentTextFilename = '';
 let currentTextContent = '';
 let isTextWordWrapped = false;
+
+// Dedicated PDF Viewer State
+let currentPdfBlobUrl = null;
+
+function isPdfFile(filename) {
+    return (filename || '').toLowerCase().endsWith('.pdf');
+}
+
+/**
+ * Returns subfolders and direct child files for the given directory path.
+ * @param {Array} fileList - List of file items
+ * @param {string} currentDir - Directory path ('' for root)
+ * @returns {{ subfolders: Array, directFiles: Array }}
+ */
+function getItemsInDirectory(fileList, currentDir = '') {
+    const prefix = currentDir ? (currentDir.replace(/\/+$/, '') + '/') : '';
+    const foldersMap = new Map();
+    const directFiles = [];
+
+    for (const file of fileList) {
+        if (prefix && !file.path.startsWith(prefix)) {
+            continue;
+        }
+        const rel = prefix ? file.path.slice(prefix.length) : file.path;
+        if (!rel) continue;
+
+        const slashIdx = rel.indexOf('/');
+        if (slashIdx === -1) {
+            // Direct child file
+            directFiles.push(file);
+        } else {
+            // Child within a subfolder
+            const subfolderName = rel.substring(0, slashIdx);
+            const subfolderPath = prefix ? `${prefix}${subfolderName}` : subfolderName;
+            if (!foldersMap.has(subfolderPath)) {
+                foldersMap.set(subfolderPath, {
+                    isFolder: true,
+                    name: subfolderName,
+                    path: subfolderPath,
+                    fileCount: 0,
+                    totalBytes: 0
+                });
+            }
+            const fInfo = foldersMap.get(subfolderPath);
+            fInfo.fileCount++;
+            fInfo.totalBytes += (file.size || 0);
+        }
+    }
+
+    return {
+        subfolders: Array.from(foldersMap.values()),
+        directFiles
+    };
+}
+
+/**
+ * Renders breadcrumb navigation trail in the vault explorer.
+ * @param {boolean} isSearch - Whether search query is currently active
+ * @param {string} query - The active search query string
+ */
+function renderBreadcrumbs(isSearch = false, query = '') {
+    const breadcrumbsNav = document.getElementById('explorer-breadcrumbs');
+    if (!breadcrumbsNav) return;
+
+    breadcrumbsNav.innerHTML = '';
+    breadcrumbsNav.style.display = 'flex';
+
+    if (isSearch && query) {
+        // Search Mode Breadcrumbs
+        const rootBtn = document.createElement('button');
+        rootBtn.type = 'button';
+        rootBtn.className = 'breadcrumb-item breadcrumb-item--root';
+        rootBtn.textContent = '📁 Vault Root';
+        rootBtn.title = 'Exit search and return to Vault Root';
+        rootBtn.addEventListener('click', () => {
+            const searchInput = document.getElementById('explorer-search-input');
+            const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+            if (searchInput) searchInput.value = '';
+            if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+            renderExplorerFileList('');
+        });
+        breadcrumbsNav.appendChild(rootBtn);
+
+        const sep = document.createElement('span');
+        sep.className = 'breadcrumb-sep';
+        sep.textContent = '/';
+        breadcrumbsNav.appendChild(sep);
+
+        const searchSpan = document.createElement('span');
+        searchSpan.className = 'breadcrumb-search-title';
+        searchSpan.innerHTML = `🔍 Search: "<strong>${escapeHtml(query)}</strong>"`;
+        breadcrumbsNav.appendChild(searchSpan);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'breadcrumb-btn-clear';
+        clearBtn.title = 'Clear search';
+        clearBtn.textContent = '✕';
+        clearBtn.addEventListener('click', () => {
+            const searchInput = document.getElementById('explorer-search-input');
+            const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+            if (searchInput) searchInput.value = '';
+            if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+            renderExplorerFileList('');
+        });
+        breadcrumbsNav.appendChild(clearBtn);
+        return;
+    }
+
+    // Normal Directory Hierarchy Breadcrumbs
+    const rootBtn = document.createElement('button');
+    rootBtn.type = 'button';
+    rootBtn.className = `breadcrumb-item breadcrumb-item--root ${!explorerCurrentDir ? 'breadcrumb-item--current' : ''}`;
+    rootBtn.textContent = '📁 Vault Root';
+    rootBtn.title = 'Navigate to Vault Root';
+    if (explorerCurrentDir) {
+        rootBtn.addEventListener('click', () => navigateToDir(''));
+    }
+    breadcrumbsNav.appendChild(rootBtn);
+
+    if (explorerCurrentDir) {
+        const segments = explorerCurrentDir.split('/').filter(Boolean);
+        let accumulatedPath = '';
+        segments.forEach((seg, idx) => {
+            accumulatedPath = accumulatedPath ? `${accumulatedPath}/${seg}` : seg;
+            const isLast = idx === segments.length - 1;
+
+            const sep = document.createElement('span');
+            sep.className = 'breadcrumb-sep';
+            sep.textContent = '/';
+            breadcrumbsNav.appendChild(sep);
+
+            if (isLast) {
+                const currentSpan = document.createElement('span');
+                currentSpan.className = 'breadcrumb-item breadcrumb-item--current';
+                currentSpan.textContent = seg;
+                breadcrumbsNav.appendChild(currentSpan);
+            } else {
+                const segBtn = document.createElement('button');
+                segBtn.type = 'button';
+                segBtn.className = 'breadcrumb-item';
+                segBtn.textContent = seg;
+                segBtn.title = `Navigate to ${accumulatedPath}`;
+                const targetPath = accumulatedPath;
+                segBtn.addEventListener('click', () => navigateToDir(targetPath));
+                breadcrumbsNav.appendChild(segBtn);
+            }
+        });
+    }
+
+    // If category filter is active and not 'all', indicate category badge
+    if (explorerFilterCategory !== 'all') {
+        const sep = document.createElement('span');
+        sep.className = 'breadcrumb-sep';
+        sep.textContent = '•';
+        breadcrumbsNav.appendChild(sep);
+
+        const catBadge = document.createElement('span');
+        catBadge.className = 'breadcrumb-item breadcrumb-item--current';
+        catBadge.style.color = 'var(--purple-light, #a78bfa)';
+        catBadge.textContent = `Category: ${explorerFilterCategory.toUpperCase()}`;
+        breadcrumbsNav.appendChild(catBadge);
+    }
+}
+
+/**
+ * Navigates into a subfolder or back up to parent.
+ * @param {string} dirPath - Relative target path
+ */
+function navigateToDir(dirPath) {
+    const cleaned = (dirPath || '')
+        .replace(/\\/g, '/')
+        .replace(/^\/+/, '')
+        .replace(/\/+$/, '');
+    explorerCurrentDir = cleaned;
+
+    const searchInput = document.getElementById('explorer-search-input');
+    const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+    if (searchInput && searchInput.value) {
+        searchInput.value = '';
+        if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+    }
+
+    const selectAllCb = document.getElementById('explorer-select-all');
+    if (selectAllCb) selectAllCb.checked = false;
+
+    renderExplorerFileList('');
+}
 
 /**
  * Classify file category based on extension.
@@ -2769,6 +2982,7 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
     currentDecryptedZip = zipInstance;
     currentDecryptedBlob = fullZipBlob;
     explorerSelectedFiles.clear();
+    explorerCurrentDir = '';
 
     const modal = document.getElementById('vault-explorer-modal');
     const modalTitle = document.getElementById('explorer-modal-title');
@@ -2839,61 +3053,60 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
 
 /**
  * Zero-Knowledge Session Zeroization Protocol
- * Securely wipes active cryptographic keys, byte buffers, and temporary object URLs from memory.
+ * Securely wipes active cryptographic keys, byte buffers, cached plaintext chunks,
+ * zip instances, and all temporary object URLs from memory across both v3 streaming
+ * and v1/v2 legacy JSZip vaults.
  */
-function lockV3VaultSession() {
-    if (!currentV3Vault) return;
-
-    // 1. Explicitly zeroize sensitive keyfile byte buffers in RAM
-    if (currentV3Vault.keyfileBytes && typeof currentV3Vault.keyfileBytes.fill === 'function') {
-        currentV3Vault.keyfileBytes.fill(0);
-    }
-
-    // 2. Wipe cached decrypted plaintexts
-    if (currentV3Vault.chunkCache) {
-        for (const [_, chunk] of currentV3Vault.chunkCache.entries()) {
-            if (chunk && typeof chunk.fill === 'function') {
-                chunk.fill(0);
-            }
+function lockVaultSession() {
+    // 1. Explicitly zeroize V3 sensitive keyfile bytes & cached chunk buffers
+    if (currentV3Vault) {
+        if (currentV3Vault.keyfileBytes && typeof currentV3Vault.keyfileBytes.fill === 'function') {
+            currentV3Vault.keyfileBytes.fill(0);
         }
-        currentV3Vault.chunkCache.clear();
+        if (currentV3Vault.chunkCache && typeof currentV3Vault.chunkCache.clear === 'function') {
+            currentV3Vault.chunkCache.clear();
+        }
+        currentV3Vault.masterKey = null;
+        currentV3Vault.password = null;
+        currentV3Vault.keyfileBytes = null;
+        currentV3Vault.catalog = null;
+        currentV3Vault.file = null;
+        currentV3Vault = null;
     }
 
-    // 3. Nullify cryptographic key and container reference handles
-    currentV3Vault.masterKey = null;
-    currentV3Vault.password = null;
-    currentV3Vault.keyfileBytes = null;
-    currentV3Vault.catalog = null;
-    currentV3Vault.file = null;
-    currentV3Vault = null;
-
-    // 4. Reset explorer UI state
+    // 2. Wipe legacy JSZip instance, raw decrypted zip blob, and folder name
+    currentDecryptedZip = null;
+    currentDecryptedBlob = null;
     currentDecryptedFolderName = '';
+
+    // 3. Reset explorer navigation & playlist states
     currentDecryptedFileList = [];
     currentMediaPlaylist = [];
     currentImagePlaylist = [];
     explorerSelectedFiles.clear();
+    explorerCurrentDir = '';
 
-    // 5. Revoke media blob URLs and plug media blob memory leak
-    if (currentMediaBlobUrl) {
-        URL.revokeObjectURL(currentMediaBlobUrl);
-        currentMediaBlobUrl = null;
-    }
-    currentMediaBlob = null;
-    currentMediaFilename = '';
+    // 4. Revoke and scrub all tracked active blob URLs
+    revokeAllActiveBlobUrls();
 
-    // 6. Close image lightbox and text viewer modals
+    // 5. Close all dedicated viewer modals & wipe active player states
+    closeMediaPlayer();
     closeImageViewer();
     closeTextViewer();
 
-    // 7. Scrub password input field in DOM
+    // 6. Scrub password and keyfile input fields in DOM
     if (decryptPassword) decryptPassword.value = '';
+    const keyfileInput = document.getElementById('decrypt-keyfile');
+    if (keyfileInput) keyfileInput.value = '';
 }
+
+// Retain alias for full backward compatibility
+const lockV3VaultSession = lockVaultSession;
 
 function closeVaultExplorer() {
     const modal = document.getElementById('vault-explorer-modal');
     if (modal) modal.style.display = 'none';
-    lockV3VaultSession();
+    lockVaultSession();
 }
 
 /**
@@ -2919,7 +3132,7 @@ async function playMediaByIndex(index) {
 
     // Clean up previous blob URL
     if (currentMediaBlobUrl) {
-        URL.revokeObjectURL(currentMediaBlobUrl);
+        revokeTrackedBlobUrl(currentMediaBlobUrl);
         currentMediaBlobUrl = null;
     }
 
@@ -2942,7 +3155,7 @@ async function playMediaByIndex(index) {
         const rawBlob = await getDecryptedFileBlob(item.path);
         currentMediaBlob = new Blob([rawBlob], { type: item.mimeType });
         currentMediaFilename = item.name;
-        currentMediaBlobUrl = URL.createObjectURL(currentMediaBlob);
+        currentMediaBlobUrl = createTrackedBlobUrl(currentMediaBlob);
 
         if (loader) loader.style.display = 'none';
 
@@ -3014,7 +3227,7 @@ function closeMediaPlayer() {
     }
 
     if (currentMediaBlobUrl) {
-        URL.revokeObjectURL(currentMediaBlobUrl);
+        revokeTrackedBlobUrl(currentMediaBlobUrl);
         currentMediaBlobUrl = null;
     }
 
@@ -3100,11 +3313,11 @@ async function showImageByIndex(index) {
         currentImageFilename = item.name;
 
         if (currentImageBlobUrl) {
-            URL.revokeObjectURL(currentImageBlobUrl);
+            revokeTrackedBlobUrl(currentImageBlobUrl);
             currentImageBlobUrl = null;
         }
 
-        currentImageBlobUrl = URL.createObjectURL(blob);
+        currentImageBlobUrl = createTrackedBlobUrl(blob);
 
         if (img) {
             img.onload = () => {
@@ -3151,7 +3364,7 @@ function closeImageViewer() {
     }
 
     if (currentImageBlobUrl) {
-        URL.revokeObjectURL(currentImageBlobUrl);
+        revokeTrackedBlobUrl(currentImageBlobUrl);
         currentImageBlobUrl = null;
     }
     currentImageBlob = null;
@@ -3174,6 +3387,10 @@ async function openTextViewerByPath(filePath) {
     const linesEl = document.getElementById('text-line-numbers');
     const loader = document.getElementById('text-loading-indicator');
     const editorView = document.getElementById('text-editor-view');
+    const pdfFrame = document.getElementById('pdf-preview-frame');
+    const wrapBtn = document.getElementById('btn-text-wrap');
+    const copyBtn = document.getElementById('btn-text-copy');
+    const openTabBtn = document.getElementById('btn-text-open-tab');
 
     if (!modal) return;
     modal.style.display = 'flex';
@@ -3183,8 +3400,16 @@ async function openTextViewerByPath(filePath) {
     if (title) title.textContent = fileItem.name;
     if (meta) meta.textContent = `Loading · ${formatBytes(fileItem.size)}`;
 
+    if (wrapBtn) wrapBtn.style.display = 'inline-flex';
+    if (copyBtn) copyBtn.style.display = 'inline-flex';
+    if (openTabBtn) openTabBtn.style.display = 'none';
+
     if (loader) loader.style.display = 'flex';
     if (editorView) editorView.style.display = 'none';
+    if (pdfFrame) {
+        pdfFrame.style.display = 'none';
+        pdfFrame.src = 'about:blank';
+    }
     if (codeEl) codeEl.textContent = '';
     if (linesEl) linesEl.innerHTML = '';
 
@@ -3221,16 +3446,90 @@ async function openTextViewerByPath(filePath) {
     }
 }
 
+/**
+ * Opens and renders decrypted PDF document in-browser using tracked blob URL.
+ * @param {string} filePath - Vault file path
+ */
+async function openPdfViewerByPath(filePath) {
+    const fileItem = currentDecryptedFileList.find(f => f.path === filePath);
+    if (!fileItem) return;
+
+    const modal = document.getElementById('vault-text-modal');
+    const title = document.getElementById('text-modal-title');
+    const badge = document.getElementById('text-modal-badge');
+    const meta = document.getElementById('text-modal-meta');
+    const loader = document.getElementById('text-loading-indicator');
+    const editorView = document.getElementById('text-editor-view');
+    const pdfFrame = document.getElementById('pdf-preview-frame');
+    const wrapBtn = document.getElementById('btn-text-wrap');
+    const copyBtn = document.getElementById('btn-text-copy');
+    const openTabBtn = document.getElementById('btn-text-open-tab');
+
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    if (badge) badge.textContent = '📄 PDF';
+    if (title) title.textContent = fileItem.name;
+    if (meta) meta.textContent = `Loading · ${formatBytes(fileItem.size)}`;
+
+    if (wrapBtn) wrapBtn.style.display = 'none';
+    if (copyBtn) copyBtn.style.display = 'none';
+    if (openTabBtn) openTabBtn.style.display = 'inline-flex';
+
+    if (loader) loader.style.display = 'flex';
+    if (editorView) editorView.style.display = 'none';
+    if (pdfFrame) {
+        pdfFrame.style.display = 'none';
+        pdfFrame.src = 'about:blank';
+    }
+
+    try {
+        const rawBlob = await getDecryptedFileBlob(filePath);
+        const pdfBlob = new Blob([rawBlob], { type: 'application/pdf' });
+        currentTextBlob = pdfBlob;
+        currentTextFilename = fileItem.name;
+
+        if (currentPdfBlobUrl) {
+            revokeTrackedBlobUrl(currentPdfBlobUrl);
+            currentPdfBlobUrl = null;
+        }
+
+        currentPdfBlobUrl = createTrackedBlobUrl(pdfBlob);
+
+        if (meta) meta.textContent = `PDF Document · ${formatBytes(pdfBlob.size)}`;
+        if (loader) loader.style.display = 'none';
+
+        if (pdfFrame) {
+            pdfFrame.style.display = 'block';
+            pdfFrame.src = currentPdfBlobUrl;
+        }
+    } catch (err) {
+        console.error('[PDF Viewer Error]', err);
+        if (loader) loader.style.display = 'none';
+        showToast(`Failed to extract PDF document: ${err.message}`, 'error');
+    }
+}
+
 function closeTextViewer() {
     const modal = document.getElementById('vault-text-modal');
     const loader = document.getElementById('text-loading-indicator');
     const codeEl = document.getElementById('text-code-content');
     const linesEl = document.getElementById('text-line-numbers');
+    const pdfFrame = document.getElementById('pdf-preview-frame');
 
     if (modal) modal.style.display = 'none';
     if (loader) loader.style.display = 'none';
     if (codeEl) codeEl.textContent = '';
     if (linesEl) linesEl.textContent = '';
+    if (pdfFrame) {
+        pdfFrame.src = 'about:blank';
+        pdfFrame.style.display = 'none';
+    }
+
+    if (currentPdfBlobUrl) {
+        revokeTrackedBlobUrl(currentPdfBlobUrl);
+        currentPdfBlobUrl = null;
+    }
     currentTextBlob = null;
     currentTextFilename = '';
     currentTextContent = '';
@@ -3267,42 +3566,197 @@ function toggleTextWrap() {
 }
 
 /**
- * Render file list with search, category filtering, sorting, and view mode (list/grid).
+ * Render file list with hierarchical folder drill-down, search, category filtering,
+ * sorting, and view modes (list/grid).
  */
 function renderExplorerFileList(query = '') {
     const listEl = document.getElementById('explorer-file-list');
+    const selectAllCb = document.getElementById('explorer-select-all');
     if (!listEl) return;
 
     listEl.innerHTML = '';
     listEl.className = `explorer-body ${explorerViewMode === 'grid' ? 'explorer-body--grid' : 'explorer-body--list'}`;
 
     const q = query.trim().toLowerCase();
-    let filtered = currentDecryptedFileList;
+    const isSearching = !!q;
 
-    // Search query filter
-    if (q) {
-        filtered = filtered.filter(f => f.path.toLowerCase().includes(q));
+    // 1. Render Breadcrumbs Navigation Trail
+    renderBreadcrumbs(isSearching, query);
+
+    let displayFiles = [];
+    let displayFolders = [];
+    let isFolderMode = false;
+
+    if (isSearching) {
+        // ── Search Mode: Global Search Across Vault ──
+        let matched = currentDecryptedFileList.filter(f => f.path.toLowerCase().includes(q));
+        if (explorerFilterCategory !== 'all') {
+            matched = matched.filter(f => getFileCategory(f.name) === explorerFilterCategory);
+        }
+        displayFiles = sortFileList(matched, explorerSortMode);
+    } else if (explorerFilterCategory !== 'all') {
+        // ── Category Filter Mode: Filter by Category ──
+        const prefix = explorerCurrentDir ? (explorerCurrentDir.replace(/\/+$/, '') + '/') : '';
+        let matched = currentDecryptedFileList.filter(f => {
+            if (prefix && !f.path.startsWith(prefix)) return false;
+            return getFileCategory(f.name) === explorerFilterCategory;
+        });
+        displayFiles = sortFileList(matched, explorerSortMode);
+    } else {
+        // ── Standard Directory Mode: Hierarchical Drill-down ──
+        isFolderMode = true;
+        const { subfolders, directFiles } = getItemsInDirectory(currentDecryptedFileList, explorerCurrentDir);
+
+        // Sort subfolders
+        subfolders.sort((a, b) => {
+            if (explorerSortMode === 'name-desc') return b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' });
+            if (explorerSortMode === 'size-desc') return (b.totalBytes || 0) - (a.totalBytes || 0);
+            if (explorerSortMode === 'size-asc') return (a.totalBytes || 0) - (b.totalBytes || 0);
+            return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        displayFolders = subfolders;
+        displayFiles = sortFileList(directFiles, explorerSortMode);
     }
 
-    // Category filter
-    if (explorerFilterCategory !== 'all') {
-        filtered = filtered.filter(f => getFileCategory(f.name) === explorerFilterCategory);
+    // 2. Update Select-All Checkbox state
+    if (selectAllCb) {
+        if (displayFiles.length > 0 && displayFiles.every(f => explorerSelectedFiles.has(f.path))) {
+            selectAllCb.checked = true;
+        } else {
+            selectAllCb.checked = false;
+        }
     }
 
-    // Sort files
-    filtered = sortFileList(filtered, explorerSortMode);
-
-    if (filtered.length === 0) {
+    // 3. Handle Empty State
+    if (displayFolders.length === 0 && displayFiles.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'explorer-empty';
-        empty.textContent = q ? `No files match "${query}" in this view.` : 'No files in this category.';
+        if (isSearching) {
+            empty.textContent = `No files match "${query}" in this view.`;
+        } else if (explorerFilterCategory !== 'all') {
+            empty.textContent = `No ${explorerFilterCategory} files found in this location.`;
+        } else {
+            const parentDir = explorerCurrentDir.includes('/')
+                ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
+                : '';
+            const parentName = parentDir ? parentDir.split('/').pop() : 'Vault Root';
+            empty.innerHTML = `
+                <div style="font-size: 2.4rem; margin-bottom: 0.5rem;">📁</div>
+                <div style="margin-bottom: 0.85rem; font-weight: 500;">This folder is empty.</div>
+                ${explorerCurrentDir ? `<button type="button" class="explorer-file-view-btn" id="btn-empty-up" style="padding: 0.45rem 1rem; font-size: 0.85rem; cursor: pointer;">⬆️ Back to ${escapeHtml(parentName)}</button>` : ''}
+            `;
+        }
         listEl.appendChild(empty);
+        const upBtn = document.getElementById('btn-empty-up');
+        if (upBtn) {
+            const parentDir = explorerCurrentDir.includes('/')
+                ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
+                : '';
+            upBtn.addEventListener('click', () => navigateToDir(parentDir));
+        }
         return;
     }
 
-    filtered.forEach(file => {
+    // 4. In Directory Mode: Render "Up to Parent" item if inside a subfolder
+    if (isFolderMode && explorerCurrentDir) {
+        const parentDir = explorerCurrentDir.includes('/')
+            ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
+            : '';
+        const parentName = parentDir ? parentDir.split('/').pop() : 'Vault Root';
+
+        if (explorerViewMode === 'grid') {
+            const upCard = document.createElement('div');
+            upCard.className = 'explorer-grid-card explorer-grid-parent';
+            upCard.tabIndex = 0;
+            upCard.title = `Up to parent folder (${parentName})`;
+            upCard.innerHTML = `
+                <div class="explorer-grid-icon">⬆️</div>
+                <div class="explorer-grid-name">.. [Parent]</div>
+                <div class="explorer-grid-meta">Up to ${escapeHtml(parentName)}</div>
+            `;
+            upCard.addEventListener('click', () => navigateToDir(parentDir));
+            upCard.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(parentDir); }
+            });
+            listEl.appendChild(upCard);
+        } else {
+            const upRow = document.createElement('div');
+            upRow.className = 'explorer-item explorer-parent-item';
+            upRow.tabIndex = 0;
+            upRow.title = `Up to parent folder (${parentName})`;
+            upRow.innerHTML = `
+                <div class="explorer-item-left">
+                    <span class="explorer-item-icon">⬆️</span>
+                    <div class="explorer-item-info">
+                        <span class="explorer-item-name">.. [Parent Folder]</span>
+                        <span class="explorer-item-path">Return to ${escapeHtml(parentName)}</span>
+                    </div>
+                </div>
+                <div class="explorer-item-right">
+                    <span class="explorer-folder-arrow">↩️ Up</span>
+                </div>
+            `;
+            upRow.addEventListener('click', () => navigateToDir(parentDir));
+            upRow.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(parentDir); }
+            });
+            listEl.appendChild(upRow);
+        }
+    }
+
+    // 5. In Directory Mode: Render Subfolders First
+    if (isFolderMode && displayFolders.length > 0) {
+        displayFolders.forEach(folder => {
+            if (explorerViewMode === 'grid') {
+                const card = document.createElement('div');
+                card.className = 'explorer-grid-card explorer-grid-folder';
+                card.tabIndex = 0;
+                card.title = `Open folder: ${folder.name}`;
+                card.innerHTML = `
+                    <div class="explorer-grid-icon">📁</div>
+                    <div class="explorer-grid-name explorer-folder-name">${escapeHtml(folder.name)}</div>
+                    <div class="explorer-grid-meta">${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}</div>
+                    <div class="explorer-grid-size">${folder.totalBytes > 0 ? formatBytes(folder.totalBytes) : ''}</div>
+                `;
+                card.addEventListener('click', () => navigateToDir(folder.path));
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(folder.path); }
+                });
+                listEl.appendChild(card);
+            } else {
+                const row = document.createElement('div');
+                row.className = 'explorer-item explorer-folder-item';
+                row.tabIndex = 0;
+                row.title = `Open folder: ${folder.name}`;
+                row.innerHTML = `
+                    <div class="explorer-item-left">
+                        <span class="explorer-item-icon">📁</span>
+                        <div class="explorer-item-info">
+                            <span class="explorer-item-name explorer-folder-name">${escapeHtml(folder.name)}</span>
+                            <span class="explorer-item-path">${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'} · ${formatBytes(folder.totalBytes)}</span>
+                        </div>
+                    </div>
+                    <div class="explorer-item-right">
+                        <span class="explorer-folder-arrow">📂 Open ➔</span>
+                    </div>
+                `;
+                row.addEventListener('click', () => navigateToDir(folder.path));
+                row.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(folder.path); }
+                });
+                listEl.appendChild(row);
+            }
+        });
+    }
+
+    // 6. Render Files (with PDF, media, image, text viewers, download buttons, checkboxes)
+    displayFiles.forEach(file => {
         const isSelected = explorerSelectedFiles.has(file.path);
         const mediaCategory = getMediaCategory(file.name);
+        const isPhoto = getFileCategory(file.name) === 'photo';
+        const isTextDoc = isTextOrCodeFile(file.name);
+        const isPdf = isPdfFile(file.name);
 
         if (explorerViewMode === 'grid') {
             // ── Grid Card Layout ──
@@ -3332,10 +3786,17 @@ function renderExplorerFileList(query = '') {
             name.title = file.path;
             card.appendChild(name);
 
-            if (file.dirPath) {
+            // Show directory badge if searching or not in standard folder mode
+            if (file.dirPath && (!isFolderMode || isSearching)) {
                 const pathEl = document.createElement('div');
                 pathEl.className = 'explorer-grid-path';
-                pathEl.textContent = `${file.dirPath}/`;
+                pathEl.textContent = `📁 ${file.dirPath}/`;
+                pathEl.title = `Navigate to folder ${file.dirPath}`;
+                pathEl.style.cursor = 'pointer';
+                pathEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navigateToDir(file.dirPath);
+                });
                 card.appendChild(pathEl);
             }
 
@@ -3346,9 +3807,6 @@ function renderExplorerFileList(query = '') {
 
             const actions = document.createElement('div');
             actions.className = 'explorer-grid-actions';
-
-            const isPhoto = getFileCategory(file.name) === 'photo';
-            const isTextDoc = isTextOrCodeFile(file.name);
 
             if (mediaCategory) {
                 const playBtn = document.createElement('button');
@@ -3370,6 +3828,16 @@ function renderExplorerFileList(query = '') {
                     openImageViewerByPath(file.path);
                 });
                 actions.appendChild(viewBtn);
+            } else if (isPdf) {
+                const pdfBtn = document.createElement('button');
+                pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
+                pdfBtn.title = `View ${file.name} PDF document`;
+                pdfBtn.innerHTML = '📄';
+                pdfBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openPdfViewerByPath(file.path);
+                });
+                actions.appendChild(pdfBtn);
             } else if (isTextDoc) {
                 const readBtn = document.createElement('button');
                 readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
@@ -3391,7 +3859,7 @@ function renderExplorerFileList(query = '') {
                 try {
                     dlBtn.textContent = '⏳';
                     const fileBlob = await getDecryptedFileBlob(file.path);
-                    triggerDownload(fileBlob, file.name);
+                    triggerDownload(fileBlob, sanitizeFilenamePart(file.name, 'file'));
                     dlBtn.textContent = '✅';
                     setTimeout(() => { dlBtn.innerHTML = '⬇️'; }, 2000);
                 } catch (err) {
@@ -3401,16 +3869,16 @@ function renderExplorerFileList(query = '') {
                 }
             });
             actions.appendChild(dlBtn);
-
             card.appendChild(actions);
 
-            // Allow clicking card to preview directly
-            if (mediaCategory || isPhoto || isTextDoc) {
+            // Clicking card previews directly
+            if (mediaCategory || isPhoto || isTextDoc || isPdf) {
                 card.style.cursor = 'pointer';
                 card.addEventListener('click', (e) => {
                     if (e.target.closest('button') || e.target.closest('input')) return;
                     if (mediaCategory) openMediaPlayerByPath(file.path);
                     else if (isPhoto) openImageViewerByPath(file.path);
+                    else if (isPdf) openPdfViewerByPath(file.path);
                     else if (isTextDoc) openTextViewerByPath(file.path);
                 });
             }
@@ -3425,21 +3893,19 @@ function renderExplorerFileList(query = '') {
             const left = document.createElement('div');
             left.className = 'explorer-item-left';
 
-            // Only show checkboxes when there are multiple files to select
-            if (currentDecryptedFileList.length > 1) {
-                const cb = document.createElement('input');
-                cb.type = 'checkbox';
-                cb.className = 'explorer-item-cb';
-                cb.checked = isSelected;
-                cb.setAttribute('aria-label', `Select ${file.name}`);
-                cb.addEventListener('change', (e) => {
-                    e.stopPropagation();
-                    if (cb.checked) explorerSelectedFiles.add(file.path);
-                    else explorerSelectedFiles.delete(file.path);
-                    updateBatchBar();
-                });
-                left.appendChild(cb);
-            }
+            // Show checkboxes for file selection
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'explorer-item-cb';
+            cb.checked = isSelected;
+            cb.setAttribute('aria-label', `Select ${file.name}`);
+            cb.addEventListener('change', (e) => {
+                e.stopPropagation();
+                if (cb.checked) explorerSelectedFiles.add(file.path);
+                else explorerSelectedFiles.delete(file.path);
+                updateBatchBar();
+            });
+            left.appendChild(cb);
 
             const icon = document.createElement('span');
             icon.className = 'explorer-item-icon';
@@ -3455,10 +3921,17 @@ function renderExplorerFileList(query = '') {
             name.title = file.path;
             info.appendChild(name);
 
-            if (file.dirPath) {
+            // Show directory badge if searching or not in standard folder mode
+            if (file.dirPath && (!isFolderMode || isSearching)) {
                 const pathEl = document.createElement('span');
                 pathEl.className = 'explorer-item-path';
                 pathEl.textContent = `📁 ${file.dirPath}/`;
+                pathEl.title = `Navigate to folder ${file.dirPath}`;
+                pathEl.style.cursor = 'pointer';
+                pathEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navigateToDir(file.dirPath);
+                });
                 info.appendChild(pathEl);
             }
 
@@ -3471,9 +3944,6 @@ function renderExplorerFileList(query = '') {
             size.className = 'explorer-item-size';
             size.textContent = file.size > 0 ? formatBytes(file.size) : '';
             right.appendChild(size);
-
-            const isPhoto = getFileCategory(file.name) === 'photo';
-            const isTextDoc = isTextOrCodeFile(file.name);
 
             if (mediaCategory) {
                 const playBtn = document.createElement('button');
@@ -3495,6 +3965,16 @@ function renderExplorerFileList(query = '') {
                     openImageViewerByPath(file.path);
                 });
                 right.appendChild(viewBtn);
+            } else if (isPdf) {
+                const pdfBtn = document.createElement('button');
+                pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
+                pdfBtn.title = `View ${file.name} PDF document`;
+                pdfBtn.innerHTML = '📄 View';
+                pdfBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openPdfViewerByPath(file.path);
+                });
+                right.appendChild(pdfBtn);
             } else if (isTextDoc) {
                 const readBtn = document.createElement('button');
                 readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
@@ -3516,7 +3996,7 @@ function renderExplorerFileList(query = '') {
                 try {
                     dlBtn.textContent = '⏳ ...';
                     const fileBlob = await getDecryptedFileBlob(file.path);
-                    triggerDownload(fileBlob, file.name);
+                    triggerDownload(fileBlob, sanitizeFilenamePart(file.name, 'file'));
                     dlBtn.textContent = '✅ Saved';
                     setTimeout(() => { dlBtn.innerHTML = '⬇️ Save'; }, 2000);
                 } catch (err) {
@@ -3528,13 +4008,14 @@ function renderExplorerFileList(query = '') {
             right.appendChild(dlBtn);
 
             // Allow clicking row to play media or view document
-            if (mediaCategory || isPhoto || isTextDoc) {
+            if (mediaCategory || isPhoto || isTextDoc || isPdf) {
                 row.style.cursor = 'pointer';
-                row.title = isPhoto ? 'Click to view photo' : (isTextDoc ? 'Click to read document' : 'Click to play media');
+                row.title = isPhoto ? 'Click to view photo' : (isPdf ? 'Click to view PDF' : (isTextDoc ? 'Click to read document' : 'Click to play media'));
                 row.addEventListener('click', (e) => {
                     if (e.target.closest('button') || e.target.closest('input')) return;
                     if (mediaCategory) openMediaPlayerByPath(file.path);
                     else if (isPhoto) openImageViewerByPath(file.path);
+                    else if (isPdf) openPdfViewerByPath(file.path);
                     else if (isTextDoc) openTextViewerByPath(file.path);
                 });
             }
@@ -3631,9 +4112,22 @@ function initExplorerUI() {
     // Select All
     selectAllCb?.addEventListener('change', () => {
         const q = (searchInput?.value || '').trim().toLowerCase();
-        let visible = currentDecryptedFileList;
-        if (q) visible = visible.filter(f => f.path.toLowerCase().includes(q));
-        if (explorerFilterCategory !== 'all') visible = visible.filter(f => getFileCategory(f.name) === explorerFilterCategory);
+        let visible = [];
+        if (q) {
+            visible = currentDecryptedFileList.filter(f => f.path.toLowerCase().includes(q));
+            if (explorerFilterCategory !== 'all') {
+                visible = visible.filter(f => getFileCategory(f.name) === explorerFilterCategory);
+            }
+        } else if (explorerFilterCategory !== 'all') {
+            const prefix = explorerCurrentDir ? (explorerCurrentDir.replace(/\/+$/, '') + '/') : '';
+            visible = currentDecryptedFileList.filter(f => {
+                if (prefix && !f.path.startsWith(prefix)) return false;
+                return getFileCategory(f.name) === explorerFilterCategory;
+            });
+        } else {
+            const { directFiles } = getItemsInDirectory(currentDecryptedFileList, explorerCurrentDir);
+            visible = directFiles;
+        }
 
         if (selectAllCb.checked) {
             visible.forEach(f => explorerSelectedFiles.add(f.path));
@@ -4034,6 +4528,7 @@ function initExplorerUI() {
     const textWrapBtn = document.getElementById('btn-text-wrap');
     const textCopyBtn = document.getElementById('btn-text-copy');
     const textDlBtn = document.getElementById('btn-text-download');
+    const textOpenTabBtn = document.getElementById('btn-text-open-tab');
 
     closeTextBtn?.addEventListener('click', closeTextViewer);
     textModal?.addEventListener('click', (e) => {
@@ -4043,19 +4538,29 @@ function initExplorerUI() {
     textWrapBtn?.addEventListener('click', toggleTextWrap);
     textCopyBtn?.addEventListener('click', copyTextToClipboard);
 
+    textOpenTabBtn?.addEventListener('click', () => {
+        if (currentPdfBlobUrl) {
+            window.open(currentPdfBlobUrl, '_blank', 'noopener,noreferrer');
+        }
+    });
+
     textDlBtn?.addEventListener('click', () => {
         if (currentTextBlob && currentTextFilename) {
-            triggerDownload(currentTextBlob, currentTextFilename);
+            triggerDownload(currentTextBlob, sanitizeFilenamePart(currentTextFilename, 'document'));
             showToast(`Saved "${currentTextFilename}"`, 'success');
         }
     });
 
-    // Keyboard Shortcuts for Image and Text Modals
+    // Keyboard Shortcuts for Viewer & Explorer Modals
     window.addEventListener('keydown', (e) => {
         const imgModalEl = document.getElementById('vault-image-modal');
         const isImgActive = imgModalEl && imgModalEl.style.display !== 'none';
         const txtModalEl = document.getElementById('vault-text-modal');
         const isTxtActive = txtModalEl && txtModalEl.style.display !== 'none';
+        const mediaModalEl = document.getElementById('vault-media-modal');
+        const isMediaActive = mediaModalEl && mediaModalEl.style.display !== 'none';
+        const explorerModalEl = document.getElementById('vault-explorer-modal');
+        const isExplorerActive = explorerModalEl && explorerModalEl.style.display !== 'none';
 
         if (isImgActive) {
             if (e.key === 'Escape') {
@@ -4085,6 +4590,10 @@ function initExplorerUI() {
         } else if (isTxtActive) {
             if (e.key === 'Escape') {
                 closeTextViewer();
+            }
+        } else if (isExplorerActive && !isMediaActive) {
+            if (e.key === 'Escape') {
+                closeVaultExplorer();
             }
         }
     });

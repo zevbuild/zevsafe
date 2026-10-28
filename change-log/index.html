@@ -13,7 +13,7 @@
     <meta name="msapplication-TileImage" content="../assets/icon-512.png">
 
     <!-- Content Security Policy: Strict Air-Gapped Zero-Exfiltration Defense -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="../manifest.json">
@@ -671,7 +671,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v6.9</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v6.9.4</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -710,13 +710,12 @@
         <main class="cl-timeline" id="cl-timeline">
 
             <!-- ── VERSION 6.9.3 (WEB-VERSION-44) ── -->
-            <article class="cl-card cl-card--latest" data-version="v6">
+            <article class="cl-card" data-version="v6">
                 <div class="cl-marker">⚡</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 6.9.3 (WEB-VERSION-44)</h2>
-                            <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
                             <span class="cl-badge cl-badge--date">October 20, 2026</span>
                         </div>
                         <div class="cl-tags">
