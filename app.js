@@ -4895,14 +4895,79 @@ function initExplorerUI() {
     window.addEventListener('pagehide', () => lockV3VaultSession());
 }
 
+let deferredPwaPrompt = null;
+
+function initPwaInstall() {
+    const installBtn = document.getElementById('btn-install-pwa');
+    const footerInstallBtn = document.getElementById('footer-install-link');
+    const modal = document.getElementById('install-pwa-modal');
+    const closeBtn = document.getElementById('btn-close-install-modal');
+    const dismissBtn = document.getElementById('btn-dismiss-install-modal');
+    const triggerBtn = document.getElementById('btn-trigger-pwa-install');
+    const nativeSec = document.getElementById('pwa-native-install-section');
+
+    function openModal(e) {
+        if (e) e.preventDefault();
+        if (deferredPwaPrompt) {
+            deferredPwaPrompt.prompt();
+            deferredPwaPrompt.userChoice.then(choiceResult => {
+                if (choiceResult && choiceResult.outcome === 'accepted') {
+                    if (modal) modal.style.display = 'none';
+                }
+                deferredPwaPrompt = null;
+                if (nativeSec) nativeSec.style.display = 'none';
+            }).catch(() => {});
+        } else {
+            if (modal) modal.style.display = 'flex';
+        }
+    }
+
+    function closeModal() {
+        if (modal) modal.style.display = 'none';
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPwaPrompt = e;
+        if (nativeSec) nativeSec.style.display = 'block';
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredPwaPrompt = null;
+        if (nativeSec) nativeSec.style.display = 'none';
+        if (modal) modal.style.display = 'none';
+        showToast('ZevSafe installed successfully! Works 100% offline.', 'success');
+    });
+
+    installBtn?.addEventListener('click', openModal);
+    footerInstallBtn?.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+    dismissBtn?.addEventListener('click', closeModal);
+    triggerBtn?.addEventListener('click', () => {
+        if (deferredPwaPrompt) {
+            deferredPwaPrompt.prompt();
+            deferredPwaPrompt.userChoice.then(() => {
+                closeModal();
+                deferredPwaPrompt = null;
+            }).catch(() => {});
+        }
+    });
+
+    modal?.addEventListener('click', (e) => {
+        if (e.target.id === 'install-pwa-modal') closeModal();
+    });
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initExplorerUI();
         initPcSetupButton();
+        initPwaInstall();
     });
 } else {
     initExplorerUI();
     initPcSetupButton();
+    initPwaInstall();
 }
 
 /**

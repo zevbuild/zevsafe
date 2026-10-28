@@ -2,7 +2,7 @@
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
 > **Web Portal Version:** `v6.9.5` (`WEB-VERSION-46`, Service Worker `v46`)  
-> **Companion Android App:** [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe) (`com.zevbuild.zevsafe` `v6.4.3`, Build `34`)
+> **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 
 > **🤖 MANDATORY AI AGENT RULE:**  
 > Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
@@ -15,7 +15,7 @@ ZevSafe is a 100% client-side, zero-knowledge, military-grade file and folder en
 
 It consists of three bit-identically compatible platforms sharing the **`ZV3\0` STREAM AEAD** binary format:
 1. **Web PWA (`zevsafe`):** Browser-based vault application ([`zevsafe.pages.dev`](https://zevsafe.pages.dev)) using the Web Crypto API (`crypto.subtle`), elastic multi-worker pool (`js/worker-bridge.js`, `js/crypto-worker.js`), zero-copy transferable buffers, ephemeral session key caching, rich in-vault media player, image lightbox viewer with pan/zoom/rotate, code & text document viewer with line numbers & clipboard copy, formal defense-in-depth security hardening (Score 96/100, Grade A+), and a 4-tier streaming file saver (`js/stream-saver.js`).
-2. **Native Android App (`app-zevsafe`):** Standalone Kotlin + Jetpack Compose Android application (`com.zevbuild.zevsafe`) with AndroidX Media3 ExoPlayer Cinema streaming, pinch-to-zoom in-app image viewer, rich code & text viewer with line numbers, Android 14 `VaultForegroundService`, `MediaStore.Downloads` auto-saving, and system share sheet integration. Detailed Android Project Memory lives in `../app-zevsafe/PROJECT_MEMORY.md` and `../app-zevsafe/PROJECT-MEMORY/`.
+2. **Native Android App (`app-zevsafe`) [DEPRECATED]:** Historical standalone Kotlin + Jetpack Compose Android application (`com.zevbuild.zevsafe`). Succeeded entirely by the mobile Web PWA at `zevsafe.pages.dev`, which provides identical offline `ZV3\0` STREAM AEAD cryptography with OPFS streaming, image lightbox, text editing, and zero sideloading friction. Detailed Android Project Memory archived in `../app-zevsafe/PROJECT_MEMORY.md`.
 3. **Emergency Desktop CLI Tools (`tools/`):** Standalone Windows batch launchers (`tools/Encrypt-Vault.bat`, `tools/Decrypt-Vault.bat`) and PowerShell streaming engines (`tools/encrypt.ps1`, `tools/decrypt.ps1`) for zero-RAM 25 GB – 100 GB+ datasets.
 
 ---
