@@ -671,7 +671,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v6.9.4</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v6.9.5</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -708,6 +708,92 @@
 
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
+
+            <!-- ── VERSION 6.9.5 (WEB-VERSION-46) ── -->
+            <article class="cl-card" data-version="v6">
+                <div class="cl-marker">✏️</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.9.5 (WEB-VERSION-46)</h2>
+                            <span class="cl-badge cl-badge--date">October 28, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">In-Browser Text Editing</span>
+                            <span class="cl-tag">Note Creation</span>
+                            <span class="cl-tag">Memory Overlay</span>
+                            <span class="cl-tag">Zero-Knowledge Scrubbing</span>
+                            <span class="cl-tag">PWA v46</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>In-Browser Text Document Editing:</strong> Added live in-browser text editing directly inside the Decrypted Vault Explorer document viewer (<code>#vault-text-modal</code>). Users can toggle between read-only code view and an interactive <code>&lt;textarea&gt;</code> editor with <code>✏️ Edit</code> / <code>👁️ Preview</code> buttons, dynamic line numbers, tab indentation (4 spaces), and <code>Ctrl+S</code> keyboard saving.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>In-Vault Note &amp; Text File Creation:</strong> Introduced a prominent <code>➕ New Note</code> button in the Vault Explorer toolbar (<code>#btn-explorer-new-file</code>). Users can create new <code>.txt</code> notes directly at the current active directory level, launching immediately into the interactive editor in volatile session memory.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>In-Session Decrypted Overlay Map:</strong> Added <code>currentV3Vault.editedFiles</code> session overlay. When a file is edited or newly created, <code>getDecryptedFileBlob</code> dynamically prioritizes the in-memory edited Blob, updating file sizes, displaying an <code>(Edited)</code> badge pill in both List and Grid views, and packaging modified files into full vault exports (<code>⬇️ Download All</code>) and single/batch downloads.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Air-Gapped Zero-Knowledge Safety &amp; Memory Bounding:</strong> Live text editing is strictly restricted to documents &le; 5 MB to guarantee compliance with the &lt; 150 MB RAM ceiling. All in-memory edited file buffers, notes, and editing state flags are strictly scrubbed and zeroized upon session lock (<code>lockVaultSession</code>), leaving zero disk footprints.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 6.9.4 (WEB-VERSION-45) ── -->
+            <article class="cl-card" data-version="v6">
+                <div class="cl-marker">📂</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.9.4 (WEB-VERSION-45)</h2>
+                            <span class="cl-badge cl-badge--date">October 28, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Hierarchical Directory Tree</span>
+                            <span class="cl-tag">Breadcrumb Navigation</span>
+                            <span class="cl-tag">In-Browser PDF Viewer</span>
+                            <span class="cl-tag">Tracked Blob Lifecycle</span>
+                            <span class="cl-tag">PWA v45</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Hierarchical Directory Navigation &amp; Breadcrumbs:</strong> Transformed the decrypted file browser into an interactive hierarchical folder system with directory drill-down, folder sizes, and responsive breadcrumb navigation.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>In-Browser Decrypted PDF Document Previewer:</strong> Integrated a dedicated PDF viewer frame into the document preview modal (<code>#vault-text-modal</code>) allowing users to inspect encrypted PDFs directly in-browser using tracked blob URLs.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Zero-Knowledge Session Zeroization Protocol Hardening:</strong> Overhauled <code>lockVaultSession()</code> to execute unconditionally across all vault architectures, wiping keys, buffers, caches, and revoking all tracked preview blob URLs.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
 
             <!-- ── VERSION 6.9.3 (WEB-VERSION-44) ── -->
             <article class="cl-card" data-version="v6">

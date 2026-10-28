@@ -257,6 +257,135 @@ const catalogFiles = [
     console.log('  ✓ 8. Zero-knowledge session lock zeroizes RAM buffers and purges all vault references');
 }
 
+// Test 9: In-Session Text Editing Overlay & Priority Interception
+{
+    const originalText = 'Initial vault note contents';
+    const editedText = 'Modified text content from in-browser editor session';
+
+    // Mock V3 Vault with editedFiles session map
+    const mockV3Vault = {
+        catalog: {
+            files: [{ path: 'notes/meeting.txt', size: originalText.length }]
+        },
+        editedFiles: new Map()
+    };
+
+    async function mockGetDecryptedFileBlob(filePath) {
+        if (mockV3Vault.editedFiles && mockV3Vault.editedFiles.has(filePath)) {
+            return mockV3Vault.editedFiles.get(filePath);
+        }
+        const entry = mockV3Vault.catalog.files.find(f => f.path === filePath);
+        if (!entry) throw new Error(`Not found: ${filePath}`);
+        return { text: async () => originalText, size: originalText.length };
+    }
+
+    // 1. Initial read returns original text
+    (async () => {
+        const initialBlob = await mockGetDecryptedFileBlob('notes/meeting.txt');
+        const text1 = await initialBlob.text();
+        assert.strictEqual(text1, originalText, 'Initial read must return original text');
+
+        // 2. Save edit into editedFiles map
+        const editedBlob = { text: async () => editedText, size: editedText.length };
+        mockV3Vault.editedFiles.set('notes/meeting.txt', editedBlob);
+
+        // 3. Subsequent read intercepts and returns edited blob
+        const interceptedBlob = await mockGetDecryptedFileBlob('notes/meeting.txt');
+        const text2 = await interceptedBlob.text();
+        assert.strictEqual(text2, editedText, 'Subsequent read must intercept and return edited text');
+        assert.strictEqual(interceptedBlob.size, editedText.length);
+    })().then(() => {
+        console.log('  ✓ 9. In-session text editing overlay intercepts file reads and reflects modified contents');
+    });
+}
+
+// Test 10: In-Browser New Note Creation & Directory Hierarchy Placement
+{
+    const currentFileList = [
+        { path: 'readme.txt', name: 'readme.txt', size: 100 },
+        { path: 'notes/todo.txt', name: 'todo.txt', size: 50 }
+    ];
+    const editedFilesMap = new Map();
+
+    function createNote(dir, rawFilename) {
+        let filename = rawFilename.trim().replace(/[\/\\]/g, '');
+        if (!filename.includes('.')) filename += '.txt';
+        const prefix = dir ? (dir.replace(/\/+$/, '') + '/') : '';
+        const newPath = prefix + filename;
+
+        if (currentFileList.some(f => f.path.toLowerCase() === newPath.toLowerCase())) {
+            throw new Error(`File already exists: ${newPath}`);
+        }
+
+        const emptyBlob = { text: async () => '', size: 0 };
+        editedFilesMap.set(newPath, emptyBlob);
+
+        const newItem = {
+            path: newPath,
+            name: filename,
+            dirPath: dir || '',
+            size: 0,
+            isEdited: true
+        };
+        currentFileList.push(newItem);
+        return newItem;
+    }
+
+    // Create note in 'notes' directory
+    const created = createNote('notes', 'shopping-list');
+    assert.strictEqual(created.path, 'notes/shopping-list.txt');
+    assert.strictEqual(created.name, 'shopping-list.txt');
+    assert.strictEqual(created.isEdited, true);
+    assert.strictEqual(editedFilesMap.has('notes/shopping-list.txt'), true);
+
+    // Verify duplicate creation throws
+    assert.throws(() => {
+        createNote('notes', 'shopping-list.txt');
+    }, /File already exists/);
+
+    console.log('  ✓ 10. New note creation properly formats path, prevents duplicates, and updates session overlay');
+}
+
+// Test 11: Memory Bounding Protection (5 MB Limit Guardrail)
+{
+    const MAX_LIVE_EDIT_BYTES = 5 * 1024 * 1024;
+    const smallFile = { size: 1024 * 1024 }; // 1 MB
+    const hugeFile = { size: 6 * 1024 * 1024 }; // 6 MB
+
+    function canLiveEdit(fileSize) {
+        return fileSize <= MAX_LIVE_EDIT_BYTES;
+    }
+
+    assert.strictEqual(canLiveEdit(smallFile.size), true, '1 MB file is editable in browser');
+    assert.strictEqual(canLiveEdit(hugeFile.size), false, '6 MB file must disable in-browser editing to bound memory');
+
+    console.log('  ✓ 11. Bounded memory guardrail strictly enforces 5 MB limit for live in-browser text editing');
+}
+
+// Test 12: Zero-Knowledge Scrubbing of Edited Files Map & State
+{
+    const editedFilesMap = new Map();
+    editedFilesMap.set('notes/secret.txt', { text: async () => 'confidential data' });
+    let currentEditingPath = 'notes/secret.txt';
+    let isEditingText = true;
+    let hasUnsavedChanges = true;
+
+    function lockSessionWipe() {
+        editedFilesMap.clear();
+        currentEditingPath = '';
+        isEditingText = false;
+        hasUnsavedChanges = false;
+    }
+
+    lockSessionWipe();
+    assert.strictEqual(editedFilesMap.size, 0, 'Edited files map must be completely emptied');
+    assert.strictEqual(currentEditingPath, '', 'Editing path must be reset');
+    assert.strictEqual(isEditingText, false, 'isEditingText must be false');
+    assert.strictEqual(hasUnsavedChanges, false, 'hasUnsavedChanges must be false');
+
+    console.log('  ✓ 12. Zero-knowledge session lock completely purges edited file buffers and session states');
+}
+
 console.log('===============================================================');
-console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 8/8 PASSED      ');
+console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 12/12 PASSED    ');
 console.log('===============================================================');

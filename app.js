@@ -2376,6 +2376,9 @@ let currentV3Vault = null; // { folderName, catalog, file, password, keyfileByte
  * @returns {Promise<Blob>}
  */
 async function getDecryptedFileBlob(filePath) {
+    if (currentV3Vault && currentV3Vault.editedFiles && currentV3Vault.editedFiles.has(filePath)) {
+        return currentV3Vault.editedFiles.get(filePath);
+    }
     if (currentDecryptedZip) {
         return await currentDecryptedZip.file(filePath).async('blob');
     }
@@ -2415,6 +2418,7 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
         password: password || null,
         keyfileBytes: keyfileBytes ? new Uint8Array(keyfileBytes) : null,
         masterKey: masterKey || catalog.masterKey || null,
+        editedFiles: new Map(),
         chunkCache: (typeof StreamUnpacker !== 'undefined' && typeof StreamUnpacker.createBoundedChunkCache === 'function')
             ? StreamUnpacker.createBoundedChunkCache(4)
             : {
@@ -2600,6 +2604,9 @@ let currentTextBlob = null;
 let currentTextFilename = '';
 let currentTextContent = '';
 let isTextWordWrapped = false;
+let currentEditingPath = '';
+let isEditingText = false;
+let hasUnsavedChanges = false;
 
 // Dedicated PDF Viewer State
 let currentPdfBlobUrl = null;
@@ -3066,11 +3073,15 @@ function lockVaultSession() {
         if (currentV3Vault.chunkCache && typeof currentV3Vault.chunkCache.clear === 'function') {
             currentV3Vault.chunkCache.clear();
         }
+        if (currentV3Vault.editedFiles && typeof currentV3Vault.editedFiles.clear === 'function') {
+            currentV3Vault.editedFiles.clear();
+        }
         currentV3Vault.masterKey = null;
         currentV3Vault.password = null;
         currentV3Vault.keyfileBytes = null;
         currentV3Vault.catalog = null;
         currentV3Vault.file = null;
+        currentV3Vault.editedFiles = null;
         currentV3Vault = null;
     }
 
@@ -3085,6 +3096,9 @@ function lockVaultSession() {
     currentImagePlaylist = [];
     explorerSelectedFiles.clear();
     explorerCurrentDir = '';
+    currentEditingPath = '';
+    isEditingText = false;
+    hasUnsavedChanges = false;
 
     // 4. Revoke and scrub all tracked active blob URLs
     revokeAllActiveBlobUrls();
@@ -3384,6 +3398,7 @@ async function openTextViewerByPath(filePath) {
     const badge = document.getElementById('text-modal-badge');
     const meta = document.getElementById('text-modal-meta');
     const codeEl = document.getElementById('text-code-content');
+    const textareaEl = document.getElementById('text-code-textarea');
     const linesEl = document.getElementById('text-line-numbers');
     const loader = document.getElementById('text-loading-indicator');
     const editorView = document.getElementById('text-editor-view');
@@ -3391,9 +3406,15 @@ async function openTextViewerByPath(filePath) {
     const wrapBtn = document.getElementById('btn-text-wrap');
     const copyBtn = document.getElementById('btn-text-copy');
     const openTabBtn = document.getElementById('btn-text-open-tab');
+    const editBtn = document.getElementById('btn-text-edit');
+    const saveBtn = document.getElementById('btn-text-save-changes');
 
     if (!modal) return;
     modal.style.display = 'flex';
+
+    currentEditingPath = filePath;
+    isEditingText = false;
+    hasUnsavedChanges = false;
 
     const ext = (fileItem.name || '').split('.').pop().toUpperCase();
     if (badge) badge.textContent = `📄 ${ext || 'TXT'}`;
@@ -3403,6 +3424,11 @@ async function openTextViewerByPath(filePath) {
     if (wrapBtn) wrapBtn.style.display = 'inline-flex';
     if (copyBtn) copyBtn.style.display = 'inline-flex';
     if (openTabBtn) openTabBtn.style.display = 'none';
+    if (editBtn) {
+        editBtn.style.display = 'inline-flex';
+        editBtn.textContent = '✏️ Edit';
+    }
+    if (saveBtn) saveBtn.style.display = 'none';
 
     if (loader) loader.style.display = 'flex';
     if (editorView) editorView.style.display = 'none';
@@ -3410,7 +3436,14 @@ async function openTextViewerByPath(filePath) {
         pdfFrame.style.display = 'none';
         pdfFrame.src = 'about:blank';
     }
-    if (codeEl) codeEl.textContent = '';
+    if (codeEl) {
+        codeEl.textContent = '';
+        codeEl.style.display = 'block';
+    }
+    if (textareaEl) {
+        textareaEl.value = '';
+        textareaEl.style.display = 'none';
+    }
     if (linesEl) linesEl.innerHTML = '';
 
     try {
@@ -3418,9 +3451,10 @@ async function openTextViewerByPath(filePath) {
         currentTextBlob = blob;
         currentTextFilename = fileItem.name;
 
-        // Bounded memory protection: limit live text preview to 5 MB
+        // Bounded memory protection: limit live text preview and in-browser editing to 5 MB
         if (blob.size > 5 * 1024 * 1024) {
             currentTextContent = '⚠️ This document is larger than 5 MB. Please download the file to inspect complete contents.';
+            if (editBtn) editBtn.style.display = 'none';
         } else {
             currentTextContent = await blob.text();
         }
@@ -3428,13 +3462,17 @@ async function openTextViewerByPath(filePath) {
         const lines = currentTextContent.split('\n');
         const lineCount = lines.length;
 
-        if (meta) meta.textContent = `${lineCount} lines · ${formatBytes(blob.size)}`;
+        if (meta) meta.textContent = `${lineCount} lines · ${formatBytes(blob.size)}${fileItem.isEdited ? ' · (Edited)' : ''}`;
         if (codeEl) {
             codeEl.textContent = currentTextContent;
             codeEl.className = `text-code-content ${isTextWordWrapped ? 'is-wrapped' : ''}`;
         }
+        if (textareaEl) {
+            textareaEl.value = currentTextContent;
+            textareaEl.className = `text-code-content text-code-textarea ${isTextWordWrapped ? 'is-wrapped' : ''}`;
+        }
         if (linesEl) {
-            linesEl.textContent = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
+            linesEl.textContent = Array.from({ length: Math.max(1, lineCount) }, (_, i) => i + 1).join('\n');
         }
 
         if (loader) loader.style.display = 'none';
@@ -3464,9 +3502,15 @@ async function openPdfViewerByPath(filePath) {
     const wrapBtn = document.getElementById('btn-text-wrap');
     const copyBtn = document.getElementById('btn-text-copy');
     const openTabBtn = document.getElementById('btn-text-open-tab');
+    const editBtn = document.getElementById('btn-text-edit');
+    const saveBtn = document.getElementById('btn-text-save-changes');
 
     if (!modal) return;
     modal.style.display = 'flex';
+
+    currentEditingPath = '';
+    isEditingText = false;
+    hasUnsavedChanges = false;
 
     if (badge) badge.textContent = '📄 PDF';
     if (title) title.textContent = fileItem.name;
@@ -3474,6 +3518,8 @@ async function openPdfViewerByPath(filePath) {
 
     if (wrapBtn) wrapBtn.style.display = 'none';
     if (copyBtn) copyBtn.style.display = 'none';
+    if (editBtn) editBtn.style.display = 'none';
+    if (saveBtn) saveBtn.style.display = 'none';
     if (openTabBtn) openTabBtn.style.display = 'inline-flex';
 
     if (loader) loader.style.display = 'flex';
@@ -3510,21 +3556,219 @@ async function openPdfViewerByPath(filePath) {
     }
 }
 
+function syncTextareaLineNumbers() {
+    const textareaEl = document.getElementById('text-code-textarea');
+    const linesEl = document.getElementById('text-line-numbers');
+    if (!textareaEl || !linesEl) return;
+    const count = textareaEl.value.split('\n').length;
+    linesEl.textContent = Array.from({ length: Math.max(1, count) }, (_, i) => i + 1).join('\n');
+}
+
+function toggleTextEditMode() {
+    const codeEl = document.getElementById('text-code-content');
+    const textareaEl = document.getElementById('text-code-textarea');
+    const editBtn = document.getElementById('btn-text-edit');
+    const saveBtn = document.getElementById('btn-text-save-changes');
+    const meta = document.getElementById('text-modal-meta');
+
+    if (!codeEl || !textareaEl) return;
+
+    if (isEditingText) {
+        // Switch back to view/preview mode
+        currentTextContent = textareaEl.value;
+        codeEl.textContent = currentTextContent;
+        codeEl.style.display = 'block';
+        textareaEl.style.display = 'none';
+        if (editBtn) editBtn.textContent = '✏️ Edit';
+        if (saveBtn) saveBtn.style.display = hasUnsavedChanges ? 'inline-flex' : 'none';
+        isEditingText = false;
+        const count = currentTextContent.split('\n').length;
+        if (meta && currentTextBlob) {
+            const isEdited = currentV3Vault?.editedFiles?.has(currentEditingPath) || currentDecryptedFileList.find(f => f.path === currentEditingPath)?.isEdited;
+            meta.textContent = `${count} lines · ${formatBytes(currentTextBlob.size)}${isEdited ? ' · (Edited)' : ''}`;
+        }
+    } else {
+        // Switch to interactive editing mode
+        textareaEl.value = currentTextContent;
+        codeEl.style.display = 'none';
+        textareaEl.style.display = 'block';
+        textareaEl.className = `text-code-content text-code-textarea ${isTextWordWrapped ? 'is-wrapped' : ''}`;
+        if (editBtn) editBtn.textContent = '👁️ Preview';
+        if (saveBtn) saveBtn.style.display = 'inline-flex';
+        isEditingText = true;
+        syncTextareaLineNumbers();
+        textareaEl.focus();
+    }
+}
+
+async function saveTextFileChanges() {
+    if (!currentEditingPath) return;
+    const textareaEl = document.getElementById('text-code-textarea');
+    const codeEl = document.getElementById('text-code-content');
+    const saveBtn = document.getElementById('btn-text-save-changes');
+    const meta = document.getElementById('text-modal-meta');
+    const searchInput = document.getElementById('explorer-search-input');
+
+    const updatedText = textareaEl ? textareaEl.value : currentTextContent;
+    currentTextContent = updatedText;
+    if (codeEl) codeEl.textContent = updatedText;
+
+    const newBlob = new Blob([updatedText], { type: 'text/plain;charset=utf-8' });
+    currentTextBlob = newBlob;
+
+    // 1. In-session overlay for V3 streaming vaults
+    if (currentV3Vault) {
+        if (!currentV3Vault.editedFiles) {
+            currentV3Vault.editedFiles = new Map();
+        }
+        currentV3Vault.editedFiles.set(currentEditingPath, newBlob);
+    }
+
+    // 2. In-session mutation for legacy JSZip vaults
+    if (currentDecryptedZip) {
+        currentDecryptedZip.file(currentEditingPath, updatedText);
+    }
+
+    // 3. Update file item metadata in currentDecryptedFileList
+    const fileItem = currentDecryptedFileList.find(f => f.path === currentEditingPath);
+    if (fileItem) {
+        fileItem.size = newBlob.size;
+        fileItem.isEdited = true;
+        if (fileItem.entry) fileItem.entry.size = newBlob.size;
+    }
+
+    hasUnsavedChanges = false;
+
+    // 4. Update UI feedback
+    const lines = updatedText.split('\n');
+    if (meta) meta.textContent = `${lines.length} lines · ${formatBytes(newBlob.size)} · (Edited)`;
+
+    if (saveBtn) {
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = '✅ Saved';
+        setTimeout(() => {
+            if (saveBtn) saveBtn.textContent = originalText;
+        }, 1500);
+    }
+
+    showToast(`Changes saved to "${currentTextFilename}" (in-session)`, 'success');
+
+    // Re-render file list to reflect updated file size and edited badge
+    renderExplorerFileList(searchInput ? searchInput.value : '');
+}
+
+function handleTextareaKeydown(e) {
+    const textarea = e.target;
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+        textarea.value = value.substring(0, start) + '    ' + value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + 4;
+        hasUnsavedChanges = true;
+        syncTextareaLineNumbers();
+    } else if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        saveTextFileChanges();
+    }
+}
+
+async function createNewTextFile() {
+    if (!currentDecryptedFolderName && !currentV3Vault && !currentDecryptedZip) {
+        showToast('Open a decrypted vault before creating a note.', 'warn');
+        return;
+    }
+
+    const inputName = prompt('Enter filename for new text note:', 'note.txt');
+    if (!inputName) return;
+    let filename = inputName.trim();
+    if (!filename) return;
+
+    // Sanitize filename to avoid path traversal
+    filename = filename.replace(/[\/\\]/g, '');
+    if (!filename.includes('.')) {
+        filename += '.txt';
+    }
+
+    const prefix = explorerCurrentDir ? (explorerCurrentDir.replace(/\/+$/, '') + '/') : '';
+    const newPath = prefix + filename;
+
+    // Check duplicate
+    if (currentDecryptedFileList.some(f => f.path.toLowerCase() === newPath.toLowerCase())) {
+        showToast(`A file named "${filename}" already exists in this folder.`, 'warn');
+        return;
+    }
+
+    const emptyBlob = new Blob([''], { type: 'text/plain;charset=utf-8' });
+
+    if (currentV3Vault) {
+        if (!currentV3Vault.editedFiles) currentV3Vault.editedFiles = new Map();
+        currentV3Vault.editedFiles.set(newPath, emptyBlob);
+    }
+
+    if (currentDecryptedZip) {
+        currentDecryptedZip.file(newPath, '');
+    }
+
+    const newItem = {
+        path: newPath,
+        name: filename,
+        dirPath: explorerCurrentDir || '',
+        size: 0,
+        isEdited: true,
+        entry: { path: newPath, size: 0 }
+    };
+    currentDecryptedFileList.push(newItem);
+
+    const searchInput = document.getElementById('explorer-search-input');
+    updateCategoryFilterCounts();
+    renderExplorerFileList(searchInput ? searchInput.value : '');
+
+    showToast(`Created note "${filename}". Opening editor...`, 'success');
+
+    await openTextViewerByPath(newPath);
+    if (!isEditingText) {
+        toggleTextEditMode();
+    }
+}
+
 function closeTextViewer() {
+    if (isEditingText && hasUnsavedChanges) {
+        if (!confirm('You have unsaved changes in this document. Discard them?')) {
+            return;
+        }
+    }
+
     const modal = document.getElementById('vault-text-modal');
     const loader = document.getElementById('text-loading-indicator');
     const codeEl = document.getElementById('text-code-content');
+    const textareaEl = document.getElementById('text-code-textarea');
     const linesEl = document.getElementById('text-line-numbers');
     const pdfFrame = document.getElementById('pdf-preview-frame');
+    const editBtn = document.getElementById('btn-text-edit');
+    const saveBtn = document.getElementById('btn-text-save-changes');
 
     if (modal) modal.style.display = 'none';
     if (loader) loader.style.display = 'none';
-    if (codeEl) codeEl.textContent = '';
+    if (codeEl) {
+        codeEl.textContent = '';
+        codeEl.style.display = 'block';
+    }
+    if (textareaEl) {
+        textareaEl.value = '';
+        textareaEl.style.display = 'none';
+    }
     if (linesEl) linesEl.textContent = '';
     if (pdfFrame) {
         pdfFrame.src = 'about:blank';
         pdfFrame.style.display = 'none';
     }
+    if (editBtn) {
+        editBtn.textContent = '✏️ Edit';
+        editBtn.style.display = 'inline-flex';
+    }
+    if (saveBtn) saveBtn.style.display = 'none';
 
     if (currentPdfBlobUrl) {
         revokeTrackedBlobUrl(currentPdfBlobUrl);
@@ -3533,6 +3777,9 @@ function closeTextViewer() {
     currentTextBlob = null;
     currentTextFilename = '';
     currentTextContent = '';
+    currentEditingPath = '';
+    isEditingText = false;
+    hasUnsavedChanges = false;
 }
 
 async function copyTextToClipboard() {
@@ -3555,10 +3802,15 @@ async function copyTextToClipboard() {
 function toggleTextWrap() {
     isTextWordWrapped = !isTextWordWrapped;
     const codeEl = document.getElementById('text-code-content');
+    const textareaEl = document.getElementById('text-code-textarea');
     const btn = document.getElementById('btn-text-wrap');
     if (codeEl) {
         if (isTextWordWrapped) codeEl.classList.add('is-wrapped');
         else codeEl.classList.remove('is-wrapped');
+    }
+    if (textareaEl) {
+        if (isTextWordWrapped) textareaEl.classList.add('is-wrapped');
+        else textareaEl.classList.remove('is-wrapped');
     }
     if (btn) {
         btn.textContent = isTextWordWrapped ? '↔️ Unwrap' : '↩️ Wrap';
@@ -3782,7 +4034,7 @@ function renderExplorerFileList(query = '') {
 
             const name = document.createElement('div');
             name.className = 'explorer-grid-name';
-            name.textContent = file.name;
+            name.innerHTML = escapeHtml(file.name) + (file.isEdited ? ' <span class="explorer-item-badge--edited" title="Modified in this session">Edited</span>' : '');
             name.title = file.path;
             card.appendChild(name);
 
@@ -3917,7 +4169,7 @@ function renderExplorerFileList(query = '') {
 
             const name = document.createElement('span');
             name.className = 'explorer-item-name';
-            name.textContent = file.name;
+            name.innerHTML = escapeHtml(file.name) + (file.isEdited ? ' <span class="explorer-item-badge--edited" title="Modified in this session">Edited</span>' : '');
             name.title = file.path;
             info.appendChild(name);
 
@@ -4141,13 +4393,38 @@ function initExplorerUI() {
     // Batch download
     batchDlBtn?.addEventListener('click', batchDownloadSelected);
 
+    const newFileBtn = document.getElementById('btn-explorer-new-file');
+    newFileBtn?.addEventListener('click', createNewTextFile);
+
     closeBtn?.addEventListener('click', closeVaultExplorer);
     doneBtn?.addEventListener('click', closeVaultExplorer);
 
     dlAllBtn?.addEventListener('click', async () => {
         if (!currentDecryptedFolderName) return;
         const outName = `${currentDecryptedFolderName}_decrypted.zip`;
-        if (currentDecryptedBlob) {
+        const hasEditedFiles = (currentV3Vault && currentV3Vault.editedFiles && currentV3Vault.editedFiles.size > 0);
+
+        if (hasEditedFiles || (currentDecryptedZip && !currentDecryptedBlob)) {
+            dlAllBtn.textContent = '⏳ Packaging edited vault...';
+            try {
+                const outZip = currentDecryptedZip || new JSZip();
+                if (hasEditedFiles) {
+                    for (const item of currentDecryptedFileList) {
+                        const blob = await getDecryptedFileBlob(item.path);
+                        outZip.file(item.path, blob);
+                    }
+                }
+                const outZipBlob = await outZip.generateAsync({ type: 'blob' });
+                triggerDownload(outZipBlob, outName);
+                dlAllBtn.textContent = '✅ Downloaded!';
+                log(`✅ Downloaded edited vault: "${outName}"`, 'success');
+                setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
+            } catch (err) {
+                console.error('[Download All Edited Error]', err);
+                showToast(`Download failed: ${err.message}`, 'error');
+                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+            }
+        } else if (currentDecryptedBlob) {
             dlAllBtn.textContent = '⏳ Downloading...';
             triggerDownload(currentDecryptedBlob, outName);
             log(`✅ Downloaded full vault: "${outName}"`, 'success');
@@ -4529,14 +4806,29 @@ function initExplorerUI() {
     const textCopyBtn = document.getElementById('btn-text-copy');
     const textDlBtn = document.getElementById('btn-text-download');
     const textOpenTabBtn = document.getElementById('btn-text-open-tab');
+    const textEditBtn = document.getElementById('btn-text-edit');
+    const textSaveBtn = document.getElementById('btn-text-save-changes');
+    const textareaEl = document.getElementById('text-code-textarea');
 
     closeTextBtn?.addEventListener('click', closeTextViewer);
     textModal?.addEventListener('click', (e) => {
         if (e.target.id === 'vault-text-modal') closeTextViewer();
     });
 
+    textEditBtn?.addEventListener('click', toggleTextEditMode);
+    textSaveBtn?.addEventListener('click', saveTextFileChanges);
     textWrapBtn?.addEventListener('click', toggleTextWrap);
     textCopyBtn?.addEventListener('click', copyTextToClipboard);
+
+    textareaEl?.addEventListener('input', () => {
+        hasUnsavedChanges = true;
+        syncTextareaLineNumbers();
+    });
+    textareaEl?.addEventListener('scroll', () => {
+        const linesEl = document.getElementById('text-line-numbers');
+        if (linesEl) linesEl.scrollTop = textareaEl.scrollTop;
+    });
+    textareaEl?.addEventListener('keydown', handleTextareaKeydown);
 
     textOpenTabBtn?.addEventListener('click', () => {
         if (currentPdfBlobUrl) {

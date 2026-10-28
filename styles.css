@@ -2140,6 +2140,11 @@ body {
     color: #6d28d9 !important;
 }
 
+.light-theme .text-code-textarea {
+    color: #0f172a !important;
+    background: transparent !important;
+}
+
 .light-theme .explorer-item-name {
     color: #f8fafc !important;
 }
@@ -4391,6 +4396,74 @@ audio.media-player-element {
 .text-code-content.is-wrapped {
     white-space: pre-wrap;
     word-break: break-all;
+}
+
+/* In-Browser Editable Code & Text Area */
+.text-code-textarea {
+    flex: 1;
+    padding: 1rem 1.25rem;
+    margin: 0;
+    color: #e2e8f0;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    tab-size: 4;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    white-space: pre;
+    overflow-x: auto;
+    overflow-y: auto;
+    width: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.text-code-textarea.is-wrapped {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* New Note / Text File Button */
+.explorer-btn-new-file {
+    background: rgba(20, 184, 166, 0.12);
+    border: 1px solid rgba(20, 184, 166, 0.35);
+    color: #2dd4bf;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.explorer-btn-new-file:hover {
+    background: rgba(20, 184, 166, 0.25);
+    border-color: #2dd4bf;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.25);
+}
+
+/* Edited File Badge Pill */
+.explorer-item-badge--edited {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.12rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(234, 179, 8, 0.15);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    margin-left: 0.4rem;
+    vertical-align: middle;
 }
 
 /* Explorer Preview Buttons */
