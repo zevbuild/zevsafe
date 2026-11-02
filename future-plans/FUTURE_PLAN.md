@@ -28,12 +28,14 @@ flowchart TD
         P6 --> P7["Phase 7 (v8.2)<br>Complete Knowledge Hub & Manual"]
     end
 
-    subgraph Upcoming["Upcoming Strategic Roadmap (v8.3 - v9.0)"]
+    subgraph Upcoming["Upcoming Strategic Roadmap (v8.3 - v9.2)"]
         P7 --> P8["Phase 8 (v8.3)<br>Argon2id WASM Memory-Hard KDF"]
         P8 --> P9["Phase 9 (v8.4)<br>Visual Paper-Safe & QR Recovery"]
         P9 --> P10["Phase 10 (v8.5)<br>In-Vault Document Redaction Tool"]
         P10 --> P11["Phase 11 (v8.6)<br>Hardware Crypto Profiler & Benchmark"]
         P11 --> P12["Phase 12 (v9.0)<br>Air-Gapped Multi-Language i18n"]
+        P12 --> P13["Phase 13 (v9.1)<br>True Offline USB Backup & Font Decoupling"]
+        P13 --> P14["Phase 14 (v9.2)<br>Native Password Manager Integration"]
     end
 ```
 
@@ -78,7 +80,7 @@ flowchart TD
 
 ---
 
-## 🔮 Upcoming Engineering Milestones (v8.3 – v9.0)
+## 🔮 Upcoming Engineering Milestones (v8.3 – v9.2)
 
 ### Phase 8: Argon2id WebAssembly Memory-Hard Key Derivation (v8.3.0)
 *Target: Q4 2026 / Early 2027*
@@ -142,6 +144,34 @@ flowchart TD
    - Static lightweight JSON translation dictionaries precached in the Service Worker app shell.
 3. **Dynamic Seamless Language Switcher:**
    - 1-click language switcher in the navbar that re-renders all UI strings, toast notifications, Knowledge Hub guides, and error dialogs instantly without page reload.
+
+---
+
+### Phase 13: True Zero-Network Air-Gap & 1-Click Portable USB Backup Kit (v9.1.0)
+*Target: 2027*
+
+1. **Google Fonts Decoupling & Pure Air-Gapped Typography:**
+   - **Elimination of External Font CDNs:** Remove all runtime dependencies on `fonts.googleapis.com` and `fonts.gstatic.com`.
+   - **Local Self-Contained Assets:** Bundle WOFF2 font files locally in `assets/fonts/` alongside a robust native system font stack fallback (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif`).
+   - **Hardened Air-Gapped CSP:** Tighten Content Security Policy to strictly prohibit external font requests: `font-src 'self' data:; style-src 'self' 'unsafe-inline';`. Prevents network leak attempts on cold-boot offline systems.
+2. **1-Click "💾 Backup ZevSafe to USB (True Offline Portable Bundle)":**
+   - Provide a 1-click export tool in the navbar/settings that packages the complete ZevSafe web application shell, offline Knowledge Hub, and emergency CLI scripts into a standalone portable ZIP or single-file bundle.
+   - Includes cross-platform offline launchers (`launch-windows.bat`, `launch-mac.command`, `launch-linux.sh`) for instant plug-and-play decryption on any offline USB thumb drive, external SSD, or air-gapped machine with zero internet connection.
+
+---
+
+### Phase 14: Native Password Manager Integration (W3C Credential Management API) (v9.2.0)
+*Target: 2027*
+
+1. **Automated Password Manager Prompting:**
+   - Integrate standard W3C [Credential Management API](https://developer.mozilla.org/en-US/docs/Web/API/Credential_Management_API) (`navigator.credentials.create()` and `navigator.credentials.store()`).
+   - When the user locks a vault or generates a secret via the Diceware generator, automatically prompt native password managers (Bitwarden, 1Password, Google Password Manager, Apple Keychain, Proton Pass, KeePassXC) to save the credentials.
+2. **Folder-Aware Identifier Binding:**
+   - Automatically maps the encrypted folder/vault filename as the credential username identifier (`id: "ZevSafe: " + vaultName`) and the generated or entered secret as the password.
+   - Eliminates human memory slip-ups and prevents catastrophic data loss from forgotten passphrases.
+3. **Seamless Biometric & 1-Click Autofill on Unlock:**
+   - On the Unlock Vault tab, implement standard semantic HTML inputs (`autocomplete="username"` and `autocomplete="current-password"`) with `navigator.credentials.get({ password: true })` support.
+   - Enables 1-tap autofill and biometric unlocking (TouchID, FaceID, Windows Hello) via the user's trusted system password manager.
 
 ---
 
