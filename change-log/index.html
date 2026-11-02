@@ -671,7 +671,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v6.9.5</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.0.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -708,6 +708,168 @@
 
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
+
+            <!-- ── VERSION 7.1.0 (WEB-VERSION-51) ── -->
+            <article class="cl-card" data-version="v7">
+                <div class="cl-marker">🎵</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 7.1.0 (WEB-VERSION-51)</h2>
+                            <span class="cl-badge cl-badge--date">November 2, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Audio Mini-Player</span>
+                            <span class="cl-tag">Bit-Rot Verifier</span>
+                            <span class="cl-tag">Cryptographic Health</span>
+                            <span class="cl-tag">Zero-Knowledge Dock</span>
+                            <span class="cl-tag">PWA v49</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Floating Audio Mini-Player Dock:</strong> Audio tracks playing in the Cinema deck can now be docked into a bottom mini-bar (<code>#vault-audio-dock</code>) via <code>📥 Dock</code>. Users can listen to encrypted audio notes and music while navigating other folders, viewing photos, or editing documents. Includes track progress, play/pause, prev/next, and 1-tap expansion.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Vault Cryptographic Health Check &amp; Bit-Rot Verifier:</strong> Introduced an interactive 1-click diagnostic tool (<code>🛡️ Verify Vault</code>) in the explorer header. Inspects the 57-byte header, version 3 framing, PBKDF2-HMAC-SHA512 key stretching, and verifies AES-256-GCM 16-byte authentication tags across all chunks to certify 100% bit-rot-free archival integrity without writing unencrypted files to disk.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Zero-Knowledge Dock Teardown:</strong> Connected the floating audio dock to the universal session lock protocol (<code>lockVaultSession</code>), ensuring all background audio playback and buffers are immediately halted and zeroized upon lock.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Tests</span>
+                            <div class="cl-item-text">
+                                <strong>Expanded Unit Verification:</strong> Expanded the Vault Explorer test suite to 21 automated unit tests (+2 tests validating floating dock controller transitions and cryptographic health diagnostics).
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker Offline Shell v49:</strong> Bumped Service Worker offline cache to <code>v49</code> (<code>APP_VERSION = 'v49'</code>) and synchronized all platform indicators to <code>WEB-VERSION-51</code> / <code>v8.0.0</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 7.0.0 (WEB-VERSION-48) ── -->
+            <article class="cl-card" data-version="v7">
+                <div class="cl-marker">📁</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 7.0.0 (WEB-VERSION-48)</h2>
+                            <span class="cl-badge cl-badge--date">November 2, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">In-Vault Virtual FS</span>
+                            <span class="cl-tag">Add Files</span>
+                            <span class="cl-tag">Delete &amp; Rename</span>
+                            <span class="cl-tag">Markdown Viewer</span>
+                            <span class="cl-tag">PWA v48</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>In-Vault File Addition &amp; Drag-and-Drop:</strong> Added an <code>➕ Add Files</code> button (<code>#btn-explorer-add-files</code>) and drag-and-drop import directly inside the Vault Explorer. External files can be staged immediately into the active folder (<code>explorerCurrentDir</code>), viewable in-browser and bundled into full vault exports or <code>.zev</code> re-encryptions.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>In-Vault File Deletion &amp; Renaming:</strong> File rows and grid cards now feature dedicated <code>✏️ Rename</code> and <code>🗑️ Delete</code> action buttons. Deleted files are tracked in session memory and excluded from re-encryptions, while renamed files remap seamlessly without temporary disk writes.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Client-Side Safe Markdown Viewer:</strong> Integrated a zero-dependency, air-gapped markdown renderer (<code>renderSafeMarkdown</code>) for <code>.md</code> and <code>.markdown</code> files with <code>📖 Markdown</code> / <code>👁️ Raw View</code> toggling, formatted headers, task checkboxes, code blocks, and blockquotes.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Tests</span>
+                            <div class="cl-item-text">
+                                <strong>Comprehensive Unit Verification:</strong> Expanded the Vault Explorer test suite to 19 unit tests (+4 tests verifying directory-scoped addition, deletion exclusion, renaming path remapping, and safe markdown parsing).
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker Offline Shell v48:</strong> Bumped Service Worker offline cache to <code>v48</code> (<code>APP_VERSION = 'v48'</code>) and synchronized all platform indicators to <code>WEB-VERSION-48</code> / <code>v7.0.0</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 6.9.6 (WEB-VERSION-47) ── -->
+            <article class="cl-card" data-version="v6">
+                <div class="cl-marker">⚡</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 6.9.6 (WEB-VERSION-47)</h2>
+                            <span class="cl-badge cl-badge--date">November 2, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Direct Re-Encryption</span>
+                            <span class="cl-tag">Diceware Generator</span>
+                            <span class="cl-tag">Auto-Lock Inactivity</span>
+                            <span class="cl-tag">Future Master Plan</span>
+                            <span class="cl-tag">PWA v47</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>In-Vault Direct Re-Encryption to <code>.zev</code>:</strong> Added a 1-click <code>🔒 Re-Encrypt (.zev)</code> button directly in the Decrypted Vault Explorer header (<code>#btn-explorer-reencrypt</code>). Users can now re-encrypt their modified vault (including edited text documents and newly created notes) straight into an updated <code>.zev</code> STREAM AEAD archive using their active session credentials, bypassing intermediate unencrypted ZIP extraction.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Built-in CSPRNG Password &amp; Diceware Passphrase Generator:</strong> Integrated a 100% client-side, zero-knowledge secret generator accessible via the <code>⚡ Generate</code> button on password fields (<code>#pw-generator-modal</code>). Features a 770+ word EFF-style Diceware engine (4, 5, or 6 words with custom separators) and a customizable alphanumeric key generator with live entropy calculation (~75–90+ bits) and 1-tap form auto-fill.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Auto-Lock Inactivity Timer Protocol:</strong> Introduced an auto-lock timeout selector in the Vault Explorer toolbar (<code>#explorer-autolock-select</code>) with Off, 5 min, 15 min, and 30 min options. Dynamically tracks user interaction events (<code>pointerdown</code>, <code>mousemove</code>, <code>keydown</code>, <code>touchstart</code>, <code>wheel</code>) and automatically executes universal zero-knowledge session teardown (<code>lockVaultSession</code>) upon idle timeout, zeroizing sensitive cryptographic buffers.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">Docs</span>
+                            <div class="cl-item-text">
+                                <strong>Master Architecture &amp; Future Plan:</strong> Established a dedicated roadmap directory <code>future-plans/FUTURE_PLAN.md</code> outlining multi-phase milestones for next-generation ZevSafe virtual filesystem capabilities, smart compression bypass, bit-rot diagnostics, and post-quantum KDF evolution.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Tests</span>
+                            <div class="cl-item-text">
+                                <strong>Expanded Regression Verification:</strong> Expanded the Vault Explorer test suite to 15 automated unit tests (+3 tests covering Diceware uniform word selection and entropy, auto-lock activity tracking, and direct re-encryption file aggregation with relative path preservation).
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker &amp; Offline Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v47</code> (<code>APP_VERSION = 'v47'</code>) and synchronized all platform release tags to <code>WEB-VERSION-47</code> / <code>v6.9.6</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
 
             <!-- ── VERSION 6.9.5 (WEB-VERSION-46) ── -->
             <article class="cl-card" data-version="v6">

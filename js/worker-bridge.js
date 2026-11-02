@@ -1250,9 +1250,16 @@
 
                 await transitionStage('Encrypting stream...');
 
-                // If a writable stream is provided, reserve 57 bytes at the beginning for container header
+                // Steganographic Polyglot Camouflage support (Phase 5 / v8.0)
+                const coverBytes = opts.coverBytes ? (opts.coverBytes instanceof Uint8Array ? opts.coverBytes : new Uint8Array(opts.coverBytes)) : null;
+                const coverOffset = coverBytes ? coverBytes.byteLength : 0;
+
+                // If a writable stream is provided, write cover media and reserve 57 bytes for container header
                 if (writer && typeof writer.write === 'function') {
                     try {
+                        if (coverBytes && coverBytes.byteLength > 0) {
+                            await writer.write(coverBytes);
+                        }
                         const placeholderHeader = new Uint8Array(StreamCrypto.V3_HEADER_SIZE);
                         await writer.write(placeholderHeader);
                     } catch (wErr) {
@@ -1491,27 +1498,27 @@
                     manifestOffset
                 });
 
-                // Write final container header to byte 0 if writer or writable is seekable
+                // Write final container header to byte coverOffset if writer or writable is seekable
                 if (writer) {
                     let seeked = false;
                     if (typeof writer.seek === 'function') {
                         try {
-                            await writer.seek(0);
+                            await writer.seek(coverOffset);
                             seeked = true;
                         } catch (sErr) {
-                            throw new Error(`Failed to seek writer to byte 0 for header update: ${sErr.message || sErr}`);
+                            throw new Error(`Failed to seek writer to byte ${coverOffset} for header update: ${sErr.message || sErr}`);
                         }
                     } else if (opts.writable && typeof opts.writable.seek === 'function') {
                         try {
-                            await opts.writable.seek(0);
+                            await opts.writable.seek(coverOffset);
                             seeked = true;
                         } catch (sErr) {
-                            throw new Error(`Failed to seek writable to byte 0 for header update: ${sErr.message || sErr}`);
+                            throw new Error(`Failed to seek writable to byte ${coverOffset} for header update: ${sErr.message || sErr}`);
                         }
                     }
 
                     if (!seeked) {
-                        throw new Error('Streaming destination is not seekable: unable to write final container header at byte 0');
+                        throw new Error(`Streaming destination is not seekable: unable to write final container header at byte ${coverOffset}`);
                     }
 
                     if (typeof writer.write === 'function') {

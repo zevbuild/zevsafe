@@ -171,7 +171,7 @@
             <div class="navbar-links">
                 <a href="./how-to-use-zevsafe/" class="nav-link-subtle">Documentation</a>
                 <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 96/100)">Security Audit <span style="font-size: 0.72rem; opacity: 0.9; padding: 2px 6px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); color: #34d399; margin-left: 2px; font-weight: 700;">96/100</span></a>
-                <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-46)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v6.9.5</span></a>
+                <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-49)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v8.0.0</span></a>
                 <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="nav-link-subtle">
                     GitHub <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
                 </a>
@@ -279,7 +279,10 @@
                     </div>
 
                     <div class="field-group">
-                        <label class="field-label" for="encrypt-password">Password or PIN</label>
+                        <div class="field-label-row">
+                            <label class="field-label" for="encrypt-password">Password or PIN</label>
+                            <button class="btn-pw-generate" id="btn-generate-pw" type="button" title="Generate strong random password or passphrase">⚡ Generate</button>
+                        </div>
                         <div class="field-wrap">
                             <input class="field-input" type="password" id="encrypt-password"
                                    placeholder="Enter password or PIN (min. 4 chars)" autocomplete="new-password" spellcheck="false"
@@ -332,6 +335,51 @@
                         <span class="v2-keyfile-badge" id="v2-keyfile-badge-encrypt" style="display:none;"></span>
                     </div>
 
+                    <!-- Key Derivation Hardening (PBKDF2 Iterations) -->
+                    <div class="field-group" style="margin-top: 0.6rem;">
+                        <label class="field-label" for="encrypt-kdf-select">Key Derivation Hardening</label>
+                        <div class="field-wrap">
+                            <select class="field-input" id="encrypt-kdf-select" style="cursor: pointer; background: var(--bg-card); color: var(--text);">
+                                <option value="600000" selected>600,000 Rounds (PBKDF2-SHA512 - OWASP Standard)</option>
+                                <option value="1200000">1,200,000 Rounds (Hardened Anti-Brute-Force)</option>
+                                <option value="2400000">2,400,000 Rounds (Ultra Paranoid Hardware-Hard)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Steganographic Forensic Camouflage (Polyglot Mode) -->
+                    <div class="v2-panel" id="polyglot-panel" style="margin-top: 0.6rem; border: 1px dashed rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.05); border-radius: 8px; padding: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 0.88rem; color: var(--text);">🎭 Forensic Media Camouflage (Polyglot)</div>
+                                <div style="font-size: 0.74rem; color: var(--text-muted);">Embeds vault into photo/video so it opens as an authentic image in photo viewers</div>
+                            </div>
+                            <label class="toggle-switch" aria-label="Toggle forensic camouflage mode">
+                                <input type="checkbox" id="polyglot-mode-toggle" role="switch">
+                                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                            </label>
+                        </div>
+                        <div id="polyglot-options" style="display: none; margin-top: 0.75rem; flex-direction: column; gap: 0.5rem;">
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <label class="btn-browse" style="padding: 0.45rem 0.75rem; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; background: var(--bg-card-hover, rgba(255,255,255,0.06)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px;">
+                                    <span>🖼️ Pick Cover Photo</span>
+                                    <input type="file" id="polyglot-cover-input" accept="image/jpeg,image/png,image/webp,video/mp4,audio/mpeg" style="display: none;">
+                                </label>
+                                <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-generate-cover" style="padding: 0.45rem 0.75rem; font-size: 0.8rem;">
+                                    🎨 Generate Minimal Cover
+                                </button>
+                            </div>
+                            <div id="cover-preview-widget" style="display: none; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.25); border-radius: 6px; padding: 0.4rem 0.6rem;">
+                                <img id="cover-preview-thumb" alt="Cover thumbnail" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; display: none;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div id="cover-preview-name" style="font-size: 0.78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">cover.jpg</div>
+                                    <div id="cover-preview-size" style="font-size: 0.72rem; color: var(--text-muted);">0 KB</div>
+                                </div>
+                                <button type="button" id="btn-clear-cover" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="alert-box alert-box--danger">
                         <span class="alert-icon">⚠️</span>
                         <p>If you lose the password or required keyfile, files may be permanently inaccessible.</p>
@@ -365,8 +413,8 @@
                             <p class="drop-secondary">or</p>
                             <button type="button" class="btn-browse btn-browse--teal" id="btn-browse-decrypt">📦 Select .zev File</button>
                             <!-- Hidden File Inputs -->
-                            <input type="file" id="decrypt-file-input-dz" accept=".zev" style="display:none;" autocomplete="off">
-                            <input type="file" id="decrypt-file-input" accept=".zev" style="display:none;" autocomplete="off">
+                            <input type="file" id="decrypt-file-input-dz" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" style="display:none;" autocomplete="off">
+                            <input type="file" id="decrypt-file-input" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" style="display:none;" autocomplete="off">
                         </div>
                         <!-- Decrypt file summary widget -->
                         <div class="selected-files-widget selected-files-widget--teal" id="decrypt-selected-widget" style="display: none;">
@@ -402,6 +450,7 @@
                             <button class="btn-keyfile-clear" id="v2-keyfile-clear-decrypt" title="Remove keyfile" style="display:none;">✕</button>
                         </div>
                         <span class="v2-keyfile-badge v2-keyfile-badge--teal" id="v2-keyfile-badge-decrypt" style="display:none;"></span>
+                        <span class="v2-keyfile-badge v2-keyfile-badge--teal" id="decrypt-polyglot-badge" style="display:none; margin-top: 0.4rem; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">🎭 Camouflaged Media Vault Detected</span>
                     </div>
 
                     <div class="alert-box">
@@ -412,6 +461,10 @@
                     <button class="btn btn--teal" id="btn-decrypt">
                         <span class="btn-shimmer"></span>
                         <span class="btn-content">Decrypt &amp; Download</span>
+                    </button>
+                    <button type="button" class="btn btn--outline-salvage" id="btn-decrypt-salvage" style="margin-top: 0.6rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.55rem; background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.4); color: #f59e0b; border-radius: var(--radius-sm, 8px); cursor: pointer; transition: all 0.2s ease;">
+                        <span>🔧</span>
+                        <span>Salvage Corrupted / Bit-Rot Vault (Rescue Mode)</span>
                     </button>
                 </div>
             </section>
@@ -691,7 +744,7 @@
                 <span>·</span>
                 <a href="#install" id="footer-install-link">Install App (PWA)</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v6.9.5 / WEB-VERSION-46)</a>
+                <a href="./change-log/">Changelog (v8.0.0 / WEB-VERSION-49)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -714,6 +767,10 @@
                     <span class="explorer-meta" id="explorer-modal-meta">0 files · 0 KB</span>
                 </div>
                 <div class="explorer-header-actions">
+                    <button class="explorer-btn-verify" id="btn-explorer-verify" title="Verify vault cryptographic integrity and bit-rot across all chunks">🛡️ Verify Vault</button>
+                    <button class="explorer-btn-reencrypt" id="btn-explorer-reencrypt" title="Re-encrypt vault directly into a .zev file with active session key">
+                        🔒 Re-Encrypt (.zev)
+                    </button>
                     <button class="explorer-btn-download-all" id="btn-explorer-download-all" title="Download all files as a ZIP archive">
                         ⬇️ Download All (ZIP)
                     </button>
@@ -747,6 +804,23 @@
                         <button class="explorer-view-btn explorer-view-btn--active" id="btn-view-list" title="List View" aria-pressed="true">☰</button>
                         <button class="explorer-view-btn" id="btn-view-grid" title="Grid View" aria-pressed="false">⊞</button>
                     </div>
+
+                    <!-- Create New Text File in Active Directory -->
+                    <!-- Auto-Lock Timer selector -->
+                    <div class="explorer-autolock-wrap" title="Auto-lock vault session after inactivity">
+                        <span class="explorer-autolock-label">⏱️ Auto-lock:</span>
+                        <select id="explorer-autolock-select" class="explorer-autolock-select" aria-label="Auto-lock timeout">
+                            <option value="0">Off</option>
+                            <option value="5" selected>5 min</option>
+                            <option value="15">15 min</option>
+                            <option value="30">30 min</option>
+                        </select>
+                    </div>
+
+                    <!-- Create New Text File in Active Directory -->
+                    <!-- Add External Files into Active Directory -->
+                    <button class="explorer-btn-add-files" id="btn-explorer-add-files" title="Import files from device into current folder">➕ Add Files</button>
+                    <input type="file" id="explorer-add-files-input" multiple style="display:none;" autocomplete="off">
 
                     <!-- Create New Text File in Active Directory -->
                     <button class="explorer-btn-new-file" id="btn-explorer-new-file" title="Create new text file in current folder">➕ New Note</button>
@@ -806,6 +880,7 @@
                     <span class="media-track-counter" id="media-modal-counter">1 of 1</span>
                 </div>
                 <div class="media-modal-actions">
+                    <button class="media-btn-action" id="btn-media-dock" title="Minimize player to bottom dock" style="display:none;background:rgba(45,212,191,0.18);color:#2dd4bf;border-color:rgba(45,212,191,0.4);">📥 Dock</button>
                     <button class="media-btn-action" id="btn-media-open-tab" title="Open and play in new browser tab">↗️ New Tab</button>
                     <button class="media-btn-action" id="btn-media-download" title="Save file to device">⬇️ Save</button>
                     <button class="explorer-btn-close" id="btn-close-media-modal" title="Close Player" aria-label="Close Player">✕</button>
@@ -918,6 +993,7 @@
                 </div>
                 <div class="media-modal-actions">
                     <button class="media-btn-action" id="btn-text-open-tab" title="Open document in new browser tab" style="display:none;">↗️ New Tab</button>
+                    <button class="media-btn-action" id="btn-text-markdown" title="Toggle Markdown rendered preview" style="display:none;background:rgba(167,139,250,0.18);color:#c4b5fd;border-color:rgba(167,139,250,0.4);">📖 Markdown</button>
                     <button class="media-btn-action" id="btn-text-edit" title="Edit document in browser">✏️ Edit</button>
                     <button class="media-btn-action" id="btn-text-save-changes" title="Save changes to decrypted session" style="display:none;background:rgba(20,184,166,0.22);color:#2dd4bf;border-color:rgba(20,184,166,0.5);">💾 Save</button>
                     <button class="media-btn-action" id="btn-text-wrap" title="Toggle word wrap">↩️ Wrap</button>
@@ -938,6 +1014,7 @@
                     <textarea class="text-code-content text-code-textarea" id="text-code-textarea" style="display:none;" spellcheck="false" placeholder="Type or edit document text here..."></textarea>
                 </div>
                 <iframe class="pdf-preview-frame" id="pdf-preview-frame" style="display: none;" title="PDF Document Preview"></iframe>
+                <div class="markdown-preview-body" id="markdown-preview-body" style="display: none;" tabindex="0"></div>
             </div>
         </div>
     </div>
@@ -1028,6 +1105,191 @@
         </div>
     </div>
 
+<!-- Vault Cryptographic Health & Bit-Rot Verifier Modal -->
+    <div class="pw-modal-overlay" id="vault-health-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="health-modal-title">
+        <div class="pw-modal" style="max-width: 540px;">
+            <div class="pw-modal-header" style="justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.4rem;">🛡️</span>
+                    <h3 id="health-modal-title" style="margin: 0; font-size: 1.15rem;">Vault Cryptographic Health Check</h3>
+                </div>
+                <button type="button" class="media-btn-icon" id="btn-close-health-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+            </div>
+            <div class="pw-modal-body" style="gap: 1rem;">
+                <div class="health-scorecard">
+                    <div class="health-header-status">
+                        <span class="health-badge-pass" id="health-overall-status">PASSED · 100% BIT-ROT FREE</span>
+                        <span class="health-header-meta" id="health-overall-meta">All chunks and framing structures verified authentic</span>
+                    </div>
+                    <div class="health-checks-list" id="health-checks-list">
+                        <!-- Populated dynamically by verifyVaultIntegrity() -->
+                    </div>
+                    <div class="health-deep-scan-box" style="margin-top: 0.75rem; padding: 0.75rem; background: var(--bg-card-hover, rgba(255,255,255,0.03)); border: 1px solid var(--border-color, rgba(255,255,255,0.08)); border-radius: var(--radius-sm, 8px);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 0.88rem;">Deep Chunk AEAD Verification</div>
+                                <div style="font-size: 0.76rem; color: var(--text-muted);">Decrypts &amp; verifies 16-byte auth tags across all chunks with zero RAM buffering</div>
+                            </div>
+                            <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-health-deep-scan" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; white-space: nowrap;">⚡ Deep Scan</button>
+                        </div>
+                        <div id="health-scan-progress-wrap" style="display: none; margin-top: 0.6rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                                <span id="health-scan-label">Scanning chunks...</span>
+                                <span id="health-scan-pct">0%</span>
+                            </div>
+                            <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                                <div id="health-scan-bar" style="width: 0%; height: 100%; background: #00d2b4; transition: width 0.15s ease;"></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-salvage-action" id="btn-health-salvage" style="display: none; margin-top: 0.75rem; width: 100%; padding: 0.5rem; background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #f59e0b; border-radius: 6px; font-size: 0.84rem; font-weight: 600; cursor: pointer;">
+                            🔧 Launch Fault-Tolerant Salvage Mode
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="pw-modal-footer">
+                <button type="button" class="pw-modal-btn pw-modal-btn--primary" id="btn-dismiss-health-modal" style="width: 100%;">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fault-Tolerant Vault Salvage & Recovery Modal -->
+    <div class="pw-modal-overlay" id="vault-salvage-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="salvage-modal-title">
+        <div class="pw-modal" style="max-width: 580px;">
+            <div class="pw-modal-header" style="justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.4rem;">🔧</span>
+                    <div>
+                        <h3 id="salvage-modal-title" style="margin: 0; font-size: 1.15rem;">Fault-Tolerant Vault Salvage</h3>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Rescues intact files from bit-rotted or damaged archives</div>
+                    </div>
+                </div>
+                <button type="button" class="media-btn-icon" id="btn-close-salvage-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+            </div>
+            <div class="pw-modal-body" style="gap: 1rem;">
+                <div class="salvage-stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                    <div style="background: rgba(0, 210, 180, 0.08); border: 1px solid rgba(0, 210, 180, 0.25); border-radius: 8px; padding: 0.6rem; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Rescued</div>
+                        <div id="salvage-count-rescued" style="font-size: 1.35rem; font-weight: 700; color: #00d2b4;">0</div>
+                    </div>
+                    <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 0.6rem; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Quarantined</div>
+                        <div id="salvage-count-corrupted" style="font-size: 1.35rem; font-weight: 700; color: #ef4444;">0</div>
+                    </div>
+                    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 0.6rem; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Health Rate</div>
+                        <div id="salvage-rate" style="font-size: 1.35rem; font-weight: 700; color: #f59e0b;">—</div>
+                    </div>
+                </div>
+
+                <div id="salvage-progress-container">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                        <span id="salvage-progress-label">Preparing recovery pipeline...</span>
+                        <span id="salvage-progress-pct">0%</span>
+                    </div>
+                    <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                        <div id="salvage-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00d2b4, #3b82f6); transition: width 0.15s ease;"></div>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Recovery Activity Log:</div>
+                <div id="salvage-log-list" style="max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color, rgba(255,255,255,0.08)); border-radius: 6px; padding: 0.5rem; font-family: monospace; font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.3rem;">
+                    <!-- Activity entries will appear here -->
+                </div>
+
+                <div id="salvage-actions-panel" style="display: none; flex-direction: column; gap: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="pw-modal-btn pw-modal-btn--primary" id="btn-salvage-download-zip" style="flex: 1;">
+                            📦 Download Rescued ZIP
+                        </button>
+                        <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-salvage-download-report" style="flex: 1;">
+                            📄 Download Report (.txt)
+                        </button>
+                    </div>
+                    <button type="button" class="pw-modal-btn" id="btn-salvage-open-explorer" style="width: 100%; background: rgba(0, 210, 180, 0.15); border: 1px solid #00d2b4; color: #00d2b4;">
+                        📂 Open Rescued Files in Vault Explorer
+                    </button>
+                </div>
+            </div>
+            <div class="pw-modal-footer">
+                <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-dismiss-salvage-modal" style="width: 100%;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dedicated Password / Passphrase Generator Modal -->
+    <div class="pw-modal-overlay" id="pw-generator-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="pw-gen-modal-title">
+        <div class="pw-modal" style="max-width: 480px;">
+            <div class="pw-modal-header" style="justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.35rem;">⚡</span>
+                    <h3 id="pw-gen-modal-title" style="margin: 0; font-size: 1.15rem;">Password &amp; Passphrase Generator</h3>
+                </div>
+                <button type="button" class="media-btn-icon" id="btn-close-gen-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+            </div>
+            <div class="pw-modal-body" style="gap: 1rem;">
+                <div class="gen-type-tabs">
+                    <button type="button" class="gen-tab gen-tab--active" id="gen-tab-diceware">Diceware Passphrase</button>
+                    <button type="button" class="gen-tab" id="gen-tab-random">Random Key</button>
+                </div>
+
+                <!-- Preview field with live entropy badge -->
+                <div class="pw-display-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label for="gen-output-display" style="font-size: 0.8rem; color: var(--text-muted);">Generated Secret</label>
+                        <span id="gen-entropy-badge" style="font-size: 0.75rem; font-weight: 700; color: #34d399; background: rgba(52, 211, 153, 0.12); padding: 2px 8px; border-radius: 12px;">~77 bits entropy</span>
+                    </div>
+                    <div class="pw-display-wrapper">
+                        <input type="text" id="gen-output-display" readonly autocomplete="off" spellcheck="false" style="font-family: monospace; font-size: 0.95rem; font-weight: 600;">
+                        <button type="button" id="btn-gen-refresh" title="Generate another secret" style="padding: 0 10px;">🔄</button>
+                        <button type="button" id="btn-gen-copy" title="Copy to clipboard">📋 Copy</button>
+                    </div>
+                </div>
+
+                <!-- Diceware Options -->
+                <div id="gen-diceware-options" class="gen-options-panel">
+                    <div class="gen-control-row">
+                        <label>Word Count:</label>
+                        <div class="gen-pill-group">
+                            <button type="button" class="gen-pill" data-words="4">4 Words</button>
+                            <button type="button" class="gen-pill gen-pill--active" data-words="5">5 Words (Strong)</button>
+                            <button type="button" class="gen-pill" data-words="6">6 Words (Military)</button>
+                        </div>
+                    </div>
+                    <div class="gen-control-row">
+                        <label for="gen-separator">Separator:</label>
+                        <select id="gen-separator" class="field-select" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: var(--radius-sm);">
+                            <option value="-" selected>Hyphen (-)</option>
+                            <option value="_">Underscore (_)</option>
+                            <option value=".">Period (.)</option>
+                            <option value=" ">Space ( )</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Random Key Options -->
+                <div id="gen-random-options" class="gen-options-panel" style="display: none;">
+                    <div class="gen-control-row">
+                        <label for="gen-length-slider">Length: <span id="gen-length-val">20</span> chars</label>
+                        <input type="range" id="gen-length-slider" min="12" max="36" value="20" style="flex:1; cursor: pointer;">
+                    </div>
+                    <div class="gen-control-row" style="gap: 12px; font-size: 0.85rem;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" id="gen-opt-symbols" checked> Symbols (!@#$)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" id="gen-opt-numbers" checked> Numbers (0-9)
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="pw-modal-footer">
+                <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-cancel-gen-modal">Cancel</button>
+                <button type="button" class="pw-modal-btn pw-modal-btn--primary" id="btn-apply-gen-password">✨ Use This Password</button>
+            </div>
+        </div>
+    </div>
+
     <script src="jszip.min.js"></script>
     <script src="js/stream-crypto.js"></script>
     <script src="js/stream-packer.js"></script>
@@ -1036,6 +1298,28 @@
     <script src="js/stream-saver.js"></script>
     <script src="js/worker-bridge.js"></script>
     <script src="app.js"></script>
+
+    <!-- Floating Docked Audio Mini-Player -->
+    <div class="audio-dock" id="vault-audio-dock" style="display: none;" role="region" aria-label="Audio player dock">
+        <div class="audio-dock-inner">
+            <div class="audio-dock-track">
+                <span class="audio-dock-icon">🎵</span>
+                <div class="audio-dock-info">
+                    <span class="audio-dock-title" id="audio-dock-title">Track Name</span>
+                    <span class="audio-dock-time" id="audio-dock-time">00:00 / 00:00</span>
+                </div>
+            </div>
+            <div class="audio-dock-controls">
+                <button class="audio-dock-btn" id="btn-dock-prev" title="Previous Track">⏮️</button>
+                <button class="audio-dock-btn audio-dock-btn--play" id="btn-dock-play" title="Play/Pause">▶️</button>
+                <button class="audio-dock-btn" id="btn-dock-next" title="Next Track">⏭️</button>
+            </div>
+            <div class="audio-dock-actions">
+                <button class="audio-dock-btn" id="btn-dock-expand" title="Expand to Full Player">↗️</button>
+                <button class="audio-dock-btn audio-dock-btn--close" id="btn-dock-close" title="Stop &amp; Close Player">✕</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ── PWA: Install Banner + Service Worker Registration ── -->
     <div class="pwa-install-banner" id="pwa-install-banner" style="display:none;" role="region" aria-live="polite" aria-label="Install ZevSafe app">

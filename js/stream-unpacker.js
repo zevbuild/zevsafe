@@ -1281,6 +1281,348 @@
         }
     }
 
+    /**
+     * Verifies cryptographic authenticity and bit-rot status across all chunks
+     * in a v3 vault without holding decrypted payloads in memory.
+     *
+     * @param {*} vaultSource - File, Blob, or Uint8Array
+     * @param {string|CryptoKey} passwordOrKey - Vault password or derived Master CryptoKey
+     * @param {Object} [options={}] - Options (iterations, keyfileBytes, onProgress)
+     * @returns {Promise<Object>} Scan results { totalChunks, healthyChunks, damagedChunks, isIntact, header }
+     */
+    async function verifyAllVaultChunks(vaultSource, passwordOrKey, options = {}) {
+        const opts = options || {};
+        const StreamCrypto = getStreamCrypto();
+
+        const headerBytes = await readRange(vaultSource, 0, V3_HEADER_SIZE);
+        const header = await parseVaultHeader(headerBytes, opts);
+
+        if (header.version !== 3) {
+            throw createOperationError(`Deep chunk verification is only supported for v3 streaming vaults (found v${header.version})`);
+        }
+
+        let masterKey;
+        if (passwordOrKey && typeof passwordOrKey === 'object' && passwordOrKey.algorithm) {
+            masterKey = passwordOrKey;
+        } else if (typeof passwordOrKey === 'string') {
+            masterKey = await StreamCrypto.deriveMasterKey(
+                passwordOrKey,
+                header.salt,
+                opts.iterations || 600000,
+                opts.keyfileBytes
+            );
+        } else {
+            throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
+        }
+
+        const chunkSize = header.chunkSize || DEFAULT_CHUNK_SIZE;
+        const totalFramedChunkSize = chunkSize + CHUNK_FRAME_OVERHEAD;
+        const manifestOffset = header.manifestOffset;
+        const lastChunkIndex = Number((manifestOffset - 58n) / BigInt(totalFramedChunkSize));
+        const totalChunks = Math.max(1, lastChunkIndex + 1);
+
+        const healthyChunks = [];
+        const damagedChunks = [];
+
+        for (let i = 0; i <= lastChunkIndex; i++) {
+            const isLast = (i === lastChunkIndex);
+            const chunkVaultStart = V3_HEADER_SIZE + i * totalFramedChunkSize;
+            const chunkVaultEnd = isLast ? Number(manifestOffset) : (chunkVaultStart + totalFramedChunkSize);
+
+            try {
+                const chunkFramedBytes = await readRange(vaultSource, chunkVaultStart, chunkVaultEnd);
+                const plainChunk = await StreamCrypto.decryptChunk(
+                    masterKey,
+                    chunkFramedBytes,
+                    header.baseIVPrefix,
+                    i,
+                    isLast,
+                    header.salt
+                );
+                // Zeroize immediately to preserve memory bound (<150 MB)
+                if (plainChunk && typeof plainChunk.fill === 'function') {
+                    plainChunk.fill(0);
+                }
+                healthyChunks.push(i);
+            } catch (err) {
+                damagedChunks.push({
+                    chunkIndex: i,
+                    startOffset: chunkVaultStart,
+                    endOffset: chunkVaultEnd,
+                    error: err.message || 'AES-GCM authentication tag mismatch (bit-rot detected)'
+                });
+            }
+
+            if (typeof opts.onProgress === 'function') {
+                opts.onProgress({
+                    current: i + 1,
+                    total: totalChunks,
+                    percent: Math.round(((i + 1) / totalChunks) * 100),
+                    healthyCount: healthyChunks.length,
+                    damagedCount: damagedChunks.length
+                });
+            }
+        }
+
+        return {
+            totalChunks,
+            healthyChunks,
+            damagedChunks,
+            isIntact: damagedChunks.length === 0,
+            healthScore: Math.round((healthyChunks.length / totalChunks) * 100),
+            header
+        };
+    }
+
+    /**
+     * Fault-tolerant vault salvage & recovery engine:
+     * Rescues all undamaged files from a corrupted or bit-rotted vault archive.
+     *
+     * @param {*} vaultSource - File, Blob, or Uint8Array
+     * @param {string|CryptoKey} passwordOrKey - Vault password or derived Master CryptoKey
+     * @param {Object} [options={}] - Options (iterations, keyfileBytes, onProgress, vaultName)
+     * @returns {Promise<Object>} Recovery result { rescuedFiles, corruptedFiles, reportText, totalFiles, rescueRate }
+     */
+    async function salvageVault(vaultSource, passwordOrKey, options = {}) {
+        const opts = options || {};
+        const StreamCrypto = getStreamCrypto();
+
+        const headerBytes = await readRange(vaultSource, 0, V3_HEADER_SIZE);
+        const header = await parseVaultHeader(headerBytes, opts);
+
+        let masterKey;
+        if (passwordOrKey && typeof passwordOrKey === 'object' && passwordOrKey.algorithm) {
+            masterKey = passwordOrKey;
+        } else if (typeof passwordOrKey === 'string') {
+            masterKey = await StreamCrypto.deriveMasterKey(
+                passwordOrKey,
+                header.salt,
+                opts.iterations || 600000,
+                opts.keyfileBytes
+            );
+        } else {
+            throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
+        }
+
+        // Try reading manifest
+        let manifest = null;
+        try {
+            manifest = await readVaultManifest(vaultSource, masterKey, opts.keyfileBytes);
+        } catch (err) {
+            console.warn('[StreamUnpacker.salvageVault] Manifest reading failed:', err);
+        }
+
+        const rescuedFiles = [];
+        const corruptedFiles = [];
+        const chunkSize = header.chunkSize || DEFAULT_CHUNK_SIZE;
+        const chunkCache = createBoundedChunkCache(4);
+
+        if (manifest && Array.isArray(manifest.files) && manifest.files.length > 0) {
+            const files = manifest.files;
+            for (let i = 0; i < files.length; i++) {
+                const entry = files[i];
+                if (typeof opts.onProgress === 'function') {
+                    opts.onProgress({
+                        file: entry.path,
+                        current: i + 1,
+                        total: files.length,
+                        percent: Math.round(((i + 1) / files.length) * 100),
+                        rescuedCount: rescuedFiles.length,
+                        corruptedCount: corruptedFiles.length
+                    });
+                }
+
+                try {
+                    const data = await extractSingleFile(vaultSource, masterKey, entry, {
+                        ...opts,
+                        header,
+                        manifest,
+                        chunkCache
+                    });
+                    rescuedFiles.push({
+                        entry,
+                        path: entry.path,
+                        size: entry.size,
+                        data,
+                        crc32: entry.crc32
+                    });
+                } catch (err) {
+                    corruptedFiles.push({
+                        entry,
+                        path: entry.path,
+                        size: entry.size,
+                        error: err.message || 'Chunk decryption or CRC-32 integrity failure'
+                    });
+                }
+            }
+        } else {
+            // Manifest trailer was corrupted: sweep intact chunks
+            const manifestOffset = header.manifestOffset;
+            const totalFramedChunkSize = chunkSize + CHUNK_FRAME_OVERHEAD;
+            const lastChunkIndex = Number((manifestOffset - 58n) / BigInt(totalFramedChunkSize));
+
+            const intactChunks = [];
+            for (let i = 0; i <= lastChunkIndex; i++) {
+                const isLast = (i === lastChunkIndex);
+                const chunkVaultStart = V3_HEADER_SIZE + i * totalFramedChunkSize;
+                const chunkVaultEnd = isLast ? Number(manifestOffset) : (chunkVaultStart + totalFramedChunkSize);
+                try {
+                    const chunkFramedBytes = await readRange(vaultSource, chunkVaultStart, chunkVaultEnd);
+                    const plainChunk = await StreamCrypto.decryptChunk(
+                        masterKey,
+                        chunkFramedBytes,
+                        header.baseIVPrefix,
+                        i,
+                        isLast,
+                        header.salt
+                    );
+                    intactChunks.push({ index: i, data: plainChunk });
+                } catch (err) {
+                    corruptedFiles.push({
+                        path: `[Damaged Chunk #${i}]`,
+                        size: chunkSize,
+                        error: err.message || 'AES-GCM authentication failure'
+                    });
+                }
+            }
+
+            if (intactChunks.length > 0) {
+                let totalLen = 0;
+                for (const c of intactChunks) totalLen += c.data.byteLength;
+                const streamBytes = new Uint8Array(totalLen);
+                let off = 0;
+                for (const c of intactChunks) {
+                    streamBytes.set(c.data, off);
+                    off += c.data.byteLength;
+                }
+                rescuedFiles.push({
+                    path: 'salvaged_stream_payload.bin',
+                    size: streamBytes.byteLength,
+                    data: streamBytes
+                });
+            }
+        }
+
+        chunkCache.clear();
+
+        const totalEntries = rescuedFiles.length + corruptedFiles.length;
+        const rescueRate = totalEntries > 0 ? ((rescuedFiles.length / totalEntries) * 100).toFixed(1) : '0.0';
+
+        const reportLines = [
+            '================================================================================',
+            '           ZevSafe Fault-Tolerant Vault Salvage & Recovery Report               ',
+            '================================================================================',
+            `Date:                  ${new Date().toISOString()}`,
+            `Vault File:            ${opts.vaultName || 'vault.zev'}`,
+            `Container Version:     v${header.version} (ZV3\\0 Streaming AEAD)`,
+            `Total Catalog Entries: ${totalEntries}`,
+            `Successfully Rescued:  ${rescuedFiles.length} (${rescueRate}%)`,
+            `Damaged / Quarantined: ${corruptedFiles.length} (${(100 - parseFloat(rescueRate)).toFixed(1)}%)`,
+            '--------------------------------------------------------------------------------',
+            'STATUS BREAKDOWN BY FILE:',
+            '--------------------------------------------------------------------------------'
+        ];
+
+        for (const f of rescuedFiles) {
+            reportLines.push(`  [RESCUED]   ${f.path} (${(f.size || 0).toLocaleString()} bytes)`);
+        }
+        for (const f of corruptedFiles) {
+            reportLines.push(`  [QUARANTINE] ${f.path} (${(f.size || 0).toLocaleString()} bytes) - ${f.error}`);
+        }
+
+        reportLines.push('================================================================================');
+        reportLines.push('Zero-Knowledge Assurance: All recovery operations were executed 100% locally in');
+        reportLines.push('client-side volatile memory. Zero plaintext or telemetry was transmitted.');
+        reportLines.push('================================================================================');
+
+        const reportText = reportLines.join('\r\n');
+
+        return {
+            rescuedFiles,
+            corruptedFiles,
+            reportText,
+            totalFiles: totalEntries,
+            rescueRate
+        };
+    }
+
+    /**
+     * Scans an arbitrary buffer, File, or Blob to locate the byte offset
+     * of an embedded ZevSafe v3 vault (ZV3\0).
+     * Enables Steganographic Polyglot Media Camouflage:
+     * Valid images/videos/audio with an appended encrypted vault can be unlocked seamlessly!
+     *
+     * @param {Uint8Array|ArrayBuffer|Blob|File} bufferOrSource
+     * @returns {Promise<number>} Byte offset of vault container (0 if standard vault, >0 if polyglot, -1 if none)
+     */
+    async function findPolyglotVaultOffset(bufferOrSource) {
+        if (!bufferOrSource) return -1;
+
+        // Fast path for memory buffers
+        if (bufferOrSource instanceof Uint8Array || bufferOrSource instanceof ArrayBuffer || ArrayBuffer.isView(bufferOrSource)) {
+            const u8 = bufferOrSource instanceof Uint8Array
+                ? bufferOrSource
+                : (bufferOrSource instanceof ArrayBuffer ? new Uint8Array(bufferOrSource) : new Uint8Array(bufferOrSource.buffer, bufferOrSource.byteOffset, bufferOrSource.byteLength));
+
+            if (u8.byteLength < MIN_VAULT_SIZE) return -1;
+
+            // Direct check at offset 0
+            if (u8[0] === V3_MAGIC[0] && u8[1] === V3_MAGIC[1] && u8[2] === V3_MAGIC[2] && u8[3] === V3_MAGIC[3]) {
+                return 0;
+            }
+            if (u8[0] === V2_MAGIC[0] && u8[1] === V2_MAGIC[1] && u8[2] === V2_MAGIC[2] && u8[3] === V2_MAGIC[3]) {
+                return 0;
+            }
+
+            // Scan for V3_MAGIC
+            const limit = u8.byteLength - V3_HEADER_SIZE;
+            for (let i = 1; i <= limit; i++) {
+                if (u8[i] === 0x5A && u8[i+1] === 0x56 && u8[i+2] === 0x33 && u8[i+3] === 0x00 && u8[i+4] === 0x03) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // Streaming/Chunked search for File / Blob sources
+        const totalSize = getSourceTotalSize(bufferOrSource);
+        if (totalSize !== null && totalSize < MIN_VAULT_SIZE) return -1;
+
+        // Check offset 0 first
+        const headerCheck = await readRange(bufferOrSource, 0, Math.min(57, totalSize || 57));
+        if (headerCheck.byteLength >= 4) {
+            if (headerCheck[0] === V3_MAGIC[0] && headerCheck[1] === V3_MAGIC[1] && headerCheck[2] === V3_MAGIC[2] && headerCheck[3] === V3_MAGIC[3]) {
+                return 0;
+            }
+            if (headerCheck[0] === V2_MAGIC[0] && headerCheck[1] === V2_MAGIC[1] && headerCheck[2] === V2_MAGIC[2] && headerCheck[3] === V2_MAGIC[3]) {
+                return 0;
+            }
+        }
+
+        // Sliding window scan: scan in 256 KB blocks with 4-byte overlap
+        const CHUNK_SCAN_SIZE = 256 * 1024;
+        const scanLimit = totalSize !== null ? totalSize : 100 * 1024 * 1024;
+        let currentPos = 0;
+
+        while (currentPos < scanLimit) {
+            const readEnd = Math.min(scanLimit, currentPos + CHUNK_SCAN_SIZE + 4);
+            const block = await readRange(bufferOrSource, currentPos, readEnd);
+            if (block.byteLength < 5) break;
+
+            const blockLimit = block.byteLength - 5;
+            for (let j = 0; j <= blockLimit; j++) {
+                if (block[j] === 0x5A && block[j+1] === 0x56 && block[j+2] === 0x33 && block[j+3] === 0x00 && block[j+4] === 0x03) {
+                    return currentPos + j;
+                }
+            }
+
+            currentPos += CHUNK_SCAN_SIZE;
+            if (readEnd >= scanLimit) break;
+        }
+
+        return -1;
+    }
+
     // =========================================================================
     // 5. FULL STREAMING VAULT DECRYPTION (createStreamingVaultDecryptor)
     // =========================================================================
@@ -1578,6 +1920,13 @@
         createBoundedChunkCache,
         extractSingleFile,
         extractMultipleFiles,
+
+        // Vault Health & Fault-Tolerant Partial Recovery
+        verifyAllVaultChunks,
+        salvageVault,
+
+        // Steganographic Forensic Camouflage (Polyglot Offset Locator)
+        findPolyglotVaultOffset,
 
         // Full Streaming Decryption
         createStreamingVaultDecryptor,
