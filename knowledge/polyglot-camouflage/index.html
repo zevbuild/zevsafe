@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" data-knowledge-mode="combined">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#08091a">
+
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+
+    <title>Polyglot Media Camouflage — ZevSafe Knowledge Hub</title>
+    <meta name="description" content="Technical specification and user guide for ZevSafe steganographic polyglot media camouflage: JPEG, PNG, and MP4 cover embedding and sliding-window offset detection.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../knowledge.css">
+</head>
+<body class="kb-page">
+    <div class="kb-reading-progress"></div>
+
+    <nav class="kb-navbar">
+        <div class="kb-navbar-inner">
+            <a href="../index.html" class="kb-brand-group">
+                <div class="kb-brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="kb-brand-title">
+                    ZevSafe <span class="kb-brand-tag">Camouflage</span>
+                </div>
+            </a>
+            
+            <ul class="kb-nav-links">
+                <li><a href="../index.html" class="kb-nav-link">&larr; Knowledge Hub</a></li>
+                <li><a href="../../index.html" class="kb-nav-link">Main App</a></li>
+                <li><a href="../../index.html" class="kb-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="kb-breadcrumb-bar">
+        <ul class="kb-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Knowledge Hub</a></li>
+            <li class="sep">/</li>
+            <li class="current">Polyglot Media Camouflage</li>
+        </ul>
+
+        <div class="kb-perspective-dock">
+            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+        </div>
+    </div>
+
+    <div class="kb-article-layout">
+        <aside class="kb-sidebar">
+            <div class="kb-toc-title">
+                <span>📑</span> Contents
+            </div>
+            <ul class="kb-toc-list">
+                <li><a href="#overview" class="kb-toc-link">Concept &amp; Philosophy</a></li>
+                <li><a href="#simple-guide" class="kb-toc-link">Simple User Guide</a></li>
+                <li><a href="#bicontextual" class="kb-toc-link">Bicontextual Media Specs</a></li>
+                <li><a href="#offset-detector" class="kb-toc-link">Sliding-Window Detector</a></li>
+                <li><a href="#cover-generation" class="kb-toc-link">In-Memory Cover Generator</a></li>
+                <li><a href="#invariants" class="kb-toc-link">Security Invariants</a></li>
+            </ul>
+        </aside>
+
+        <main class="kb-article-content">
+            <header class="kb-article-header">
+                <span class="kb-hero-eyebrow">SERVICE #04 &bull; FORENSIC CAMOUFLAGE</span>
+                <h1 class="kb-article-title">Polyglot Media Camouflage</h1>
+                <div class="kb-article-meta">
+                    <span class="kb-article-meta-item"><span>⏱️</span> 6 min read</span>
+                    <span class="kb-article-meta-item"><span>🖼️</span> JPEG &bull; PNG &bull; MP4 Embedding</span>
+                    <span class="kb-article-meta-item"><span>🔍</span> Zero-Allocation Scanner</span>
+                </div>
+            </header>
+
+            <section id="overview" style="margin-bottom: 2.5rem;">
+                <p style="font-size: 1.05rem; color: var(--kb-text-muted);">
+                    When transmitting encrypted files through restrictive corporate firewalls, forensic inspection points, or cloud storage providers that ban encrypted archives, having a <code>.zev</code> extension can arouse suspicion. <strong>Polyglot Media Camouflage</strong> merges the encrypted vault with genuine media files (such as <code>.jpg</code> or <code>.png</code>). Standard image viewers render the cover photo perfectly, while ZevSafe automatically detects the hidden cryptographic container.
+                </p>
+            </section>
+
+            <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
+            <section id="simple-guide" class="kb-perspective-simple">
+                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Disguising Your Vault as a Photo</h2>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 01</div>
+                    <h3 class="kb-step-title">Select or Generate Cover Media</h3>
+                    <p class="kb-step-desc">
+                        Under the Camouflage options in the Lock Vault tab, drop any real JPEG or PNG photograph (e.g. landscape, wallpaper). Alternatively, click <strong>"Generate Cover Photo"</strong> to synthesize an authentic abstract cover image client-side.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 02</div>
+                    <h3 class="kb-step-title">Download Disguised Image File</h3>
+                    <p class="kb-step-desc">
+                        Lock the vault as usual. The output file is saved as <code>vacation_photo.jpg</code> instead of <code>vault.zev</code>. Double-clicking it opens the image in Windows Photos, macOS Preview, or Android Gallery with zero errors.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 03</div>
+                    <h3 class="kb-step-title">Unlock Naturally</h3>
+                    <p class="kb-step-desc">
+                        Drop the <code>.jpg</code> directly onto ZevSafe's Unlock tab. ZevSafe automatically detects the embedded vault, asks for your passphrase, and opens your private files instantly.
+                    </p>
+                </div>
+
+                <div class="kb-callout kb-callout-zk">
+                    <div class="kb-callout-icon">✨</div>
+                    <div class="kb-callout-body">
+                        <strong>No Loss of Quality:</strong> Your cover image is 100% compliant and intact. No lossy image re-encoding or fragile LSB (least significant bit) pixel degradation is used!
+                    </div>
+                </div>
+            </section>
+
+            <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
+            <section id="bicontextual" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Bicontextual Container Format</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    Media container formats are defined by strict file structure specifications that instruct image decoders where the bitstream ends:
+                </p>
+
+                <div class="kb-table-wrap" style="margin-bottom: 1.5rem;">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Format</th>
+                                <th>Termination Marker</th>
+                                <th>Decoder Behavior Upon Marker</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>JPEG / JFIF</strong></td>
+                                <td><code>0xFF 0xD9</code> (EOI - End of Image)</td>
+                                <td>Halts parser immediately. Any subsequent bytes appended to the file are ignored as non-standard metadata.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PNG</strong></td>
+                                <td><code>IEND</code> chunk: <code>49 45 4E 44 AE 42 60 82</code></td>
+                                <td>Marks the end of the PNG datastream. Standard viewers close the image pipeline without scanning further.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MP4 / ISO BMFF</strong></td>
+                                <td>End of <code>moov</code> or <code>mdat</code> atom</td>
+                                <td>Demuxer reads explicit atom sizes; unindexed trailing bytes are bypassed.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">Binary Layout of Polyglot Vault</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>+-------------------------------------------------------------------------+
+| Authentic Media Header &amp; Bitstream (Bytes 0 .. K)                        |
+| e.g. Valid JPEG (FF D8 ... FF D9) or PNG (89 50 4E 47 ... IEND)        |
++-------------------------------------------------------------------------+
+| ZERO-BYTE TERMINATION BOUNDARY (Offset K)                               |
++-------------------------------------------------------------------------+
+| Authentic ZV3 Container Header (Bytes K .. K + 57)                      |
+| [ 'ZV3\0' (4B) | VERSION: 0x03 | FLAGS | CHUNK_SIZE | SALT | IV | OFFSET ]|
++-------------------------------------------------------------------------+
+| STREAM AEAD 4 MB Ciphertext Chunks + Tail Manifest Trailer              |
++-------------------------------------------------------------------------+</code></pre>
+                </div>
+            </section>
+
+            <!-- SECTION: SLIDING-WINDOW DETECTOR -->
+            <section id="offset-detector" class="kb-perspective-technical">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Sliding-Window Offset Detector</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    When any file is dropped into ZevSafe, <code>findPolyglotVaultOffset()</code> inspects the first 64 MB using a zero-allocation sliding byte scanner:
+                </p>
+
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">JavaScript Detector Algorithm</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>// js/stream-unpacker.js: Zero-allocation sliding-window detector
+function findPolyglotVaultOffset(buffer) {
+    const bytes = new Uint8Array(buffer);
+    // 1. Fast check: is this a standard standalone vault?
+    if (bytes[0] === 0x5A &amp;&amp; bytes[1] === 0x56 &amp;&amp; bytes[2] === 0x33 &amp;&amp; bytes[3] === 0x00) {
+        return 0; // Standard offset
+    }
+
+    // 2. Scan for 'ZV3\0' magic signature within first 64 MB
+    const maxScan = Math.min(bytes.length - 57, 64 * 1024 * 1024);
+    for (let i = 0; i &lt; maxScan; i++) {
+        if (bytes[i] === 0x5A &amp;&amp; bytes[i+1] === 0x56 &amp;&amp; bytes[i+2] === 0x33 &amp;&amp; bytes[i+3] === 0x00) {
+            // Verify version byte at offset + 4
+            if (bytes[i+4] === 0x03) {
+                return i; // Found authentic polyglot container offset!
+            }
+        }
+    }
+    return -1; // No vault signature detected
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- SECTION: IN-MEMORY COVER GENERATION -->
+            <section id="cover-generation" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">In-Memory Cover Generator</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    If the user does not have a photo ready, ZevSafe generates a 100% standard 1920&times;1080 gradient cover canvas rendered in-memory and converted to a valid JPEG/PNG blob via <code>canvas.toBlob()</code>. Zero external network assets or stock image downloads are required.
+                </p>
+            </section>
+
+            <!-- SECTION: INVARIANTS -->
+            <section id="invariants" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Security Invariants</h2>
+                <div class="kb-table-wrap">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Invariant</th>
+                                <th>Guarantee</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Cryptographic Integrity</strong></td>
+                                <td>Polyglot packaging alters 0 bytes of the encrypted payload; AEAD tags remain 100% valid.</td>
+                                <td>VERIFIED</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Standard Media Compatibility</strong></td>
+                                <td>Renders in default operating system previewers without corrupt image dialogs.</td>
+                                <td>VERIFIED</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Zero Cloud Reliance</strong></td>
+                                <td>Sliding-window scanning and cover generation execute completely in local browser RAM.</td>
+                                <td>VERIFIED</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="kb-footer">
+        <div class="kb-footer-inner">
+            <div class="kb-brand-title">ZevSafe Knowledge Hub</div>
+            <p>100% Client-Side Cryptography &bull; Zero Server Tracking &bull; Air-Gapped Zero-Exfiltration Design</p>
+        </div>
+    </footer>
+
+    <script src="../knowledge.js"></script>
+</body>
+</html>

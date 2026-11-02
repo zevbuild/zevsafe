@@ -105,3 +105,15 @@ flowchart LR
    - Unauthenticated manifests are mathematically indistinguishable from random AES static.
 2. **Realistic Decoy Generator:**
    - 1-click generation of believable travel itineraries, packing lists, Italian recipes, and household budgets.
+
+### Phase 7: Comprehensive Knowledge Hub & Service Manual (v8.2.0) [COMPLETED]
+*Delivered: November 2, 2026*
+
+1. **Master Knowledge Hub (`/knowledge/`):**
+   - Instant client-side search across all 9 core services, security invariants matrix, quick-reference cheat sheets, and keyboard navigation (`/` to search, `Esc` to clear).
+2. **Dual-Perspective Architecture (Simple vs Deep Technical):**
+   - 2-way / 3-way toggle between 🟢 *Simple Step-by-Step User Guides* and 🔵 *Deep Cryptographic Specifications* (byte-level binary tables, Web Crypto API parameters, mathematical formulas, threat models). Preference persisted in `localStorage`.
+3. **Dedicated Deep-Dive Service Manuals:**
+   - 9 dedicated service manuals covering Core Streaming Vault, Virtual Filesystem, Duress Decoys, Polyglot Camouflage, Vault Health & Salvage, Media Cinema Deck & Floating Dock, Passwords & Auto-Lock Protocol, Key Derivation & 2FA Keyfiles, and Multi-Tier Mobile Streaming Pipeline.
+4. **Offline Air-Gapped Precaching:**
+   - Precached in Service Worker `v53` for 100% offline availability in airplane mode.

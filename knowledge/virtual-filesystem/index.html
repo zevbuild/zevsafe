@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" data-knowledge-mode="combined">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#08091a">
+
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+
+    <title>Virtual Filesystem &amp; Live Editing — ZevSafe Knowledge Hub</title>
+    <meta name="description" content="Technical guide to ZevSafe decrypted virtual filesystem overlay: in-vault notes, live Markdown editing, renaming, deletion, and zero-export re-encryption.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../knowledge.css">
+</head>
+<body class="kb-page">
+    <div class="kb-reading-progress"></div>
+
+    <nav class="kb-navbar">
+        <div class="kb-navbar-inner">
+            <a href="../index.html" class="kb-brand-group">
+                <div class="kb-brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="kb-brand-title">
+                    ZevSafe <span class="kb-brand-tag">Virtual Filesystem</span>
+                </div>
+            </a>
+            
+            <ul class="kb-nav-links">
+                <li><a href="../index.html" class="kb-nav-link">&larr; Knowledge Hub</a></li>
+                <li><a href="../../index.html" class="kb-nav-link">Main App</a></li>
+                <li><a href="../../index.html" class="kb-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="kb-breadcrumb-bar">
+        <ul class="kb-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Knowledge Hub</a></li>
+            <li class="sep">/</li>
+            <li class="current">Virtual Filesystem &amp; Live Editing</li>
+        </ul>
+
+        <div class="kb-perspective-dock">
+            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+        </div>
+    </div>
+
+    <div class="kb-article-layout">
+        <aside class="kb-sidebar">
+            <div class="kb-toc-title">
+                <span>📑</span> Contents
+            </div>
+            <ul class="kb-toc-list">
+                <li><a href="#overview" class="kb-toc-link">Overview &amp; Concept</a></li>
+                <li><a href="#simple-guide" class="kb-toc-link">Simple User Guide</a></li>
+                <li><a href="#notes-editor" class="kb-toc-link">Live Notes &amp; Markdown</a></li>
+                <li><a href="#overlay-architecture" class="kb-toc-link">Session Overlay Engine</a></li>
+                <li><a href="#direct-reencryption" class="kb-toc-link">Direct Re-encryption Pipeline</a></li>
+                <li><a href="#invariants" class="kb-toc-link">Security Invariants</a></li>
+            </ul>
+        </aside>
+
+        <main class="kb-article-content">
+            <header class="kb-article-header">
+                <span class="kb-hero-eyebrow">SERVICE #02 &bull; IN-VAULT MANAGEMENT</span>
+                <h1 class="kb-article-title">Virtual Filesystem &amp; Live Editing</h1>
+                <div class="kb-article-meta">
+                    <span class="kb-article-meta-item"><span>⏱️</span> 5 min read</span>
+                    <span class="kb-article-meta-item"><span>🔒</span> Zero-Export In-Memory Overlay</span>
+                    <span class="kb-article-meta-item"><span>📝</span> Live Markdown / Text Editor</span>
+                </div>
+            </header>
+
+            <section id="overview" style="margin-bottom: 2.5rem;">
+                <p style="font-size: 1.05rem; color: var(--kb-text-muted);">
+                    Traditional file lockers force users into an insecure workflow: decrypt the entire vault to disk, edit files with local software, re-zip, and re-encrypt—leaving unencrypted data remnants across system caches and swap space. ZevSafe's <strong>Decrypted Virtual Filesystem (VFS)</strong> eliminates this risk by keeping modifications entirely inside an ephemeral browser memory overlay with <strong>Direct .zev Re-encryption</strong>.
+                </p>
+            </section>
+
+            <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
+            <section id="simple-guide" class="kb-perspective-simple">
+                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Managing Files Inside an Open Vault</h2>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 01</div>
+                    <h3 class="kb-step-title">Create Encrypted Notes Instantly</h3>
+                    <p class="kb-step-desc">
+                        Click <strong>"+ New Note"</strong> in the Vault Explorer toolbar. Type your thoughts, passwords, or recovery codes in plain text or Markdown. The note is formatted automatically and saved inside the open vault session in RAM.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 02</div>
+                    <h3 class="kb-step-title">Edit, Rename, or Delete Files</h3>
+                    <p class="kb-step-desc">
+                        Click any <code>.txt</code> or <code>.md</code> file to open the live editor. Make edits and press <strong>"Save Changes"</strong>. Use the file menu to rename paths or delete obsolete documents. Your changes appear instantly in the folder tree.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 03</div>
+                    <h3 class="kb-step-title">Direct Re-encryption (Save Vault)</h3>
+                    <p class="kb-step-desc">
+                        Whenever modifications are pending, a glowing <strong>"Re-encrypt Vault"</strong> button appears. Click it to stream-compress and generate a brand-new updated <code>.zev</code> file with one click. No plaintext files ever touch your hard drive!
+                    </p>
+                </div>
+
+                <div class="kb-callout kb-callout-zk">
+                    <div class="kb-callout-icon">🛡️</div>
+                    <div class="kb-callout-body">
+                        <strong>True Zero-Export Privacy:</strong> Unsaved changes exist exclusively in volatile browser RAM. If you close the browser tab or hit "Lock Vault", memory is instantly wiped clean.
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: NOTES & MARKDOWN -->
+            <section id="notes-editor" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Built-in Safe Markdown &amp; Text Viewer</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    The in-vault Markdown engine supports syntax highlighting, bullet checklists, tables, blockquotes, and headings while strictly stripping active scripts to prevent Cross-Site Scripting (XSS).
+                </p>
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">HTML DOM Sanitization Invariant</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>// All in-vault markdown rendering escapes raw HTML:
+function escapeHtml(str) {
+    return str
+        .replace(/&amp;/g, "&amp;amp;")
+        .replace(/&lt;/g, "&amp;lt;")
+        .replace(/&gt;/g, "&amp;gt;")
+        .replace(/"/g, "&amp;quot;")
+        .replace(/'/g, "&amp;#039;");
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
+            <section id="overlay-architecture" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Decrypted Session Overlay Architecture</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    When a vault is unlocked, ZevSafe constructs an ephemeral <code>activeSession</code> state. Rather than copying multi-gigabyte archives into memory, the engine maintains three lightweight overlay structures:
+                </p>
+
+                <div class="kb-table-wrap" style="margin-bottom: 1.5rem;">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Overlay Structure</th>
+                                <th>Type</th>
+                                <th>Role &amp; Semantic Behavior</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>activeSession.overlayFiles</code></td>
+                                <td><code>Map&lt;string, Uint8Array&gt;</code></td>
+                                <td>Stores new notes or edited file buffers keyed by normalized virtual relative path. Takes precedence over base vault chunks.</td>
+                            </tr>
+                            <tr>
+                                <td><code>activeSession.deletedPaths</code></td>
+                                <td><code>Set&lt;string&gt;</code></td>
+                                <td>Tombstones removed files. Filtered out of catalog views and omitted from re-encryption.</td>
+                            </tr>
+                            <tr>
+                                <td><code>activeSession.renamedPaths</code></td>
+                                <td><code>Map&lt;string, string&gt;</code></td>
+                                <td>Maps original path &rarr; new path, updating folder trees dynamically without re-writing existing chunk payloads.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">Catalog Virtual Resolution</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>// Resolves the effective file entry taking the overlay into account:
+function getEffectiveFile(path) {
+    if (activeSession.deletedPaths.has(path)) return null;
+    
+    if (activeSession.overlayFiles.has(path)) {
+        const data = activeSession.overlayFiles.get(path);
+        return { path, size: data.byteLength, isOverlay: true, data };
+    }
+    
+    const baseEntry = activeSession.manifest.files.find(f => f.path === path);
+    return baseEntry ? { ...baseEntry, isOverlay: false } : null;
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- SECTION: DIRECT RE-ENCRYPTION -->
+            <section id="direct-reencryption" class="kb-perspective-technical">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Direct Re-encryption Pipeline</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    When triggering re-encryption, the browser worker streams unchanged base files from their original chunk spans alongside newly edited overlay buffers into a fresh ZV3 container:
+                </p>
+                <ol style="color: var(--kb-text-muted); padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;">
+                    <li><strong>Salt &amp; IV Refresh:</strong> A new 32-byte CSPRNG salt and 7-byte base IV are generated; keys are never reused.</li>
+                    <li><strong>Streaming Re-packing:</strong> Worker compresses files using deflate-raw and partitions into 4 MB chunks.</li>
+                    <li><strong>Fresh Manifest Trailer:</strong> New JSON manifest with updated CRC32 checksums and offsets is encrypted at the tail.</li>
+                    <li><strong>Instant Swap:</strong> The new container becomes the active vault session.</li>
+                </ol>
+            </section>
+
+            <!-- SECTION: INVARIANTS -->
+            <section id="invariants" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Security Invariants</h2>
+                <div class="kb-table-wrap">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Invariant</th>
+                                <th>Threat Prevented</th>
+                                <th>Guarantee</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Zero Disk Footprint</strong></td>
+                                <td>Forensic disk recovery of unencrypted files</td>
+                                <td>Edited files only ever exist in volatile memory until encrypted.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Key Refresh Invariant</strong></td>
+                                <td>Two-time pad (nonce reuse) vulnerability</td>
+                                <td>Re-encryption always generates fresh master salts and IVs.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Path Traversal Defense</strong></td>
+                                <td>Malicious zip-slip or directory traversal (<code>../</code>)</td>
+                                <td>Path normalization strictly rejects relative or absolute parent directory jumps.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="kb-footer">
+        <div class="kb-footer-inner">
+            <div class="kb-brand-title">ZevSafe Knowledge Hub</div>
+            <p>100% Client-Side Cryptography &bull; Zero Server Tracking &bull; Air-Gapped Zero-Exfiltration Design</p>
+        </div>
+    </footer>
+
+    <script src="../knowledge.js"></script>
+</body>
+</html>

@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v52';
+const APP_VERSION    = 'v53';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
 const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
@@ -16,6 +16,19 @@ const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
 const SHELL_ASSETS = [
     './',
     './index.html',
+        './knowledge/',
+    './knowledge/index.html',
+    './knowledge/knowledge.css',
+    './knowledge/knowledge.js',
+    './knowledge/core-vault/index.html',
+    './knowledge/virtual-filesystem/index.html',
+    './knowledge/duress-decoy/index.html',
+    './knowledge/polyglot-camouflage/index.html',
+    './knowledge/health-and-salvage/index.html',
+    './knowledge/media-cinema/index.html',
+    './knowledge/passwords-autolock/index.html',
+    './knowledge/key-derivation-2fa/index.html',
+    './knowledge/mobile-streaming/index.html',
     './how-to-use-zevsafe/',
     './how-to-use-zevsafe/index.html',
     './change-log/',

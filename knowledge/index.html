@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" data-knowledge-mode="combined">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ZevSafe Knowledge Hub">
+    <meta name="theme-color" content="#08091a">
+    <meta name="msapplication-TileColor" content="#08091a">
+
+    <!-- Strict Air-Gapped Zero-Exfiltration Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../manifest.json">
+    <link rel="apple-touch-icon" href="../assets/icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icon-192.png">
+
+    <title>ZevSafe Knowledge Hub — Complete Service Manual &amp; Cryptographic Disclosures</title>
+    <meta name="description" content="Official knowledge base and service manual for ZevSafe. Step-by-step guides for users and mathematical cryptographic disclosures for security auditors.">
+    <meta name="keywords" content="ZevSafe knowledge base, ZV3 specification, STREAM AEAD, duress decoy vaults, polyglot steganography, zero-knowledge encryption manual">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="knowledge.css">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "ZevSafe Knowledge Hub — Complete Service Manual & Cryptographic Disclosures",
+      "description": "Step-by-step guides and cryptographic specifications for all 9 ZevSafe services.",
+      "author": {
+        "@type": "Organization",
+        "name": "zevbuild studio"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "ZevSafe",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zevsafe.pages.dev/assets/icon-512.png"
+        }
+      }
+    }
+    </script>
+</head>
+<body class="kb-page">
+    <div class="kb-reading-progress"></div>
+
+    <!-- Top Navigation -->
+    <nav class="kb-navbar">
+        <div class="kb-navbar-inner">
+            <a href="index.html" class="kb-brand-group">
+                <div class="kb-brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="kb-brand-title">
+                    ZevSafe <span class="kb-brand-tag">Knowledge Hub</span>
+                </div>
+            </a>
+            
+            <ul class="kb-nav-links">
+                <li><a href="../index.html" class="kb-nav-link">Main App</a></li>
+                <li><a href="../how-to-use-zevsafe/index.html" class="kb-nav-link">User Guide</a></li>
+                <li><a href="../security-audit/index.html" class="kb-nav-link">Security Audit</a></li>
+                <li><a href="../change-log/index.html" class="kb-nav-link">Changelog</a></li>
+                <li><a href="../index.html" class="kb-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb & Perspective Switcher Bar -->
+    <div class="kb-breadcrumb-bar">
+        <ul class="kb-breadcrumbs">
+            <li><a href="../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li class="current">Knowledge Hub</li>
+        </ul>
+
+        <div class="kb-perspective-dock">
+            <button class="kb-perspective-btn" data-mode="simple" title="Show simple step-by-step user explanations">
+                <span>🟢</span> Simple View
+            </button>
+            <button class="kb-perspective-btn" data-mode="technical" title="Show byte-level specs and cryptographic algorithms">
+                <span>🔵</span> Technical View
+            </button>
+            <button class="kb-perspective-btn active" data-mode="combined" title="Show both simple and technical disclosures side-by-side">
+                <span>👁️</span> Full Disclosure
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Hero -->
+    <header class="kb-hero">
+        <div class="kb-hero-eyebrow">
+            <span>🛡️</span> ZERO-KNOWLEDGE ARCHITECTURE &amp; SERVICE MANUAL
+        </div>
+        <h1 class="kb-hero-title">ZevSafe Knowledge Hub</h1>
+        <p class="kb-hero-lead">
+            Every feature, cryptographic primitive, memory boundary, and zero-knowledge guarantee disclosed in clear step-by-step instructions for everyday users and mathematical depth for auditors.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="kb-search-container">
+            <input type="text" id="kb-search" class="kb-search-box" placeholder="Search services, cryptographic primitives, algorithms... (e.g. duress, polyglot, PBKDF2)" autocomplete="off" spellcheck="false">
+            <svg class="kb-search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <div class="kb-search-meta">
+                <span id="kb-search-count">Showing 9 of 9 services</span>
+                <span>Press <span class="kb-kbd">/</span> to search, <span class="kb-kbd">ESC</span> to clear</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Service Directory Grid -->
+    <main class="kb-grid" id="kb-services-grid">
+        
+        <!-- 01: Core Streaming Vault -->
+        <a href="core-vault/index.html" class="kb-card" data-tags="core stream aead v3 chunks 57b header recovery sheet lock unlock aes-256-gcm" data-search="core vault locking unlocking encryption decryption chunking format recovery sheet">
+            <div>
+                <div class="kb-card-header">
+                    <div class="kb-card-icon">🔐</div>
+                    <span class="kb-badge-number">SERVICE #01</span>
+                </div>
+                <h2 class="kb-card-title">Core Streaming Vault</h2>
+                <p class="kb-card-desc">
+                    High-throughput chunked authenticated encryption engine. Streams archives up to 5 GB with bounded &lt;150 MB RAM using the 57-byte ZV3 header and 4 MB ciphertext blocks.
+                </p>
+                <div class="kb-tag-list">
+                    <span class="kb-tag">AES-256-GCM</span>
+                    <span class="kb-tag">STREAM AEAD v3</span>
+                    <span class="kb-tag">57B Header</span>
+                    <span class="kb-tag">Emergency Sheet</span>
+                </div>
+            </div>
+            <div class="kb-card-footer">
+                <span>Explore Service Guide</span>
+                <span class="kb-arrow-link">&rarr;</span>
+            </div>
+        </a>
+
+        <!-- 02: In-Vault Virtual Filesystem -->
+        <a href="virtual-filesystem/index.html" class="kb-card" data-tags="filesystem vfs notes markdown live edit in-place rename delete overlay direct re-encrypt" data-search="virtual filesystem notes editor rename delete files in-place re-encryption session overlay">
+            <div>
+                <div class="kb-card-header">
+                    <div class="kb-card-icon">📁</div>
+                    <span class="kb-badge-number">SERVICE #02</span>
+                </div>
+                <h2 class="kb-card-title">Virtual Filesystem &amp; Live Editing</h2>
+                <p class="kb-card-desc">
+                    In-browser decrypted overlay filesystem. Create encrypted notes, edit Markdown files live, rename, delete, and trigger direct zero-export vault re-encryption.
+                </p>
+                <div class="kb-tag-list">
+                    <span class="kb-tag">In-Place Notes</span>
+                    <span class="kb-tag">Live MD Editor</span>
+                    <span class="kb-tag">Overlay Map</span>
+                    <span class="kb-tag">Direct Re-Encrypt</span>
+                </div>
+            </div>
+            <div class="kb-card-footer">
+                <span>Explore Service Guide</span>
+                <span class="kb-arrow-link">&rarr;</span>
+            </div>
+        </a>
+
+        <!-- 03: Duress Decoy Vaults -->
+        <a href="duress-decoy/index.html" class="kb-card" data-tags="duress decoy plausible deniability dual manifest v3_flag_duress coercion defense fake password" data-search="duress decoy plausible deniability coercion fake vault dual envelope camouflage password">
+            <div>
+                <div class="kb-card-header">
+                    <div class="kb-card-icon">🎭</div>
+                    <span class="kb-badge-number">SERVICE #03</span>
+                </div>
+                <h2 class="kb-card-title">Duress Decoy Vaults</h2>
+                <p class="kb-card-desc">
+                    Plausible deniability under physical or legal coercion. Unlocks innocent decoy files when forced to surrender a password, while keeping primary files undetectable.
+                </p>
+                <div class="kb-tag-list">
+                    <span class="kb-tag">Plausible Deniability</span>
+                    <span class="kb-tag">Dual-Manifest</span>
+                    <span class="kb-tag">V3_FLAG_DURESS</span>
+                    <span class="kb-tag">Indistinguishability</span>
+                </div>
+            </div>
+            <div class="kb-card-footer">
+                <span>Explore Service Guide</span>
+                <span class="kb-arrow-link">&rarr;</span>
+            </div>
+        </a>
+
+        <!-- 04: Forensic Media Camouflage (Polyglot) -->
+        <a href="polyglot-camouflage/index.html" class="kb-card" data-tags="polyglot steganography camouflage jpeg png mp4 termination markers sliding window concealment" data-search="polyglot camouflage steganography image video disguise hidden vault jpeg png">
+            <div>
+                <div class="kb-card-header">
+                    <div class="kb-card-icon">🖼️</div>
+                    <span class="kb-badge-number">SERVICE #04</span>
+                </div>
+                <h2 class="kb-card-title">Polyglot Media Camouflage</h2>
+                <p class="kb-card-desc">
+                    Bicontextual file steganography. Masks raw .zev vaults behind valid JPEG, PNG, or MP4 headers so standard photo viewers display a real cover image while ZevSafe unlocks the vault.
+                </p>
+                <div class="kb-tag-list">
+                    <span class="kb-tag">Steganography</span>
+                    <span class="kb-tag">FF D9 / IEND</span>
+                    <span class="kb-tag">Sliding Window</span>
+                    <span class="kb-tag">Bicontextual</span>
+                </div>
+            </div>
+            <div class="kb-card-footer">
+                <span>Explore Service Guide</span>
+                <span class="kb-arrow-link">&rarr;</span>
+            </div>
+        </a>
+
+        <!-- 05: Vault Health & Fault-Tolerant Salvage -->
+        <a href="health-and-salvage/index.html" class="kb-card" data-tags="health check salvage bit rot aead scan corruption recovery quarantine audit scorecard" data-search="health check diagnostic salvage bit rot recovery corrupted vault rescue quarantine scorecard">
+            <div>
+                <div class="kb-card-header">
+                    <div class="kb-card-icon">🩺</div>
+                    <span class="kb-badge-number">SERVICE #05</span>
+                </div>
+                <h2 class="kb-card-title">Vault Health &amp; Salvage Engine</h2>
+                <p class="kb-card-desc">
+                    Deep cryptographic integrity verification and emergency salvage. Scans every 4 MB chunk for bit-rot, quarantines corrupted blocks, and rescues surviving files into a clean archive.
+                </p>
+                <div class="kb-tag-list">
+                    <span class="kb-tag">Bit-Rot Scan</span>
+                    <span class="kb-tag">Chunk Isolation</span>
+                    <span class="kb-tag">Partial Salvage</span>
+                    <span class="kb-tag">Audit Scorecard</span>
+                </div>
+            </div>
+            <div class="kb-card-footer">
+                <span>Explore Service Guide</span>
+                <span class="kb-arrow-link">&rarr;</span>
+            </div>
+        </a>
+
+        <!-- 06: Cinema Deck & Floating Audio Mini-Player -->
+        <a href="media-cinema/index.html" class="kb-card" data-tags="cinema audio player mini player floating dock zero-ram streaming media video preview lightbox" data-search="media cinema audio player floating dock background music video streaming blob url">
+            <div>
+                <div class="kb-card-header">
+                    <div class="kb-card-icon">🎬</div>
+                    <span class="kb-badge-number">SERVICE #06</span>
+                </div>
+                <h2 class="kb-card-title">Cinema Deck &amp; Floating Audio Dock</h2>
+                <p class="kb-card-desc">
+                    Zero-RAM media playback directly inside the browser. Stream high-bitrate video, listen to podcasts via a persistent floating dock, and preview images with instant memory revocation.
+                </p>
+                <div class="kb-tag-list">
+                    <span class="kb-tag">Cinema Mode</span>
+                    <span class="kb-tag">Floating Mini-Player</span>
+                    <span class="kb-tag">Zero-RAM Blobs</span>
+                    <span class="kb-tag">URL Revocation</span>
+                </div>
+            </div>
+            <div class="kb-card-footer">
+                <span>Explore Service Guide</span>
+                <span class="kb-arrow-link">&rarr;</span>
+            </div>
+        </a>
+
+        <!-- 07: Passwords & Auto-Lock Protocol -->
+        <a href="passwords-autolock/index.html" class="kb-card" data-tags="diceware csprng password generator shannon entropy auto-lock inactivity timer zeroization memory cleanup" data-search="diceware csprng password generator passphrase auto lock timer session security entropy">
+            <div>
+                <div class="kb-card-header">
+                    <div class="kb-card-icon">🎲</div>
+                    <span class="kb-badge-number">SERVICE #07</span>
+                </div>
+                <h2 class="kb-card-title">Passwords &amp; Auto-Lock Protocol</h2>
+                <p class="kb-card-desc">
+                    Cryptographic passphrase generation and session defense. CSPRNG Diceware generator with Shannon entropy calculation and idle auto-lock timers with cryptographic memory zeroization.
+                </p>
+                <div class="kb-tag-list">
+                    <span class="kb-tag">CSPRNG Diceware</span>
+                    <span class="kb-tag">Shannon Entropy</span>
+                    <span class="kb-tag">Inactivity Lock</span>
+                    <span class="kb-tag">RAM Zeroization</span>
+                </div>
+            </div>
+            <div class="kb-card-footer">
+                <span>Explore Service Guide</span>
+                <span class="kb-arrow-link">&rarr;</span>
+            </div>
+        </a>
+
+        <!-- 08: Key Derivation & 2FA Physical Keyfiles -->
+        <a href="key-derivation-2fa/index.html" class="kb-card" data-tags="pbkdf2-sha512 600k 1.2m 2.4m rounds keyfile 2fa two-factor hardware token brute force defense" data-search="key derivation pbkdf2 tiers 600000 1200000 2400000 keyfile two factor 2fa brute force">
+            <div>
+                <div class="kb-card-header">
+                    <div class="kb-card-icon">🔑</div>
+                    <span class="kb-badge-number">SERVICE #08</span>
+                </div>
+                <h2 class="kb-card-title">Key Derivation &amp; 2FA Keyfiles</h2>
+                <p class="kb-card-desc">
+                    High-work-factor brute-force immunity. Configure PBKDF2-SHA512 tiers from 600k up to 2,400,000 rounds combined with SHA-256 physical keyfile entropy mixing for true 2FA vaults.
+                </p>
+                <div class="kb-tag-list">
+                    <span class="kb-tag">PBKDF2-SHA512</span>
+                    <span class="kb-tag">2.4M Rounds</span>
+                    <span class="kb-tag">Keyfile 2FA</span>
+                    <span class="kb-tag">GPU Resistance</span>
+                </div>
+            </div>
+            <div class="kb-card-footer">
+                <span>Explore Service Guide</span>
+                <span class="kb-arrow-link">&rarr;</span>
+            </div>
+        </a>
+
+        <!-- 09: Multi-Tier Mobile Streaming Pipeline -->
+        <a href="mobile-streaming/index.html" class="kb-card" data-tags="mobile streaming fsa opfs service worker memory bounding web workers transferrable streams 150mb" data-search="mobile streaming low memory memory bound fsa opfs service worker 150mb android ios">
+            <div>
+                <div class="kb-card-header">
+                    <div class="kb-card-icon">⚡</div>
+                    <span class="kb-badge-number">SERVICE #09</span>
+                </div>
+                <h2 class="kb-card-title">Mobile Streaming Storage</h2>
+                <p class="kb-card-desc">
+                    Four-tier storage fallback architecture (FSA &rarr; OPFS &rarr; Service Worker &rarr; In-Memory). Guarantees crash-free 5 GB encryption and decryption on low-RAM Android &amp; iOS devices.
+                </p>
+                <div class="kb-tag-list">
+                    <span class="kb-tag">Tier 1 FSA</span>
+                    <span class="kb-tag">Tier 3 OPFS</span>
+                    <span class="kb-tag">Tier 2 SW Stream</span>
+                    <span class="kb-tag">&lt;150 MB RAM</span>
+                </div>
+            </div>
+            <div class="kb-card-footer">
+                <span>Explore Service Guide</span>
+                <span class="kb-arrow-link">&rarr;</span>
+            </div>
+        </a>
+
+    </main>
+
+    <!-- Empty Search State -->
+    <div id="kb-empty-search" style="display: none; text-align: center; padding: 4rem 1.5rem; color: var(--kb-text-muted);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+        <h3 style="color: #ffffff; margin-bottom: 0.5rem;">No matching services found</h3>
+        <p>Try searching for terms like "duress", "chunks", "keyfile", "salvage", or "streaming".</p>
+    </div>
+
+    <!-- Security Invariants Matrix -->
+    <section class="kb-matrix-section">
+        <div class="kb-section-header">
+            <h2 class="kb-section-title">Security Invariants &amp; Cryptographic Matrix</h2>
+            <p style="color: var(--kb-text-muted); max-width: 680px; margin: 0 auto;">
+                Uncompromising guarantees enforced across all 9 ZevSafe services. Every cryptographic decision is verifiable client-side.
+            </p>
+        </div>
+
+        <div class="kb-table-wrap">
+            <table class="kb-table">
+                <thead>
+                    <tr>
+                        <th>Domain / Service</th>
+                        <th>Cryptographic Primitives</th>
+                        <th>Key Parameters</th>
+                        <th>Memory / Network Boundary</th>
+                        <th>Adversary Threat Model</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>01. Core Streaming Vault</strong></td>
+                        <td>AES-256-GCM + STREAM AEAD</td>
+                        <td>4 MB Chunks, 96-bit Nonces (Counter + Last bit), 57B Header</td>
+                        <td>Peak RAM &lt; 150 MB across 5 GB vaults. 0 bytes buffered to disk.</td>
+                        <td>Reordering, chunk truncation, ciphertext splicing, MITM tampering.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>02. Virtual Filesystem</strong></td>
+                        <td>Decrypted Overlay Map + Direct Re-encrypt</td>
+                        <td>Client-side SHA-256 path mapping, ephemeral session keys</td>
+                        <td>Zero disk persistence for plaintext modifications until explicit re-encrypt.</td>
+                        <td>Local storage forensic scraping, untrusted browser extension inspection.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>03. Duress Decoy Vaults</strong></td>
+                        <td>Dual AES-GCM Envelopes (`V3_FLAG_DURESS`)</td>
+                        <td>Distinct salt, IV, and 128-bit authentication tags per envelope</td>
+                        <td>Ciphertext indistinguishable from pseudorandom noise ($IND\text{-}CPA$).</td>
+                        <td>Coercion, border crossing searches, forensic proof of undisclosed data.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>04. Polyglot Camouflage</strong></td>
+                        <td>Steganographic Media Framing + Sliding Detector</td>
+                        <td>JPEG `0xFF 0xD9`, PNG `IEND`, MP4 `moov` marker detection</td>
+                        <td>Valid media stream prepended; unauthenticated vault silently bypasses parser.</td>
+                        <td>Deep packet inspection (DPI), automated media scanners, file type audits.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>05. Vault Health &amp; Salvage</strong></td>
+                        <td>Fault-Tolerant AEAD Chunk Verification</td>
+                        <td>Per-chunk GCM tag verification, 16-byte isolation window</td>
+                        <td>Isolated chunk buffers. Corrupted blocks dropped; valid blocks rescued.</td>
+                        <td>Bit-rot, partial disk sector failure, incomplete download streams.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>06. Cinema &amp; Audio Dock</strong></td>
+                        <td>In-Browser Web Cryptography + Object URL Revocation</td>
+                        <td>Ephemeral Blob URLs, MediaSource Extensions (MSE)</td>
+                        <td>Immediate `URL.revokeObjectURL()` on stop or modal close. Zero RAM leaks.</td>
+                        <td>DOM memory extraction, cross-origin resource leakage.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>07. Passwords &amp; Auto-Lock</strong></td>
+                        <td>CSPRNG Diceware + Buffer Zeroization</td>
+                        <td>`crypto.getRandomValues()`, Shannon Entropy &ge; 77 bits, 5–60 min timer</td>
+                        <td>TypedArray `.fill(0)` on all key buffers immediately upon lock.</td>
+                        <td>Post-session memory dumps, cold-boot RAM attacks, unattended workstation snooping.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>08. Key Derivation &amp; 2FA</strong></td>
+                        <td>PBKDF2-SHA512 + Keyfile Entropy Mixing</td>
+                        <td>600,000 to 2,400,000 iterations, 32-byte salt, SHA-256 keyfile digest</td>
+                        <td>Hardware-bound key derivation. High time-memory cost.</td>
+                        <td>High-performance GPU cluster dictionaries, ASIC parallelized brute force.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>09. Mobile Streaming</strong></td>
+                        <td>Multi-Tier FSA / OPFS / Service Worker Pipeline</td>
+                        <td>4 MB backpressure streams, transferable ArrayBuffers</td>
+                        <td>Strictly bounded peak memory &lt; 150 MB on Android Chrome &amp; iOS Safari.</td>
+                        <td>Mobile OS low-memory termination (OOM kill), multi-gigabyte upload traps.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="kb-footer">
+        <div class="kb-footer-inner">
+            <div class="kb-brand-title">
+                ZevSafe <span class="kb-brand-tag">Knowledge Hub</span>
+            </div>
+            <ul class="kb-footer-links">
+                <li><a href="../index.html" class="kb-footer-link">Main Application</a></li>
+                <li><a href="../how-to-use-zevsafe/index.html" class="kb-footer-link">Quickstart Guide</a></li>
+                <li><a href="../security-audit/index.html" class="kb-footer-link">Security Audit (A+)</a></li>
+                <li><a href="../change-log/index.html" class="kb-footer-link">Changelog</a></li>
+                <li><a href="https://github.com/zevbuild-studio/zevsafe" class="kb-footer-link" target="_blank" rel="noopener">GitHub Repository</a></li>
+            </ul>
+            <p>
+                100% Client-Side Cryptography &bull; Zero Server Tracking &bull; Air-Gapped Zero-Exfiltration Design &bull; Open Source Apache-2.0
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="knowledge.js"></script>
+</body>
+</html>

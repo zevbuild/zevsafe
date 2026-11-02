@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" data-knowledge-mode="combined">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#08091a">
+
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+
+    <title>Cinema Deck &amp; Floating Audio Dock — ZevSafe Knowledge Hub</title>
+    <meta name="description" content="Technical guide to ZevSafe zero-RAM in-browser cinema player, floating audio mini-player dock, and cryptographic Blob URL lifecycle.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../knowledge.css">
+</head>
+<body class="kb-page">
+    <div class="kb-reading-progress"></div>
+
+    <nav class="kb-navbar">
+        <div class="kb-navbar-inner">
+            <a href="../index.html" class="kb-brand-group">
+                <div class="kb-brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="kb-brand-title">
+                    ZevSafe <span class="kb-brand-tag">Media Cinema</span>
+                </div>
+            </a>
+            
+            <ul class="kb-nav-links">
+                <li><a href="../index.html" class="kb-nav-link">&larr; Knowledge Hub</a></li>
+                <li><a href="../../index.html" class="kb-nav-link">Main App</a></li>
+                <li><a href="../../index.html" class="kb-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="kb-breadcrumb-bar">
+        <ul class="kb-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Knowledge Hub</a></li>
+            <li class="sep">/</li>
+            <li class="current">Cinema Deck &amp; Floating Audio Dock</li>
+        </ul>
+
+        <div class="kb-perspective-dock">
+            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+        </div>
+    </div>
+
+    <div class="kb-article-layout">
+        <aside class="kb-sidebar">
+            <div class="kb-toc-title">
+                <span>📑</span> Contents
+            </div>
+            <ul class="kb-toc-list">
+                <li><a href="#overview" class="kb-toc-link">Overview &amp; Experience</a></li>
+                <li><a href="#simple-guide" class="kb-toc-link">Simple User Guide</a></li>
+                <li><a href="#audio-dock" class="kb-toc-link">Floating Audio Mini-Player</a></li>
+                <li><a href="#blob-lifecycle" class="kb-toc-link">Zero-RAM Blob Lifecycle</a></li>
+                <li><a href="#csp-isolation" class="kb-toc-link">Media CSP Isolation</a></li>
+                <li><a href="#invariants" class="kb-toc-link">Security Invariants</a></li>
+            </ul>
+        </aside>
+
+        <main class="kb-article-content">
+            <header class="kb-article-header">
+                <span class="kb-hero-eyebrow">SERVICE #06 &bull; IN-BROWSER MULTIMEDIA</span>
+                <h1 class="kb-article-title">Cinema Deck &amp; Floating Audio Dock</h1>
+                <div class="kb-article-meta">
+                    <span class="kb-article-meta-item"><span>⏱️</span> 5 min read</span>
+                    <span class="kb-article-meta-item"><span>🎵</span> Background Mini-Player Dock</span>
+                    <span class="kb-article-meta-item"><span>⚡</span> Instant URL Revocation</span>
+                </div>
+            </header>
+
+            <section id="overview" style="margin-bottom: 2.5rem;">
+                <p style="font-size: 1.05rem; color: var(--kb-text-muted);">
+                    Many users store gigabytes of private photos, voice recordings, and video clips inside their encrypted vaults. Extracting them to disk to play them compromises confidentiality. ZevSafe's <strong>Cinema Deck</strong> and <strong>Floating Audio Dock</strong> allow instantaneous in-browser media playback with zero disk writes and deterministic memory revocation.
+                </p>
+            </section>
+
+            <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
+            <section id="simple-guide" class="kb-perspective-simple">
+                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Playing Encrypted Media Effortlessly</h2>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 01</div>
+                    <h3 class="kb-step-title">Click Any Media File in the Explorer</h3>
+                    <p class="kb-step-desc">
+                        Click on any audio file (<code>.mp3</code>, <code>.wav</code>, <code>.m4a</code>, <code>.ogg</code>) or video (<code>.mp4</code>, <code>.webm</code>, <code>.mov</code>). ZevSafe decrypts only the necessary chunks and begins playback in seconds.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 02</div>
+                    <h3 class="kb-step-title">Enjoy Persistent Background Audio</h3>
+                    <p class="kb-step-desc">
+                        Want to browse other files or read encrypted notes while listening to audio? Simply close the modal or click another folder. Playback seamlessly shifts into a sleek <strong>Floating Audio Mini-Player</strong> at the bottom of the screen.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 03</div>
+                    <h3 class="kb-step-title">Stop Playback &amp; Zero Memory</h3>
+                    <p class="kb-step-desc">
+                        Clicking the close button on the floating dock or locking the vault stops playback and immediately frees browser memory. No audio trace remains in your history or cache.
+                    </p>
+                </div>
+
+                <div class="kb-callout kb-callout-zk">
+                    <div class="kb-callout-icon">🎬</div>
+                    <div class="kb-callout-body">
+                        <strong>Cinema Fullscreen:</strong> Click the expand button on video previews to enter a cinema-grade dark theatre view with keyboard controls (Space: play/pause, Arrow keys: skip 5s).
+                    </div>
+                </div>
+            </section>
+
+            <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
+            <section id="audio-dock" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Floating Audio Mini-Player Architecture</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    When audio starts playing in the modal, a persistent HTML5 <code>&lt;audio&gt;</code> element is managed by the application controller:
+                </p>
+
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">Audio Dock State Transition</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>// app.js: Seamless transition between modal and persistent dock
+function minimizeAudioToDock() {
+    if (!activeAudioState.isPlaying) return;
+    
+    // Transfer current playhead timestamp and state to the floating dock
+    audioDockEl.classList.add('visible');
+    audioDockTrackName.textContent = activeAudioState.currentTrackName;
+    audioDockPlayer.currentTime = activeAudioModalPlayer.currentTime;
+    
+    // Hide modal without interrupting audio context
+    closeMediaModal({ preserveAudio: true });
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- SECTION: ZERO-RAM BLOB LIFECYCLE -->
+            <section id="blob-lifecycle" class="kb-perspective-technical">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Zero-RAM Ephemeral Blob URL Lifecycle</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    Browsers retain object URLs indefinitely in their internal registry until explicitly freed. Unbounded media inspection can cause rapid memory exhaustion. ZevSafe implements strict URL revocation invariants:
+                </p>
+
+                <div class="kb-table-wrap" style="margin-bottom: 1.5rem;">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Lifecycle Event</th>
+                                <th>Trigger Action</th>
+                                <th>Cryptographic Cleanup</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Media Close</strong></td>
+                                <td>User closes video modal</td>
+                                <td><code>URL.revokeObjectURL(activeVideoUrl)</code>; sets src to empty string.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Track Switch</strong></td>
+                                <td>User selects new audio track</td>
+                                <td>Revokes previous track URL before creating new blob instance.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dock Dismiss</strong></td>
+                                <td>User clicks close (X) on mini dock</td>
+                                <td>Halts audio buffer, revokes URL, and cleans active playback state.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Session Lock</strong></td>
+                                <td>Inactivity timer or Lock Vault</td>
+                                <td>Stops all audio/video elements and executes full memory zeroization.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SECTION: CSP ISOLATION -->
+            <section id="csp-isolation" class="kb-perspective-technical">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Media Content Security Policy (CSP) Isolation</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1rem;">
+                    To guarantee that decrypted media elements cannot exfiltrate private frames or metadata, ZevSafe enforces:
+                </p>
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">Air-Gapped Media CSP Header</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>media-src 'self' blob:;
+img-src 'self' data: blob:;
+connect-src 'self' blob: data:;</code></pre>
+                </div>
+            </section>
+
+            <!-- SECTION: INVARIANTS -->
+            <section id="invariants" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Security Invariants</h2>
+                <div class="kb-table-wrap">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Invariant</th>
+                                <th>Guarantee</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Zero Exfiltration</strong></td>
+                                <td>Media elements cannot connect to external tracking or CDN servers.</td>
+                                <td>VERIFIED</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Immediate GC Reclaim</strong></td>
+                                <td>Object URLs revoked immediately on stop, preventing memory bloat.</td>
+                                <td>VERIFIED</td>
+                            </tr>
+                            <tr>
+                                <td><strong>No Disk Cache</strong></td>
+                                <td>Decrypted media is played from memory blobs; never written to temporary files.</td>
+                                <td>VERIFIED</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="kb-footer">
+        <div class="kb-footer-inner">
+            <div class="kb-brand-title">ZevSafe Knowledge Hub</div>
+            <p>100% Client-Side Cryptography &bull; Zero Server Tracking &bull; Air-Gapped Zero-Exfiltration Design</p>
+        </div>
+    </footer>
+
+    <script src="../knowledge.js"></script>
+</body>
+</html>

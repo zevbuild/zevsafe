@@ -650,6 +650,7 @@
         <div class="navbar-links">
             <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener" class="nav-pill nav-pill--android" title="Download Dedicated Native Android App (APK)">🤖 Android APK</a>
             <a href="../" class="nav-pill">← Back to App</a>
+            <a href="../knowledge/" class="nav-pill">📚 Knowledge Hub</a>
             <a href="../how-to-use-zevsafe/" class="nav-pill">📖 User Guide</a>
             <a href="../security-audit/" class="nav-pill">🛡️ Security Audit</a>
             <a href="https://github.com/zevbuild/zevsafe" target="_blank" class="nav-pill nav-pill-ghost">GitHub ↗</a>
@@ -671,7 +672,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.1.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.2.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -697,6 +698,7 @@
             </div>
             <div class="cl-filter-chips" role="group" aria-label="Filter by version">
                 <button type="button" class="cl-chip active" data-filter="all">All Releases</button>
+                <button type="button" class="cl-chip" data-filter="v8">v8.x (Camouflage &amp; Knowledge)</button>
                 <button type="button" class="cl-chip" data-filter="v6">v6.x (Current)</button>
                 <button type="button" class="cl-chip" data-filter="v5">v5.x (Streaming)</button>
                 <button type="button" class="cl-chip" data-filter="v4">v4 (FSA &amp; D&amp;D)</button>
@@ -708,6 +710,121 @@
 
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
+
+            <!-- ── VERSION 8.2.0 (WEB-VERSION-53) ── -->
+            <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">📚</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.2.0 (WEB-VERSION-53)</h2>
+                            <span class="cl-badge cl-badge--date">November 2, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Knowledge Hub</span>
+                            <span class="cl-tag">Service Manual</span>
+                            <span class="cl-tag">Dual-Perspective View</span>
+                            <span class="cl-tag">Security Invariants Matrix</span>
+                            <span class="cl-tag">PWA v53</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Comprehensive Knowledge Hub &amp; Service Manual (<code>/knowledge/</code>):</strong> Launched a dedicated knowledge portal disclosing all 9 ZevSafe services. Features live client-side search across topics, quick-reference cheat sheets, a cryptographic security invariants matrix, and keyboard shortcuts (<code>/</code> to search, <code>ESC</code> to clear).
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Interactive Dual-Perspective Architecture:</strong> Every service guide features a 2-way / 3-way view toggle between 🟢 <em>Simple Step-by-Step User Guides</em> (for non-technical users) and 🔵 <em>Deep Technical &amp; Cryptographic Specifications</em> (byte layouts, Web Crypto API parameters, and math definitions for auditors). User preference is persisted across sessions in <code>localStorage</code>.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Complete Formal Cryptographic Disclosures:</strong> Nine dedicated service manuals covering the 57-byte container header, 4 MB STREAM AEAD framing, dual-manifest plausible deniability, forensic polyglot steganography, bit-rot deep scanning &amp; salvage, zero-RAM media lifetimes, CSPRNG Diceware entropy, PBKDF2 tiers up to 2.4M rounds, and 4-tier mobile streaming storage.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Air-Gapped Offline Shell Precaching (<code>sw.js</code>):</strong> Added all Knowledge Hub pages and assets to Service Worker precache cache <code>v53</code> (<code>APP_VERSION = 'v53'</code>), ensuring all guides and specifications are 100% accessible offline without internet connectivity.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.1.0 (WEB-VERSION-52) ── -->
+            <article class="cl-card" data-version="v8">
+                <div class="cl-marker">🎭</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.1.0 (WEB-VERSION-52)</h2>
+                            <span class="cl-badge cl-badge--date">November 2, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Duress Decoy Vaults</span>
+                            <span class="cl-tag">Plausible Deniability</span>
+                            <span class="cl-tag">Dual Manifests</span>
+                            <span class="cl-tag">IND-CPA Invariant</span>
+                            <span class="cl-tag">PWA v52</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Duress Decoy Vaults &amp; Dual-Manifest Architecture (<code>V3_FLAG_DURESS</code>):</strong> Added coercion resistance supporting two independent passwords in a single container. Unlocks innocuous decoy files under physical or legal duress while keeping primary data mathematically invisible.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Automated Realistic Decoy Generator:</strong> 1-click synthetic generator producing plausible Italian recipes, trip itineraries, packing checklists, and household budget templates in memory.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.0.0 (WEB-VERSION-51) ── -->
+            <article class="cl-card" data-version="v8">
+                <div class="cl-marker">🖼️</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.0.0 (WEB-VERSION-51)</h2>
+                            <span class="cl-badge cl-badge--date">November 2, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Polyglot Camouflage</span>
+                            <span class="cl-tag">Media Steganography</span>
+                            <span class="cl-tag">PBKDF2 Hardening</span>
+                            <span class="cl-tag">2.4M Rounds</span>
+                            <span class="cl-tag">PWA v51</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Steganographic Polyglot Media Camouflage:</strong> Prepend authentic JPEG, PNG, or MP4 cover media to encrypted vaults. Camouflaged vaults open in regular image/media viewers as ordinary photos, but decrypt seamlessly when dropped into ZevSafe.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Key Derivation Hardening Tiers (600k – 2.4M Rounds):</strong> High-work-factor PBKDF2-HMAC-SHA512 stretching tiers for GPU and ASIC brute-force immunity.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
 
             <!-- ── VERSION 7.1.0 (WEB-VERSION-52) ── -->
             <article class="cl-card" data-version="v7">
@@ -1946,6 +2063,8 @@
             </div>
             <p class="footer-tagline">Your files stay on your device. Always.</p>
             <div class="footer-links">
+            <a href="../knowledge/">Knowledge Hub</a>
+            <span>·</span>
                 <a href="../">App</a>
                 <span>·</span>
                 <a href="../security-audit/" style="color: #34d399; font-weight: 600;">Security Audit</a>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" data-knowledge-mode="combined">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#08091a">
+
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+
+    <title>Duress Decoy Vaults &amp; Plausible Deniability — ZevSafe Knowledge Hub</title>
+    <meta name="description" content="Technical guide to ZevSafe duress decoy vaults: dual-manifest architecture, V3_FLAG_DURESS, plausible deniability, and IND-CPA ciphertext indistinguishability.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../knowledge.css">
+</head>
+<body class="kb-page">
+    <div class="kb-reading-progress"></div>
+
+    <nav class="kb-navbar">
+        <div class="kb-navbar-inner">
+            <a href="../index.html" class="kb-brand-group">
+                <div class="kb-brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="kb-brand-title">
+                    ZevSafe <span class="kb-brand-tag">Duress Decoys</span>
+                </div>
+            </a>
+            
+            <ul class="kb-nav-links">
+                <li><a href="../index.html" class="kb-nav-link">&larr; Knowledge Hub</a></li>
+                <li><a href="../../index.html" class="kb-nav-link">Main App</a></li>
+                <li><a href="../../index.html" class="kb-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="kb-breadcrumb-bar">
+        <ul class="kb-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Knowledge Hub</a></li>
+            <li class="sep">/</li>
+            <li class="current">Duress Decoy Vaults</li>
+        </ul>
+
+        <div class="kb-perspective-dock">
+            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+        </div>
+    </div>
+
+    <div class="kb-article-layout">
+        <aside class="kb-sidebar">
+            <div class="kb-toc-title">
+                <span>📑</span> Contents
+            </div>
+            <ul class="kb-toc-list">
+                <li><a href="#overview" class="kb-toc-link">Overview &amp; Threat Model</a></li>
+                <li><a href="#simple-guide" class="kb-toc-link">Simple User Guide</a></li>
+                <li><a href="#dual-manifest" class="kb-toc-link">Dual-Manifest Architecture</a></li>
+                <li><a href="#ind-cpa" class="kb-toc-link">Plausible Deniability Proof</a></li>
+                <li><a href="#decoy-generator" class="kb-toc-link">Realistic Decoy Generator</a></li>
+                <li><a href="#invariants" class="kb-toc-link">Security Invariants</a></li>
+            </ul>
+        </aside>
+
+        <main class="kb-article-content">
+            <header class="kb-article-header">
+                <span class="kb-hero-eyebrow">SERVICE #03 &bull; COERCION RESISTANCE</span>
+                <h1 class="kb-article-title">Duress Decoy Vaults &amp; Plausible Deniability</h1>
+                <div class="kb-article-meta">
+                    <span class="kb-article-meta-item"><span>⏱️</span> 7 min read</span>
+                    <span class="kb-article-meta-item"><span>🛡️</span> Dual AES-256-GCM Envelopes</span>
+                    <span class="kb-article-meta-item"><span>📐</span> IND-CPA Indistinguishability</span>
+                </div>
+            </header>
+
+            <section id="overview" style="margin-bottom: 2.5rem;">
+                <p style="font-size: 1.05rem; color: var(--kb-text-muted);">
+                    In hostile physical situations (such as border crossings, device confiscation, or physical coercion), standard cryptographic defenses fail because the adversary forces you to reveal your password. ZevSafe's <strong>Duress Decoy Vault</strong> provides <em>plausible deniability</em>: entering your secondary decoy password unlocks a convincing set of innocuous documents while keeping your true sensitive data mathematically invisible.
+                </p>
+            </section>
+
+            <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
+            <section id="simple-guide" class="kb-perspective-simple">
+                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">How Duress Mode Protects You</h2>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 01</div>
+                    <h3 class="kb-step-title">Enable Duress Mode During Lock</h3>
+                    <p class="kb-step-desc">
+                        When creating your vault, toggle <strong>"Duress Decoy Vault"</strong>. Enter your confidential <em>Primary Password</em>, and then define a completely different <em>Decoy Password</em>.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 02</div>
+                    <h3 class="kb-step-title">Select or Generate Decoy Files</h3>
+                    <p class="kb-step-desc">
+                        Provide innocent files (such as family vacation photos, tax summaries, or receipts) or click <strong>"Generate Realistic Decoys"</strong> to create convincing travel itineraries and household budgets automatically.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 03</div>
+                    <h3 class="kb-step-title">Unlock According to Context</h3>
+                    <p class="kb-step-desc">
+                        To access your true files, enter your Primary Password. If forced to surrender your password under physical coercion, enter your Decoy Password. ZevSafe unlocks the decoy vault cleanly—leaving zero indication that another vault exists!
+                    </p>
+                </div>
+
+                <div class="kb-callout kb-callout-warning">
+                    <div class="kb-callout-icon">⚠️</div>
+                    <div class="kb-callout-body">
+                        <strong>Operational Security (OpSec) Tip:</strong> Make sure your decoy password is easy to remember and that your decoy files match your real-world identity (e.g. realistic dates, typical household documents).
+                    </div>
+                </div>
+            </section>
+
+            <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
+            <section id="dual-manifest" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Dual-Manifest Container Architecture</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    When Duress Mode is active, ZevSafe sets bit 1 in the header flags (<code>V3_FLAG_DURESS = 0x02</code>) and appends two independent encrypted manifests at the tail of the container:
+                </p>
+
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">Duress Trailer Layout</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>+-------------------------------------------------------------------------+
+| Primary Data Chunks + Decoy Data Chunks (Interleaved STREAM AEAD)       |
++-------------------------------------------------------------------------+
+| ENVELOPE 0 (Primary Manifest):                                          |
+| [ Salt (32B) | IV (12B) | Length (4B) | Ciphertext (M0) | GCM-Tag (16B) ]  |
++-------------------------------------------------------------------------+
+| ENVELOPE 1 (Decoy Manifest):                                            |
+| [ Salt (32B) | IV (12B) | Length (4B) | Ciphertext (M1) | GCM-Tag (16B) ]  |
++-------------------------------------------------------------------------+</code></pre>
+                </div>
+
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    Each envelope possesses its own independent 32-byte CSPRNG salt, 12-byte initialization vector, and 128-bit authentication tag.
+                </p>
+            </section>
+
+            <!-- SECTION: IND-CPA MATHEMATICAL PROOF -->
+            <section id="ind-cpa" class="kb-perspective-technical">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Mathematical Indistinguishability ($IND\text{-}CPA$)</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    Under the standard cryptographic security definitions of AES-256-GCM, the ciphertext output is computationally indistinguishable from uniform random noise:
+                </p>
+                <div class="kb-callout kb-callout-invariant">
+                    <div class="kb-callout-icon">📐</div>
+                    <div class="kb-callout-body">
+                        $$\mathbf{Adv}_{\text{AES-GCM}}^{\text{ind-cpa}}(\mathcal{A}) \le \epsilon \approx 2^{-128}$$
+                        <br>
+                        When an examiner supplies the decoy password, Envelope 1 validates its authentication tag and decrypts the decoy catalog. Envelope 0, meanwhile, fails tag validation and is indistinguishable from pseudorandom padding. The examiner has no mathematical mechanism to determine whether Envelope 0 represents an unauthenticated primary vault or simply random noise.
+                    </div>
+                </div>
+
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">Dual Envelope Authentication Routing</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>// js/stream-unpacker.js: Authenticate candidate password against both envelopes
+async function unlockDuressVault(trailerBytes, candidatePassword) {
+    // 1. Attempt decryption of Envelope 0 (Primary)
+    try {
+        const manifest = await decryptEnvelope(envelope0Bytes, candidatePassword);
+        return { type: 'PRIMARY', manifest };
+    } catch (e) {
+        // Authentication tag failed — expected if candidate is decoy password
+    }
+
+    // 2. Attempt decryption of Envelope 1 (Decoy)
+    try {
+        const manifest = await decryptEnvelope(envelope1Bytes, candidatePassword);
+        return { type: 'DECOY', manifest };
+    } catch (e) {
+        throw new Error("Invalid password: Failed authentication across both envelopes");
+    }
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- SECTION: REALISTIC DECOY GENERATOR -->
+            <section id="decoy-generator" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Automated Realistic Decoy Generator</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    Empty vaults or single dummy files trigger suspicion during forensic inspections. ZevSafe includes an automated synthetic generator that constructs realistic file structures:
+                </p>
+                <div class="kb-table-wrap">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Generated Synthetic Files</th>
+                                <th>Realistic Content</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Travel &amp; Vacations</strong></td>
+                                <td><code>itinerary.txt</code>, <code>hotel_confirmation.pdf</code></td>
+                                <td>Flights, booking references, rental car details, day-by-day sightseeing.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Culinary &amp; Recipes</strong></td>
+                                <td><code>sourdough_guide.md</code>, <code>mediterranean_diet.txt</code></td>
+                                <td>Ingredient lists, fermentation temperatures, baker's percentages.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Personal Budget</strong></td>
+                                <td><code>monthly_expenses_2026.csv</code>, <code>utilities.txt</code></td>
+                                <td>Plausible electricity, water, rent, and grocery line items.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SECTION: INVARIANTS -->
+            <section id="invariants" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Security Invariants</h2>
+                <div class="kb-table-wrap">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Invariant</th>
+                                <th>Guarantee</th>
+                                <th>Audit Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Cross-Envelope Isolation</strong></td>
+                                <td>Decoy key cannot decrypt primary data chunks or manifest.</td>
+                                <td>VERIFIED &bull; Distinct PBKDF2 salts and keys.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Zero UI Tell-Tale Signs</strong></td>
+                                <td>Unlocking in decoy mode presents identical explorer UI without warning badges.</td>
+                                <td>VERIFIED &bull; Indistinguishable user interface.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Safe Buffer Scrubbing</strong></td>
+                                <td>Candidate key material zeroized after failed attempts.</td>
+                                <td>VERIFIED &bull; <code>.fill(0)</code> on all intermediate buffers.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="kb-footer">
+        <div class="kb-footer-inner">
+            <div class="kb-brand-title">ZevSafe Knowledge Hub</div>
+            <p>100% Client-Side Cryptography &bull; Zero Server Tracking &bull; Air-Gapped Zero-Exfiltration Design</p>
+        </div>
+    </footer>
+
+    <script src="../knowledge.js"></script>
+</body>
+</html>

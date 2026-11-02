@@ -8,6 +8,8 @@
  */
 
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 // 1. Directory Tree Parser Logic
 function getItemsInDirectory(fileList, currentDir = '') {
@@ -1003,6 +1005,92 @@ const catalogFiles = [
     console.log('  ✓ 31. Believable decoy generator produces authentic travel, recipe, and budget items');
 }
 
+
+// Test 32: Knowledge Hub & Service Pages Integrity
+{
+    const path = require('path');
+    const fs = require('fs');
+    const requiredPages = [
+        'knowledge/index.html',
+        'knowledge/core-vault/index.html',
+        'knowledge/virtual-filesystem/index.html',
+        'knowledge/duress-decoy/index.html',
+        'knowledge/polyglot-camouflage/index.html',
+        'knowledge/health-and-salvage/index.html',
+        'knowledge/media-cinema/index.html',
+        'knowledge/passwords-autolock/index.html',
+        'knowledge/key-derivation-2fa/index.html',
+        'knowledge/mobile-streaming/index.html'
+    ];
+
+    for (const relPage of requiredPages) {
+        const fullPath = path.resolve(__dirname, '..', relPage);
+        assert.strictEqual(fs.existsSync(fullPath), true, `Page ${relPage} exists on disk`);
+        const html = fs.readFileSync(fullPath, 'utf8');
+        assert.strictEqual(html.length > 500, true, `Page ${relPage} contains substantial HTML content`);
+        assert.strictEqual(html.includes('<!DOCTYPE html>'), true, `Page ${relPage} is valid HTML5`);
+    }
+
+    console.log('  ✓ 32. Knowledge Hub and all 9 dedicated service manuals exist and pass structural validation');
+}
+
+// Test 33: Dual-Perspective Coverage Verification
+{
+    const path = require('path');
+    const serviceSubpages = [
+        'knowledge/core-vault/index.html',
+        'knowledge/virtual-filesystem/index.html',
+        'knowledge/duress-decoy/index.html',
+        'knowledge/polyglot-camouflage/index.html',
+        'knowledge/health-and-salvage/index.html',
+        'knowledge/media-cinema/index.html',
+        'knowledge/passwords-autolock/index.html',
+        'knowledge/key-derivation-2fa/index.html',
+        'knowledge/mobile-streaming/index.html'
+    ];
+
+    for (const relPage of serviceSubpages) {
+        const fullPath = path.resolve(__dirname, '..', relPage);
+        const html = fs.readFileSync(fullPath, 'utf8');
+        assert.strictEqual(html.includes('kb-perspective-simple'), true, `Page ${relPage} includes Simple View`);
+        assert.strictEqual(html.includes('kb-perspective-technical'), true, `Page ${relPage} includes Technical View`);
+        assert.strictEqual(html.includes('kb-toc-link'), true, `Page ${relPage} includes Table of Contents`);
+    }
+
+    console.log('  ✓ 33. All 9 dedicated service manuals include both Simple and Technical perspective disclosures');
+}
+
+// Test 34: PWA Offline Precaching Verification
+{
+    const path = require('path');
+    const swPath = path.resolve(__dirname, '..', 'sw.js');
+    const swContent = fs.readFileSync(swPath, 'utf8');
+
+    assert.strictEqual(swContent.includes("APP_VERSION    = 'v53';"), true, 'Service Worker bumped to v53');
+    const precacheExpected = [
+        './knowledge/',
+        './knowledge/index.html',
+        './knowledge/knowledge.css',
+        './knowledge/knowledge.js',
+        './knowledge/core-vault/index.html',
+        './knowledge/virtual-filesystem/index.html',
+        './knowledge/duress-decoy/index.html',
+        './knowledge/polyglot-camouflage/index.html',
+        './knowledge/health-and-salvage/index.html',
+        './knowledge/media-cinema/index.html',
+        './knowledge/passwords-autolock/index.html',
+        './knowledge/key-derivation-2fa/index.html',
+        './knowledge/mobile-streaming/index.html'
+    ];
+
+    for (const asset of precacheExpected) {
+        assert.strictEqual(swContent.includes(asset), true, `sw.js precaches ${asset}`);
+    }
+
+    console.log('  ✓ 34. PWA Service Worker v53 precaches all 13 Knowledge Hub shell assets for 100% offline access');
+}
+
 console.log('===============================================================');
-console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 31/31 PASSED    ');
+console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 34/34 PASSED    ');
 console.log('===============================================================');
+

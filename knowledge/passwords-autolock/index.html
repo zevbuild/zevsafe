@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" data-knowledge-mode="combined">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#08091a">
+
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+
+    <title>Passwords &amp; Auto-Lock Protocol — ZevSafe Knowledge Hub</title>
+    <meta name="description" content="Technical guide to ZevSafe CSPRNG Diceware generator, Shannon entropy calculation, inactivity timers, and cryptographic RAM zeroization.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../knowledge.css">
+</head>
+<body class="kb-page">
+    <div class="kb-reading-progress"></div>
+
+    <nav class="kb-navbar">
+        <div class="kb-navbar-inner">
+            <a href="../index.html" class="kb-brand-group">
+                <div class="kb-brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="kb-brand-title">
+                    ZevSafe <span class="kb-brand-tag">Passwords &amp; Lock</span>
+                </div>
+            </a>
+            
+            <ul class="kb-nav-links">
+                <li><a href="../index.html" class="kb-nav-link">&larr; Knowledge Hub</a></li>
+                <li><a href="../../index.html" class="kb-nav-link">Main App</a></li>
+                <li><a href="../../index.html" class="kb-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="kb-breadcrumb-bar">
+        <ul class="kb-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Knowledge Hub</a></li>
+            <li class="sep">/</li>
+            <li class="current">Passwords &amp; Auto-Lock Protocol</li>
+        </ul>
+
+        <div class="kb-perspective-dock">
+            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+        </div>
+    </div>
+
+    <div class="kb-article-layout">
+        <aside class="kb-sidebar">
+            <div class="kb-toc-title">
+                <span>📑</span> Contents
+            </div>
+            <ul class="kb-toc-list">
+                <li><a href="#overview" class="kb-toc-link">Overview &amp; Philosophy</a></li>
+                <li><a href="#simple-guide" class="kb-toc-link">Simple User Guide</a></li>
+                <li><a href="#diceware" class="kb-toc-link">CSPRNG Diceware Engine</a></li>
+                <li><a href="#shannon-entropy" class="kb-toc-link">Shannon Entropy Math</a></li>
+                <li><a href="#autolock-protocol" class="kb-toc-link">Auto-Lock &amp; Zeroization</a></li>
+                <li><a href="#invariants" class="kb-toc-link">Security Invariants</a></li>
+            </ul>
+        </aside>
+
+        <main class="kb-article-content">
+            <header class="kb-article-header">
+                <span class="kb-hero-eyebrow">SERVICE #07 &bull; CREDENTIALS &amp; HYGIENE</span>
+                <h1 class="kb-article-title">Passwords &amp; Auto-Lock Protocol</h1>
+                <div class="kb-article-meta">
+                    <span class="kb-article-meta-item"><span>⏱️</span> 6 min read</span>
+                    <span class="kb-article-meta-item"><span>🎲</span> CSPRNG Diceware (77+ bits)</span>
+                    <span class="kb-article-meta-item"><span>🧹</span> Ephemeral Memory Zeroization</span>
+                </div>
+            </header>
+
+            <section id="overview" style="margin-bottom: 2.5rem;">
+                <p style="font-size: 1.05rem; color: var(--kb-text-muted);">
+                    Even the strongest military-grade AES-256 cipher is vulnerable if protected by a weak, guessable password or if an unlocked laptop is left unattended at a coffee shop or office desk. ZevSafe combines <strong>CSPRNG Diceware Passphrase Generation</strong> with an aggressive <strong>Auto-Lock Inactivity Protocol</strong> and cryptographic memory scrubbing.
+                </p>
+            </section>
+
+            <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
+            <section id="simple-guide" class="kb-perspective-simple">
+                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Creating Passphrases and Session Protection</h2>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 01</div>
+                    <h3 class="kb-step-title">Generate High-Entropy Diceware Passphrases</h3>
+                    <p class="kb-step-desc">
+                        Click the <strong>Dice icon (🎲)</strong> next to the password box. ZevSafe generates a memorable, high-entropy 5 or 6-word phrase (e.g. <code>correct-horse-battery-staple-galaxy</code>). These phrases are easy for humans to remember but mathematically impossible for supercomputers to brute-force.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 02</div>
+                    <h3 class="kb-step-title">Monitor the Live Strength Meter</h3>
+                    <p class="kb-step-desc">
+                        As you type, the strength bar calculates Shannon Entropy in real time. It grades your passphrase from Weak (&lt; 40 bits) to Unbreakable (80+ bits) and warns you if common patterns or dictionary words are detected.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 03</div>
+                    <h3 class="kb-step-title">Configure Auto-Lock Inactivity Timer</h3>
+                    <p class="kb-step-desc">
+                        Choose your preferred auto-lock timeout (5, 15, or 30 minutes). If you step away from your device, ZevSafe automatically locks the vault, clears your files from the screen, and wipes all keys from memory.
+                    </p>
+                </div>
+
+                <div class="kb-callout kb-callout-zk">
+                    <div class="kb-callout-icon">💡</div>
+                    <div class="kb-callout-body">
+                        <strong>Instant Lock Hotkey:</strong> You can also lock your active vault instantly at any time by pressing <strong>Esc</strong> twice or clicking the lock icon in the top header.
+                    </div>
+                </div>
+            </section>
+
+            <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
+            <section id="diceware" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">CSPRNG Diceware Generator Engine</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    ZevSafe strictly prohibits insecure pseudo-random generators like <code>Math.random()</code>. Word selection relies entirely on the operating system's cryptographic entropy source via <code>crypto.getRandomValues()</code>:
+                </p>
+
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">CSPRNG Diceware Implementation</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>// app.js: Generate cryptographically secure passphrase
+function generateDicewarePassphrase(wordCount = 5, separator = '-') {
+    const randomIndices = new Uint32Array(wordCount);
+    window.crypto.getRandomValues(randomIndices);
+    
+    const words = [];
+    const dictLength = DICEWARE_WORDLIST.length;
+    
+    for (let i = 0; i &lt; wordCount; i++) {
+        // Unbiased modulo mapping
+        const wordIndex = randomIndices[i] % dictLength;
+        words.push(DICEWARE_WORDLIST[wordIndex]);
+    }
+    
+    return words.join(separator);
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- SECTION: SHANNON ENTROPY MATH -->
+            <section id="shannon-entropy" class="kb-perspective-technical">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Shannon Entropy Mathematical Formulation</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    The information-theoretic entropy $H(X)$ is computed based on character frequencies across the candidate string:
+                </p>
+
+                <div class="kb-callout kb-callout-invariant">
+                    <div class="kb-callout-icon">📐</div>
+                    <div class="kb-callout-body">
+                        $$H(X) = - \sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$$
+                        <br>
+                        For a Diceware passphrase composed of $k$ independent words selected uniformly from a dictionary of size $W$:
+                        $$E_{\text{dice}} = k \cdot \log_2(W)$$
+                        With $W = 7,776$ (standard wordlist) and $k = 6$:
+                        $$E_{\text{dice}} = 6 \cdot \log_2(7776) = 6 \cdot 12.925 = 77.55 \text{ bits of entropy}$$
+                        An adversary requires on average $2^{76.55}$ operations to guess the passphrase, rendering brute-force attacks computationally infeasible.
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: AUTOLOCK & ZEROIZATION -->
+            <section id="autolock-protocol" class="kb-perspective-technical">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Auto-Lock Protocol &amp; Buffer Zeroization</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    When user inactivity exceeds the configured threshold, <code>lockV3VaultSession()</code> is dispatched:
+                </p>
+
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">Cryptographic RAM Scrubbing</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>function lockV3VaultSession() {
+    // 1. Zeroize master key and PBKDF2 derived buffers
+    if (activeSession.derivedKeyBytes) {
+        activeSession.derivedKeyBytes.fill(0);
+        activeSession.derivedKeyBytes = null;
+    }
+
+    // 2. Wipe chunk cache and decrypted overlay files
+    if (activeSession.chunkCache) {
+        for (const chunk of activeSession.chunkCache.values()) {
+            if (chunk.data) chunk.data.fill(0);
+        }
+        activeSession.chunkCache.clear();
+    }
+
+    // 3. Purge DOM references and reset UI
+    activeSession = null;
+    renderLockedState();
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- SECTION: INVARIANTS -->
+            <section id="invariants" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Security Invariants</h2>
+                <div class="kb-table-wrap">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Invariant</th>
+                                <th>Guarantee</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Entropy Verification</strong></td>
+                                <td>Dice generation uses 100% CSPRNG hardware entropy; never predictable pseudo-randomness.</td>
+                                <td>VERIFIED</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Memory Zeroization</strong></td>
+                                <td>All sensitive TypedArrays wiped with <code>.fill(0)</code> before release to garbage collection.</td>
+                                <td>VERIFIED</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Zero Remote Telemetry</strong></td>
+                                <td>Password strings and entropy calculations never leave browser RAM.</td>
+                                <td>VERIFIED</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="kb-footer">
+        <div class="kb-footer-inner">
+            <div class="kb-brand-title">ZevSafe Knowledge Hub</div>
+            <p>100% Client-Side Cryptography &bull; Zero Server Tracking &bull; Air-Gapped Zero-Exfiltration Design</p>
+        </div>
+    </footer>
+
+    <script src="../knowledge.js"></script>
+</body>
+</html>

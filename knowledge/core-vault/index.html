@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en" data-knowledge-mode="combined">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#08091a">
+
+    <!-- Strict Air-Gapped Zero-Exfiltration Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+
+    <title>Core Streaming Vault (ZV3) — ZevSafe Knowledge Hub</title>
+    <meta name="description" content="Detailed guide and cryptographic specification for ZevSafe Core Streaming Vault: 57-byte header, 4 MB STREAM AEAD frames, AES-256-GCM, and emergency recovery sheets.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../knowledge.css">
+</head>
+<body class="kb-page">
+    <div class="kb-reading-progress"></div>
+
+    <!-- Navigation -->
+    <nav class="kb-navbar">
+        <div class="kb-navbar-inner">
+            <a href="../index.html" class="kb-brand-group">
+                <div class="kb-brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="kb-brand-title">
+                    ZevSafe <span class="kb-brand-tag">Core Vault</span>
+                </div>
+            </a>
+            
+            <ul class="kb-nav-links">
+                <li><a href="../index.html" class="kb-nav-link">&larr; Knowledge Hub</a></li>
+                <li><a href="../../index.html" class="kb-nav-link">Main App</a></li>
+                <li><a href="../../index.html" class="kb-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Breadcrumbs & View Toggle -->
+    <div class="kb-breadcrumb-bar">
+        <ul class="kb-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Knowledge Hub</a></li>
+            <li class="sep">/</li>
+            <li class="current">Core Streaming Vault</li>
+        </ul>
+
+        <div class="kb-perspective-dock">
+            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+        </div>
+    </div>
+
+    <!-- Article Layout -->
+    <div class="kb-article-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="kb-sidebar">
+            <div class="kb-toc-title">
+                <span>📑</span> Contents
+            </div>
+            <ul class="kb-toc-list">
+                <li><a href="#overview" class="kb-toc-link">Overview &amp; Architecture</a></li>
+                <li><a href="#simple-guide" class="kb-toc-link">Simple User Guide</a></li>
+                <li><a href="#container-header" class="kb-toc-link">57-Byte Container Header</a></li>
+                <li><a href="#chunked-aead" class="kb-toc-link">STREAM AEAD &amp; Nonces</a></li>
+                <li><a href="#recovery-sheet" class="kb-toc-link">Emergency Recovery Sheet</a></li>
+                <li><a href="#invariants" class="kb-toc-link">Security Invariants</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="kb-article-content">
+            <header class="kb-article-header">
+                <span class="kb-hero-eyebrow">SERVICE #01 &bull; CRYPTOGRAPHIC FOUNDATION</span>
+                <h1 class="kb-article-title">Core Streaming Vault (ZV3)</h1>
+                <div class="kb-article-meta">
+                    <span class="kb-article-meta-item"><span>⏱️</span> 6 min read</span>
+                    <span class="kb-article-meta-item"><span>🔒</span> Authenticated STREAM AEAD</span>
+                    <span class="kb-article-meta-item"><span>📦</span> Version 3.0 Standard</span>
+                </div>
+            </header>
+
+            <!-- Section: Overview -->
+            <section id="overview" style="margin-bottom: 2.5rem;">
+                <p style="font-size: 1.05rem; color: var(--kb-text-muted);">
+                    The <strong>Core Streaming Vault</strong> is the fundamental cryptographic engine of ZevSafe. It allows users to pack gigabytes of sensitive files and complete folder hierarchies into a single authenticated, portable <code>.zev</code> container directly in the browser—with zero server uploads, zero disk leakage, and bounded peak memory under 150 MB.
+                </p>
+            </section>
+
+            <!-- PERSPECTIVE: SIMPLE GUIDE -->
+            <section id="simple-guide" class="kb-perspective-simple">
+                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">How to Lock and Unlock Vaults in 3 Steps</h2>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 01</div>
+                    <h3 class="kb-step-title">Select Files or Folders</h3>
+                    <p class="kb-step-desc">
+                        Drag and drop individual files, videos, documents, or an entire folder tree onto the <strong>Lock Vault</strong> dropzone. ZevSafe scans the hierarchy locally in your browser without reading them into RAM all at once.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 02</div>
+                    <h3 class="kb-step-title">Set Password &amp; Optional Keyfile</h3>
+                    <p class="kb-step-desc">
+                        Enter a strong passphrase or generate one using the built-in Diceware generator. You can optionally attach any file (a photo, audio track, or security token) as a <strong>Physical Keyfile (2FA)</strong>. Both are required to unlock the vault later.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 03</div>
+                    <h3 class="kb-step-title">Stream-Encrypt &amp; Save Emergency Sheet</h3>
+                    <p class="kb-step-desc">
+                        Click <strong>Lock Vault</strong>. The browser compresses and encrypts your data chunk by chunk, streaming the finished <code>.zev</code> file directly to your downloads. Print or store the generated <strong>Emergency Recovery Sheet</strong> containing your configuration parameters.
+                    </p>
+                </div>
+
+                <div class="kb-callout kb-callout-zk">
+                    <div class="kb-callout-icon">💡</div>
+                    <div class="kb-callout-body">
+                        <strong>Instant Unlock:</strong> To view or extract files later, drag your <code>.zev</code> vault into the <strong>Unlock Vault</strong> tab. You don't have to wait to unpack the entire file—ZevSafe loads the file catalog instantly in milliseconds!
+                    </div>
+                </div>
+            </section>
+
+            <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
+            <section id="container-header" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">The 57-Byte Container Header Layout</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.5rem;">
+                    Every v3 <code>.zev</code> vault begins with an unencrypted, 57-byte authenticated header. This header establishes the cipher configuration, master salt, base initialization vector, and tail manifest pointer.
+                </p>
+
+                <div class="kb-table-wrap" style="margin-bottom: 1.5rem;">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Byte Offset</th>
+                                <th>Field Name</th>
+                                <th>Size</th>
+                                <th>Type</th>
+                                <th>Description &amp; Invariants</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>0x00 .. 0x03</code></td>
+                                <td><code>MAGIC</code></td>
+                                <td>4 Bytes</td>
+                                <td>ASCII</td>
+                                <td>Must strictly equal <code>ZV3\0</code> (Hex: <code>5A 56 33 00</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x04</code></td>
+                                <td><code>VERSION</code></td>
+                                <td>1 Byte</td>
+                                <td>uint8</td>
+                                <td>Format version; strictly <code>0x03</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x05</code></td>
+                                <td><code>FLAGS</code></td>
+                                <td>1 Byte</td>
+                                <td>uint8</td>
+                                <td>Bitfield: <code>0x00</code> = Standard Vault, <code>0x02</code> = Duress Decoy Enabled.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x06 .. 0x09</code></td>
+                                <td><code>CHUNK_SIZE</code></td>
+                                <td>4 Bytes</td>
+                                <td>uint32 BE</td>
+                                <td>Nominal plaintext chunk size (Default: <code>0x00400000</code> = 4,194,304 B).</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x0A .. 0x29</code></td>
+                                <td><code>SALT</code></td>
+                                <td>32 Bytes</td>
+                                <td>Binary</td>
+                                <td>CSPRNG random salt passed to PBKDF2-SHA512 key derivation.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x2A .. 0x30</code></td>
+                                <td><code>BASE_IV_PREFIX</code></td>
+                                <td>7 Bytes</td>
+                                <td>Binary</td>
+                                <td>CSPRNG random prefix for constructing deterministic 12-byte chunk IVs.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x31 .. 0x38</code></td>
+                                <td><code>MANIFEST_OFFSET</code></td>
+                                <td>8 Bytes</td>
+                                <td>uint64 BE</td>
+                                <td>Absolute byte offset where the encrypted JSON tail manifest begins.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">JavaScript Header Parser</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>// js/stream-unpacker.js: Read 57-byte container header
+function parseV3Header(headerBytes) {
+    if (headerBytes.byteLength &lt; 57) throw new Error("Header truncated");
+    const view = new DataView(headerBytes.buffer, headerBytes.byteOffset, 57);
+    
+    // Check Magic 'ZV3\0'
+    const magic = String.fromCharCode(...headerBytes.slice(0, 4));
+    if (magic !== 'ZV3\0') throw new Error("Invalid container magic: " + magic);
+    
+    const version = view.getUint8(4); // 0x03
+    const flags = view.getUint8(5);   // 0x00 or 0x02
+    const chunkSize = view.getUint32(6, false); // Big-Endian uint32
+    const salt = headerBytes.slice(10, 42);     // 32-byte salt
+    const ivPrefix = headerBytes.slice(42, 49); // 7-byte IV prefix
+    const manifestOffset = Number(view.getBigUint64(49, false)); // Big-Endian uint64
+    
+    return { version, flags, chunkSize, salt, ivPrefix, manifestOffset };
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- SECTION: STREAM AEAD & NONCES -->
+            <section id="chunked-aead" class="kb-perspective-technical">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">STREAM AEAD Framing &amp; Mathematical Invariants</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    To protect against chunk reordering, truncation, injection, or splicing attacks, ZevSafe binds the <strong>Chunk Index</strong> and a <strong>Final Chunk Flag</strong> into both the 12-byte initialization vector (IV) and the Additional Authenticated Data (AAD).
+                </p>
+
+                <h3 style="font-size: 1.2rem; color: var(--kb-teal-light); margin-bottom: 0.75rem;">12-Byte Chunk IV Construction</h3>
+                <div class="kb-table-wrap" style="margin-bottom: 1.5rem;">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Byte Offset</th>
+                                <th>Field</th>
+                                <th>Length</th>
+                                <th>Formula / Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>0 .. 6</code></td>
+                                <td>Base IV Prefix</td>
+                                <td>7 Bytes</td>
+                                <td>Extracted verbatim from <code>BASE_IV_PREFIX</code> in container header.</td>
+                            </tr>
+                            <tr>
+                                <td><code>7 .. 10</code></td>
+                                <td>Chunk Sequence Counter</td>
+                                <td>4 Bytes</td>
+                                <td>Big-Endian <code>uint32</code> counter ($i = 0, 1, 2, \dots, N$).</td>
+                            </tr>
+                            <tr>
+                                <td><code>11</code></td>
+                                <td>Last Chunk Marker</td>
+                                <td>1 Byte</td>
+                                <td><code>0x00</code> for intermediate frames; <code>0x01</code> for the final frame ($i = N$).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 style="font-size: 1.2rem; color: var(--kb-purple-light); margin-bottom: 0.75rem;">10-Byte AAD (Additional Authenticated Data) Binding</h3>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1rem;">
+                    Every chunk is authenticated with an explicit 10-byte AAD vector:
+                </p>
+                <div class="kb-code-block">
+                    <div class="kb-code-header">
+                        <span class="kb-code-lang">Binary AAD Structure</span>
+                        <button class="kb-copy-btn">Copy Code</button>
+                    </div>
+                    <pre class="kb-code-body"><code>AAD = [ 'ZV3\0' (4B) | VERSION: 0x03 (1B) | COUNTER: uint32BE (4B) | IS_LAST: uint8 (1B) ]
+Total AAD Size: Exactly 10 Bytes</code></pre>
+                </div>
+
+                <div class="kb-callout kb-callout-invariant">
+                    <div class="kb-callout-icon">🔒</div>
+                    <div class="kb-callout-body">
+                        <strong>Cryptographic Truncation Proof:</strong> An adversary cannot delete the last chunk or truncate the archive, because the final chunk is authenticated with <code>IS_LAST = 0x01</code>. If any intermediate chunk is removed or reordered, the counter mismatch causes AES-256-GCM authentication to immediately fail with <code>OperationError</code>.
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: EMERGENCY RECOVERY SHEET -->
+            <section id="recovery-sheet" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Emergency Recovery Sheet</h2>
+                <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
+                    Because ZevSafe operates with zero backend servers and absolute zero knowledge, forgotten passwords cannot be reset. The Emergency Recovery Sheet provides a printable offline record containing:
+                </p>
+                <ul style="color: var(--kb-text-muted); padding-left: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li><strong>Container Fingerprint:</strong> First 16 hex characters of the master salt for vault identification.</li>
+                    <li><strong>Key Derivation Parameters:</strong> Selected PBKDF2 iteration count (600k, 1.2M, or 2.4M) and hash algorithm.</li>
+                    <li><strong>Keyfile SHA-256 Digest:</strong> Hexadecimal hash of the required 2FA hardware keyfile.</li>
+                    <li><strong>Passphrase Reminder / Cold Storage Box:</strong> Dedicated writing area for air-gapped paper safes.</li>
+                </ul>
+            </section>
+
+            <!-- SECTION: SECURITY INVARIANTS -->
+            <section id="invariants" style="margin-bottom: 2.5rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Security Invariants Enforced</h2>
+                <div class="kb-table-wrap">
+                    <table class="kb-table">
+                        <thead>
+                            <tr>
+                                <th>Invariant</th>
+                                <th>Technical Guarantee</th>
+                                <th>Enforcement Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Zero Memory Spills</strong></td>
+                                <td>Peak RAM strictly &lt; 150 MB across 5 GB vaults.</td>
+                                <td>Backpressure credit controller in <code>js/worker-bridge.js</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nonce Uniqueness</strong></td>
+                                <td>Deterministic IV monotonically advances counter; never repeats.</td>
+                                <td><code>js/stream-crypto.js:buildChunkIV()</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Zero Network Access</strong></td>
+                                <td>Strict CSP air-gap blocks all external HTTP/WebSocket egress.</td>
+                                <td><code>meta http-equiv="Content-Security-Policy"</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="kb-footer">
+        <div class="kb-footer-inner">
+            <div class="kb-brand-title">ZevSafe Knowledge Hub</div>
+            <p>100% Client-Side Cryptography &bull; Zero Server Tracking &bull; Air-Gapped Zero-Exfiltration Design</p>
+        </div>
+    </footer>
+
+    <script src="../knowledge.js"></script>
+</body>
+</html>

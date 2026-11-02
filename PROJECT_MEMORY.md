@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.1.0` (`WEB-VERSION-52`, Service Worker `v49`)  
+> **Web Portal Version:** `v8.2.0` (`WEB-VERSION-53`, Service Worker `v53`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 > **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md).
 
@@ -69,6 +69,24 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Memory Bounding & Cache Hygiene:** 4-chunk (16 MB) memory-bounded LRU eviction cache (`chunkCache`) in `app.js` with proper architectural lifecycle management (eviction drops oldest key to avoid buffer aliasing with `decryptedChunks` during active multi-chunk extractions, while `.fill(0)` byte scrubbing is strictly executed in `clear()` during `lockV3VaultSession`); CSPRNG `downloadId` token generation with 5-second rapid session reclamation in `StreamSaver`.
 - **Mobile GPU & Touch Performance Optimization (`styles.css`):** Completely eradicated mobile browser lag and thermal throttling on smartphones (Android/iOS) by disabling continuous 80px Gaussian blur convolutions on floating orbs (`.orb`) and full-screen procedural SVG fractal noise filters (`.noise`) on screens $\le 820\text{px}$ or touch devices; substituted static zero-overhead CSS radial gradients; removed heavy `backdrop-filter: blur(24px)` from cards/headers in favor of high-performance opaque dark surfaces (`rgba(13, 17, 28, 0.94)`); purged catastrophic universal transition rule `* { transition-duration: 0.15s !important; }`; restored native 1:1 touch momentum scrolling; paused idle background keyframe animations (`gradientShift`, `drop-ring`).
 - **PWA Service Worker Hardening & Chrome Subfolder Routing (`sw.js`, `_headers`):** Resolved Chrome subfolder loading failure (`/how-to-use-zevsafe/`, `/change-log/`, `/security-audit/`) by rebuilding redirected HTTP 308 responses into clean `Response` objects before `cache.put()`, avoiding Chromium `TypeError: Cannot cache a redirected response`; canonical trailing slash URL normalization across all cross-page links; section-aware `cacheFirst` path matching and subfolder-specific offline fallbacks; standardized `{ scope: '/' }` across subfolders without redundant `controllerchange` reloads; precached canonical directory paths alongside index files; added `/sw.js` HTTP headers in `_headers` (`Service-Worker-Allowed: /`, `Cache-Control: no-cache, no-store, must-revalidate`); bumped offline shell cache to `v44`.
+
+
+### 3.4 Comprehensive Knowledge Hub & Service Manual (`knowledge/`) [v8.2.0]
+- **Architecture & Portal (`knowledge/index.html`, `knowledge/knowledge.css`, `knowledge/knowledge.js`):**
+  - Instant client-side search engine with keyboard shortcut `/` and `ESC` clearing.
+  - Interactive Dual-Perspective Architecture: 2-way / 3-way view toggle between 🟢 *Simple Step-by-Step User Guides* (plain English, screenshots, workflows) and 🔵 *Deep Cryptographic & Technical Disclosures* (byte offsets, Web Crypto API parameters, mathematical formulas, memory bounds) with `localStorage` state persistence.
+  - Security Invariants Matrix detailing primitives, parameters, boundaries, and threat models across all 9 services.
+- **Nine Dedicated Service Deep-Dive Pages:**
+  1. `knowledge/core-vault/index.html`: Core Streaming Vault (Lock, Unlock, 57B Header, 4MB Chunks, Emergency Sheet)
+  2. `knowledge/virtual-filesystem/index.html`: Virtual Filesystem & Live Editing (Notes, Live MD Editor, In-Place Rename/Delete, Direct Re-encryption, Session Overlay Map/Set)
+  3. `knowledge/duress-decoy/index.html`: Duress Decoy Vaults & Plausible Deniability (Dual-Manifest, V3_FLAG_DURESS, Realistic Decoys, IND-CPA Indistinguishability)
+  4. `knowledge/polyglot-camouflage/index.html`: Steganographic Forensic Camouflage (JPEG/PNG Termination Markers, Sliding-Window Detector, Cover Generator)
+  5. `knowledge/health-and-salvage/index.html`: Vault Health, Deep AEAD Scan & Fault-Tolerant Salvage (Chunk Isolation, Quarantining, Salvage Reports)
+  6. `knowledge/media-cinema/index.html`: Media Cinema Deck & Floating Audio Dock (Zero-RAM Streaming, Persistent Dock, URL Revocation Invariants)
+  7. `knowledge/passwords-autolock/index.html`: Passwords & Auto-Lock Protocol (CSPRNG Diceware, Shannon Entropy, Inactivity Timers, Buffer Zeroization)
+  8. `knowledge/key-derivation-2fa/index.html`: Key Derivation & 2FA Physical Keyfiles (600k-2.4M PBKDF2 Tiers, SHA-256 Keyfile Mixing)
+  9. `knowledge/mobile-streaming/index.html`: Multi-Tier Mobile Streaming Storage (Tier 1 FSA, Tier 3 OPFS, Tier 2 SW, Tier 4 Fallback, Memory Bounding < 150 MB)
+- **Air-Gapped PWA Precaching:** All 12 Knowledge Hub pages and assets are precached in `SHELL_ASSETS` (`APP_VERSION = 'v53'`) for 100% offline availability in airplane mode.
 
 ### 3.3 Component Directory
 
