@@ -18,76 +18,130 @@ The primary vision of the **Next Generation ZevSafe** is to evolve from an *encr
 ## 🗺️ Master Release Roadmap
 
 ```mermaid
-flowchart LR
-    A["Phase 1 (v6.9.6)<br>Security Ergonomics<br>& Direct Re-Encryption"] --> B["Phase 2 (v7.0)<br>Full In-Vault Virtual<br>Filesystem (FS)"]
-    B --> C["Phase 3 (v7.1)<br>High-Speed Adaptive<br>Media Streaming"]
-    C --> D["Phase 4 (v7.2)<br>Vault Health, Bit-Rot<br>& Forensics Engine"]
-    D --> E["Phase 5 (v8.0)<br>Next-Gen Memory-Hard<br>KDF & Camouflage"]
+flowchart TD
+    subgraph Delivered["Delivered Milestones (v6.9 - v8.2)"]
+        P1["Phase 1 (v6.9.6)<br>Security Ergonomics & Direct Re-Encrypt"] --> P2["Phase 2 (v7.0)<br>In-Vault Virtual Filesystem (VFS)"]
+        P2 --> P3["Phase 3 (v7.1)<br>Cinema & Floating Audio Dock"]
+        P3 --> P4["Phase 4 (v7.2)<br>AEAD Deep Scan & Salvage Engine"]
+        P4 --> P5["Phase 5 (v8.0)<br>Polyglot Camouflage & KDF Tiers"]
+        P5 --> P6["Phase 6 (v8.1)<br>Duress Decoys & Plausible Deniability"]
+        P6 --> P7["Phase 7 (v8.2)<br>Complete Knowledge Hub & Manual"]
+    end
+
+    subgraph Upcoming["Upcoming Strategic Roadmap (v8.3 - v9.0)"]
+        P7 --> P8["Phase 8 (v8.3)<br>Argon2id WASM Memory-Hard KDF"]
+        P8 --> P9["Phase 9 (v8.4)<br>Visual Paper-Safe & QR Recovery"]
+        P9 --> P10["Phase 10 (v8.5)<br>In-Vault Document Redaction Tool"]
+        P10 --> P11["Phase 11 (v8.6)<br>Hardware Crypto Profiler & Benchmark"]
+        P11 --> P12["Phase 12 (v9.0)<br>Air-Gapped Multi-Language i18n"]
+    end
 ```
 
 ---
 
-## 📋 Detailed Milestone Breakdown
+## 📋 Detailed Completed Milestones (v6.9 – v8.2)
 
-### Phase 1: Security Ergonomics & Direct In-Place Re-Encryption (v6.9.6)
-*Target: Immediate Execution*
+### Phase 1: Security Ergonomics & Direct In-Place Re-Encryption (v6.9.6) [COMPLETED]
+- Built-in CSPRNG Diceware generator (770+ wordlist, 77+ bits Shannon entropy).
+- Auto-lock inactivity timer protocol with TypedArray `.fill(0)` buffer zeroization.
+- Direct in-place re-encryption from memory without intermediate unencrypted ZIP extraction.
 
-1. **Built-in CSPRNG Password & Diceware Passphrase Generator:**
-   - **Diceware Engine:** High-entropy 4–6 word passphrases derived from an air-gapped, curated 7,776-word EFF-style wordlist using `crypto.getRandomValues`.
-   - **Alphanumeric Random Generator:** 16–32 character cryptographically random tokens with custom character sets (symbols, numbers, uppercase).
-   - **1-Click Synchronization:** Auto-populates both "Password or PIN" and "Confirm Password" fields and recalculates live entropy strength.
-2. **Auto-Lock Inactivity Timer Protocol:**
-   - Configurable idle timeout in Vault Explorer header: `[Disabled / 5 min / 15 min / 30 min]`.
-   - Reset on pointer, keyboard, scroll, and touch interactions.
-   - Automatic execution of `lockVaultSession()` with full zeroization (`.fill(0)` on keys, chunk caches, DOM fields, and object URL revocations).
-3. **In-Vault "Save & Re-Encrypt to `.zev`" (Direct In-Place Vault Export):**
-   - Adds `🔒 Re-Encrypt (.zev)` in Vault Explorer.
-   - Takes modified files (`editedFiles` overlay) and existing catalog items, streaming a brand new `ZV3\0` container using the active session key or password without requiring intermediate unencrypted ZIP extraction.
+### Phase 2: Complete In-Vault Virtual Filesystem (v7.0) [COMPLETED]
+- Decrypted Explorer lifecycle: Add files/folders via Drag & Drop or picker, in-place file deletion, and path renaming.
+- Safe client-side Markdown rendering with live editor toggle (`.md` preview, code highlights, checkboxes).
+
+### Phase 3: Adaptive Streaming & Media Optimization (v7.1) [COMPLETED]
+- Floating Audio Mini-Player Dock: Decouples playback from modal views so users can listen to audio while browsing.
+- Zero-RAM Blob URL lifecycle: Immediate URL revocation on stop/close.
+
+### Phase 4: Vault Health, Diagnostics & Bit-Rot Verifier (v7.2) [COMPLETED]
+- 5-point diagnostic scorecard certifying container framing, PBKDF2 rounds, and auth tags.
+- Live chunk-by-chunk AEAD deep scan (`verifyAllVaultChunks`).
+- Fault-tolerant partial salvage engine (`salvageVault`) isolating corrupted blocks and rescuing intact files.
+
+### Phase 5: Post-Quantum Hardening & Forensic Camouflage (v8.0) [COMPLETED]
+- Steganographic Polyglot Forensic Media Camouflage (JPEG `0xFF 0xD9`, PNG `IEND`, MP4 `moov` embedding).
+- Zero-allocation sliding-window vault locator (`findPolyglotVaultOffset`).
+- In-memory minimalist cover generator via canvas.
+- Configurable PBKDF2-HMAC-SHA512 hardening tiers (600k, 1.2M, and 2.4M rounds).
+
+### Phase 6: Duress Decoy Vaults & Plausible Deniability (v8.1.0) [COMPLETED]
+- Dual-manifest architecture (`V3_FLAG_DURESS = 0x02`): Master Password (real files) vs Duress Password (decoy files).
+- $\text{IND-CPA}$ indistinguishability: Unauthenticated envelope is indistinguishable from random noise.
+- 1-click realistic decoy file generator (Travel itineraries, Italian recipes, household budget CSVs).
+
+### Phase 7: Comprehensive Knowledge Hub & Service Manual (v8.2.0) [COMPLETED]
+- Master Knowledge Hub (`/knowledge/`) with client-side live search, hotkeys (`/`, `Esc`), and security matrix.
+- Dual-Perspective Architecture (🟢 Simple Step-by-Step Guides vs 🔵 Deep Technical Specifications) with `localStorage` persistence.
+- 9 dedicated deep-dive service pages across all ZevSafe cryptographic subsystems.
+- Precached in Service Worker `v53` for 100% offline air-gapped access.
 
 ---
 
-### Phase 2: Complete In-Vault Virtual Filesystem (v7.0)
+## 🔮 Upcoming Engineering Milestones (v8.3 – v9.0)
+
+### Phase 8: Argon2id WebAssembly Memory-Hard Key Derivation (v8.3.0)
+*Target: Q4 2026 / Early 2027*
+
+1. **Memory-Hard Password Hashing:**
+   - Integrate an ultra-lightweight (~30 KB) compiled WebAssembly module for **Argon2id** (winner of the Password Hashing Competition).
+   - Parameters: Memory cost $m = 64\text{ MB}$, time iterations $t = 3$, parallelism degree $p = 4$.
+   - **GPU & ASIC Immunity:** Because Argon2id requires 64 MB of dedicated RAM per hash thread, parallelized GPU cluster attacks and ASIC dictionary crackers are economically and architecturally neutralized.
+2. **Adaptive Fallback Engine:**
+   - Evaluates WebAssembly and memory availability. Gracefully defaults to PBKDF2-SHA512 (2.4M tier) on memory-restricted legacy environments.
+3. **Container Header Integration:**
+   - Utilizes container flag bit 2 (`0x04`) in byte 5 of the 57-byte header to signal Argon2id KDF parameters.
+
+---
+
+### Phase 9: Visual Paper-Safe & QR Code Emergency Recovery Sheet (v8.4.0)
 *Target: Q1 2027*
 
-1. **Full File & Folder Lifecycle in Decrypted Explorer:**
-   - **Add Files / Upload:** Drag-and-drop or file picker to upload external documents, pictures, or folders directly into `explorerCurrentDir`.
-   - **In-Vault File & Folder Deletion:** Soft-delete entries from the session catalog and overlay.
-   - **In-Vault Renaming & Moving:** Rename or move files across directories within the vault.
-2. **Live Markdown Rendering (`.md` Mode):**
-   - Seamless toggle between Monospace Raw Code, Interactive Text Editor, and Formatted HTML Markdown in `#vault-text-modal`.
-   - Zero-dependency client-side parser supporting tables, checklists, code highlights, and blockquotes.
+1. **Air-Gapped Printable Recovery Sheet:**
+   - Upgrades the plain-text recovery sheet into an elegant, printable visual PDF / HTML sheet formatted for standard paper safes and safety deposit boxes.
+2. **Cryptographic QR Code Embedding:**
+   - Generates an offline vector QR code encoding vault metadata: master salt fingerprint (hex), PBKDF2/Argon2id parameters, keyfile SHA-256 digest, and an optional user-defined hint string.
+3. **Camera & Image Drop QR Scanner:**
+   - In-browser optical QR scanner using the native `BarcodeDetector` API (with client-side fallback). Scanning the paper sheet automatically populates the vault's exact cryptographic configuration during unlocking with zero manual typing.
 
 ---
 
-### Phase 3: Adaptive Streaming & Media Optimization (v7.1)
+### Phase 10: In-Vault Document Redaction & Privacy Masking Tool (v8.5.0)
 *Target: Q2 2027*
 
-1. **Smart Media Compression Bypass (5× Throughput Boost):**
-   - Heuristic pre-filtering in `StreamPacker`: Detects already-compressed mime types (`.mp4`, `.mkv`, `.mp3`, `.jpg`, `.png`, `.webp`, `.zip`, `.gz`).
-   - Automatically stores uncompressed chunks (`STORE` mode) rather than wasting CPU cycles re-running Deflate compression.
-2. **Docked Audio Mini-Player:**
-   - Audio files can be minimized to a persistent bottom dock bar so users can listen to encrypted audio notes, lectures, or music while navigating the vault tree.
+1. **Zero-Export In-Browser Visual Redaction:**
+   - Integrated directly into the Decrypted Image Lightbox modal for photos, identity cards, medical scans, and PDF page screenshots.
+2. **Irreversible Pixel Overwriting:**
+   - Allows users to draw solid black redaction rectangles over sensitive PII (Social Security Numbers, passport MRZ lines, credit card digits, home addresses).
+   - Redactions are burned directly into the underlying bitmap canvas before saving—not CSS overlays—preventing layer-peeling forensic recovery.
+3. **Direct In-Place Re-Encryption:**
+   - Replaced image buffer is written directly to `activeSession.overlayFiles` and re-encrypted back into the `.zev` vault with 0 unredacted remnants saved to disk.
 
 ---
 
-### Phase 4: Vault Health, Diagnostics & Bit-Rot Verifier (v7.2)
+### Phase 11: Browser Cryptographic Benchmark & Hardware Profiler (v8.6.0)
 *Target: Q3 2027*
 
-1. **Cryptographic Integrity & Bit-Rot Verification:**
-   - Dedicated "Verify Vault" action verifying the 57-byte header, chunk framing, and AES-GCM 16-byte authentication tags across all chunks without extracting data to RAM or disk.
-   - Comprehensive diagnostic scorecard: Container integrity, PBKDF2 iteration count, compression ratio, chunk health, and salt entropy.
-2. **Fault-Tolerant Partial Recovery:**
-   - Ability to recover intact chunks from damaged `.zev` archives even if a specific chunk was corrupted by disk hardware failure.
+1. **Built-in Hardware Cryptographic Benchmark:**
+   - A dedicated diagnostic test suite embedded directly within the Knowledge Hub and Settings panel.
+2. **Performance Metrics:**
+   - **AES-256-GCM Streaming Throughput:** Measures sustained MB/s across Web Worker pools.
+   - **KDF Latency Profile:** Benchmarks 600k, 1.2M, and 2.4M PBKDF2 iterations and Argon2id execution times on the user's CPU.
+   - **Memory Pressure Boundary:** Determines optimal chunk buffering limits and hardware concurrency recommendations for the active browser.
+3. **Interactive Visual Scorecard:**
+   - Displays hardware tier ranking (e.g. "Desktop High-Compute", "Balanced Laptop", "Mobile Power-Saver").
 
 ---
 
-### Phase 5: Post-Quantum & Forensic Camouflage (v8.0)
-*Target: 2027–2028*
+### Phase 12: Offline Multi-Language Internationalization (i18n) (v9.0.0)
+*Target: 2027*
 
-1. **Argon2id Memory-Hard Key Derivation:**
-   - Progressive enhancement introducing Argon2id via lightweight WebAssembly for hardware-brute-force immunity.
-2. **Steganographic Polyglot Vault Camouflage:**
-   - Appending valid `ZV3\0` containers to authentic image or media files (polyglots) so vaults appear as standard photos or videos in generic file viewers.
+1. **100% Offline Multi-Language Architecture:**
+   - Zero-network internationalization framework supporting: English, Spanish (`es`), French (`fr`), German (`de`), Japanese (`ja`), and Chinese (`zh`).
+2. **Precached Language Bundles:**
+   - Static lightweight JSON translation dictionaries precached in the Service Worker app shell.
+3. **Dynamic Seamless Language Switcher:**
+   - 1-click language switcher in the navbar that re-renders all UI strings, toast notifications, Knowledge Hub guides, and error dialogs instantly without page reload.
 
 ---
 
@@ -96,24 +150,3 @@ flowchart LR
 - **Air-Gapped Operation:** All new features must work seamlessly in airplane mode or disconnected networks.
 - **Strict RAM Ceilings:** Peak memory delta must remain bounded $< 150\text{ MB}$ regardless of vault or file size.
 - **Universal Zeroization:** All sensitive buffers and handles must be scrubbed with `.fill(0)` on session lock.
-
-### Phase 6: Duress Decoy Vaults & Plausible Deniability (v8.1.0) [COMPLETED]
-*Delivered: November 2, 2026*
-
-1. **Dual-Manifest Plausible Deniability Architecture:**
-   - Single `.zev` container supporting two independent passwords: Master Password (real files) vs Duress Password (decoy files).
-   - Unauthenticated manifests are mathematically indistinguishable from random AES static.
-2. **Realistic Decoy Generator:**
-   - 1-click generation of believable travel itineraries, packing lists, Italian recipes, and household budgets.
-
-### Phase 7: Comprehensive Knowledge Hub & Service Manual (v8.2.0) [COMPLETED]
-*Delivered: November 2, 2026*
-
-1. **Master Knowledge Hub (`/knowledge/`):**
-   - Instant client-side search across all 9 core services, security invariants matrix, quick-reference cheat sheets, and keyboard navigation (`/` to search, `Esc` to clear).
-2. **Dual-Perspective Architecture (Simple vs Deep Technical):**
-   - 2-way / 3-way toggle between 🟢 *Simple Step-by-Step User Guides* and 🔵 *Deep Cryptographic Specifications* (byte-level binary tables, Web Crypto API parameters, mathematical formulas, threat models). Preference persisted in `localStorage`.
-3. **Dedicated Deep-Dive Service Manuals:**
-   - 9 dedicated service manuals covering Core Streaming Vault, Virtual Filesystem, Duress Decoys, Polyglot Camouflage, Vault Health & Salvage, Media Cinema Deck & Floating Dock, Passwords & Auto-Lock Protocol, Key Derivation & 2FA Keyfiles, and Multi-Tier Mobile Streaming Pipeline.
-4. **Offline Air-Gapped Precaching:**
-   - Precached in Service Worker `v53` for 100% offline availability in airplane mode.
