@@ -1232,7 +1232,20 @@
 
                 // 5. Start Streaming ZIP Packaging & Chunk Encryption Pipeline
                 await transitionStage('Packaging archive...');
-                const zipStream = StreamPacker.createStreamingZipSource(files, opts);
+
+                let filesToStream = files;
+                const decoyPathsSet = new Set();
+                const hasDuress = !!(opts.duress && opts.duress.decoyPassword && Array.isArray(opts.duress.decoyFiles) && opts.duress.decoyFiles.length > 0);
+
+                if (hasDuress) {
+                    for (const df of opts.duress.decoyFiles) {
+                        const pathKey = (df.path || df.name).replace(/^\/+/, '');
+                        decoyPathsSet.add(pathKey);
+                    }
+                    filesToStream = [ ...files, ...opts.duress.decoyFiles ];
+                }
+
+                const zipStream = StreamPacker.createStreamingZipSource(filesToStream, opts);
                 zipReader = zipStream.getReader();
 
                 // Memory bounding: do NOT buffer chunks in encryptedChunks when opts.writable is provided
@@ -1455,11 +1468,19 @@
                 const tailZipBytes = concatAll(tailChunks);
                 const catalogFiles = parseCentralDirectoryEntries(tailZipBytes, chunkSize);
 
+                // Separate catalog into primary vs decoy
+                const primaryCatalogFiles = hasDuress
+                    ? catalogFiles.filter(f => !decoyPathsSet.has(f.path))
+                    : catalogFiles;
+                const decoyCatalogFiles = hasDuress
+                    ? catalogFiles.filter(f => decoyPathsSet.has(f.path))
+                    : [];
+
                 const manifestCatalog = {
                     version: 3,
-                    totalSize: catalogFiles.reduce((acc, f) => acc + (f.size || 0), 0),
-                    fileCount: catalogFiles.length,
-                    files: catalogFiles
+                    totalSize: primaryCatalogFiles.reduce((acc, f) => acc + (f.size || 0), 0),
+                    fileCount: primaryCatalogFiles.length,
+                    files: primaryCatalogFiles
                 };
 
                 let manifestRes;
@@ -1476,7 +1497,25 @@
 
                 if (cancelled || hasError) return;
 
-                const manifestEnvelope = new Uint8Array(manifestRes.envelope);
+                let manifestEnvelope = new Uint8Array(manifestRes.envelope);
+
+                // If duress mode is active, build Envelope 1 for Decoy catalog
+                if (hasDuress && decoyCatalogFiles.length > 0) {
+                    const decoyCatalog = {
+                        version: 3,
+                        totalSize: decoyCatalogFiles.reduce((acc, f) => acc + (f.size || 0), 0),
+                        fileCount: decoyCatalogFiles.length,
+                        files: decoyCatalogFiles
+                    };
+                    const decoyKey = await StreamCrypto.deriveMasterKey(
+                        opts.duress.decoyPassword,
+                        salt,
+                        opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
+                        null
+                    );
+                    const envelope1 = await StreamPacker.buildEncryptedManifest(decoyCatalog, decoyKey);
+                    manifestEnvelope = concatBuffers(manifestEnvelope, envelope1);
+                }
 
                 // Write manifest trailer envelope to stream writer
                 if (writer && typeof writer.write === 'function') {
@@ -1490,11 +1529,16 @@
 
                 // 7. Create Container Header
                 const manifestOffset = BigInt(StreamCrypto.V3_HEADER_SIZE + totalEncryptedBytes);
+                let containerFlags = hasKeyfile ? StreamCrypto.V3_FLAG_KEYFILE : 0x00;
+                if (hasDuress) {
+                    containerFlags |= StreamCrypto.V3_FLAG_DURESS;
+                }
+
                 const header = StreamCrypto.createContainerHeader({
                     salt,
                     baseIVPrefix,
                     chunkSize,
-                    flags: hasKeyfile ? StreamCrypto.V3_FLAG_KEYFILE : 0x00,
+                    flags: containerFlags,
                     manifestOffset
                 });
 

@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.0.0` (`WEB-VERSION-51`, Service Worker `v49`)  
+> **Web Portal Version:** `v8.1.0` (`WEB-VERSION-52`, Service Worker `v49`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 > **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md).
 
@@ -78,7 +78,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 | `security-audit/index.html` | Public web presentation of the official Security Audit Report with interactive severity filters, real-time search, scorecard metrics, and responsive deep-dives. |
 | `SECURITY_AUDIT_REPORT.md` | Authoritative security audit and hardening attestation report (Score: 96/100, Grade A+) documenting 20 vulnerability remediation proofs, CVSS ratings, and verification test matrices. |
 | `FORMAT.md` | Authoritative binary container specification defining `ZV3\0` STREAM AEAD, 57-byte header, 4 MB chunk wire framing, 12-byte IV & 42-byte AAD math, encrypted tail manifest JSON schema, and selective extraction. |
-| `index.html` | Primary vault UI, Encrypt/Decrypt cards, 60 FPS Telemetry HUD with live throughput & workers badge, Vault Explorer modal, Cinema Media Player, Image Lightbox modal, Code & Text Viewer/Editor modal (`#vault-text-modal`), approved modern navbar, cryptographic trust strip (`WEB-VERSION-51`). |
+| `index.html` | Primary vault UI, Encrypt/Decrypt cards, 60 FPS Telemetry HUD with live throughput & workers badge, Vault Explorer modal, Cinema Media Player, Image Lightbox modal, Code & Text Viewer/Editor modal (`#vault-text-modal`), approved modern navbar, cryptographic trust strip (`WEB-VERSION-52`). |
 | `app.js` | Main-thread controller, drag-and-drop traversal, entropy meter, Vault Explorer UI with instant session key extraction, hierarchical directory drill-down & breadcrumb navigation, in-browser PDF previewer, interactive in-browser text file editor (`toggleTextEditMode`, `saveTextFileChanges`), in-vault note creation (`createNewTextFile`), session overlay Map (`editedFiles`), tracked blob URL registry, Cinema streaming media player, high-res Image Lightbox controller with pan/zoom/rotate, Code & Text reader with line numbers and copy-to-clipboard, Telemetry HUD controller, and universal session zeroization protocol. |
 | `styles.css` | Glassmorphic theme system, adaptive Telemetry HUD grid, modern navbar & hero trust strip, Cinema deck controls, Image Lightbox controls bar & viewport, Code Viewer line numbers & syntax container, interactive textarea editor (`.text-code-textarea`), breadcrumb navigation trail, directory items, `(Edited)` badge pills, PDF preview frame, toast notifications, and mobile GPU hardware optimizations. |
 | `sw.js` | Offline-first PWA Service Worker (`APP_VERSION = 'v49'`) + Tier 2 `/_stream_download` streaming download interceptor + cache lifecycle + subfolder routing. |

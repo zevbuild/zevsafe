@@ -400,6 +400,174 @@ function initPolyglotUI() {
 }
 document.addEventListener('DOMContentLoaded', initPolyglotUI);
 
+// =====================================================
+// 🎭 DURESS DECOY VAULT & PLAUSIBLE DENIABILITY (v8.1)
+// =====================================================
+
+let duressDecoyFiles = null;
+
+function generateBelievableDecoyFiles() {
+    const encoder = new TextEncoder();
+    return [
+        {
+            name: 'vacation_itinerary_2026.txt',
+            path: 'Travel/vacation_itinerary_2026.txt',
+            size: 730,
+            data: encoder.encode(
+`Summer Vacation Itinerary - Italy 2026
+------------------------------------------------
+Day 1: Arrival in Rome (FCO Airport)
+- Check in at Hotel Quirinale
+- Evening walking tour: Trevi Fountain, Spanish Steps
+
+Day 2: Ancient Rome
+- Colosseum & Roman Forum morning tour
+- Lunch in Trastevere
+- Afternoon Pantheon & Piazza Navona
+
+Day 3: Florence High-Speed Train
+- Check in at Santa Maria Novella area
+- Uffizi Gallery tour (Pre-booked 2:30 PM)
+- Sunset at Piazzale Michelangelo
+
+Day 4: Tuscany Wine Tour
+- Chianti winery visit & olive oil tasting
+- Day trip to San Gimignano and Siena
+
+Day 5: Return flight from Rome
+- Souvenir shopping & airport transfer
+`
+            )
+        },
+        {
+            name: 'packing_checklist.md',
+            path: 'Travel/packing_checklist.md',
+            size: 512,
+            data: encoder.encode(
+`# Holiday Packing Checklist
+
+## Documents
+- [x] Passport & ID cards
+- [x] Flight boarding passes
+- [x] Hotel reservation confirmations
+- [x] Travel insurance policy
+
+## Electronics
+- [x] Smartphone & USB-C fast charger
+- [x] Power bank (10,000 mAh)
+- [x] Universal EU travel plug adapter
+- [x] Noise-canceling headphones
+
+## Essentials
+- [x] Lightweight linen shirts & walking shoes
+- [x] Prescription sunglasses
+- [x] Mini first aid kit & sunscreen
+`
+            )
+        },
+        {
+            name: 'traditional_tiramisu_recipe.txt',
+            path: 'Recipes/traditional_tiramisu_recipe.txt',
+            size: 680,
+            data: encoder.encode(
+`Authentic Italian Tiramisu Recipe
+================================================
+Ingredients:
+- 500g Mascarpone cheese
+- 4 fresh large eggs (separated)
+- 100g granulated sugar
+- 300g Savoiardi ladyfinger biscuits
+- 350ml strong brewed espresso (cooled)
+- Unsweetened cocoa powder for dusting
+
+Directions:
+1. Whisk egg yolks and sugar until pale and creamy.
+2. Gently fold in mascarpone until smooth and velvety.
+3. Whip egg whites to stiff peaks, then gently fold into mascarpone cream.
+4. Dip ladyfingers briefly in espresso and arrange single layer in dish.
+5. Spread half the cream mixture over ladyfingers.
+6. Repeat with second layer of dipped ladyfingers and remaining cream.
+7. Refrigerate for at least 6 hours. Generously dust with cocoa powder before serving.
+`
+            )
+        },
+        {
+            name: 'monthly_household_budget.csv',
+            path: 'Finance/monthly_household_budget.csv',
+            size: 420,
+            data: encoder.encode(
+`Category,Subcategory,Monthly Budget,Actual Spent,Status
+Housing,Rent/Mortgage,1850.00,1850.00,On Track
+Utilities,Electricity & Gas,160.00,145.20,Under Budget
+Utilities,High-speed Internet,65.00,65.00,On Track
+Groceries,Weekly Supermarket,600.00,582.40,Under Budget
+Transportation,Public Transit Pass,95.00,95.00,On Track
+Leisure,Dining Out & Cafes,250.00,230.00,On Track
+Subscriptions,Streaming & Cloud,45.00,45.00,On Track
+Savings,Emergency Fund Deposit,500.00,500.00,Completed
+`
+            )
+        }
+    ];
+}
+
+function initDuressUI() {
+    const toggle = document.getElementById('duress-mode-toggle');
+    const optionsPanel = document.getElementById('duress-options');
+    const folderInput = document.getElementById('duress-folder-input');
+    const btnGenDecoy = document.getElementById('btn-generate-decoy');
+    const btnClearDuress = document.getElementById('btn-clear-duress');
+    const widget = document.getElementById('duress-selected-widget');
+    const widgetName = document.getElementById('duress-selected-name');
+    const widgetMeta = document.getElementById('duress-selected-meta');
+
+    toggle?.addEventListener('change', () => {
+        if (optionsPanel) {
+            optionsPanel.style.display = toggle.checked ? 'flex' : 'none';
+        }
+        if (!toggle.checked) {
+            duressDecoyFiles = null;
+            if (widget) widget.style.display = 'none';
+        }
+    });
+
+    btnGenDecoy?.addEventListener('click', () => {
+        duressDecoyFiles = generateBelievableDecoyFiles();
+        const totalSize = duressDecoyFiles.reduce((acc, f) => acc + (f.size || 0), 0);
+        if (widgetName) widgetName.textContent = 'Decoy: Travel & Recipes';
+        if (widgetMeta) widgetMeta.textContent = `${duressDecoyFiles.length} files · ${formatBytes(totalSize)}`;
+        if (widget) widget.style.display = 'flex';
+        showToast('Generated 4 authentic decoy files (Travel, Recipes, Budget)!', 'success');
+    });
+
+    folderInput?.addEventListener('change', () => {
+        const files = Array.from(folderInput.files || []);
+        if (files.length === 0) return;
+        duressDecoyFiles = files.map(f => {
+            const relPath = f.webkitRelativePath || f.name;
+            return {
+                name: f.name,
+                path: relPath,
+                size: f.size,
+                file: f
+            };
+        });
+        const totalSize = duressDecoyFiles.reduce((acc, f) => acc + (f.size || 0), 0);
+        const folderName = files[0].webkitRelativePath ? files[0].webkitRelativePath.split('/')[0] : 'Decoy_Folder';
+        if (widgetName) widgetName.textContent = `Decoy: ${folderName}`;
+        if (widgetMeta) widgetMeta.textContent = `${duressDecoyFiles.length} files · ${formatBytes(totalSize)}`;
+        if (widget) widget.style.display = 'flex';
+        showToast(`Attached ${duressDecoyFiles.length} decoy files.`, 'info');
+    });
+
+    btnClearDuress?.addEventListener('click', () => {
+        duressDecoyFiles = null;
+        if (folderInput) folderInput.value = '';
+        if (widget) widget.style.display = 'none';
+    });
+}
+document.addEventListener('DOMContentLoaded', initDuressUI);
+
 async function onDecryptSelected(files) {
     if (!files || files.length === 0) return;
     let file = files[0];
@@ -1789,6 +1957,55 @@ btnEncrypt.addEventListener('click', async () => {
 
     // Pre-calculate total original size for tracker
     const _origTotalBytes = selectedEncryptFiles.reduce((sum, f) => sum + f.size, 0);
+    // Validate Duress Decoy options if active
+    const duressToggle = document.getElementById('duress-mode-toggle');
+    const isDuressActive = !!(duressToggle && duressToggle.checked);
+    let duressDecoyOptions = null;
+
+    if (isDuressActive) {
+        const duressPwInput = document.getElementById('duress-password');
+        const duressConfInput = document.getElementById('duress-confirm');
+        const dPw = duressPwInput ? duressPwInput.value : '';
+        const dConf = duressConfInput ? duressConfInput.value : '';
+
+        if (!dPw || dPw.length < 4) {
+            shakeField('duress-password');
+            showToast('Decoy password must be at least 4 characters.', 'warning');
+            btnEncrypt.disabled = false;
+            btnEncrypt.classList.remove('btn--loading');
+            if (encBtnContent) encBtnContent.textContent = encOrigText;
+            return;
+        }
+        if (dPw !== dConf) {
+            shakeField('duress-confirm');
+            showToast('Decoy passwords do not match.', 'warning');
+            btnEncrypt.disabled = false;
+            btnEncrypt.classList.remove('btn--loading');
+            if (encBtnContent) encBtnContent.textContent = encOrigText;
+            return;
+        }
+        if (dPw === password) {
+            shakeField('duress-password');
+            showToast('Decoy password must be different from Master password!', 'warning');
+            btnEncrypt.disabled = false;
+            btnEncrypt.classList.remove('btn--loading');
+            if (encBtnContent) encBtnContent.textContent = encOrigText;
+            return;
+        }
+        if (!duressDecoyFiles || duressDecoyFiles.length === 0) {
+            showToast('Please select or generate decoy files for the duress vault.', 'warning');
+            btnEncrypt.disabled = false;
+            btnEncrypt.classList.remove('btn--loading');
+            if (encBtnContent) encBtnContent.textContent = encOrigText;
+            return;
+        }
+
+        duressDecoyOptions = {
+            decoyPassword: dPw,
+            decoyFiles: duressDecoyFiles
+        };
+    }
+
 
     try {
         if (useV2 && typeof WorkerBridge !== 'undefined') {
@@ -1850,7 +2067,8 @@ btnEncrypt.addEventListener('click', async () => {
                         writable: streamWriter ? (streamWriter.writable || streamWriter) : null,
                         bufferChunks: !streamWriter,
                         iterations: kdfIterations,
-                        coverBytes: isPolyglot ? polyglotCoverBytes : null
+                        coverBytes: isPolyglot ? polyglotCoverBytes : null,
+                        duress: duressDecoyOptions
                     },
                     onProgress(telemetry) {
                         const { percent, stage, throughputMBs, etaSec } = telemetry;

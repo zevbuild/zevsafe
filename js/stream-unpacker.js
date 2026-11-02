@@ -65,6 +65,7 @@
 
     /** Flags bitfield */
     const FLAG_KEYFILE = 0x01;
+    const FLAG_DURESS = 0x02;
 
     /** Standard PKWARE ZIP signatures */
     const ZIP_SIGNATURES = {
@@ -449,6 +450,7 @@
             }
             const flags = initial[5];
             const hasKeyfile = (flags & FLAG_KEYFILE) !== 0;
+            const isDuress = (flags & FLAG_DURESS) !== 0;
             const view = new DataView(initial.buffer, initial.byteOffset, initial.byteLength);
             const chunkSize = view.getUint32(6, false);
             const salt = initial.slice(10, 42);
@@ -465,6 +467,7 @@
                 magicBytes: initial.slice(0, 4),
                 flags,
                 hasKeyfile,
+                isDuress,
                 chunkSize,
                 salt,
                 baseIVPrefix,
@@ -962,8 +965,35 @@
             throw createOperationError('Manifest envelope at trailer is truncated or missing');
         }
 
-        // 4. Decrypt and parse JSON catalog
-        const parsedRaw = await parseManifestEnvelope(envelopeBytes, masterKey);
+        // 4. Decrypt and parse JSON catalog (with Duress Decoy Plausible Deniability fallback)
+        let parsedRaw = null;
+        let isDuressDecoy = false;
+
+        // Compute total byte length of Envelope 0
+        const envView = new DataView(envelopeBytes.buffer, envelopeBytes.byteOffset, envelopeBytes.byteLength);
+        const declaredLen0 = envView.getUint32(MANIFEST_SALT_LENGTH + MANIFEST_IV_LENGTH, false);
+        const env0TotalLen = MANIFEST_HEADER_SIZE + declaredLen0 + TAG_LENGTH;
+
+        try {
+            const env0Bytes = (envelopeBytes.byteLength > env0TotalLen)
+                ? envelopeBytes.subarray(0, env0TotalLen)
+                : envelopeBytes;
+            parsedRaw = await parseManifestEnvelope(env0Bytes, masterKey);
+            isDuressDecoy = false;
+        } catch (env0Err) {
+            // If primary envelope failed authentication, check for secondary (Decoy) envelope
+            if (envelopeBytes.byteLength >= env0TotalLen + MANIFEST_HEADER_SIZE + TAG_LENGTH) {
+                try {
+                    const env1Bytes = envelopeBytes.subarray(env0TotalLen);
+                    parsedRaw = await parseManifestEnvelope(env1Bytes, masterKey);
+                    isDuressDecoy = true;
+                } catch (env1Err) {
+                    throw env0Err;
+                }
+            } else {
+                throw env0Err;
+            }
+        }
 
         // 5. Build structured catalog
         let filesArray = [];
@@ -987,7 +1017,8 @@
             fileCount,
             files: filesArray,
             header,
-            masterKey
+            masterKey,
+            isDuressDecoy
         };
     }
 

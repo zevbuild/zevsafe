@@ -64,6 +64,9 @@
     /** Header Flag bit 0: Keyfile required */
     const V3_FLAG_KEYFILE = 0x01;
 
+    /** Header Flag bit 1: Duress Decoy Vault enabled (Plausible Deniability) */
+    const V3_FLAG_DURESS = 0x02;
+
     // Resolve Web Crypto SubtleCrypto implementation
     function getSubtleCrypto() {
         if (typeof crypto !== 'undefined' && crypto.subtle) {
@@ -716,6 +719,7 @@
         AAD_LENGTH,
         CHUNK_HEADER_SIZE,
         V3_FLAG_KEYFILE,
+        V3_FLAG_DURESS,
 
         // Core Crypto
         deriveMasterKey,

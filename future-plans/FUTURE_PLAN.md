@@ -96,3 +96,12 @@ flowchart LR
 - **Air-Gapped Operation:** All new features must work seamlessly in airplane mode or disconnected networks.
 - **Strict RAM Ceilings:** Peak memory delta must remain bounded $< 150\text{ MB}$ regardless of vault or file size.
 - **Universal Zeroization:** All sensitive buffers and handles must be scrubbed with `.fill(0)` on session lock.
+
+### Phase 6: Duress Decoy Vaults & Plausible Deniability (v8.1.0) [COMPLETED]
+*Delivered: November 2, 2026*
+
+1. **Dual-Manifest Plausible Deniability Architecture:**
+   - Single `.zev` container supporting two independent passwords: Master Password (real files) vs Duress Password (decoy files).
+   - Unauthenticated manifests are mathematically indistinguishable from random AES static.
+2. **Realistic Decoy Generator:**
+   - 1-click generation of believable travel itineraries, packing lists, Italian recipes, and household budgets.
