@@ -1,9 +1,9 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.8.0` (`WEB-VERSION-59`, Service Worker `v59`)  
+> **Web Portal Version:** `v8.9.0` (`WEB-VERSION-60`, Service Worker `v60`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
-> **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 13 & 14; Upcoming Phases 8–12: Argon2id WASM, Visual Paper-Safe QR Sheet, Document Redaction, Hardware Profiler, Offline i18n, True Offline USB Backup Kit).
+> **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 11, 13 & 14; Upcoming Phases 8–10, 12: Argon2id WASM, Visual Paper-Safe QR Sheet, In-Vault Document Redaction, Offline i18n).
 
 > **🤖 MANDATORY AI AGENT RULE:**  
 > Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
@@ -178,6 +178,13 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ### 3.9 Collapsible Max Security Options Bar & Pill Button (Design 2)
 - **Minimalist Encryption Card Redesign (`#max-security-bar`, `#btn-toggle-max-security`, `#max-security-collapsible`):** Tucks the advanced, screen-crowding security panels (Key Derivation Hardening select, Polyglot Media Camouflage, Duress Decoy Vault) behind an understated, cybernetic pill button.
+
+### 3.10 Phase 11: Know Your Device Power — Cryptographic Hardware Benchmark & Profiler (`device-power/index.html`, `js/device-benchmark.js`)
+- **100% Client-Side Cryptographic Profiler:** Benchmarks raw WebCrypto hardware acceleration (AES-NI / NEON instructions), measuring parallel chunk streaming throughput (MB/s) and PBKDF2-SHA512 key derivation latency across standard and hardened tiers (600,000, 1,200,000, and 2,400,000 rounds).
+- **Zero-Knowledge Memory-Bounded Execution (< 20 MB RAM):** Uses reusable 1MB buffers to stream multi-megabyte stress tests without accumulating heap allocations, and immediately scrubs all test keys, salts, and plaintexts via `.fill(0)`.
+- **Hardware Tier Classification:** Classifies machines into Class S (Cyber-Station ⚡, > 650 MB/s, <= 300ms KDF), Class A (High-Efficiency 🚀, 350-650 MB/s, 300-650ms KDF), Class B (Balanced Everyday ⚖️, 120-350 MB/s, 650-1300ms KDF), and Class C (Low-Power 🛡️, < 120 MB/s, > 1300ms KDF).
+- **Tailored Vault Recommendations:** Generates machine-specific PBKDF2 iteration recommendations informing users whether their hardware can run 1.2M or 2.4M rounds with zero perceived UI latency. Linked directly from the Max Security options bar in `index.html`.
+- **PWA & Offline Integration:** Precached under Service Worker cache `v60` in `sw.js` with section routing for `/device-power` and `/know-your-device-power`, bundled into `usb-backup-kit.js`, and indexed in `sitemap.xml`.
 - **Dynamic Active State Highlighting (`.btn-max-security-pill.is-active`):** If any non-default security feature is engaged (e.g. 1.2M or 2.4M PBKDF2 rounds, polyglot cover enabled, or decoy vault armed), the pill button glows emerald and automatically expands so the user retains immediate visibility of their active security configuration.
 - **Zero-Friction Default Experience:** First-time and standard users enjoy a clutter-free, fast 1-field password flow without visual overload.
 

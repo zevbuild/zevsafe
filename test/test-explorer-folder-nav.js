@@ -1068,7 +1068,7 @@ const catalogFiles = [
     const swPath = path.resolve(__dirname, '..', 'sw.js');
     const swContent = fs.readFileSync(swPath, 'utf8');
 
-    assert.strictEqual(swContent.includes("APP_VERSION    = 'v59';"), true, 'Service Worker bumped to v59');
+    assert.strictEqual(swContent.includes("APP_VERSION    = 'v60';"), true, 'Service Worker bumped to v59');
     const precacheExpected = [
         './knowledge/',
         './knowledge/index.html',
@@ -1091,7 +1091,7 @@ const catalogFiles = [
         assert.strictEqual(swContent.includes(asset), true, `sw.js precaches ${asset}`);
     }
 
-    console.log('  ✓ 34. PWA Service Worker v59 precaches all 15 Knowledge Hub shell assets for 100% offline access');
+    console.log('  ✓ 34. PWA Service Worker v60 precaches all 15 Knowledge Hub shell assets for 100% offline access');
 }
 
 
@@ -1296,7 +1296,7 @@ const catalogFiles = [
     // Verify sw.js includes usb-backup-kit.js and APP_VERSION = 'v59'
     const swContent = fs.readFileSync(path.resolve(__dirname, '../sw.js'), 'utf8');
     assert.strictEqual(swContent.includes("'./js/usb-backup-kit.js'"), true, 'sw.js precaches js/usb-backup-kit.js');
-    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v59';"), true, 'sw.js bumped to APP_VERSION v59');
+    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v60';"), true, 'sw.js bumped to APP_VERSION v59');
 
     console.log('  ✓ 37. Phase 13 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine & multi-OS offline launchers verified');
 
@@ -1326,12 +1326,50 @@ const catalogFiles = [
     assert.strictEqual(appJs.includes('function initMaxSecurityCollapsible()'), true, 'app.js defines initMaxSecurityCollapsible');
     assert.strictEqual(appJs.includes('initMaxSecurityCollapsible();'), true, 'app.js initializes controller on DOM load');
 
-    console.log('  ✓ 38. Collapsible Max Security Options Bar & Pill Button (Design 2) verified');
+    console.log('  ✔ 38. Collapsible Max Security Options Bar & Pill Button (Design 2) verified');
+
+    // -------------------------------------------------------------
+    // Test 39: Phase 11 Cryptographic Hardware Benchmark & Profiler
+    // -------------------------------------------------------------
+    const devPowerPath = path.resolve(__dirname, '../device-power/index.html');
+    assert.strictEqual(fs.existsSync(devPowerPath), true, 'device-power/index.html exists');
+
+    const devBenchmarkJsPath = path.resolve(__dirname, '../js/device-benchmark.js');
+    assert.strictEqual(fs.existsSync(devBenchmarkJsPath), true, 'js/device-benchmark.js exists');
+
+    const devBenchmarkEngine = require('../js/device-benchmark.js');
+    assert.strictEqual(typeof devBenchmarkEngine.classifyHardware, 'function', 'DeviceBenchmark.classifyHardware is a function');
+    assert.strictEqual(typeof devBenchmarkEngine.generateRecommendation, 'function', 'DeviceBenchmark.generateRecommendation is a function');
+
+    // Test tier classification
+    const classSTier = devBenchmarkEngine.classifyHardware({ encryptSpeedMBps: 800 }, { elapsedMs: 150 });
+    assert.strictEqual(classSTier.id, 'S', 'Class S detected for high-speed hardware');
+
+    const classCTier = devBenchmarkEngine.classifyHardware({ encryptSpeedMBps: 80 }, { elapsedMs: 1400 });
+    assert.strictEqual(classCTier.id, 'C', 'Class C detected for low-speed hardware');
+
+    // Verify sw.js includes device-power and device-benchmark.js
+    const swPath = path.resolve(__dirname, '../sw.js');
+    const swContentUpdated = fs.readFileSync(swPath, 'utf8');
+    assert.strictEqual(swContentUpdated.includes("'./device-power/'"), true, 'sw.js precaches ./device-power/');
+    assert.strictEqual(swContentUpdated.includes("'./js/device-benchmark.js'"), true, 'sw.js precaches ./js/device-benchmark.js');
+    assert.strictEqual(swContentUpdated.includes("'device-power'"), true, 'sw.js SECTION_ROUTES includes device-power');
+
+    // Verify index.html links to device-power
+    const indexPath = path.resolve(__dirname, '../index.html');
+    const indexHtmlUpdated = fs.readFileSync(indexPath, 'utf8');
+    assert.strictEqual(indexHtmlUpdated.includes('href="./device-power/"'), true, 'index.html links to ./device-power/');
+
+    // Verify sitemap.xml includes device-power
+    const sitemapContent = fs.readFileSync(path.resolve(__dirname, '../sitemap.xml'), 'utf8');
+    assert.strictEqual(sitemapContent.includes('https://zevsafe.pages.dev/device-power/'), true, 'sitemap.xml includes device-power');
+
+    console.log('  ✔ 39. Phase 11 Know Your Device Power - Cryptographic Hardware Benchmark & Profiler verified');
 
 
 })().then(() => {
     console.log('===============================================================');
-    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 38/38 PASSED    ');
+    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 39/39 PASSED    ');
     console.log('===============================================================');
 }).catch(err => {
     console.error('Test 36 failed:', err);

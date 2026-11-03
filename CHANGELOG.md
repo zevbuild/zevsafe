@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 8.9.0 (WEB-VERSION-60) — November 3, 2026
+
+- `New` (`device-power/index.html`, `js/device-benchmark.js`): Phase 11 "Know Your Device Power" Cryptographic Hardware Benchmark & Profiler. Built an interactive, 100% client-side hardware profiler that benchmarks raw WebCrypto hardware acceleration (AES-NI / NEON), parallel chunk streaming throughput, and PBKDF2-SHA512 key derivation latency across standard and hardened tiers (600,000, 1,200,000, and 2,400,000 rounds).
+- `Security` (`js/device-benchmark.js`): Memory-Bounded (< 20 MB RAM) & Zero-Knowledge Buffer Scrubbing. Uses small reusable 1MB chunks to benchmark multi-MB streaming throughput without accumulating RAM, and immediately scrubs all test keys, salts, and plaintexts with `.fill(0)`.
+- `UI` (`device-power/index.html`): Cybernetic Hardware Tier Classification & Scorecard. Displays dynamic hardware tiers (Class S Cyber-Station ⚡, Class A High-Efficiency 🚀, Class B Balanced Everyday ⚖️, Class C Low-Power 🛡️) with real-time gauges for encryption MB/s, decryption MB/s, and KDF latency ms.
+- `UI` (`index.html`, `styles.css`): Max Security Benchmark Helper. Embedded a direct benchmark link inside the collapsible Max Security options panel (`#max-security-collapsible`) allowing users to test their CPU speed and receive personalized PBKDF2 round recommendations before encrypting.
+- `PWA` (`sw.js`): Service Worker Cache Bump to `v60` (`APP_VERSION = 'v60'`). Precaches `./device-power/` and `./js/device-benchmark.js`, and adds route handling for both `/device-power` and `/know-your-device-power`.
+- `PWA` (`js/usb-backup-kit.js`): Air-Gap USB Backup Kit Synchronization. Ingested `device-power/index.html` and `js/device-benchmark.js` into `AIRGAP_ASSET_PATHS` for complete air-gap offline execution.
+- `SEO` (`sitemap.xml`): Added `https://zevsafe.pages.dev/device-power/` to search engine sitemap.
+- `Tests` (`test/test-device-power.js`, `test/test-explorer-folder-nav.js`): Created dedicated test suite with 5 comprehensive tests and added Test 39 to folder navigation suite (39/39 passed, 100% pass rate across all suites).
+
 ## Version 8.8.0 (WEB-VERSION-59) — November 3, 2026
 
 - `Security` (`js/stream-unpacker.js`): Multi-Tier PBKDF2 Iteration Auto-Resolution in `readVaultManifest`. Trailer envelope bytes are now read prior to key candidate testing, sequentially trialing candidate tiers `[600000, 1200000, 2400000]` against Envelope 0 and Envelope 1. Retains the successfully authenticated `masterKey` so downstream operations and extractions avoid costly re-derivations, resolving vault lockouts for vaults encrypted with 1.2M or 2.4M rounds.

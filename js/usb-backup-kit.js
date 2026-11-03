@@ -69,6 +69,8 @@
         'js/stream-saver.js',
         'js/worker-bridge.js',
         'js/usb-backup-kit.js',
+        'js/device-benchmark.js',
+        'device-power/index.html',
         'assets/favicon.svg',
         'assets/icon-192.png',
         'assets/icon-512.png',

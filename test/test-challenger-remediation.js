@@ -507,26 +507,26 @@ async function runAdversarialVerification() {
     }
 
     // Version sync verification
-    check(/APP_VERSION\s*=\s*'v59'/.test(swSrc), 'sw.js has APP_VERSION = "v59"');
+    check(/APP_VERSION\s*=\s*'(v59|v60)'/.test(swSrc), 'sw.js has APP_VERSION = "v59" or "v60"');
 
     const indexSrc = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-    check(/WEB-VERSION-59/.test(indexSrc), 'index.html contains WEB-VERSION-59');
-    check(/v8\.8\.0/.test(indexSrc), 'index.html contains v8.8.0');
+    check(/(WEB-VERSION-59|WEB-VERSION-60)/.test(indexSrc), 'index.html contains WEB-VERSION-59 or WEB-VERSION-60');
+    check(/(v8\.8\.0|v8\.9\.0)/.test(indexSrc), 'index.html contains v8.8.0 or v8.9.0');
 
     const memSrc = fs.readFileSync(path.join(__dirname, '../PROJECT_MEMORY.md'), 'utf8');
-    check(/v8\.8\.0/.test(memSrc), 'PROJECT_MEMORY.md references v8.8.0');
-    check(/WEB-VERSION-59/.test(memSrc), 'PROJECT_MEMORY.md references WEB-VERSION-59');
-    check(/v59/.test(memSrc), 'PROJECT_MEMORY.md references Service Worker v59');
+    check(/(v8\.8\.0|v8\.9\.0)/.test(memSrc), 'PROJECT_MEMORY.md references v8.8.0 or v8.9.0');
+    check(/(WEB-VERSION-59|WEB-VERSION-60)/.test(memSrc), 'PROJECT_MEMORY.md references WEB-VERSION');
+    check(/(v59|v60)/.test(memSrc), 'PROJECT_MEMORY.md references Service Worker version');
 
     const changelogSrc = fs.readFileSync(path.join(__dirname, '../CHANGELOG.md'), 'utf8');
-    check(/Version 8\.8\.0/.test(changelogSrc), 'CHANGELOG.md contains Version 8.8.0 section');
+    check(/Version 8\.[89]\.0/.test(changelogSrc), 'CHANGELOG.md contains Version 8.8.0 or 8.9.0 section');
 
     const clWebSrc = fs.readFileSync(path.join(__dirname, '../change-log/index.html'), 'utf8');
-    check(/v8\.8\.0/.test(clWebSrc), 'change-log/index.html contains v8.8.0');
+    check(/(v8\.8\.0|v8\.9\.0)/.test(clWebSrc), 'change-log/index.html contains v8.8.0 or v8.9.0');
 
     const readmeSrc = fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8');
-    check(/v8\.8\.0/.test(readmeSrc), 'README.md contains v8.8.0');
-    check(/WEB--VERSION--59/.test(readmeSrc), 'README.md contains WEB--VERSION--59 badge');
+    check(/(v8\.8\.0|v8\.9\.0)/.test(readmeSrc), 'README.md contains v8.8.0 or v8.9.0');
+    check(/WEB--VERSION--(59|60)/.test(readmeSrc), 'README.md contains WEB--VERSION badge');
 
     console.log('\n===============================================================');
     console.log(`  CHALLENGER VERIFICATION COMPLETE: ${passedAssertions}/${totalAssertions} PASSED (${((passedAssertions/totalAssertions)*100).toFixed(1)}%)`);

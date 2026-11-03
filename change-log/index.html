@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.8.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.9.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -705,6 +705,53 @@
 
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
+
+            <!-- ── VERSION 8.9.0 (WEB-VERSION-60) ── -->
+            <article class="cl-card" data-version="v8">
+                <div class="cl-marker">⚡</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.9.0 (WEB-VERSION-60)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 3, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Hardware Benchmark</span>
+                            <span class="cl-tag">AES-NI Profiler</span>
+                            <span class="cl-tag">PBKDF2 Latency</span>
+                            <span class="cl-tag">Hardware Tiers</span>
+                            <span class="cl-tag">PWA v60</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Phase 11 "Know Your Device Power" Hardware Profiler (<code>device-power/index.html</code>, <code>js/device-benchmark.js</code>):</strong> A dedicated diagnostic tool that benchmarks raw WebCrypto hardware acceleration (AES-NI / NEON), parallel chunk streaming throughput, and PBKDF2-SHA512 key derivation latency across standard and hardened tiers (600k, 1.2M, 2.4M rounds).
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Zero-Knowledge Memory-Bounded Profiler:</strong> Benchmarking operates strictly within a bounded memory footprint (&lt; 20 MB RAM) using reusable 1MB buffers, and wipes all test keys, salts, and plaintexts immediately via <code>.fill(0)</code> upon completion.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Cybernetic Tier Classification &amp; Recommendations:</strong> Displays live performance dials, hardware classification (Class S, A, B, C), and generates personalized vault security recommendations explaining the optimal PBKDF2 iteration setting for the user's CPU.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>PWA Service Worker Cache v60 (<code>sw.js</code>):</strong> Precaches <code>./device-power/</code>, <code>./device-power/index.html</code>, and <code>./js/device-benchmark.js</code>, and adds unified section routing for <code>/device-power</code> and <code>/know-your-device-power</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
 
             <!-- ── VERSION 8.8.0 (WEB-VERSION-59) ── -->
             <article class="cl-card" data-version="v8">

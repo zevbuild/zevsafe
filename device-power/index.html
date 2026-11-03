@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="application-name" content="ZevSafe">
+    <meta name="theme-color" content="#08091a">
+    <meta name="msapplication-TileColor" content="#08091a">
+
+    <!-- Content Security Policy: Strict Air-Gapped Zero-Exfiltration Defense -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <!-- PWA Manifest & Favicons -->
+    <link rel="manifest" href="../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/icon-192.png">
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Know Your Device Power — Cryptographic Profiler &amp; Benchmark | ZevSafe</title>
+    <meta name="description" content="Test your machine's hardware-accelerated encryption power in 100% offline air-gap mode. Benchmark AES-256-GCM throughput (MB/s) and PBKDF2-SHA512 key derivation latency.">
+    <meta name="keywords" content="cryptographic benchmark, hardware encryption test, AES-NI benchmark, PBKDF2 speed test, WebCrypto performance, client-side encryption profiler, ZevSafe device power">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://zevsafe.pages.dev/device-power/">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../styles.css">
+
+    <style>
+        .dp-shell {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem 6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dp-hero {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 1rem;
+        }
+
+        .dp-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(52, 211, 153, 0.12);
+            border: 1px solid rgba(52, 211, 153, 0.35);
+            color: #34d399;
+            padding: 0.35rem 0.95rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .dp-hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2.1rem, 5vw, 3.2rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #ffffff 30%, #34d399 75%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.15;
+        }
+
+        .dp-hero p {
+            color: var(--text-2);
+            max-width: 660px;
+            font-size: 1.02rem;
+            line-height: 1.65;
+        }
+
+        /* Tier Hero Card */
+        .tier-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(56, 189, 248, 0.08));
+            border: 1px solid rgba(52, 211, 153, 0.35);
+            border-radius: 20px;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 2rem;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(14px);
+        }
+
+        .tier-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .tier-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-2);
+            font-weight: 700;
+        }
+
+        .tier-title {
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
+            font-weight: 900;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .tier-desc {
+            color: var(--text-2);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .tier-badge-giant {
+            width: 95px;
+            height: 95px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #fff;
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.5);
+            border: 3px solid rgba(255,255,255,0.3);
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        /* Metric Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        .metric-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            backdrop-filter: blur(12px);
+            transition: all var(--transition);
+        }
+
+        .metric-card:hover {
+            border-color: rgba(52, 211, 153, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .metric-icon { font-size: 1.75rem; }
+
+        .metric-title {
+            font-size: 0.82rem;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .metric-value {
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: var(--text);
+        }
+
+        .metric-sub {
+            font-size: 0.82rem;
+            color: var(--text-2);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .progress-bar-wrap {
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            overflow: hidden;
+            width: 100%;
+            margin-top: 0.35rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #38bdf8);
+            border-radius: 999px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Benchmark Action Bar */
+        .action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem 1.75rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-run {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 800;
+            padding: 0.85rem 2rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+            transition: all var(--transition);
+            min-height: 48px;
+        }
+
+        .btn-run:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.6);
+        }
+
+        .btn-run:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Stress Profile Box */
+        .breakdown-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .breakdown-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .test-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            align-items: center;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.92rem;
+        }
+
+        .recommendation-box {
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .dp-shell { padding: 1rem 1rem 4rem; gap: 1.75rem; }
+            .tier-card { grid-template-columns: 1fr; text-align: center; }
+            .tier-badge-giant { margin: 0 auto; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .test-row { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+            .action-bar { flex-direction: column; align-items: stretch; text-align: center; }
+            .btn-run { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="noise"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="../" style="display:flex;align-items:center;gap:0.6rem;text-decoration:none;color:inherit;">
+                <img class="brand-logo" src="../assets/zevsafe-logo.png" alt="ZevSafe Logo" width="32" height="32">
+                <span class="brand-name">ZevSafe</span>
+            </a>
+            <span class="brand-status-badge" style="background: rgba(52, 211, 153, 0.15); border-color: rgba(52, 211, 153, 0.35); color: #34d399;">
+                <span class="status-pulse-dot" style="background: #34d399; box-shadow: 0 0 8px #34d399;"></span> Hardware Profiler
+            </span>
+        </div>
+
+        <!-- Phone-Only Hamburger Button -->
+        <button id="btn-mobile-nav-toggle" class="btn-mobile-nav-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-nav-drawer">
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+        </button>
+
+        <!-- Desktop Navigation Links -->
+        <div class="navbar-links">
+            <a href="../" class="nav-pill">← Back to Vault</a>
+            <a href="../knowledge/" class="nav-pill">📚 Knowledge Hub</a>
+            <a href="../how-to-use-zevsafe/" class="nav-pill">📖 User Guide</a>
+            <a href="../security-audit/" class="nav-pill">🛡️ Security Audit</a>
+            <a href="../change-log/" class="nav-pill">✨ Changelog</a>
+            <a href="https://github.com/zevbuild/zevsafe" target="_blank" rel="noopener" class="nav-pill nav-pill-ghost">GitHub ↗</a>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-nav-drawer" class="mobile-nav-drawer" aria-label="Mobile navigation drawer">
+        <div class="mobile-nav-header">
+            <div class="mobile-nav-brand">
+                <img src="../assets/zevsafe-logo.png" alt="ZevSafe" width="24" height="24">
+                <span>ZevSafe Menu</span>
+            </div>
+            <button id="btn-mobile-nav-close" class="btn-mobile-nav-close" type="button" aria-label="Close navigation menu">✕</button>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="../" class="mobile-nav-item"><span>🔒</span> Vault Encryption</a>
+            <a href="../knowledge/" class="mobile-nav-item"><span>📚</span> Knowledge Hub</a>
+            <a href="../how-to-use-zevsafe/" class="mobile-nav-item"><span>📖</span> User Guide</a>
+            <a href="../security-audit/" class="mobile-nav-item"><span>🛡️</span> Security Audit</a>
+            <a href="../change-log/" class="mobile-nav-item"><span>✨</span> Changelog</a>
+            <a href="./" class="mobile-nav-item active"><span>⚡</span> Device Power Profiler</a>
+            <a href="https://github.com/zevbuild/zevsafe" target="_blank" rel="noopener" class="mobile-nav-item"><span>🐙</span> GitHub Repository ↗</a>
+        </div>
+    </div>
+
+    <!-- Main Shell -->
+    <div class="dp-shell">
+        <header class="dp-hero">
+            <div class="dp-badge">
+                <span class="status-pulse-dot" style="background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
+                100% Offline Hardware Cryptographic Profiler
+            </div>
+            <h1>Know Your Device Power</h1>
+            <p>
+                Benchmark your device's raw WebCrypto hardware acceleration (AES-NI / NEON), multithreaded worker concurrency, and PBKDF2 stretching latency in 100% air-gapped offline mode.
+            </p>
+        </header>
+
+        <!-- Tier Hero Card -->
+        <div class="tier-card" id="tier-hero-card">
+            <div class="tier-info">
+                <span class="tier-label">Detected Hardware Classification</span>
+                <div class="tier-title" id="tier-title">
+                    Press "Run Benchmark" to Profile
+                </div>
+                <p class="tier-desc" id="tier-desc">
+                    Click the benchmark button below. ZevSafe will safely stream synthetic data chunks across WebCrypto to calculate your encryption MB/s and KDF latency profile.
+                </p>
+            </div>
+            <div class="tier-badge-giant" id="tier-badge-giant">?</div>
+        </div>
+
+        <!-- 3 Core Benchmark Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <span class="metric-icon">🚀</span>
+                <span class="metric-title">AES-256-GCM Encryption</span>
+                <span class="metric-value" id="val-enc-speed" style="color: #34d399;">-- <span style="font-size:1.1rem; font-weight:600;">MB/s</span></span>
+                <span class="metric-sub" id="sub-enc-status">
+                    <span>Hardware acceleration status</span>
+                </span>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="bar-enc" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <span class="metric-icon">🔓</span>
+                <span class="metric-title">AES-256-GCM Decryption</span>
+                <span class="metric-value" id="val-dec-speed" style="color: #38bdf8;">-- <span style="font-size:1.1rem; font-weight:600;">MB/s</span></span>
+                <span class="metric-sub" id="sub-dec-status">
+                    <span>128-bit AEAD verification speed</span>
+                </span>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="bar-dec" style="width: 0%; background: linear-gradient(90deg, #38bdf8, #818cf8);"></div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <span class="metric-icon">🛡️</span>
+                <span class="metric-title">PBKDF2-SHA512 Latency</span>
+                <span class="metric-value" id="val-kdf-latency" style="color: #a855f7;">-- <span style="font-size:1.1rem; font-weight:600;">ms</span></span>
+                <span class="metric-sub" id="sub-kdf-status">
+                    <span>600,000 Rounds (OWASP Standard)</span>
+                </span>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="bar-kdf" style="width: 0%; background: linear-gradient(90deg, #a855f7, #f43f5e);"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <div>
+                <strong style="color:#fff; display:block; font-size:1rem;" id="action-heading">Ready to test your device hardware?</strong>
+                <span style="color:var(--text-2); font-size:0.85rem;" id="action-subtext">Memory bounded &lt; 20 MB · 100% Client-Side · 0 External Network Requests</span>
+            </div>
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                <button class="btn-run" id="btn-run-benchmark" type="button">
+                    <span>⚡ Run Benchmark (~3s)</span>
+                </button>
+                <button class="nav-pill nav-pill-ghost" id="btn-copy-report" type="button" style="display:none; padding:0.85rem 1.25rem;">
+                    📋 Copy Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Stress Profile Breakdown -->
+        <div class="breakdown-box">
+            <div class="breakdown-header">
+                <span class="breakdown-title" style="font-size:1.15rem; font-weight:800; color:#fff;">Cryptographic Stress Profile</span>
+                <span style="color:var(--text-2); font-size:0.82rem; font-family:var(--font-mono);" id="hardware-hw-info">Detecting cores...</span>
+            </div>
+
+            <div class="test-row">
+                <div class="test-name">
+                    <span>🔑</span>
+                    <div>
+                        <strong>600,000 PBKDF2 Rounds</strong>
+                        <div style="font-size:0.75rem; color:var(--text-2);">OWASP Recommended Baseline</div>
+                    </div>
+                </div>
+                <div id="row-kdf-600-val" style="color:#34d399; font-weight:700;">-- ms</div>
+                <div id="row-kdf-600-sub" style="color:var(--text-2);">Pending test</div>
+                <div style="text-align:right;" id="row-kdf-600-rating"><span>--</span></div>
+            </div>
+
+            <div class="test-row">
+                <div class="test-name">
+                    <span>🛡️</span>
+                    <div>
+                        <strong>1,200,000 PBKDF2 Rounds</strong>
+                        <div style="font-size:0.75rem; color:var(--text-2);">High-Security Hardened Vault</div>
+                    </div>
+                </div>
+                <div id="row-kdf-1200-val" style="color:#38bdf8; font-weight:700;">-- ms</div>
+                <div id="row-kdf-1200-sub" style="color:var(--text-2);">Pending test</div>
+                <div style="text-align:right;" id="row-kdf-1200-rating"><span>--</span></div>
+            </div>
+
+            <div class="test-row">
+                <div class="test-name">
+                    <span>☣️</span>
+                    <div>
+                        <strong>2,400,000 PBKDF2 Rounds</strong>
+                        <div style="font-size:0.75rem; color:var(--text-2);">Ultra-Paranoid / Government Grade</div>
+                    </div>
+                </div>
+                <div id="row-kdf-2400-val" style="color:#a855f7; font-weight:700;">-- ms</div>
+                <div id="row-kdf-2400-sub" style="color:var(--text-2);">Pending test</div>
+                <div style="text-align:right;" id="row-kdf-2400-rating"><span>--</span></div>
+            </div>
+
+            <!-- Tailored Hardware Recommendation -->
+            <div class="recommendation-box" id="rec-box" style="display:none;">
+                <span style="font-size:1.8rem;">💡</span>
+                <div class="recommendation-text">
+                    <h4 id="rec-title" style="color:#fff; margin-bottom:0.35rem; font-size:1rem;">Recommended Setting</h4>
+                    <p id="rec-body" style="color:var(--text-2); font-size:0.9rem; line-height:1.6;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="site-footer" style="margin-top:2rem;">
+            <div class="footer-brand">
+                <img class="footer-logo" src="../assets/zevsafe-logo.png" alt="ZevSafe Logo" width="24" height="24">
+                <span>ZevSafe</span>
+            </div>
+            <p class="footer-tagline">Your files stay on your device. Always.</p>
+            <div class="footer-links">
+                <a href="../knowledge/">Knowledge Hub</a>
+                <span>·</span>
+                <a href="../">Vault App</a>
+                <span>·</span>
+                <a href="../how-to-use-zevsafe/">How To Use</a>
+                <span>·</span>
+                <a href="../security-audit/">Security Audit</a>
+                <span>·</span>
+                <a href="./" style="color:#34d399; font-weight:700;">Device Power</a>
+                <span>·</span>
+                <a href="../change-log/">Changelog</a>
+                <span>·</span>
+                <a href="https://github.com/zevbuild/zevsafe" target="_blank" rel="noopener">GitHub ↗</a>
+            </div>
+            <p class="footer-copy">Built by <strong>zevbuild</strong> · MIT License · 100% Client-Side Zero-Knowledge</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/device-benchmark.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hardware Info
+            const logicalCores = navigator.hardwareConcurrency || 'Unknown';
+            document.getElementById('hardware-hw-info').textContent = `Logical Cores: ${logicalCores} | Memory Bound: < 20 MB RAM`;
+
+            // Mobile Navigation Toggle
+            const mobileNavToggle = document.getElementById('btn-mobile-nav-toggle');
+            const mobileNavClose = document.getElementById('btn-mobile-nav-close');
+            const mobileNavDrawer = document.getElementById('mobile-nav-drawer');
+
+            function openDrawer() {
+                if (!mobileNavDrawer) return;
+                mobileNavDrawer.classList.add('open');
+                if (mobileNavToggle) {
+                    mobileNavToggle.classList.add('is-active');
+                    mobileNavToggle.setAttribute('aria-expanded', 'true');
+                }
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDrawer() {
+                if (!mobileNavDrawer) return;
+                mobileNavDrawer.classList.remove('open');
+                if (mobileNavToggle) {
+                    mobileNavToggle.classList.remove('is-active');
+                    mobileNavToggle.setAttribute('aria-expanded', 'false');
+                }
+                document.body.style.overflow = '';
+            }
+
+            if (mobileNavToggle) mobileNavToggle.addEventListener('click', () => {
+                if (mobileNavDrawer.classList.contains('open')) closeDrawer();
+                else openDrawer();
+            });
+
+            if (mobileNavClose) mobileNavClose.addEventListener('click', closeDrawer);
+
+            // Benchmark Runner
+            const btnRun = document.getElementById('btn-run-benchmark');
+            const btnCopy = document.getElementById('btn-copy-report');
+            const actionHeading = document.getElementById('action-heading');
+            const actionSubtext = document.getElementById('action-subtext');
+
+            let lastReport = null;
+
+            btnRun.addEventListener('click', async () => {
+                btnRun.disabled = true;
+                btnRun.innerHTML = '<span>⏳ Benchmarking...</span>';
+
+                try {
+                    const report = await DeviceBenchmark.runFullBenchmark((phase, percent, data) => {
+                        actionHeading.textContent = `Running Benchmark (${percent}%)...`;
+                        if (data && data.status) actionSubtext.textContent = data.status;
+
+                        if (phase === 'kdf-600k') {
+                            document.getElementById('bar-kdf').style.width = '30%';
+                        } else if (phase === 'kdf-1200k') {
+                            document.getElementById('bar-kdf').style.width = '65%';
+                        } else if (phase === 'aes-stream') {
+                            document.getElementById('bar-enc').style.width = '60%';
+                            document.getElementById('bar-dec').style.width = '60%';
+                        }
+                    });
+
+                    lastReport = report;
+
+                    // Update Tier Card
+                    const tierCard = document.getElementById('tier-hero-card');
+                    const tierTitle = document.getElementById('tier-title');
+                    const tierDesc = document.getElementById('tier-desc');
+                    const tierBadge = document.getElementById('tier-badge-giant');
+
+                    tierTitle.textContent = report.tier.title;
+                    tierDesc.textContent = report.tier.description;
+                    tierBadge.textContent = report.tier.badge;
+                    tierBadge.style.boxShadow = `0 0 35px ${report.tier.color}88`;
+
+                    // Update Metrics
+                    document.getElementById('val-enc-speed').innerHTML = `${report.aes.encryptSpeedMBps} <span style="font-size:1.1rem; font-weight:600;">MB/s</span>`;
+                    document.getElementById('sub-enc-status').innerHTML = `<span style="color:#34d399;">✔</span> ${report.aes.encryptSpeedMBps > 500 ? 'AES-NI Hardware Acceleration Active' : 'Native WebCrypto Accelerated'}`;
+                    document.getElementById('bar-enc').style.width = `${Math.min(100, Math.round((report.aes.encryptSpeedMBps / 1000) * 100))}%`;
+
+                    document.getElementById('val-dec-speed').innerHTML = `${report.aes.decryptSpeedMBps} <span style="font-size:1.1rem; font-weight:600;">MB/s</span>`;
+                    document.getElementById('sub-dec-status').innerHTML = `<span style="color:#38bdf8;">✔</span> Verified in ${report.aes.decMs} ms`;
+                    document.getElementById('bar-dec').style.width = `${Math.min(100, Math.round((report.aes.decryptSpeedMBps / 1000) * 100))}%`;
+
+                    document.getElementById('val-kdf-latency').innerHTML = `${report.kdf[600000].elapsedMs} <span style="font-size:1.1rem; font-weight:600;">ms</span>`;
+                    document.getElementById('sub-kdf-status').innerHTML = `<span>600,000 Rounds (${Math.round(report.kdf[600000].roundsPerSec / 1000)}k rounds/sec)</span>`;
+                    document.getElementById('bar-kdf').style.width = `${Math.min(100, Math.max(10, Math.round((1 - (report.kdf[600000].elapsedMs / 1000)) * 100)))}%`;
+
+                    // Update Breakdown Rows
+                    document.getElementById('row-kdf-600-val').textContent = `${report.kdf[600000].elapsedMs} ms`;
+                    document.getElementById('row-kdf-600-sub').textContent = `${Math.round(report.kdf[600000].roundsPerSec / 1000)}k rounds/sec`;
+                    document.getElementById('row-kdf-600-rating').innerHTML = `<span style="color:#34d399;">${report.kdf[600000].elapsedMs < 350 ? 'Ultra Fast' : 'Good'}</span>`;
+
+                    document.getElementById('row-kdf-1200-val').textContent = `${report.kdf[1200000].elapsedMs} ms`;
+                    document.getElementById('row-kdf-1200-sub').textContent = `${Math.round(report.kdf[1200000].roundsPerSec / 1000)}k rounds/sec`;
+                    document.getElementById('row-kdf-1200-rating').innerHTML = `<span style="color:#38bdf8;">${report.kdf[1200000].elapsedMs < 600 ? 'Optimal' : 'Acceptable'}</span>`;
+
+                    document.getElementById('row-kdf-2400-val').textContent = `${report.kdf[2400000].elapsedMs} ms`;
+                    document.getElementById('row-kdf-2400-sub').textContent = `${Math.round(report.kdf[2400000].roundsPerSec / 1000)}k rounds/sec`;
+                    document.getElementById('row-kdf-2400-rating').innerHTML = `<span style="color:#a855f7;">${report.kdf[2400000].elapsedMs < 1200 ? 'Feasible' : 'High Load'}</span>`;
+
+                    // Recommendation Box
+                    document.getElementById('rec-box').style.display = 'flex';
+                    document.getElementById('rec-title').textContent = `Recommendation: Use ${report.recommendation.recommendedTierName}`;
+                    document.getElementById('rec-body').textContent = report.recommendation.reason;
+
+                    actionHeading.textContent = `Benchmark Completed (${report.tier.title})`;
+                    actionSubtext.textContent = `Completed in ${report.aes.encMs + report.aes.decMs + report.kdf[600000].elapsedMs} ms. Zero data left volatile memory.`;
+
+                    btnCopy.style.display = 'inline-flex';
+                } catch (err) {
+                    actionHeading.textContent = 'Benchmark Failed';
+                    actionSubtext.textContent = err.message;
+                } finally {
+                    btnRun.disabled = false;
+                    btnRun.innerHTML = '<span>⚡ Re-Run Benchmark</span>';
+                }
+            });
+
+            // Copy Report
+            btnCopy.addEventListener('click', () => {
+                if (!lastReport) return;
+                const text = `=== ZevSafe Device Power Benchmark Report ===
+Date: ${new Date(lastReport.timestamp).toLocaleString()}
+Classification: ${lastReport.tier.title}
+Logical Cores: ${lastReport.hardware.logicalCores}
+AES-256-GCM Encryption: ${lastReport.aes.encryptSpeedMBps} MB/s
+AES-256-GCM Decryption: ${lastReport.aes.decryptSpeedMBps} MB/s
+PBKDF2 600,000 Rounds: ${lastReport.kdf[600000].elapsedMs} ms
+PBKDF2 1,200,000 Rounds: ${lastReport.kdf[1200000].elapsedMs} ms
+PBKDF2 2,400,000 Rounds: ${lastReport.kdf[2400000].elapsedMs} ms
+Recommendation: ${lastReport.recommendation.recommendedTierName}
+Reason: ${lastReport.recommendation.reason}
+============================================`;
+                navigator.clipboard.writeText(text).then(() => {
+                    const original = btnCopy.textContent;
+                    btnCopy.textContent = '✔ Copied!';
+                    setTimeout(() => { btnCopy.textContent = original; }, 2000);
+                });
+            });
+
+            // Service Worker Registration
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('../sw.js', { scope: '/' }).catch(() => {});
+                });
+            }
+        });
+    </script>
+</body>
+</html>

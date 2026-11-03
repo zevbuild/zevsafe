@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v59';
+const APP_VERSION    = 'v60';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -16,7 +16,9 @@ const ALL_CACHES     = [SHELL_CACHE];
 const SHELL_ASSETS = [
     './',
     './index.html',
-        './knowledge/',
+    './device-power/',
+    './device-power/index.html',
+    './knowledge/',
     './knowledge/index.html',
     './knowledge/knowledge.css',
     './knowledge/knowledge.js',
@@ -61,7 +63,8 @@ const SHELL_ASSETS = [
     './js/crypto-worker.js',
     './js/worker-bridge.js',
     './js/stream-saver.js',
-    './js/usb-backup-kit.js'
+    './js/usb-backup-kit.js',
+    './js/device-benchmark.js'
 ];
 
 // ── Install: precache the app shell ────────────────────────────
@@ -172,6 +175,8 @@ self.addEventListener('fetch', event => {
  * 4. Section-specific offline fallbacks so Chrome never redirects to homepage erroneously.
  */
 const SECTION_ROUTES = [
+    'device-power',
+    'know-your-device-power',
     'how-to-use-zevsafe',
     'change-log',
     'security-audit',

@@ -16,6 +16,12 @@
         <priority>0.8</priority>
     </url>
     <url>
+        <loc>https://zevsafe.pages.dev/device-power/</loc>
+        <lastmod>2026-11-03</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
         <loc>https://zevsafe.pages.dev/security-audit/</loc>
         <lastmod>2026-10-20</lastmod>
         <changefreq>monthly</changefreq>
