@@ -1090,7 +1090,34 @@ const catalogFiles = [
     console.log('  ✓ 34. PWA Service Worker v53 precaches all 13 Knowledge Hub shell assets for 100% offline access');
 }
 
+
+// Test 35: Phone-Only Right-Aligned Hamburger Navigation Verification
+{
+    const path = require('path');
+    const indexHtml = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8');
+    const stylesCss = fs.readFileSync(path.resolve(__dirname, '..', 'styles.css'), 'utf8');
+    const appJs = fs.readFileSync(path.resolve(__dirname, '..', 'app.js'), 'utf8');
+
+    // 1. Verify index.html contains mobile toggle & drawer
+    assert.strictEqual(indexHtml.includes('id="btn-mobile-nav-toggle"'), true, 'index.html contains mobile nav toggle button');
+    assert.strictEqual(indexHtml.includes('id="mobile-nav-drawer"'), true, 'index.html contains mobile nav drawer overlay');
+    assert.strictEqual(indexHtml.includes('hamburger-bar'), true, 'toggle contains 3 hamburger bars for animated morph');
+
+    // 2. Verify styles.css enforces desktop hiding and phone-only right alignment
+    assert.strictEqual(stylesCss.includes('.mobile-nav-toggle {'), true, 'styles.css defines .mobile-nav-toggle');
+    assert.strictEqual(stylesCss.includes('margin-left: auto'), true, 'styles.css enforces right-side alignment via margin-left: auto');
+    assert.strictEqual(stylesCss.includes('display: none; /* Strictly hidden on desktop'), true, 'styles.css hides toggle on desktop by default');
+    assert.strictEqual(stylesCss.includes('@media (max-width: 768px)'), true, 'styles.css targets phone viewports at 768px boundary');
+
+    // 3. Verify app.js initializes controller
+    assert.strictEqual(appJs.includes('initMobileNavigation()'), true, 'app.js defines initMobileNavigation');
+    assert.strictEqual(appJs.includes('btn-mobile-nav-toggle'), true, 'app.js attaches click listener to mobile toggle');
+
+    console.log('  ✓ 35. Phone-only right-aligned hamburger navigation button and cybernetic drawer verified');
+}
+
 console.log('===============================================================');
-console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 34/34 PASSED    ');
+console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 35/35 PASSED    ');
 console.log('===============================================================');
+
 

@@ -185,7 +185,78 @@
                     PC Toolkit (25GB+)
                 </button>
             </div>
+            <!-- Mobile Hamburger Toggle (strictly phone-only, aligned to the right) -->
+            <button type="button" class="mobile-nav-toggle" id="btn-mobile-nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-nav-drawer">
+                <span class="hamburger-bar"></span>
+                <span class="hamburger-bar"></span>
+                <span class="hamburger-bar"></span>
+            </button>
         </nav>
+
+        <!-- Mobile Navigation Drawer Overlay (Phone only) -->
+        <div class="mobile-nav-drawer" id="mobile-nav-drawer" aria-hidden="true">
+            <div class="mobile-nav-backdrop" id="mobile-nav-backdrop"></div>
+            <div class="mobile-nav-panel">
+                <div class="mobile-nav-header">
+                    <div class="mobile-nav-brand">
+                        <img src="assets/zevsafe-logo.png" alt="ZevSafe Logo" width="24" height="24">
+                        <span class="mobile-nav-title">ZevSafe</span>
+                        <span class="mobile-nav-status">● 100% Offline</span>
+                    </div>
+                    <button type="button" class="mobile-nav-close" id="btn-mobile-nav-close" aria-label="Close navigation menu">✕</button>
+                </div>
+                <div class="mobile-nav-links">
+                    <a href="./knowledge/" class="mobile-nav-link mobile-nav-link--featured">
+                        <span class="mn-icon">📚</span>
+                        <div class="mn-text-wrap">
+                            <span class="mn-title">Knowledge Hub &amp; Manual</span>
+                            <span class="mn-desc">9 In-Depth Service Specifications</span>
+                        </div>
+                        <span class="mn-badge">v8.2</span>
+                    </a>
+                    <a href="./how-to-use-zevsafe/" class="mobile-nav-link">
+                        <span class="mn-icon">📖</span>
+                        <div class="mn-text-wrap">
+                            <span class="mn-title">How To Use (Quickstart)</span>
+                            <span class="mn-desc">Step-by-step locking guide</span>
+                        </div>
+                    </a>
+                    <a href="./security-audit/" class="mobile-nav-link">
+                        <span class="mn-icon">🛡️</span>
+                        <div class="mn-text-wrap">
+                            <span class="mn-title">Security Audit Report</span>
+                            <span class="mn-desc">Formal Verification Score</span>
+                        </div>
+                        <span class="mn-badge mn-badge--green">96/100 A+</span>
+                    </a>
+                    <a href="./change-log/" class="mobile-nav-link">
+                        <span class="mn-icon">✨</span>
+                        <div class="mn-text-wrap">
+                            <span class="mn-title">Changelog &amp; Releases</span>
+                            <span class="mn-desc">Full release history</span>
+                        </div>
+                        <span class="mn-badge">v8.2.0</span>
+                    </a>
+                    <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="mobile-nav-link">
+                        <span class="mn-icon">↗</span>
+                        <div class="mn-text-wrap">
+                            <span class="mn-title">GitHub Repository</span>
+                            <span class="mn-desc">Zero-knowledge source</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="mobile-nav-actions">
+                    <button type="button" class="mobile-nav-btn-install" id="btn-mobile-install-pwa">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Install App (Offline PWA)
+                    </button>
+                    <button type="button" class="mobile-nav-btn-pc" id="btn-mobile-download-pc">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+                        PC Toolkit (25GB+)
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- ── HERO ── -->
         <header class="hero">

@@ -643,6 +643,13 @@ function initUniversalAutoHideNavbar() {
     const TOP_THRESHOLD = 30;
 
     function onScroll() {
+        // Keep navbar visible if mobile navigation drawer is currently open
+        const mobileDrawer = document.getElementById('mobile-nav-drawer');
+        if (mobileDrawer && mobileDrawer.classList.contains('open')) {
+            navbar.classList.remove('navbar--hidden');
+            return;
+        }
+
         const currentScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0);
         const diff = currentScrollY - lastScrollY;
 
@@ -671,7 +678,83 @@ function initUniversalAutoHideNavbar() {
 
 // Run on load
 initDeviceUI();
+
+// Mobile navigation drawer controller (Phone only)
+function initMobileNavigation() {
+    const toggleBtn = document.getElementById('btn-mobile-nav-toggle');
+    const drawer = document.getElementById('mobile-nav-drawer');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    const closeBtn = document.getElementById('btn-mobile-nav-close');
+    const mobileInstallBtn = document.getElementById('btn-mobile-install-pwa');
+    const mobilePcBtn = document.getElementById('btn-mobile-download-pc');
+    const installBtn = document.getElementById('btn-install-pwa');
+    const pcBtn = document.getElementById('btn-download-pc-setup');
+
+    if (!toggleBtn || !drawer) return;
+
+    function openDrawer() {
+        drawer.classList.add('open');
+        drawer.setAttribute('aria-hidden', 'false');
+        toggleBtn.classList.add('is-active');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+        drawer.classList.remove('open');
+        drawer.setAttribute('aria-hidden', 'true');
+        toggleBtn.classList.remove('is-active');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+    }
+
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (drawer.classList.contains('open')) {
+            closeDrawer();
+        } else {
+            openDrawer();
+        }
+    });
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeDrawer();
+        });
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', closeDrawer);
+    }
+
+    drawer.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', closeDrawer);
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && drawer.classList.contains('open')) {
+            closeDrawer();
+        }
+    });
+
+    if (mobileInstallBtn && installBtn) {
+        mobileInstallBtn.addEventListener('click', () => {
+            closeDrawer();
+            installBtn.click();
+        });
+    }
+
+    if (mobilePcBtn && pcBtn) {
+        mobilePcBtn.addEventListener('click', () => {
+            closeDrawer();
+            pcBtn.click();
+        });
+    }
+}
+
 initUniversalAutoHideNavbar();
+initMobileNavigation();
 
 // ============================================
 // SHOW / HIDE PASSWORD TOGGLE

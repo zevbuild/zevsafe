@@ -71,6 +71,8 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **PWA Service Worker Hardening & Chrome Subfolder Routing (`sw.js`, `_headers`):** Resolved Chrome subfolder loading failure (`/how-to-use-zevsafe/`, `/change-log/`, `/security-audit/`) by rebuilding redirected HTTP 308 responses into clean `Response` objects before `cache.put()`, avoiding Chromium `TypeError: Cannot cache a redirected response`; canonical trailing slash URL normalization across all cross-page links; section-aware `cacheFirst` path matching and subfolder-specific offline fallbacks; standardized `{ scope: '/' }` across subfolders without redundant `controllerchange` reloads; precached canonical directory paths alongside index files; added `/sw.js` HTTP headers in `_headers` (`Service-Worker-Allowed: /`, `Cache-Control: no-cache, no-store, must-revalidate`); bumped offline shell cache to `v44`.
 
 
+- **Phone-Only Right-Aligned Hamburger Navigation (`#btn-mobile-nav-toggle`, `#mobile-nav-drawer`):** Replaces cramped horizontal links on screens <= 768px with a right-aligned cybernetic hamburger button that morphs into an 'X' and slides down a frosted glass navigation drawer. Strictly hidden on desktop.
+
 ### 3.4 Comprehensive Knowledge Hub & Service Manual (`knowledge/`) [v8.2.0]
 - **Architecture & Portal (`knowledge/index.html`, `knowledge/knowledge.css`, `knowledge/knowledge.js`):**
   - Instant client-side search engine with keyboard shortcut `/` and `ESC` clearing.
