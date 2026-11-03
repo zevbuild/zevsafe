@@ -68,6 +68,7 @@
                 <li><a href="#diceware" class="kb-toc-link">CSPRNG Diceware Engine</a></li>
                 <li><a href="#shannon-entropy" class="kb-toc-link">Shannon Entropy Math</a></li>
                 <li><a href="#autolock-protocol" class="kb-toc-link">Auto-Lock &amp; Zeroization</a></li>
+                <li><a href="#password-manager-api" class="kb-toc-link">Password Manager Sync</a></li>
                 <li><a href="#invariants" class="kb-toc-link">Security Invariants</a></li>
             </ul>
         </aside>
@@ -115,6 +116,14 @@
                     <h3 class="kb-step-title">Configure Auto-Lock Inactivity Timer</h3>
                     <p class="kb-step-desc">
                         Choose your preferred auto-lock timeout (5, 15, or 30 minutes). If you step away from your device, ZevSafe automatically locks the vault, clears your files from the screen, and wipes all keys from memory.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 04</div>
+                    <h3 class="kb-step-title">Save to Browser or Password Manager (Phase 14)</h3>
+                    <p class="kb-step-desc">
+                        ZevSafe integrates directly with your browser's native password manager and popular extensions (Chrome, Bitwarden, 1Password, Apple Keychain). It automatically labels your password with the encrypted folder or vault filename (e.g., <code>Financial_Archive.zev</code>), prompts you to save it upon encryption, and lets you autofill with 1 click when unlocking.
                     </p>
                 </div>
 
@@ -214,6 +223,43 @@ function generateDicewarePassphrase(wordCount = 5, separator = '-') {
             </section>
 
             <!-- SECTION: INVARIANTS -->
+            
+            <!-- PERSPECTIVE: TECHNICAL SPECIFICATION: PASSWORD MANAGER API -->
+            <section id="password-manager-api" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">W3C Credential Management API &amp; Autofill Integration</h2>
+                <p style="color: var(--kb-text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">
+                    To bridge zero-knowledge vaults with modern credential managers without compromising air-gap boundaries, ZevSafe implements the <strong>W3C Credential Management API</strong> alongside standards-compliant semantic autofill forms:
+                </p>
+
+                <div class="kb-code-box">
+                    <div class="kb-code-header">
+                        <span>W3C Credential Management Storage (app.js)</span>
+                        <span class="kb-code-badge">W3C Standard</span>
+                    </div>
+                    <pre><code>if (window.PasswordCredential && navigator.credentials) {
+    const cred = new PasswordCredential({
+        id: vaultIdentifier,       // e.g. "Personal_Vault.zev"
+        password: vaultPassword,   // High-entropy passphrase
+        name: vaultIdentifier      // Human-readable vault label
+    });
+    await navigator.credentials.store(cred);
+}</code></pre>
+                </div>
+
+                <div class="kb-tech-card" style="margin-top: 1.25rem;">
+                    <h3 style="font-size: 1.1rem; color: #6ee7b7; margin-bottom: 0.5rem;">Browser Extension Form Dispatch</h3>
+                    <p style="color: var(--kb-text-muted); font-size: 0.9rem; line-height: 1.5;">
+                        Browser extensions (Bitwarden, 1Password, Dashlane) listen for DOM <code>submit</code> events rather than Credential API calls. ZevSafe embeds semantic hidden forms with standard autocomplete tokens:
+                    </p>
+                    <ul style="color: var(--kb-text-muted); font-size: 0.85rem; line-height: 1.6; margin-left: 1.25rem; font-family: var(--kb-font-mono);">
+                        <li>Username Token: <code>&lt;input name="username" autocomplete="username"&gt;</code> (populated with vault filename)</li>
+                        <li>Encryption Password Token: <code>&lt;input name="password" autocomplete="new-password"&gt;</code></li>
+                        <li>Decryption Password Token: <code>&lt;input name="password" autocomplete="current-password"&gt;</code></li>
+                    </ul>
+                </div>
+            </section>
+
             <section id="invariants" style="margin-bottom: 2.5rem;">
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Security Invariants</h2>
                 <div class="kb-table-wrap">

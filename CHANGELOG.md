@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 8.6.0 (WEB-VERSION-57) — November 3, 2026
+
+- `New` (`knowledge/airgap-usb-backup/index.html`, `knowledge/index.html`): Service Manual #10 Added to Knowledge Hub. Full step-by-step user guide and technical cryptographic disclosure for the 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine, direct USB drive writer, and multi-OS offline launchers.
+- `New` (`knowledge/passwords-autolock/index.html`): Phase 14 Native Password Manager Documentation. Discloses simple and technical specifications for W3C Credential Management API (`navigator.credentials.store`), semantic hidden form tokens, extension listeners, and container filename binding.
+- `UI` (`knowledge/index.html`): Expanded Knowledge Hub portal grid to 10 in-depth service manuals with real-time search indexing and updated service count badges.
+- `PWA` (`sw.js`, `index.html`): Bumped Service Worker shell cache to `v57` (`APP_VERSION = 'v57'`, `SHELL_CACHE = zevsafe-shell-v57`), precaching `./knowledge/airgap-usb-backup/` and `./knowledge/airgap-usb-backup/index.html`. Synchronized release badge to `WEB-VERSION-57` / `v8.6.0`.
+- `Tests` (`test/test-explorer-folder-nav.js`): Updated Tests 32, 33, and 34 to verify all 10 dedicated service manuals exist, pass structural validation, contain dual perspectives, and are precached by Service Worker v57 (37/37 passed, 75/75 passed across all suites).
+
+
 ## Version 8.4.0 (WEB-VERSION-55) — November 3, 2026
 - `New` (`index.html`, `app.js`): Phase 14 Native Password Manager Integration (W3C Credential Management API & Standards-Compliant Autofill). Implemented seamless browser password manager integration enabling users to save generated or custom vault credentials directly to their native password managers (Chrome Password Manager, Google Passwords, Apple Keychain, Bitwarden, 1Password, Dashlane, Edge, Proton Pass, KeePassXC).
 - `UI` (`index.html`, `styles.css`): Cybernetic Password Manager Controls. Added visible, cybernetic "🔑 Save to Password Manager" (`#btn-save-pwd-manager`) button in the Encryption view with emerald glassmorphism, hover elevation, and responsive tooltip guidance. Added an auto-save checkbox toggle (`#chk-auto-save-pwd`, checked by default) that automatically prompts password managers upon completing vault encryption.

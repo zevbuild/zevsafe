@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-knowledge-mode="combined">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#08091a">
+
+    <!-- Strict Air-Gapped Zero-Exfiltration Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+
+    <title>USB Air-Gap Backup Kit &amp; True Offline Portability — ZevSafe Knowledge Hub</title>
+    <meta name="description" content="Technical guide to ZevSafe 1-click USB air-gap backup kit, pure-JS PKZIP engine, Google Font decoupling, and multi-OS offline launchers.">
+
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../knowledge.css">
+</head>
+<body class="kb-page">
+    <div class="kb-reading-progress"></div>
+
+    <nav class="kb-navbar">
+        <div class="kb-navbar-inner">
+            <a href="../index.html" class="kb-brand-group">
+                <div class="kb-brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="kb-brand-title">
+                    ZevSafe <span class="kb-brand-tag">USB Air-Gap</span>
+                </div>
+            </a>
+            
+            <ul class="kb-nav-links">
+                <li><a href="../index.html" class="kb-nav-link">&larr; Knowledge Hub</a></li>
+                <li><a href="../../index.html" class="kb-nav-link">Main App</a></li>
+                <li><a href="../../index.html" class="kb-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="kb-breadcrumb-bar">
+        <ul class="kb-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Knowledge Hub</a></li>
+            <li class="sep">/</li>
+            <li class="current">USB Air-Gap Backup Kit</li>
+        </ul>
+
+        <div class="kb-perspective-dock">
+            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+        </div>
+    </div>
+
+    <div class="kb-article-layout">
+        <aside class="kb-sidebar">
+            <div class="kb-toc-title">
+                <span>📑</span> Contents
+            </div>
+            <ul class="kb-toc-list">
+                <li><a href="#overview" class="kb-toc-link">Overview &amp; Air-Gap Philosophy</a></li>
+                <li><a href="#simple-guide" class="kb-toc-link">Simple User Guide</a></li>
+                <li><a href="#font-decoupling" class="kb-toc-link">Font Decoupling &amp; CSP</a></li>
+                <li><a href="#pkzip-engine" class="kb-toc-link">Pure-JS PKZIP Generator</a></li>
+                <li><a href="#fsa-drive-writer" class="kb-toc-link">Direct USB Drive Writer</a></li>
+                <li><a href="#launchers" class="kb-toc-link">Multi-OS Offline Launchers</a></li>
+                <li><a href="#invariants" class="kb-toc-link">Security Invariants</a></li>
+            </ul>
+        </aside>
+
+        <main class="kb-article-content">
+            <header class="kb-article-header">
+                <span class="kb-hero-eyebrow">SERVICE #10 &bull; COLD STORAGE &amp; PORTABILITY</span>
+                <h1 class="kb-article-title">USB Air-Gap Backup Kit &amp; True Offline Portability</h1>
+                <div class="kb-article-meta">
+                    <span class="kb-article-meta-item"><span>⏱️</span> 7 min read</span>
+                    <span class="kb-article-meta-item"><span>💾</span> 100% Client-Side PKZIP Engine</span>
+                    <span class="kb-article-meta-item"><span>⚡</span> Zero External Font CDNs</span>
+                </div>
+            </header>
+
+            <section id="overview" style="margin-bottom: 2.5rem;">
+                <p style="font-size: 1.05rem; color: var(--kb-text-muted);">
+                    In high-threat environments or emergency cold storage scenarios, relying on an active internet connection or third-party CDNs is a critical operational vulnerability. ZevSafe provides a <strong>1-Click USB Air-Gap Backup Kit</strong> and a completely <strong>decoupled font architecture</strong>, empowering users to export an entire self-contained, air-gapped cryptographic vault onto any USB thumb drive, external SSD, or optical disc with zero external network dependencies forever.
+                </p>
+            </section>
+
+            <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
+            <section id="simple-guide" class="kb-perspective-simple">
+                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">How to Create and Run an Air-Gapped USB Vault</h2>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 01</div>
+                    <h3 class="kb-step-title">Open the USB Backup Kit</h3>
+                    <p class="kb-step-desc">
+                        Click the <strong>💾 USB Backup Kit</strong> button in the top navigation bar (or open the phone menu drawer and tap <strong>USB Air-Gap Backup Kit</strong>). A cybernetic modal appears presenting your export options.
+                    </p>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 02</div>
+                    <h3 class="kb-step-title">Choose Your Export Method</h3>
+                    <p class="kb-step-desc">
+                        ZevSafe offers two ways to export your offline vault:
+                    </p>
+                    <ul style="color: var(--kb-text-muted); margin: 0.5rem 0 0 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+                        <li><strong>⬇️ Download Standalone ZIP Kit:</strong> Instantly generates <code>ZevSafe-Offline-USB-Kit.zip</code> in your browser. Extract it directly onto your USB drive or external hard drive.</li>
+                        <li><strong>⚡ Write Directly to USB Flash Drive:</strong> In supported browsers (Chrome, Edge), select your USB drive folder, and ZevSafe writes all offline files and folders directly to the drive with live progress feedback.</li>
+                    </ul>
+                </div>
+
+                <div class="kb-step-card">
+                    <div class="kb-step-badge">STEP 03</div>
+                    <h3 class="kb-step-title">Launch on Any Air-Gapped Computer</h3>
+                    <p class="kb-step-desc">
+                        Plug your USB drive into any offline or air-gapped PC, Mac, or Linux computer:
+                    </p>
+                    <ul style="color: var(--kb-text-muted); margin: 0.5rem 0 0 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+                        <li><strong>Windows:</strong> Double-click <code>Launch-ZevSafe-Windows.bat</code>. It starts a sandboxed local <code>127.0.0.1</code> server or opens in your default browser.</li>
+                        <li><strong>Mac &amp; Linux:</strong> Double-click or execute <code>./Launch-ZevSafe-Mac-Linux.sh</code> in Terminal.</li>
+                        <li><strong>Direct Browser:</strong> Open <code>index.html</code> directly in any browser.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- PERSPECTIVE: TECHNICAL DISCLOSURES -->
+            <section id="font-decoupling" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Google Font Decoupling &amp; CSP Air-Gap Hardening</h2>
+                <p style="color: var(--kb-text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">
+                    Prior versions loaded web fonts from <code>fonts.googleapis.com</code> and <code>fonts.gstatic.com</code>. In cold-boot air-gapped environments, external CSS requests fail, triggering HTTP timeouts, layout shift (CLS), and telemetry leakage risks. In Phase 13, all external CDN dependencies were completely eliminated.
+                </p>
+
+                <div class="kb-code-box">
+                    <div class="kb-code-header">
+                        <span>Strict Air-Gapped Content Security Policy (_headers &amp; HTML)</span>
+                        <span class="kb-code-badge">Zero CDN</span>
+                    </div>
+                    <pre><code>Content-Security-Policy: default-src 'self';
+  script-src 'self' 'unsafe-inline';
+  style-src 'self' 'unsafe-inline';
+  font-src 'self' data:;
+  img-src 'self' data: blob:;
+  media-src 'self' blob:;
+  frame-src 'self' blob:;
+  connect-src 'self' blob: data:;
+  object-src 'none';
+  base-uri 'self';
+  frame-ancestors 'none';</code></pre>
+                </div>
+
+                <div class="kb-tech-card" style="margin-top: 1.25rem;">
+                    <h3 style="font-size: 1.1rem; color: #6ee7b7; margin-bottom: 0.5rem;">Native Modern System Font Stacks</h3>
+                    <p style="color: var(--kb-text-muted); font-size: 0.9rem; line-height: 1.5;">
+                        Typography is resolved locally with zero render-blocking requests:
+                    </p>
+                    <ul style="color: var(--kb-text-muted); font-size: 0.85rem; line-height: 1.6; margin-left: 1.25rem; font-family: var(--kb-font-mono);">
+                        <li>Body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif</li>
+                        <li>Headings: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif</li>
+                        <li>Monospace: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="pkzip-engine" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Pure Client-Side PKZIP 2.0 Engine</h2>
+                <p style="color: var(--kb-text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">
+                    The backup kit incorporates a standalone binary PKZIP generator in <code>js/usb-backup-kit.js</code>. It generates valid ZIP archives in RAM using native TypedArrays without any third-party dependencies:
+                </p>
+
+                <div class="kb-diagram-box">
+                    <pre style="font-family: var(--kb-font-mono); font-size: 0.8rem; color: #34d399; line-height: 1.45;">
++-------------------------------------------------------+
+| Local File Header 1 (0x04034b50) + UTF-8 Path + Data  |
++-------------------------------------------------------+
+| Local File Header 2 (0x04034b50) + UTF-8 Path + Data  |
++-------------------------------------------------------+
+| ... (All App Shell &amp; Manual Files)                    |
++-------------------------------------------------------+
+| Central Directory Record 1 (0x02014b50)               |
++-------------------------------------------------------+
+| Central Directory Record 2 (0x02014b50)               |
++-------------------------------------------------------+
+| End of Central Directory (EOCD 0x06054b50, 22 Bytes)  |
++-------------------------------------------------------+</pre>
+                </div>
+
+                <div class="kb-tech-card" style="margin-top: 1.25rem;">
+                    <h3 style="font-size: 1.1rem; color: #6ee7b7; margin-bottom: 0.5rem;">IEEE 802.3 CRC-32 Verification</h3>
+                    <p style="color: var(--kb-text-muted); font-size: 0.9rem; line-height: 1.5;">
+                        Every bundled file is hashed with a 256-entry precomputed CRC lookup table:
+                    </p>
+                    <pre style="background: rgba(0,0,0,0.4); padding: 0.75rem; border-radius: 6px; font-size: 0.8rem; color: #a7f3d0; font-family: var(--kb-font-mono);">
+function computeCRC32(data) {
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < data.length; i++) {
+        crc = CRC_TABLE[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
+    }
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+}</pre>
+                </div>
+            </section>
+
+            <section id="fsa-drive-writer" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Direct USB Drive Writer (File System Access API)</h2>
+                <p style="color: var(--kb-text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">
+                    Using the W3C File System Access API, ZevSafe can stream directory structures directly to a physical drive without creating an intermediate ZIP file:
+                </p>
+                <div class="kb-code-box">
+                    <div class="kb-code-header">
+                        <span>Direct Drive Streaming Loop (js/usb-backup-kit.js)</span>
+                        <span class="kb-code-badge">W3C FSA API</span>
+                    </div>
+                    <pre><code>const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+for (const file of files) {
+    const parts = file.name.split('/');
+    let currentDir = dirHandle;
+    for (let p = 0; p < parts.length - 1; p++) {
+        currentDir = await currentDir.getDirectoryHandle(parts[p], { create: true });
+    }
+    const fileHandle = await currentDir.getFileHandle(parts[parts.length - 1], { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(file.data);
+    await writable.close();
+}</code></pre>
+                </div>
+            </section>
+
+            <section id="launchers" class="kb-perspective-technical">
+                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Cross-Platform Zero-Config Launchers</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                    <div class="kb-tech-card">
+                        <h3 style="font-size: 1rem; color: #38bdf8; margin-bottom: 0.4rem;">Launch-ZevSafe-Windows.bat</h3>
+                        <p style="color: var(--kb-text-muted); font-size: 0.85rem; line-height: 1.5;">
+                            Checks for <code>python</code> or <code>py</code> in PATH. If found, starts a local sandboxed <code>127.0.0.1:8080</code> HTTP server. If Python is absent, opens <code>index.html</code> directly via the default Windows browser.
+                        </p>
+                    </div>
+                    <div class="kb-tech-card">
+                        <h3 style="font-size: 1rem; color: #a78bfa; margin-bottom: 0.4rem;">Launch-ZevSafe-Mac-Linux.sh</h3>
+                        <p style="color: var(--kb-text-muted); font-size: 0.85rem; line-height: 1.5;">
+                            Detects <code>python3</code> or <code>python</code>, binds to <code>127.0.0.1:8080</code>, launches the default browser with <code>open</code> / <code>xdg-open</code>, and falls back cleanly to file URIs.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="invariants" style="margin-top: 2rem;">
+                <h2 style="font-size: 1.4rem; color: #ffffff; margin-bottom: 0.75rem;">Security &amp; Portability Invariants</h2>
+                <div class="kb-tech-card" style="border-left: 4px solid #10b981;">
+                    <ul style="color: var(--kb-text-muted); font-size: 0.88rem; line-height: 1.7; margin-left: 1.25rem;">
+                        <li><strong>Zero Network Dependency:</strong> The exported USB kit makes 0 network calls, fetches 0 CDNs, and transmits 0 telemetry.</li>
+                        <li><strong>Universal Compatibility:</strong> Any <code>.zev</code> container created on the air-gapped USB vault decrypts seamlessly on the web app, Android app, or PC desktop scripts.</li>
+                        <li><strong>Cryptographic Integrity:</strong> SHA-256 and IEEE 802.3 CRC-32 checksums guarantee bit-level authenticity across all exported assets.</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../knowledge.js"></script>
+</body>
+</html>

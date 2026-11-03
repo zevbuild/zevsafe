@@ -1020,7 +1020,8 @@ const catalogFiles = [
         'knowledge/media-cinema/index.html',
         'knowledge/passwords-autolock/index.html',
         'knowledge/key-derivation-2fa/index.html',
-        'knowledge/mobile-streaming/index.html'
+        'knowledge/mobile-streaming/index.html',
+        'knowledge/airgap-usb-backup/index.html'
     ];
 
     for (const relPage of requiredPages) {
@@ -1031,7 +1032,7 @@ const catalogFiles = [
         assert.strictEqual(html.includes('<!DOCTYPE html>'), true, `Page ${relPage} is valid HTML5`);
     }
 
-    console.log('  ✓ 32. Knowledge Hub and all 9 dedicated service manuals exist and pass structural validation');
+    console.log('  ✓ 32. Knowledge Hub and all 10 dedicated service manuals exist and pass structural validation');
 }
 
 // Test 33: Dual-Perspective Coverage Verification
@@ -1046,7 +1047,8 @@ const catalogFiles = [
         'knowledge/media-cinema/index.html',
         'knowledge/passwords-autolock/index.html',
         'knowledge/key-derivation-2fa/index.html',
-        'knowledge/mobile-streaming/index.html'
+        'knowledge/mobile-streaming/index.html',
+        'knowledge/airgap-usb-backup/index.html'
     ];
 
     for (const relPage of serviceSubpages) {
@@ -1057,7 +1059,7 @@ const catalogFiles = [
         assert.strictEqual(html.includes('kb-toc-link'), true, `Page ${relPage} includes Table of Contents`);
     }
 
-    console.log('  ✓ 33. All 9 dedicated service manuals include both Simple and Technical perspective disclosures');
+    console.log('  ✓ 33. All 10 dedicated service manuals include both Simple and Technical perspective disclosures');
 }
 
 // Test 34: PWA Offline Precaching Verification
@@ -1066,7 +1068,7 @@ const catalogFiles = [
     const swPath = path.resolve(__dirname, '..', 'sw.js');
     const swContent = fs.readFileSync(swPath, 'utf8');
 
-    assert.strictEqual(swContent.includes("APP_VERSION    = 'v56';"), true, 'Service Worker bumped to v56');
+    assert.strictEqual(swContent.includes("APP_VERSION    = 'v57';"), true, 'Service Worker bumped to v57');
     const precacheExpected = [
         './knowledge/',
         './knowledge/index.html',
@@ -1080,14 +1082,16 @@ const catalogFiles = [
         './knowledge/media-cinema/index.html',
         './knowledge/passwords-autolock/index.html',
         './knowledge/key-derivation-2fa/index.html',
-        './knowledge/mobile-streaming/index.html'
+        './knowledge/mobile-streaming/index.html',
+        './knowledge/airgap-usb-backup/',
+        './knowledge/airgap-usb-backup/index.html'
     ];
 
     for (const asset of precacheExpected) {
         assert.strictEqual(swContent.includes(asset), true, `sw.js precaches ${asset}`);
     }
 
-    console.log('  ✓ 34. PWA Service Worker v55 precaches all 13 Knowledge Hub shell assets for 100% offline access');
+    console.log('  ✓ 34. PWA Service Worker v57 precaches all 15 Knowledge Hub shell assets for 100% offline access');
 }
 
 
@@ -1292,7 +1296,7 @@ const catalogFiles = [
     // Verify sw.js includes usb-backup-kit.js and APP_VERSION = 'v56'
     const swContent = fs.readFileSync(path.resolve(__dirname, '../sw.js'), 'utf8');
     assert.strictEqual(swContent.includes("'./js/usb-backup-kit.js'"), true, 'sw.js precaches js/usb-backup-kit.js');
-    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v56';"), true, 'sw.js bumped to APP_VERSION v56');
+    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v57';"), true, 'sw.js bumped to APP_VERSION v56');
 
     console.log('  ✓ 37. Phase 13 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine & multi-OS offline launchers verified');
 

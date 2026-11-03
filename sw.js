@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v56';
+const APP_VERSION    = 'v57';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -29,6 +29,8 @@ const SHELL_ASSETS = [
     './knowledge/passwords-autolock/index.html',
     './knowledge/key-derivation-2fa/index.html',
     './knowledge/mobile-streaming/index.html',
+    './knowledge/airgap-usb-backup/',
+    './knowledge/airgap-usb-backup/index.html',
     './how-to-use-zevsafe/',
     './how-to-use-zevsafe/index.html',
     './change-log/',

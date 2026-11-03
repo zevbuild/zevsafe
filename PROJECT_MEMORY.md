@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.5.0` (`WEB-VERSION-56`, Service Worker `v56`)  
+> **Web Portal Version:** `v8.6.0` (`WEB-VERSION-57`, Service Worker `v57`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 > **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 13 & 14; Upcoming Phases 8–12: Argon2id WASM, Visual Paper-Safe QR Sheet, Document Redaction, Hardware Profiler, Offline i18n, True Offline USB Backup Kit).
 
@@ -153,6 +153,12 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Direct USB Flash Drive Writer (`writeToUsbDirectory`):** Employs the W3C File System Access API (`showDirectoryPicker`) to stream the complete ZevSafe vault suite and subfolder hierarchy directly onto connected USB thumb drives or external storage drives.
 - **Cross-Platform Zero-Config Launchers:** Bundles `Launch-ZevSafe-Windows.bat` and `Launch-ZevSafe-Mac-Linux.sh` for 1-click execution on air-gapped computers with automated 127.0.0.1 HTTP local server initiation or direct browser fallbacks.
 - **Interactive Cybernetic Modal (`#usb-backup-modal`):** Accessible via desktop navbar (`#btn-open-usb-backup-nav`) and mobile drawer (`#btn-open-usb-backup-mobile`), featuring live progress tracking (`#usb-backup-progress-card`) and 1-click download actions.
+
+
+### 3.8 Comprehensive Knowledge Hub Service Manual #10: Air-Gap USB Backup (`knowledge/airgap-usb-backup/`)
+- **10th Dedicated Service Manual:** Step-by-step disclosures in dual perspective (Simple User Guide vs Technical Cryptographic Specification) for the 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP 2.0 binary architecture, W3C File System Access API direct streaming, Google Font decoupling, and cross-platform offline launchers.
+- **Service Manual #07 Update (`knowledge/passwords-autolock/`):** Added complete Simple and Technical disclosures for Phase 14 Native Password Manager Integration, detailing the W3C Credential Management API (`PasswordCredential`), semantic hidden forms (`autocomplete="username"`, `autocomplete="new-password"`, `autocomplete="current-password"`), extension form submit event triggers, and vault filename binding.
+- **Interactive Search & Card Grid (`knowledge/index.html`):** Expanded to 10 service cards with real-time tag-based search and filter counters.
 
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 
