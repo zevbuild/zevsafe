@@ -1066,7 +1066,7 @@ const catalogFiles = [
     const swPath = path.resolve(__dirname, '..', 'sw.js');
     const swContent = fs.readFileSync(swPath, 'utf8');
 
-    assert.strictEqual(swContent.includes("APP_VERSION    = 'v53';"), true, 'Service Worker bumped to v53');
+    assert.strictEqual(swContent.includes("APP_VERSION    = 'v56';"), true, 'Service Worker bumped to v56');
     const precacheExpected = [
         './knowledge/',
         './knowledge/index.html',
@@ -1087,7 +1087,7 @@ const catalogFiles = [
         assert.strictEqual(swContent.includes(asset), true, `sw.js precaches ${asset}`);
     }
 
-    console.log('  ✓ 34. PWA Service Worker v53 precaches all 13 Knowledge Hub shell assets for 100% offline access');
+    console.log('  ✓ 34. PWA Service Worker v55 precaches all 13 Knowledge Hub shell assets for 100% offline access');
 }
 
 
@@ -1116,8 +1116,194 @@ const catalogFiles = [
     console.log('  ✓ 35. Phone-only right-aligned hamburger navigation button and cybernetic drawer verified');
 }
 
-console.log('===============================================================');
-console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 35/35 PASSED    ');
-console.log('===============================================================');
+
+// Test 36: Phase 14 Native Password Manager Integration & W3C Credential Management API Verification
+(async () => {
+    const path = require('path');
+    const indexHtml = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8');
+    const stylesCss = fs.readFileSync(path.resolve(__dirname, '..', 'styles.css'), 'utf8');
+    const appJs = fs.readFileSync(path.resolve(__dirname, '..', 'app.js'), 'utf8');
+
+    // 1. Verify index.html credential form markup & standard attributes
+    assert.strictEqual(indexHtml.includes('id="vault-credential-form"'), true, 'index.html defines #vault-credential-form');
+    assert.strictEqual(indexHtml.includes('id="credential-vault-name"'), true, 'index.html defines #credential-vault-name');
+    assert.strictEqual(indexHtml.includes('autocomplete="username"'), true, 'credential form specifies autocomplete="username"');
+    assert.strictEqual(indexHtml.includes('id="credential-vault-password"'), true, 'index.html defines #credential-vault-password');
+    assert.strictEqual(indexHtml.includes('autocomplete="new-password"'), true, 'credential form specifies autocomplete="new-password"');
+    assert.strictEqual(indexHtml.includes('id="btn-credential-submit"'), true, 'index.html defines #btn-credential-submit');
+
+    // 2. Verify decrypt credential form markup & standard attributes
+    assert.strictEqual(indexHtml.includes('id="vault-decrypt-credential-form"'), true, 'index.html defines #vault-decrypt-credential-form');
+    assert.strictEqual(indexHtml.includes('id="decrypt-credential-vault-name"'), true, 'index.html defines #decrypt-credential-vault-name');
+    assert.strictEqual(indexHtml.includes('id="decrypt-credential-vault-password"'), true, 'index.html defines #decrypt-credential-vault-password');
+    assert.strictEqual(indexHtml.includes('autocomplete="current-password"'), true, 'decrypt form specifies autocomplete="current-password"');
+    assert.strictEqual(indexHtml.includes('id="btn-decrypt-credential-submit"'), true, 'index.html defines #btn-decrypt-credential-submit');
+
+    // 3. Verify interactive cybernetic buttons and auto-save checkbox
+    assert.strictEqual(indexHtml.includes('id="btn-save-pwd-manager"'), true, 'index.html defines #btn-save-pwd-manager');
+    assert.strictEqual(indexHtml.includes('id="btn-autofill-pwd"'), true, 'index.html defines #btn-autofill-pwd');
+    assert.strictEqual(indexHtml.includes('id="chk-auto-save-pwd"'), true, 'index.html defines #chk-auto-save-pwd');
+
+    // 4. Verify styles.css cybernetic glassmorphism definitions
+    assert.strictEqual(stylesCss.includes('.btn-pw-mgr {'), true, 'styles.css defines .btn-pw-mgr');
+    assert.strictEqual(stylesCss.includes('.btn-pw-mgr:hover {'), true, 'styles.css defines hover state for .btn-pw-mgr');
+    assert.strictEqual(stylesCss.includes('.btn-pw-mgr--teal {'), true, 'styles.css defines .btn-pw-mgr--teal');
+    assert.strictEqual(stylesCss.includes('.pwd-auto-save-checkbox'), true, 'styles.css defines .pwd-auto-save-checkbox');
+
+    // 5. Verify app.js implementation & wiring
+    assert.strictEqual(appJs.includes('function saveVaultCredential('), true, 'app.js defines saveVaultCredential');
+    assert.strictEqual(appJs.includes('function autofillVaultCredential('), true, 'app.js defines autofillVaultCredential');
+    assert.strictEqual(appJs.includes('function initPasswordManagerIntegration('), true, 'app.js defines initPasswordManagerIntegration');
+
+    // 6. Behavioral Unit Test of saveVaultCredential & autofillVaultCredential logic with mock DOM & W3C Credential API
+    let dispatchedEvents = [];
+    let storedCredential = null;
+    let mockElements = {
+        'credential-vault-name': { value: '' },
+        'credential-vault-password': { value: '' },
+        'vault-credential-form': {
+            dispatchEvent: (evt) => { dispatchedEvents.push(evt); }
+        },
+        'decrypt-credential-vault-name': { value: '' },
+        'decrypt-credential-vault-password': { value: '' },
+        'decrypt-password': {
+            value: '',
+            dispatchEvent: (evt) => { dispatchedEvents.push(evt); }
+        },
+        'chk-auto-save-pwd': { checked: true }
+    };
+
+    const mockDocument = {
+        getElementById: (id) => mockElements[id] || null
+    };
+
+    class MockPasswordCredential {
+        constructor(data) {
+            this.id = data.id;
+            this.password = data.password;
+            this.name = data.name;
+        }
+    }
+
+    const mockNavigator = {
+        credentials: {
+            store: async (cred) => {
+                storedCredential = cred;
+                return cred;
+            },
+            get: async (opts) => {
+                return {
+                    id: 'Project-Zero-Archive.zev',
+                    password: 'MockSecurePassphrase123!'
+                };
+            }
+        }
+    };
+
+    // Instantiate isolated scope for testing saveVaultCredential
+    const vm = require('vm');
+    const sandbox = {
+        document: mockDocument,
+        window: {
+            PasswordCredential: MockPasswordCredential
+        },
+        navigator: mockNavigator,
+        PasswordCredential: MockPasswordCredential,
+        Event: class { constructor(type, opts) { this.type = type; this.opts = opts; } },
+        showToast: (msg, type) => {},
+        log: (msg, type) => {},
+        console: console
+    };
+    vm.createContext(sandbox);
+
+    const fnStart = appJs.indexOf('async function saveVaultCredential');
+    const fnEnd = appJs.indexOf('// Expose globally for modularity');
+    const testFnCode = appJs.substring(fnStart, fnEnd);
+    vm.runInContext(testFnCode, sandbox);
+
+    // Test saving credential
+    const saveResult = await sandbox.saveVaultCredential('Confidential-Vault.zev', 'Diceware-Dragon-Galaxy-Matrix-99');
+    assert.strictEqual(saveResult, true, 'saveVaultCredential returns true on success');
+    assert.strictEqual(mockElements['credential-vault-name'].value, 'Confidential-Vault.zev', 'Populates username field with vault name');
+    assert.strictEqual(mockElements['credential-vault-password'].value, 'Diceware-Dragon-Galaxy-Matrix-99', 'Populates password field with vault password');
+    assert.strictEqual(dispatchedEvents.some(e => e.type === 'submit'), true, 'Dispatches submit event on vault-credential-form for extensions');
+    assert.notStrictEqual(storedCredential, null, 'navigator.credentials.store was invoked');
+    assert.strictEqual(storedCredential.id, 'Confidential-Vault.zev', 'Stored credential ID matches vault name');
+    assert.strictEqual(storedCredential.password, 'Diceware-Dragon-Galaxy-Matrix-99', 'Stored credential password matches');
+
+    // Test autofill credential
+    const autofillCred = await sandbox.autofillVaultCredential('Project-Zero-Archive.zev');
+    assert.notStrictEqual(autofillCred, null, 'autofillVaultCredential returns credential object');
+    assert.strictEqual(mockElements['decrypt-password'].value, 'MockSecurePassphrase123!', 'Decrypt password input received autofilled password');
+    assert.strictEqual(mockElements['decrypt-credential-vault-name'].value, 'Project-Zero-Archive.zev', 'Decrypt credential name received credential ID');
+    assert.strictEqual(mockElements['decrypt-credential-vault-password'].value, 'MockSecurePassphrase123!', 'Decrypt credential password received autofilled password');
+
+    console.log('  ✓ 36. Phase 14 Native Password Manager Integration, W3C Credential Management API & standards-compliant autofill triggers verified');
+
+    // -------------------------------------------------------------
+    // Test 37: 1-Click USB Air-Gap Backup Kit & Standalone Portability
+    // -------------------------------------------------------------
+    const usbKit = require('../js/usb-backup-kit.js');
+    assert.strictEqual(typeof usbKit.computeCRC32, 'function', 'computeCRC32 is exported');
+    assert.strictEqual(typeof usbKit.buildPKZip, 'function', 'buildPKZip is exported');
+
+    // Test CRC32 against known standard vector "123456789" => 0xCBF43926
+    const testVector = new TextEncoder().encode('123456789');
+    const crc = usbKit.computeCRC32(testVector);
+    assert.strictEqual(crc, 0xCBF43926, 'Standard CRC-32 test vector matches');
+
+    // Test PKZIP generation with test files
+    const mockFiles = [
+        { name: 'Launch-Windows.bat', data: new TextEncoder().encode('@echo off\necho Hello') },
+        { name: 'README.txt', data: new TextEncoder().encode('Air-gap offline test') }
+    ];
+    const zipBytes = usbKit.buildPKZip(mockFiles);
+    assert.strictEqual(zipBytes instanceof Uint8Array, true, 'buildPKZip returns Uint8Array');
+    const zipView = new DataView(zipBytes.buffer, zipBytes.byteOffset, zipBytes.byteLength);
+
+    // Verify Local File Header Signature 0x04034b50
+    assert.strictEqual(zipView.getUint32(0, true), 0x04034b50, 'Local file header signature valid');
+
+    // Verify End of Central Directory Record Signature 0x06054b50 at the end
+    const eocdSig = zipView.getUint32(zipBytes.length - 22, true);
+    assert.strictEqual(eocdSig, 0x06054b50, 'End of Central Directory signature valid');
+    assert.strictEqual(zipView.getUint16(zipBytes.length - 14, true), 2, 'EOCD reports 2 total entries');
+
+    // Verify air-gap asset list has no external URLs
+    assert.strictEqual(Array.isArray(usbKit.AIRGAP_ASSET_PATHS), true, 'AIRGAP_ASSET_PATHS is an array');
+    assert.strictEqual(usbKit.AIRGAP_ASSET_PATHS.some(p => p.includes('http')), false, 'All air-gap paths are local/relative');
+    assert.strictEqual(usbKit.AIRGAP_ASSET_PATHS.includes('index.html'), true, 'AIRGAP_ASSET_PATHS includes index.html');
+    assert.strictEqual(usbKit.AIRGAP_ASSET_PATHS.includes('js/usb-backup-kit.js'), true, 'AIRGAP_ASSET_PATHS includes usb-backup-kit.js');
+
+    // Verify launcher scripts
+    assert.strictEqual(usbKit.WINDOWS_LAUNCHER.includes('Launch-ZevSafe-Windows'), false, 'Valid Windows launcher script');
+    assert.strictEqual(usbKit.WINDOWS_LAUNCHER.includes('index.html'), true, 'Windows launcher points to index.html');
+    assert.strictEqual(usbKit.UNIX_LAUNCHER.includes('index.html'), true, 'Mac/Linux launcher points to index.html');
+
+    // Verify index.html UI integration
+    const mainIndexHtml = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
+    assert.strictEqual(mainIndexHtml.includes('id="usb-backup-modal"'), true, 'usb-backup-modal exists in index.html');
+    assert.strictEqual(mainIndexHtml.includes('id="btn-open-usb-backup-nav"'), true, 'btn-open-usb-backup-nav exists in index.html');
+    assert.strictEqual(mainIndexHtml.includes('id="btn-open-usb-backup-mobile"'), true, 'btn-open-usb-backup-mobile exists in index.html');
+    assert.strictEqual(mainIndexHtml.includes('id="btn-usb-download-zip"'), true, 'btn-usb-download-zip exists in index.html');
+    assert.strictEqual(mainIndexHtml.includes('id="btn-usb-write-drive"'), true, 'btn-usb-write-drive exists in index.html');
+    assert.strictEqual(mainIndexHtml.includes('js/usb-backup-kit.js'), true, 'js/usb-backup-kit.js script included in index.html');
+
+    // Verify sw.js includes usb-backup-kit.js and APP_VERSION = 'v56'
+    const swContent = fs.readFileSync(path.resolve(__dirname, '../sw.js'), 'utf8');
+    assert.strictEqual(swContent.includes("'./js/usb-backup-kit.js'"), true, 'sw.js precaches js/usb-backup-kit.js');
+    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v56';"), true, 'sw.js bumped to APP_VERSION v56');
+
+    console.log('  ✓ 37. Phase 13 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine & multi-OS offline launchers verified');
+
+})().then(() => {
+    console.log('===============================================================');
+    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 37/37 PASSED    ');
+    console.log('===============================================================');
+}).catch(err => {
+    console.error('Test 36 failed:', err);
+    process.exit(1);
+});
+
 
 

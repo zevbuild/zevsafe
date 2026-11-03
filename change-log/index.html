@@ -13,7 +13,7 @@
     <meta name="msapplication-TileImage" content="../assets/icon-512.png">
 
     <!-- Content Security Policy: Strict Air-Gapped Zero-Exfiltration Defense -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="../manifest.json">
@@ -32,11 +32,6 @@
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="author" content="zevbuild">
     <link rel="canonical" href="https://zevsafe.pages.dev/change-log/">
-
-    <!-- Preconnect for Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -672,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.2.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.4.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -711,13 +706,59 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 8.2.0 (WEB-VERSION-53) ── -->
-            <article class="cl-card cl-card--latest" data-version="v8">
+            <!-- ── VERSION 8.3.0 (WEB-VERSION-56) ── -->
+            <article class="cl-card" data-version="v8">
+                <div class="cl-marker">🔒</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.3.0 (WEB-VERSION-56)</h2>
+                            <span class="cl-badge cl-badge--date">November 3, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Air-Gap Offline</span>
+                            <span class="cl-tag">Zero Network</span>
+                            <span class="cl-tag">Google Font Decoupling</span>
+                            <span class="cl-tag">CSP Hardening</span>
+                            <span class="cl-tag">PWA v54</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>100% True Zero-Network Air-Gap Portability (Phase 13):</strong> Completely decoupled all external runtime dependencies on Google Fonts CDNs (<code>fonts.googleapis.com</code> and <code>fonts.gstatic.com</code>). Removed all preconnect links, stylesheet references, and hardened Content Security Policy (CSP) meta tags and HTTP response headers across all 14 portal pages and Cloudflare <code>_headers</code> to <code>style-src 'self' 'unsafe-inline'; font-src 'self' data:;</code>. Guarantees 0 bytes transmitted over the network and 0 outbound DNS requests.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Ultra-Fast Local System Typography Stacks (<code>styles.css</code>, <code>knowledge.css</code>):</strong> Replaced external web fonts with robust native system font stacks for body (<code>'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif</code>), display (<code>'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif</code>), and code (<code>'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace</code>), eliminating layout shifts (CLS 0.00) and enabling instant zero-latency typography.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Elimination of Network Render-Blocking Overhead:</strong> Eradicated external CSS font fetches, reducing Largest Contentful Paint (LCP) and First Contentful Paint (FCP) on cold-boot offline sessions, airplane mode, and secure air-gapped workstations.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker v54 &amp; Font Cache Decommissioning (<code>sw.js</code>):</strong> Bumped offline application cache to <code>v54</code> (<code>APP_VERSION = 'v54'</code>), deleted external font runtime caching and <code>staleWhileRevalidate</code> logic, ensuring stale external font caches are automatically purged during service worker activation.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.2.0 (WEB-VERSION-56) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">📚</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 8.2.0 (WEB-VERSION-53)</h2>
+                            <h2 class="cl-version-title">Version 8.2.0 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">November 2, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -769,13 +810,13 @@
                 </div>
             </article>
 
-            <!-- ── VERSION 8.1.0 (WEB-VERSION-52) ── -->
+            <!-- ── VERSION 8.1.0 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🎭</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 8.1.0 (WEB-VERSION-52)</h2>
+                            <h2 class="cl-version-title">Version 8.1.0 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">November 2, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -803,13 +844,13 @@
                 </div>
             </article>
 
-            <!-- ── VERSION 8.0.0 (WEB-VERSION-51) ── -->
+            <!-- ── VERSION 8.0.0 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🖼️</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 8.0.0 (WEB-VERSION-51)</h2>
+                            <h2 class="cl-version-title">Version 8.0.0 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">November 2, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -838,13 +879,13 @@
             </article>
 
 
-            <!-- ── VERSION 7.1.0 (WEB-VERSION-52) ── -->
+            <!-- ── VERSION 7.1.0 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v7">
                 <div class="cl-marker">🎵</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 7.1.0 (WEB-VERSION-52)</h2>
+                            <h2 class="cl-version-title">Version 7.1.0 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">November 2, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -883,20 +924,20 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
                             <div class="cl-item-text">
-                                <strong>Service Worker Offline Shell v49:</strong> Bumped Service Worker offline cache to <code>v49</code> (<code>APP_VERSION = 'v49'</code>) and synchronized all platform indicators to <code>WEB-VERSION-52</code> / <code>v8.1.0</code>.
+                                <strong>Service Worker Offline Shell v49:</strong> Bumped Service Worker offline cache to <code>v49</code> (<code>APP_VERSION = 'v49'</code>) and synchronized all platform indicators to <code>WEB-VERSION-56</code> / <code>v8.1.0</code>.
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
 
-            <!-- ── VERSION 7.0.0 (WEB-VERSION-48) ── -->
+            <!-- ── VERSION 7.0.0 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v7">
                 <div class="cl-marker">📁</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 7.0.0 (WEB-VERSION-48)</h2>
+                            <h2 class="cl-version-title">Version 7.0.0 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">November 2, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -935,20 +976,20 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
                             <div class="cl-item-text">
-                                <strong>Service Worker Offline Shell v48:</strong> Bumped Service Worker offline cache to <code>v48</code> (<code>APP_VERSION = 'v48'</code>) and synchronized all platform indicators to <code>WEB-VERSION-48</code> / <code>v7.0.0</code>.
+                                <strong>Service Worker Offline Shell v48:</strong> Bumped Service Worker offline cache to <code>v48</code> (<code>APP_VERSION = 'v48'</code>) and synchronized all platform indicators to <code>WEB-VERSION-56</code> / <code>v7.0.0</code>.
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
 
-            <!-- ── VERSION 6.9.6 (WEB-VERSION-47) ── -->
+            <!-- ── VERSION 6.9.6 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">⚡</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.9.6 (WEB-VERSION-47)</h2>
+                            <h2 class="cl-version-title">Version 6.9.6 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">November 2, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -993,20 +1034,20 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
                             <div class="cl-item-text">
-                                <strong>Service Worker &amp; Offline Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v47</code> (<code>APP_VERSION = 'v47'</code>) and synchronized all platform release tags to <code>WEB-VERSION-47</code> / <code>v6.9.6</code>.
+                                <strong>Service Worker &amp; Offline Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v47</code> (<code>APP_VERSION = 'v47'</code>) and synchronized all platform release tags to <code>WEB-VERSION-56</code> / <code>v6.9.6</code>.
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
 
-            <!-- ── VERSION 6.9.5 (WEB-VERSION-46) ── -->
+            <!-- ── VERSION 6.9.5 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">✏️</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.9.5 (WEB-VERSION-46)</h2>
+                            <h2 class="cl-version-title">Version 6.9.5 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">October 28, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1052,13 +1093,13 @@
                 </div>
             </article>
 
-            <!-- ── VERSION 6.9.4 (WEB-VERSION-45) ── -->
+            <!-- ── VERSION 6.9.4 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">📂</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.9.4 (WEB-VERSION-45)</h2>
+                            <h2 class="cl-version-title">Version 6.9.4 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">October 28, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1092,13 +1133,13 @@
                 </div>
             </article>
 
-            <!-- ── VERSION 6.9.3 (WEB-VERSION-44) ── -->
+            <!-- ── VERSION 6.9.3 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">⚡</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.9.3 (WEB-VERSION-44)</h2>
+                            <h2 class="cl-version-title">Version 6.9.3 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">October 20, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1138,13 +1179,13 @@
                 </div>
             </article>
 
-            <!-- ── VERSION 6.9.2 (WEB-VERSION-43) ── -->
+            <!-- ── VERSION 6.9.2 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🚀</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.9.2 (WEB-VERSION-43)</h2>
+                            <h2 class="cl-version-title">Version 6.9.2 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">October 20, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1184,13 +1225,13 @@
                 </div>
             </article>
 
-            <!-- ── VERSION 6.9.0 (WEB-VERSION-42) ── -->
-            <article class="cl-card cl-card--latest" data-version="v6">
+            <!-- ── VERSION 6.9.0 (WEB-VERSION-56) ── -->
+            <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🛡️</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.9.0 (WEB-VERSION-42)</h2>
+                            <h2 class="cl-version-title">Version 6.9.0 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--latest">🟢 Latest Release</span>
                             <span class="cl-badge cl-badge--date">October 20, 2026</span>
                         </div>
@@ -1250,7 +1291,7 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
                             <div class="cl-item-text">
-                                <strong>Streaming Interceptor &amp; Shell Cache v41:</strong> Added case-insensitive <code>.zev</code> cache bypass; enforced <code>Sec-Fetch-Site</code> origin verification on streaming service worker interceptor; generated CSPRNG <code>downloadId</code> tokens with 5-second rapid session reclamation in <code>StreamSaver</code>; bumped PWA offline shell cache to <code>v42</code> (<code>WEB-VERSION-42</code>).
+                                <strong>Streaming Interceptor &amp; Shell Cache v41:</strong> Added case-insensitive <code>.zev</code> cache bypass; enforced <code>Sec-Fetch-Site</code> origin verification on streaming service worker interceptor; generated CSPRNG <code>downloadId</code> tokens with 5-second rapid session reclamation in <code>StreamSaver</code>; bumped PWA offline shell cache to <code>v42</code> (<code>WEB-VERSION-56</code>).
                             </div>
                         </div>
                         <div class="cl-item">
@@ -1263,13 +1304,13 @@
                 </div>
             </article>
 
-            <!-- ── VERSION 6.8 (WEB-VERSION-36) ── -->
+            <!-- ── VERSION 6.8 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🖼️</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.8 (WEB-VERSION-36)</h2>
+                            <h2 class="cl-version-title">Version 6.8 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">October 15, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1320,20 +1361,20 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
                             <div class="cl-item-text">
-                                <strong>Service Worker Shell Cache v36:</strong> Bumped PWA offline cache to <code>v36</code> and synchronized release indicators to <code>WEB-VERSION-36</code>.
+                                <strong>Service Worker Shell Cache v36:</strong> Bumped PWA offline cache to <code>v36</code> and synchronized release indicators to <code>WEB-VERSION-56</code>.
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
 
-            <!-- ── VERSION 6.7 (WEB-VERSION-35) ── -->
+            <!-- ── VERSION 6.7 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">⚡</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.7 (WEB-VERSION-35)</h2>
+                            <h2 class="cl-version-title">Version 6.7 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">October 4, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1378,20 +1419,20 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
-                                <strong>Service Worker &amp; Offline Cache Upgrade (v35):</strong> Bumped PWA offline cache to <code>v35</code> and synchronized all release indicators to <code>WEB-VERSION-35</code>.
+                                <strong>Service Worker &amp; Offline Cache Upgrade (v35):</strong> Bumped PWA offline cache to <code>v35</code> and synchronized all release indicators to <code>WEB-VERSION-56</code>.
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
 
-            <!-- ── VERSION 6.6 (WEB-VERSION-34) ── -->
+            <!-- ── VERSION 6.6 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🛡️</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.6 (WEB-VERSION-34)</h2>
+                            <h2 class="cl-version-title">Version 6.6 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">October 2, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1447,20 +1488,20 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
-                                <strong>Service Worker Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v34</code> (<code>WEB-VERSION-34</code>).
+                                <strong>Service Worker Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v34</code> (<code>WEB-VERSION-56</code>).
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
 
-            <!-- ── VERSION 6.5 (WEB-VERSION-33) ── -->
+            <!-- ── VERSION 6.5 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🎨</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.5 (WEB-VERSION-33)</h2>
+                            <h2 class="cl-version-title">Version 6.5 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">October 2, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1485,20 +1526,20 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
-                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v33</code> (<code>WEB-VERSION-33</code>).
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v33</code> (<code>WEB-VERSION-56</code>).
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
 
-            <!-- ── VERSION 6.4 (WEB-VERSION-32) ── -->
+            <!-- ── VERSION 6.4 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">📁</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.4 (WEB-VERSION-32)</h2>
+                            <h2 class="cl-version-title">Version 6.4 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">October 2, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1524,20 +1565,20 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
-                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v32</code> (<code>WEB-VERSION-32</code>).
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v32</code> (<code>WEB-VERSION-56</code>).
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
 
-            <!-- ── VERSION 6.3 (WEB-VERSION-31) ── -->
+            <!-- ── VERSION 6.3 (WEB-VERSION-56) ── -->
             <article class="cl-card" data-version="v6">
                 <div class="cl-marker">🤖</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 6.3 (WEB-VERSION-31)</h2>
+                            <h2 class="cl-version-title">Version 6.3 (WEB-VERSION-56)</h2>
                             <span class="cl-badge cl-badge--date">September 30, 2026</span>
                         </div>
                         <div class="cl-tags">
@@ -1583,7 +1624,7 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
-                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v31</code> (<code>WEB-VERSION-31</code>).
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v31</code> (<code>WEB-VERSION-56</code>).
                             </div>
                         </div>
                     </div>
@@ -1623,7 +1664,7 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
-                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v30</code> (<code>WEB-VERSION-30</code>).
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v30</code> (<code>WEB-VERSION-56</code>).
                             </div>
                         </div>
                     </div>
@@ -1668,7 +1709,7 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
-                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v29</code> (<code>WEB-VERSION-29</code>) and updated <code>SHELL_ASSETS</code> in <code>sw.js</code> to precache all optimized PNG and WebP assets.
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v29</code> (<code>WEB-VERSION-56</code>) and updated <code>SHELL_ASSETS</code> in <code>sw.js</code> to precache all optimized PNG and WebP assets.
                             </div>
                         </div>
                     </div>
@@ -1706,7 +1747,7 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
-                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v28</code> (<code>WEB-VERSION-28</code>).
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v28</code> (<code>WEB-VERSION-56</code>).
                             </div>
                         </div>
                     </div>
@@ -1787,7 +1828,7 @@
                         <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
-                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v27</code> (<code>WEB-VERSION-27</code>).
+                                <strong>PWA Cache Synchronization:</strong> Bumped Service Worker offline shell cache to <code>v27</code> (<code>WEB-VERSION-56</code>).
                             </div>
                         </div>
                     </div>

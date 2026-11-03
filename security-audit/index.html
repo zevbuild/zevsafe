@@ -13,7 +13,7 @@
     <meta name="msapplication-TileImage" content="../assets/icon-512.png">
 
     <!-- Content Security Policy: Strict Air-Gapped Zero-Exfiltration Defense -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="../manifest.json">
@@ -32,11 +32,6 @@
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="author" content="zevbuild">
     <link rel="canonical" href="https://zevsafe.pages.dev/security-audit/">
-
-    <!-- Preconnect for Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="article">
@@ -1167,7 +1162,7 @@ toast.appendChild(closeBtn);</code></pre>
                     <div class="sa-code-header">
                         <span>Air-Gapped Content Security Policy (`index.html`)</span>
                     </div>
-<pre><code>&lt;meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';"&gt;</code></pre>
+<pre><code>&lt;meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';"&gt;</code></pre>
                 </div>
             </article>
 

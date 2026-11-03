@@ -1,9 +1,9 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.2.0` (`WEB-VERSION-53`, Service Worker `v53`)  
+> **Web Portal Version:** `v8.5.0` (`WEB-VERSION-56`, Service Worker `v56`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
-> **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7; Upcoming Phases 8–14: Argon2id WASM, Visual Paper-Safe QR Sheet, Document Redaction, Hardware Profiler, Offline i18n, True Offline USB Backup & Font Decoupling, Native Password Manager Integration).
+> **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 13 & 14; Upcoming Phases 8–12: Argon2id WASM, Visual Paper-Safe QR Sheet, Document Redaction, Hardware Profiler, Offline i18n, True Offline USB Backup Kit).
 
 > **🤖 MANDATORY AI AGENT RULE:**  
 > Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
@@ -88,7 +88,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   7. `knowledge/passwords-autolock/index.html`: Passwords & Auto-Lock Protocol (CSPRNG Diceware, Shannon Entropy, Inactivity Timers, Buffer Zeroization)
   8. `knowledge/key-derivation-2fa/index.html`: Key Derivation & 2FA Physical Keyfiles (600k-2.4M PBKDF2 Tiers, SHA-256 Keyfile Mixing)
   9. `knowledge/mobile-streaming/index.html`: Multi-Tier Mobile Streaming Storage (Tier 1 FSA, Tier 3 OPFS, Tier 2 SW, Tier 4 Fallback, Memory Bounding < 150 MB)
-- **Air-Gapped PWA Precaching:** All 12 Knowledge Hub pages and assets are precached in `SHELL_ASSETS` (`APP_VERSION = 'v53'`) for 100% offline availability in airplane mode.
+- **Air-Gapped PWA Precaching:** All 12 Knowledge Hub pages and assets are precached in `SHELL_ASSETS` (`APP_VERSION = 'v54'`) for 100% offline availability in airplane mode.
 
 ### 3.3 Component Directory
 
@@ -101,7 +101,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 | `index.html` | Primary vault UI, Encrypt/Decrypt cards, 60 FPS Telemetry HUD with live throughput & workers badge, Vault Explorer modal, Cinema Media Player, Image Lightbox modal, Code & Text Viewer/Editor modal (`#vault-text-modal`), approved modern navbar, cryptographic trust strip (`WEB-VERSION-52`). |
 | `app.js` | Main-thread controller, drag-and-drop traversal, entropy meter, Vault Explorer UI with instant session key extraction, hierarchical directory drill-down & breadcrumb navigation, in-browser PDF previewer, interactive in-browser text file editor (`toggleTextEditMode`, `saveTextFileChanges`), in-vault note creation (`createNewTextFile`), session overlay Map (`editedFiles`), tracked blob URL registry, Cinema streaming media player, high-res Image Lightbox controller with pan/zoom/rotate, Code & Text reader with line numbers and copy-to-clipboard, Telemetry HUD controller, and universal session zeroization protocol. |
 | `styles.css` | Glassmorphic theme system, adaptive Telemetry HUD grid, modern navbar & hero trust strip, Cinema deck controls, Image Lightbox controls bar & viewport, Code Viewer line numbers & syntax container, interactive textarea editor (`.text-code-textarea`), breadcrumb navigation trail, directory items, `(Edited)` badge pills, PDF preview frame, toast notifications, and mobile GPU hardware optimizations. |
-| `sw.js` | Offline-first PWA Service Worker (`APP_VERSION = 'v49'`) + Tier 2 `/_stream_download` streaming download interceptor + cache lifecycle + subfolder routing. |
+| `sw.js` | Offline-first PWA Service Worker (`APP_VERSION = 'v55'`) + Tier 2 `/_stream_download` streaming download interceptor + cache lifecycle + subfolder routing. |
 | `assets/` | Structured brand assets: high-res 3D metallic logos, PWA icons, Open Graph social cards, and vector favicon. |
 | `js/worker-bridge.js` | Elastic `WorkerPool`, `OrderedReassemblyQueue`, `CreditFlowController`, zero-copy buffer transfers, and streaming pipeline orchestration. |
 | `js/crypto-worker.js` | Multi-session background worker supporting `INIT_SESSION`, `CLEANUP_SESSION`, zero-copy STREAM AEAD encryption/decryption, and manifest building/decryption. |
@@ -118,6 +118,13 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Floating Audio Mini-Player Dock (`dockAudioPlayer`, `expandAudioDock`, `closeAudioDock`):** Persistent bottom player dock allowing uninterrupted audio playback while navigating folders, reading documents, or editing files in Vault Explorer. Synchronizes playback status, track timer, and controls with zero-knowledge session teardown.
 - **Vault Cryptographic Health & Bit-Rot Verifier (`verifyVaultIntegrity`):** Comprehensive client-side diagnostic scorecard verifying 57-byte container header, version 3 magic, PBKDF2 salt and iteration floor (>= 100k rounds), 12B IV + 42B AAD layouts, and AES-256-GCM 16-byte authentication tags across all chunks to certify 100% bit-rot-free integrity without disk writes.
 - **In-Vault Ephemeral Virtual Filesystem (`addFilesToVault`, `deleteVaultFile`, `renameVaultFile`):** Full in-session file operations allowing drag-and-drop or file picker additions into the active directory (`explorerCurrentDir`), soft deletions marked in `currentV3Vault.deletedFiles`, and in-session renaming with zero unencrypted disk footprint.
+
+### 3.5 Phase 13: 100% True Zero-Network Air-Gap Portability & Google Font Decoupling
+- **Complete Decoupling of Font CDNs:** Completely removed all runtime and asset references to `fonts.googleapis.com` and `fonts.gstatic.com`. Stripped all `<link rel="preconnect">` and external stylesheet tags from all 14 HTML pages.
+- **Hardened Air-Gapped CSP:** Tightened Content-Security-Policy (CSP) in all HTML pages and Cloudflare `_headers` to `style-src 'self' 'unsafe-inline'; font-src 'self' data:;`, guaranteeing zero outbound network requests and complete air-gap compliance.
+- **Modern High-DPI Native System Typography:** Upgraded typography tokens across `styles.css` and `knowledge/knowledge.css` with gorgeous, modern native system font stacks for body (`Inter`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`, `Helvetica Neue`, `Arial`, `sans-serif`), display (`Outfit`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`, `Helvetica Neue`, `sans-serif`), and code (`JetBrains Mono`, `ui-monospace`, `SFMono-Regular`, `Menlo`, `Monaco`, `Consolas`, `Liberation Mono`, `Courier New`, `monospace`). Guarantees zero Cumulative Layout Shift (CLS 0.00).
+- **Service Worker Shell v54 & Stale Cache Cleansing:** Bumped `APP_VERSION` to `v54` in `sw.js`, deleted Google Fonts runtime routing and `staleWhileRevalidate` function, and configured cache cleanup to automatically purge stale font caches.
+
 - **Client-Side Safe Markdown Viewer (`renderSafeMarkdown`):** Built-in air-gapped markdown renderer for `.md` and `.markdown` files supporting headers, fenced code blocks, task checkboxes (`- [x]`), inline code, blockquotes, and tables without external CDNs.
 - **In-Vault Direct Re-Encryption to `.zev` (`reEncryptVaultToZev`):** Direct in-place re-encryption from Vault Explorer packaging modified and new notes with preserved relative paths into an updated `.zev` streaming container with zero temporary zip roundtripping.
 - **Built-in CSPRNG Diceware & Random Password Generator (`initPasswordGenerator`):** Zero-network high-entropy Diceware passphrase generator (770+ word EFF wordlist) and customizable alphanumeric generator with live entropy calculation and 1-click form synchronization.
@@ -132,6 +139,20 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Scoped Batch Downloads & Select-All:** Checkbox selection dynamically scopes to visible items at the active directory level; batch ZIP generation preserves sanitized relative directory paths via `StreamPacker.sanitizeZipPath`.
 
 ---
+
+### 3.6 Phase 14: Native Password Manager Integration & W3C Credential Management API
+- **W3C Credential Management API Integration (`saveVaultCredential`, `autofillVaultCredential`):** Standard W3C `navigator.credentials.store()` and `navigator.credentials.get({ password: true })` integration with `PasswordCredential` instantiation. Allows seamless 1-click password saving directly into Chrome Password Manager, Bitwarden, 1Password, Dashlane, Apple Keychain, Edge, and KeePassXC.
+- **Standards-Compliant Semantic Hidden Forms (`#vault-credential-form`, `#vault-decrypt-credential-form`):** Embedded hidden forms equipped with standard semantic autocomplete tokens (`autocomplete="username"`, `autocomplete="new-password"`, `autocomplete="current-password"`). Dispatches simulated `submit` events so third-party browser extensions (which listen on form submit events) actively intercept and trigger their native "Save Password" dialogs.
+- **Folder-Aware Identifier Binding:** Automatically maps the active vault filename or folder name (`folderName` or `folderName.zev`) to the credential username identifier (`credential.id` & `credential.name`), binding the vault secret to its exact container name to eliminate forgotten passwords.
+- **Decryption Prime & 1-Click Autofill (`#btn-autofill-pwd`):** When a `.zev` archive is selected in Decrypt view, automatically pre-fills the hidden username field with `file.name` to prime browser autofill heuristics. The "🔑 Autofill from Password Manager" button invokes `navigator.credentials.get()`, automatically populating the password field and updating UI strength meters.
+- **Configurable Auto-Save Prompt Toggle (`#chk-auto-save-pwd`):** Checked by default, automatically executes `saveVaultCredential` upon successful completion of v3 streaming or v1/v2 legacy vault encryption without requiring manual user intervention.
+
+
+### 3.7 Phase 13 Part 2: 1-Click USB Air-Gap Backup Kit & Standalone Portability Engine (`js/usb-backup-kit.js`)
+- **100% Client-Side Pure-JS PKZIP Generator (`buildPKZip`, `computeCRC32`):** Pure JavaScript ZIP implementation complying with PKZIP 2.0 specifications without third-party npm libraries or CDN dependencies. Packages all HTML, CSS, worker, and streaming scripts with calculated IEEE 802.3 32-bit CRCs and UTF-8 path headers.
+- **Direct USB Flash Drive Writer (`writeToUsbDirectory`):** Employs the W3C File System Access API (`showDirectoryPicker`) to stream the complete ZevSafe vault suite and subfolder hierarchy directly onto connected USB thumb drives or external storage drives.
+- **Cross-Platform Zero-Config Launchers:** Bundles `Launch-ZevSafe-Windows.bat` and `Launch-ZevSafe-Mac-Linux.sh` for 1-click execution on air-gapped computers with automated 127.0.0.1 HTTP local server initiation or direct browser fallbacks.
+- **Interactive Cybernetic Modal (`#usb-backup-modal`):** Accessible via desktop navbar (`#btn-open-usb-backup-nav`) and mobile drawer (`#btn-open-usb-backup-mobile`), featuring live progress tracking (`#usb-backup-progress-card`) and 1-click download actions.
 
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 

@@ -2,15 +2,15 @@
 //  ZevSafe Service Worker — Production PWA
 //  Strategy:
 //    • App Shell   → Cache-First  (instant offline load)
-//    • Google Fonts → Stale-While-Revalidate (cached + refreshed)
+
 //    • .zev files  → NEVER cached (security constraint)
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v53';
+const APP_VERSION    = 'v56';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
-const FONT_CACHE     = `zevsafe-fonts-${APP_VERSION}`;
-const ALL_CACHES     = [SHELL_CACHE, FONT_CACHE];
+
+const ALL_CACHES     = [SHELL_CACHE];
 
 // ── App Shell Assets (precached on install) ─────────────────────
 const SHELL_ASSETS = [
@@ -58,7 +58,8 @@ const SHELL_ASSETS = [
     './js/stream-unpacker.js',
     './js/crypto-worker.js',
     './js/worker-bridge.js',
-    './js/stream-saver.js'
+    './js/stream-saver.js',
+    './js/usb-backup-kit.js'
 ];
 
 // ── Install: precache the app shell ────────────────────────────
@@ -144,15 +145,6 @@ self.addEventListener('fetch', event => {
             return;
         }
         event.respondWith(handleStreamDownload(url));
-        return;
-    }
-
-    // ── Route: Google Fonts → Stale-While-Revalidate ──────────
-    if (
-        url.hostname === 'fonts.googleapis.com' ||
-        url.hostname === 'fonts.gstatic.com'
-    ) {
-        event.respondWith(staleWhileRevalidate(request, FONT_CACHE));
         return;
     }
 
@@ -275,37 +267,6 @@ async function cacheFirst(request, cacheName) {
             { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
         );
     }
-}
-
-/**
- * Stale-While-Revalidate strategy.
- * 1. Return cached response immediately (stale).
- * 2. Simultaneously fetch network response and update the cache.
- * Best for fonts — user sees instant load, cache is kept fresh.
- */
-async function staleWhileRevalidate(request, cacheName) {
-    const cache  = await caches.open(cacheName);
-    const cached = await cache.match(request);
-
-    // Fire the network request regardless (don't await yet)
-    const networkFetch = fetch(request)
-        .then(networkResponse => {
-            if (networkResponse && networkResponse.status === 200) {
-                const responseToCache = networkResponse.redirected
-                    ? new Response(networkResponse.body, {
-                          status: networkResponse.status,
-                          statusText: networkResponse.statusText,
-                          headers: networkResponse.headers
-                      })
-                    : networkResponse.clone();
-                cache.put(request, responseToCache).catch(() => {});
-            }
-            return networkResponse;
-        })
-        .catch(() => null); // Fail silently if offline
-
-    // Return cached immediately, or wait for network if no cache
-    return cached || networkFetch;
 }
 
 // ================================================================

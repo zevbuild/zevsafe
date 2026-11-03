@@ -572,6 +572,10 @@ async function onDecryptSelected(files) {
     if (!files || files.length === 0) return;
     let file = files[0];
     selectedDecryptFile = file;
+    const decryptCredNameInput = document.getElementById('decrypt-credential-vault-name');
+    if (decryptCredNameInput && file && file.name) {
+        decryptCredNameInput.value = file.name;
+    }
 
     // Check for Steganographic Polyglot Media Camouflage
     try {
@@ -607,6 +611,10 @@ async function onDecryptSelected(files) {
 
 function clearDecryptSelection() {
     selectedDecryptFile = null;
+    const decryptCredNameClr = document.getElementById('decrypt-credential-vault-name');
+    if (decryptCredNameClr) decryptCredNameClr.value = '';
+    const decryptCredPwdClr = document.getElementById('decrypt-credential-vault-password');
+    if (decryptCredPwdClr) decryptCredPwdClr.value = '';
     const polyBadge = document.getElementById('decrypt-polyglot-badge');
     if (polyBadge) polyBadge.style.display = 'none';
     if (decryptFileInput)   decryptFileInput.value = '';
@@ -2196,6 +2204,10 @@ btnEncrypt.addEventListener('click', async () => {
             if (keyfileBytes) log('🗝️ This vault requires BOTH the password AND the keyfile to decrypt.', 'warn');
 
             updateProgress('✅ Encryption complete!', 100);
+            const autoSaveChk = document.getElementById('chk-auto-save-pwd');
+            if (autoSaveChk && autoSaveChk.checked && password) {
+                saveVaultCredential(filename || selectedEncryptFolderName, password);
+            }
             showPasswordSavePrompt(recoveryRecord);
 
             // Reset encrypt selection & keyfile
@@ -2355,6 +2367,10 @@ btnEncrypt.addEventListener('click', async () => {
         }
 
         updateProgress('✅ Encryption complete!', 100);
+        const autoSaveChkLegacy = document.getElementById('chk-auto-save-pwd');
+        if (autoSaveChkLegacy && autoSaveChkLegacy.checked && password) {
+            saveVaultCredential(filename || selectedEncryptFolderName, password);
+        }
         showPasswordSavePrompt(recoveryRecord);
 
         // Reset encrypt selection & keyfile
@@ -2601,7 +2617,7 @@ initThemeEngine();
 function showPasswordSavePrompt(recordOrPassword) {
     const modal = document.getElementById('pw-save-modal');
     const displayInput = document.getElementById('pw-save-display');
-    const btnSavePwManager = document.getElementById('btn-save-pw-manager');
+    const btnSavePwManager = document.getElementById('btn-modal-save-pw-manager') || document.getElementById('btn-save-pwd-manager');
     const vaultSummary = document.getElementById('pw-vault-summary');
     
     if (!modal || !displayInput) return;
@@ -6757,12 +6773,16 @@ if (document.readyState === 'loading') {
         initPcSetupButton();
         initPwaInstall();
         initPasswordGenerator();
+        initPasswordManagerIntegration();
+        initUsbBackupKit();
     });
 } else {
     initExplorerUI();
     initPcSetupButton();
     initPwaInstall();
     initPasswordGenerator();
+    initPasswordManagerIntegration();
+    initUsbBackupKit();
 }
 
 /**
@@ -6837,3 +6857,261 @@ function initPcSetupButton() {
         btn.addEventListener('click', downloadPcSetupToolkit);
     });
 }
+
+
+/**
+ * ================================================================
+ * PHASE 14: NATIVE PASSWORD MANAGER INTEGRATION
+ * Standards-Compliant W3C Credential Management API & Autofill
+ * ================================================================
+ */
+
+async function saveVaultCredential(vaultIdentifier, password) {
+    const vaultId = (vaultIdentifier || (selectedEncryptFolderName ? `${selectedEncryptFolderName}.zev` : 'ZevSafe Vault')).trim();
+    const pwd = password || (encryptPassword ? encryptPassword.value : '');
+
+    if (!pwd) {
+        if (typeof shakeField === 'function') shakeField('encrypt-password');
+        if (typeof showToast === 'function') showToast('Please enter a password before saving to Password Manager.', 'warning');
+        return false;
+    }
+
+    // 1. Populate standards-compliant hidden form inputs
+    const credNameInput = document.getElementById('credential-vault-name');
+    const credPwdInput  = document.getElementById('credential-vault-password');
+    const credForm      = document.getElementById('vault-credential-form');
+
+    if (credNameInput) credNameInput.value = vaultId;
+    if (credPwdInput)  credPwdInput.value  = pwd;
+
+    // 2. Dispatch submit event so password manager browser extensions (Bitwarden, 1Password, Dashlane, Edge, Chrome) intercept
+    if (credForm) {
+        try {
+            const submitEvt = new Event('submit', { bubbles: true, cancelable: true });
+            credForm.dispatchEvent(submitEvt);
+        } catch (formErr) {
+            console.debug('[Credential Form Submit]', formErr);
+        }
+    }
+
+    // 3. W3C Credential Management API (Chrome, Edge, Safari, Android WebViews)
+    if (typeof window !== 'undefined' && window.PasswordCredential && navigator.credentials && navigator.credentials.store) {
+        try {
+            const credential = new PasswordCredential({
+                id: vaultId,
+                password: pwd,
+                name: vaultId
+            });
+            await navigator.credentials.store(credential);
+            if (typeof log === 'function') log(`🔑 Password registered for "${vaultId}" with browser Password Manager.`, 'success');
+        } catch (credErr) {
+            console.debug('[PasswordCredential Store]', credErr);
+        }
+    }
+
+    // 4. User-visible feedback
+    if (typeof showToast === 'function') {
+        showToast(`Password registered for "${vaultId}". Your password manager will prompt you to save.`, 'success');
+    }
+    return true;
+}
+
+async function autofillVaultCredential(vaultIdentifier) {
+    if (typeof navigator === 'undefined' || !navigator.credentials || !navigator.credentials.get) {
+        if (typeof showToast === 'function') showToast('Credential Management API is not supported in this browser.', 'warning');
+        return null;
+    }
+
+    try {
+        const cred = await navigator.credentials.get({
+            password: true,
+            mediation: 'optional'
+        });
+
+        if (cred && cred.password) {
+            const decryptInput = document.getElementById('decrypt-password-input') || document.getElementById('decrypt-password');
+            if (decryptInput) {
+                decryptInput.value = cred.password;
+                decryptInput.dispatchEvent(new Event('input', { bubbles: true }));
+                decryptInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            const decryptCredName = document.getElementById('decrypt-credential-vault-name');
+            if (decryptCredName && cred.id) decryptCredName.value = cred.id;
+            const decryptCredPwd = document.getElementById('decrypt-credential-vault-password');
+            if (decryptCredPwd) decryptCredPwd.value = cred.password;
+
+            const targetName = cred.id || vaultIdentifier || 'vault';
+            if (typeof showToast === 'function') showToast(`Autofilled password for "${targetName}" from Password Manager!`, 'success');
+            if (typeof log === 'function') log(`🔑 Autofilled credentials for "${targetName}" from Password Manager.`, 'success');
+            return cred;
+        } else {
+            if (typeof showToast === 'function') showToast('No saved password was selected from your Password Manager.', 'info');
+            return null;
+        }
+    } catch (err) {
+        console.debug('[Autofill Credential Error]', err);
+        if (err.name !== 'AbortError' && typeof showToast === 'function') {
+            showToast('Password manager autofill: ' + (err.message || 'Unavailable'), 'info');
+        }
+        return null;
+    }
+}
+
+function initPasswordManagerIntegration() {
+    const btnSavePwd = document.getElementById('btn-save-pwd-manager');
+    const btnModalSavePwd = document.getElementById('btn-modal-save-pw-manager');
+    const btnAutofill = document.getElementById('btn-autofill-pwd');
+
+    btnSavePwd?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const pwd = encryptPassword ? encryptPassword.value : '';
+        const vaultId = selectedEncryptFolderName ? `${selectedEncryptFolderName}.zev` : (selectedEncryptFiles && selectedEncryptFiles[0] ? selectedEncryptFiles[0].name : 'ZevSafe Vault');
+        await saveVaultCredential(vaultId, pwd);
+    });
+
+    btnModalSavePwd?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const pwd = lastPasswordRecoveryRecord?.password || document.getElementById('pw-save-display')?.value || (encryptPassword ? encryptPassword.value : '');
+        const vaultId = lastPasswordRecoveryRecord?.vaultFilename || lastPasswordRecoveryRecord?.folderName || 'ZevSafe Vault';
+        await saveVaultCredential(vaultId, pwd);
+        closePwModal();
+    });
+
+    btnAutofill?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const vaultId = selectedDecryptFile ? selectedDecryptFile.name : (document.getElementById('decrypt-credential-vault-name')?.value || '');
+        await autofillVaultCredential(vaultId);
+    });
+}
+
+// Expose globally for modularity and verification tests
+if (typeof window !== 'undefined') {
+    window.saveVaultCredential = saveVaultCredential;
+    window.autofillVaultCredential = autofillVaultCredential;
+    window.initPasswordManagerIntegration = initPasswordManagerIntegration;
+}
+
+
+/**
+ * Phase 13: 1-Click USB Air-Gap Backup Kit & Standalone Vault Exporter
+ * Connects UI modal, File System Access API direct drive writer, and pure-JS ZIP generator.
+ */
+function initUsbBackupKit() {
+    const modal = document.getElementById('usb-backup-modal');
+    if (!modal) return;
+
+    const btnNav = document.getElementById('btn-open-usb-backup-nav');
+    const btnMobile = document.getElementById('btn-open-usb-backup-mobile');
+    const btnClose = document.getElementById('btn-close-usb-modal');
+    const btnCloseFooter = document.getElementById('btn-close-usb-modal-footer');
+    const btnZip = document.getElementById('btn-usb-download-zip');
+    const btnDrive = document.getElementById('btn-usb-write-drive');
+    const progressCard = document.getElementById('usb-backup-progress-card');
+    const progressFill = document.getElementById('usb-backup-progress-fill');
+    const statusText = document.getElementById('usb-backup-status-text');
+    const percentText = document.getElementById('usb-backup-percent');
+
+    function openModal() {
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        if (typeof window !== 'undefined' && 'showDirectoryPicker' in window && btnDrive) {
+            btnDrive.style.display = 'flex';
+        }
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        if (progressCard) progressCard.style.display = 'none';
+    }
+
+    if (btnNav) btnNav.addEventListener('click', openModal);
+    if (btnMobile) btnMobile.addEventListener('click', () => {
+        const drawer = document.getElementById('mobile-nav-drawer');
+        if (drawer) drawer.classList.remove('open');
+        openModal();
+    });
+    if (btnClose) btnClose.addEventListener('click', closeModal);
+    if (btnCloseFooter) btnCloseFooter.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    if (btnZip) {
+        btnZip.addEventListener('click', async () => {
+            if (!window.ZevSafeUSBBackup) {
+                if (typeof showToast === 'function') showToast('⚠️ USB Backup module initializing, please wait...');
+                return;
+            }
+            try {
+                if (progressCard) progressCard.style.display = 'block';
+                btnZip.disabled = true;
+                btnZip.style.opacity = '0.6';
+
+                const blob = await window.ZevSafeUSBBackup.generateAirGapZip((curr, total, path) => {
+                    const pct = Math.round((curr / total) * 100);
+                    if (progressFill) progressFill.style.width = pct + '%';
+                    if (percentText) percentText.textContent = pct + '%';
+                    if (statusText) statusText.textContent = 'Packing ' + path + '...';
+                });
+
+                if (statusText) statusText.textContent = 'Archive ready! Triggering download...';
+                window.ZevSafeUSBBackup.triggerDownload(blob, 'ZevSafe-Offline-USB-Kit.zip');
+
+                if (typeof showToast === 'function') {
+                    showToast('💾 USB Air-Gap Backup Kit downloaded! Copy to your USB flash drive.');
+                }
+                setTimeout(() => {
+                    btnZip.disabled = false;
+                    btnZip.style.opacity = '1';
+                }, 2000);
+            } catch (err) {
+                console.error('[USB Backup Error]', err);
+                if (statusText) statusText.textContent = 'Error: ' + err.message;
+                btnZip.disabled = false;
+                btnZip.style.opacity = '1';
+            }
+        });
+    }
+
+    if (btnDrive) {
+        btnDrive.addEventListener('click', async () => {
+            if (!window.ZevSafeUSBBackup) return;
+            try {
+                const dirHandle = await window.showDirectoryPicker({
+                    mode: 'readwrite',
+                    startIn: 'desktop'
+                });
+                if (!dirHandle) return;
+
+                if (progressCard) progressCard.style.display = 'block';
+                btnDrive.disabled = true;
+                btnDrive.style.opacity = '0.6';
+
+                const count = await window.ZevSafeUSBBackup.writeToUsbDirectory(dirHandle, (curr, total, file) => {
+                    const pct = Math.round((curr / total) * 100);
+                    if (progressFill) progressFill.style.width = pct + '%';
+                    if (percentText) percentText.textContent = pct + '%';
+                    if (statusText) statusText.textContent = 'Writing ' + file + '...';
+                });
+
+                if (statusText) statusText.textContent = 'Complete! Wrote ' + count + ' air-gap files directly to USB drive.';
+                if (typeof showToast === 'function') {
+                    showToast('✅ Successfully written ' + count + ' offline files directly to USB drive!');
+                }
+                btnDrive.disabled = false;
+                btnDrive.style.opacity = '1';
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                console.error('[USB Drive Error]', err);
+                if (statusText) statusText.textContent = 'Error: ' + err.message;
+                btnDrive.disabled = false;
+                btnDrive.style.opacity = '1';
+            }
+        });
+    }
+}
+
+if (typeof window !== "undefined") { window.initUsbBackupKit = initUsbBackupKit; }

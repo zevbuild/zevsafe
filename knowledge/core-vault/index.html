@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#08091a">
 
     <!-- Strict Air-Gapped Zero-Exfiltration Content Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
 
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
@@ -16,11 +16,6 @@
 
     <title>Core Streaming Vault (ZV3) — ZevSafe Knowledge Hub</title>
     <meta name="description" content="Detailed guide and cryptographic specification for ZevSafe Core Streaming Vault: 57-byte header, 4 MB STREAM AEAD frames, AES-256-GCM, and emergency recovery sheets.">
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../../styles.css">

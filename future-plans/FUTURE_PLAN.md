@@ -147,30 +147,31 @@ flowchart TD
 
 ---
 
-### Phase 13: True Zero-Network Air-Gap & 1-Click Portable USB Backup Kit (v9.1.0)
-*Target: 2027*
+### Phase 13: True Zero-Network Air-Gap & 1-Click Portable USB Backup Kit (v8.3.0 & v9.1.0)
+*Status: Part 1 Delivered (v8.3.0) / Part 2 Target: 2027*
 
-1. **Google Fonts Decoupling & Pure Air-Gapped Typography:**
-   - **Elimination of External Font CDNs:** Remove all runtime dependencies on `fonts.googleapis.com` and `fonts.gstatic.com`.
-   - **Local Self-Contained Assets:** Bundle WOFF2 font files locally in `assets/fonts/` alongside a robust native system font stack fallback (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif`).
-   - **Hardened Air-Gapped CSP:** Tighten Content Security Policy to strictly prohibit external font requests: `font-src 'self' data:; style-src 'self' 'unsafe-inline';`. Prevents network leak attempts on cold-boot offline systems.
+1. **Google Fonts Decoupling & Pure Air-Gapped Typography (✅ COMPLETED in v8.3.0):**
+   - **Elimination of External Font CDNs:** Removed all runtime dependencies on `fonts.googleapis.com` and `fonts.gstatic.com`.
+   - **Modern Local System Font Stack:** Deployed robust native system font stacks (`Inter`, `Outfit`, `JetBrains Mono`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`, `ui-monospace`, `SFMono-Regular`, `Menlo`, `Consolas`).
+   - **Hardened Air-Gapped CSP:** Tightened Content Security Policy across all 14 HTML pages and `_headers` to strictly prohibit external font requests: `font-src 'self' data:; style-src 'self' 'unsafe-inline';`. Prevents network leak attempts on cold-boot offline systems.
+   - **Service Worker Font Cache Decommissioned:** Bumped `sw.js` to `v54`, purged external font caching logic and `staleWhileRevalidate`.
 2. **1-Click "💾 Backup ZevSafe to USB (True Offline Portable Bundle)":**
    - Provide a 1-click export tool in the navbar/settings that packages the complete ZevSafe web application shell, offline Knowledge Hub, and emergency CLI scripts into a standalone portable ZIP or single-file bundle.
    - Includes cross-platform offline launchers (`launch-windows.bat`, `launch-mac.command`, `launch-linux.sh`) for instant plug-and-play decryption on any offline USB thumb drive, external SSD, or air-gapped machine with zero internet connection.
 
 ---
 
-### Phase 14: Native Password Manager Integration (W3C Credential Management API) (v9.2.0)
-*Target: 2027*
+### Phase 14: Native Password Manager Integration (W3C Credential Management API) (v8.4.0)
+*Status: Completed in v8.4.0 (WEB-VERSION-55) — November 3, 2026*
 
 1. **Automated Password Manager Prompting:**
-   - Integrate standard W3C [Credential Management API](https://developer.mozilla.org/en-US/docs/Web/API/Credential_Management_API) (`navigator.credentials.create()` and `navigator.credentials.store()`).
-   - When the user locks a vault or generates a secret via the Diceware generator, automatically prompt native password managers (Bitwarden, 1Password, Google Password Manager, Apple Keychain, Proton Pass, KeePassXC) to save the credentials.
+   - Integrated standard W3C [Credential Management API](https://developer.mozilla.org/en-US/docs/Web/API/Credential_Management_API) (`navigator.credentials.store()`) and standards-compliant hidden form dispatch.
+   - When the user locks a vault or clicks "🔑 Save to Password Manager", automatically prompts native password managers (Bitwarden, 1Password, Google Password Manager, Apple Keychain, Proton Pass, KeePassXC) to save the credentials.
 2. **Folder-Aware Identifier Binding:**
-   - Automatically maps the encrypted folder/vault filename as the credential username identifier (`id: "ZevSafe: " + vaultName`) and the generated or entered secret as the password.
+   - Automatically maps the encrypted folder/vault filename as the credential username identifier (`id: vaultIdentifier`) and the generated or entered secret as the password.
    - Eliminates human memory slip-ups and prevents catastrophic data loss from forgotten passphrases.
 3. **Seamless Biometric & 1-Click Autofill on Unlock:**
-   - On the Unlock Vault tab, implement standard semantic HTML inputs (`autocomplete="username"` and `autocomplete="current-password"`) with `navigator.credentials.get({ password: true })` support.
+   - On the Decrypt Vault tab, implemented standard semantic HTML inputs (`autocomplete="username"` and `autocomplete="current-password"`) with `navigator.credentials.get({ password: true })` support.
    - Enables 1-tap autofill and biometric unlocking (TouchID, FaceID, Windows Hello) via the user's trusted system password manager.
 
 ---
