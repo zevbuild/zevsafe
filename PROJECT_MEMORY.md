@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.6.0` (`WEB-VERSION-57`, Service Worker `v57`)  
+> **Web Portal Version:** `v8.7.0` (`WEB-VERSION-58`, Service Worker `v58`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 > **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 13 & 14; Upcoming Phases 8–12: Argon2id WASM, Visual Paper-Safe QR Sheet, Document Redaction, Hardware Profiler, Offline i18n, True Offline USB Backup Kit).
 
@@ -159,6 +159,12 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **10th Dedicated Service Manual:** Step-by-step disclosures in dual perspective (Simple User Guide vs Technical Cryptographic Specification) for the 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP 2.0 binary architecture, W3C File System Access API direct streaming, Google Font decoupling, and cross-platform offline launchers.
 - **Service Manual #07 Update (`knowledge/passwords-autolock/`):** Added complete Simple and Technical disclosures for Phase 14 Native Password Manager Integration, detailing the W3C Credential Management API (`PasswordCredential`), semantic hidden forms (`autocomplete="username"`, `autocomplete="new-password"`, `autocomplete="current-password"`), extension form submit event triggers, and vault filename binding.
 - **Interactive Search & Card Grid (`knowledge/index.html`):** Expanded to 10 service cards with real-time tag-based search and filter counters.
+
+
+### 3.9 Collapsible Max Security Options Bar & Pill Button (Design 2)
+- **Minimalist Encryption Card Redesign (`#max-security-bar`, `#btn-toggle-max-security`, `#max-security-collapsible`):** Tucks the advanced, screen-crowding security panels (Key Derivation Hardening select, Polyglot Media Camouflage, Duress Decoy Vault) behind an understated, cybernetic pill button.
+- **Dynamic Active State Highlighting (`.btn-max-security-pill.is-active`):** If any non-default security feature is engaged (e.g. 1.2M or 2.4M PBKDF2 rounds, polyglot cover enabled, or decoy vault armed), the pill button glows emerald and automatically expands so the user retains immediate visibility of their active security configuration.
+- **Zero-Friction Default Experience:** First-time and standard users enjoy a clutter-free, fast 1-field password flow without visual overload.
 
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 

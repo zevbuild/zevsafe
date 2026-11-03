@@ -1068,7 +1068,7 @@ const catalogFiles = [
     const swPath = path.resolve(__dirname, '..', 'sw.js');
     const swContent = fs.readFileSync(swPath, 'utf8');
 
-    assert.strictEqual(swContent.includes("APP_VERSION    = 'v57';"), true, 'Service Worker bumped to v57');
+    assert.strictEqual(swContent.includes("APP_VERSION    = 'v58';"), true, 'Service Worker bumped to v58');
     const precacheExpected = [
         './knowledge/',
         './knowledge/index.html',
@@ -1091,7 +1091,7 @@ const catalogFiles = [
         assert.strictEqual(swContent.includes(asset), true, `sw.js precaches ${asset}`);
     }
 
-    console.log('  ✓ 34. PWA Service Worker v57 precaches all 15 Knowledge Hub shell assets for 100% offline access');
+    console.log('  ✓ 34. PWA Service Worker v58 precaches all 15 Knowledge Hub shell assets for 100% offline access');
 }
 
 
@@ -1296,13 +1296,42 @@ const catalogFiles = [
     // Verify sw.js includes usb-backup-kit.js and APP_VERSION = 'v56'
     const swContent = fs.readFileSync(path.resolve(__dirname, '../sw.js'), 'utf8');
     assert.strictEqual(swContent.includes("'./js/usb-backup-kit.js'"), true, 'sw.js precaches js/usb-backup-kit.js');
-    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v57';"), true, 'sw.js bumped to APP_VERSION v56');
+    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v58';"), true, 'sw.js bumped to APP_VERSION v56');
 
     console.log('  ✓ 37. Phase 13 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine & multi-OS offline launchers verified');
 
+    // -------------------------------------------------------------
+    // Test 38: Collapsible Max Security Options Bar & Pill Button (Design 2)
+    // -------------------------------------------------------------
+    assert.strictEqual(mainIndexHtml.includes('id="max-security-bar"'), true, 'index.html defines #max-security-bar');
+    assert.strictEqual(mainIndexHtml.includes('id="btn-toggle-max-security"'), true, 'index.html defines #btn-toggle-max-security');
+    assert.strictEqual(mainIndexHtml.includes('id="max-security-chevron"'), true, 'index.html defines #max-security-chevron');
+    assert.strictEqual(mainIndexHtml.includes('id="max-security-collapsible"'), true, 'index.html defines #max-security-collapsible');
+
+    // Verify collapsible container encapsulates KDF hardening, polyglot panel, and duress panel
+    const collStart = mainIndexHtml.indexOf('id="max-security-collapsible"');
+    const collEnd = mainIndexHtml.indexOf('class="alert-box alert-box--danger"');
+    assert.strictEqual(collStart !== -1 && collEnd > collStart, true, 'max-security-collapsible correctly placed');
+    const collSnippet = mainIndexHtml.substring(collStart, collEnd);
+    assert.strictEqual(collSnippet.includes('id="encrypt-kdf-select"'), true, 'KDF select is inside max-security-collapsible');
+    assert.strictEqual(collSnippet.includes('id="polyglot-panel"'), true, 'Polyglot panel is inside max-security-collapsible');
+    assert.strictEqual(collSnippet.includes('id="duress-panel"'), true, 'Duress panel is inside max-security-collapsible');
+
+    // Verify styles.css definitions
+    assert.strictEqual(stylesCss.includes('.btn-max-security-pill'), true, 'styles.css defines .btn-max-security-pill');
+    assert.strictEqual(stylesCss.includes('.max-security-bar'), true, 'styles.css defines .max-security-bar');
+    assert.strictEqual(stylesCss.includes('.btn-max-security-pill.is-active'), true, 'styles.css defines active pill state');
+
+    // Verify app.js controller
+    assert.strictEqual(appJs.includes('function initMaxSecurityCollapsible()'), true, 'app.js defines initMaxSecurityCollapsible');
+    assert.strictEqual(appJs.includes('initMaxSecurityCollapsible();'), true, 'app.js initializes controller on DOM load');
+
+    console.log('  ✓ 38. Collapsible Max Security Options Bar & Pill Button (Design 2) verified');
+
+
 })().then(() => {
     console.log('===============================================================');
-    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 37/37 PASSED    ');
+    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 38/38 PASSED    ');
     console.log('===============================================================');
 }).catch(err => {
     console.error('Test 36 failed:', err);

@@ -6775,6 +6775,7 @@ if (document.readyState === 'loading') {
         initPasswordGenerator();
         initPasswordManagerIntegration();
         initUsbBackupKit();
+        initMaxSecurityCollapsible();
     });
 } else {
     initExplorerUI();
@@ -6783,6 +6784,7 @@ if (document.readyState === 'loading') {
     initPasswordGenerator();
     initPasswordManagerIntegration();
     initUsbBackupKit();
+    initMaxSecurityCollapsible();
 }
 
 /**
@@ -7115,3 +7117,62 @@ function initUsbBackupKit() {
 }
 
 if (typeof window !== "undefined") { window.initUsbBackupKit = initUsbBackupKit; }
+
+
+/**
+ * Phase 13/14 UX: Collapsible Max Security Options Bar & Pill Button (Design 2)
+ * Smoothly reveals/collapses Key Derivation Hardening, Polyglot Camouflage, and Duress Decoy.
+ */
+function initMaxSecurityCollapsible() {
+    const btn = document.getElementById('btn-toggle-max-security');
+    const container = document.getElementById('max-security-collapsible');
+    const chevron = document.getElementById('max-security-chevron');
+    if (!btn || !container) return;
+
+    let isExpanded = false;
+
+    function setExpanded(expanded) {
+        isExpanded = expanded;
+        btn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+        if (isExpanded) {
+            container.style.display = 'flex';
+            if (chevron) chevron.textContent = '▴';
+        } else {
+            container.style.display = 'none';
+            if (chevron) chevron.textContent = '▾';
+        }
+    }
+
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        setExpanded(!isExpanded);
+    });
+
+    const polyToggle = document.getElementById('polyglot-mode-toggle');
+    const duressToggle = document.getElementById('duress-mode-toggle');
+    const kdfSelect = document.getElementById('encrypt-kdf-select');
+
+    function checkActiveState() {
+        const hasActive = (polyToggle && polyToggle.checked) || 
+                          (duressToggle && duressToggle.checked) || 
+                          (kdfSelect && kdfSelect.value !== '600000');
+        if (hasActive) {
+            btn.classList.add('is-active');
+            setExpanded(true);
+        } else {
+            btn.classList.remove('is-active');
+        }
+    }
+
+    if (polyToggle) polyToggle.addEventListener('change', checkActiveState);
+    if (duressToggle) duressToggle.addEventListener('change', checkActiveState);
+    if (kdfSelect) kdfSelect.addEventListener('change', checkActiveState);
+
+    // Initial state check in case presets or values were primed
+    checkActiveState();
+
+    if (typeof window !== 'undefined') {
+        window.toggleMaxSecurityOptions = setExpanded;
+        window.initMaxSecurityCollapsible = initMaxSecurityCollapsible;
+    }
+}

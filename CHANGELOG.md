@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 8.7.0 (WEB-VERSION-58) — November 3, 2026
+
+- `UI` (`index.html`, `styles.css`, `app.js`): Collapsible Max Security Options Bar & Pill Button (Design 2). Encapsulates Key Derivation Hardening, Polyglot Media Camouflage, and Duress Decoy behind an understated, cybernetic pill button (`#btn-toggle-max-security`), keeping the main encryption card ultra-clean and distraction-free.
+- `UI` (`styles.css`, `app.js`): Dynamic Security State Highlighting (`.btn-max-security-pill.is-active`). Automatically highlights the button in emerald and unfolds the panel whenever non-default security parameters are active (e.g. 2.4M rounds, polyglot camouflage, or duress decoy enabled).
+- `PWA` (`sw.js`, `index.html`): Bumped Service Worker shell cache to `v58` (`APP_VERSION = 'v58'`, `SHELL_CACHE = zevsafe-shell-v58`) and synchronized platform release tags to `WEB-VERSION-58` / `v8.7.0`.
+- `Tests` (`test/test-explorer-folder-nav.js`): Added Test 38 verifying the collapsible Max Security bar, DOM encapsulation, chevron state transitions, and responsive styles (38/38 passed, 76/76 passed across all suites).
+
 ## Version 8.6.0 (WEB-VERSION-57) — November 3, 2026
 
 - `New` (`knowledge/airgap-usb-backup/index.html`, `knowledge/index.html`): Service Manual #10 Added to Knowledge Hub. Full step-by-step user guide and technical cryptographic disclosure for the 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine, direct USB drive writer, and multi-OS offline launchers.
