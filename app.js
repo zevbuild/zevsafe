@@ -154,6 +154,24 @@ window.addEventListener('resize', () => {
     }
 });
 
+function initPwaShortcutRouting() {
+    function handleHash() {
+        const hash = (window.location.hash || '').toLowerCase();
+        if (hash === '#decrypt') {
+            switchTab('decrypt', false);
+        } else if (hash === '#encrypt') {
+            switchTab('encrypt', false);
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', handleHash);
+    } else {
+        handleHash();
+    }
+    window.addEventListener('hashchange', handleHash);
+}
+initPwaShortcutRouting();
+
 /**
  * Modern non-blocking glassmorphic toast notification system
  * @param {string} message 
@@ -700,12 +718,36 @@ function initMobileNavigation() {
 
     if (!toggleBtn || !drawer) return;
 
+    let previousActiveElement = null;
+
+    function trapFocus(e) {
+        if (e.key !== 'Tab') return;
+        const focusable = Array.from(drawer.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )).filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null);
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+            last.focus();
+            e.preventDefault();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            first.focus();
+            e.preventDefault();
+        }
+    }
+
     function openDrawer() {
+        previousActiveElement = document.activeElement;
         drawer.classList.add('open');
         drawer.setAttribute('aria-hidden', 'false');
         toggleBtn.classList.add('is-active');
         toggleBtn.setAttribute('aria-expanded', 'true');
         document.body.style.overflow = 'hidden';
+        drawer.addEventListener('keydown', trapFocus);
+        if (closeBtn) closeBtn.focus();
     }
 
     function closeDrawer() {
@@ -714,7 +756,15 @@ function initMobileNavigation() {
         toggleBtn.classList.remove('is-active');
         toggleBtn.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
+        drawer.removeEventListener('keydown', trapFocus);
+        if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+            previousActiveElement.focus();
+        } else {
+            toggleBtn.focus();
+        }
     }
+
+    window.closeMobileNavDrawer = closeDrawer;
 
     toggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1862,24 +1912,30 @@ async function deriveKey(password, salt) {
  */
 async function deriveKeyV2Raw(password, salt) {
     const enc = new TextEncoder();
-    const keyMaterial = await window.crypto.subtle.importKey(
-        'raw',
-        enc.encode(password),
-        { name: 'PBKDF2' },
-        false,
-        ['deriveBits']
-    );
-    const keyBits = await window.crypto.subtle.deriveBits(
-        {
-            name: 'PBKDF2',
-            salt: salt,
-            iterations: 600000,
-            hash: 'SHA-512'
-        },
-        keyMaterial,
-        256  // 32 bytes
-    );
-    return new Uint8Array(keyBits);
+    const passBytes = enc.encode(password);
+    let keyMaterial = null;
+    try {
+        keyMaterial = await window.crypto.subtle.importKey(
+            'raw',
+            passBytes,
+            { name: 'PBKDF2' },
+            false,
+            ['deriveBits']
+        );
+        const keyBits = await window.crypto.subtle.deriveBits(
+            {
+                name: 'PBKDF2',
+                salt: salt,
+                iterations: 600000,
+                hash: 'SHA-512'
+            },
+            keyMaterial,
+            256  // 32 bytes
+        );
+        return new Uint8Array(keyBits);
+    } finally {
+        passBytes.fill(0);
+    }
 }
 
 /**
@@ -1934,10 +1990,21 @@ async function importAesKey(rawBytes) {
  */
 async function deriveKeyV2(password, salt, keyfileBytes = null) {
     let rawKey = await deriveKeyV2Raw(password, salt);
-    if (keyfileBytes && keyfileBytes.length === 32) {
-        rawKey = xorBytes(rawKey, keyfileBytes);
+    let mixedKey = null;
+    try {
+        if (keyfileBytes && keyfileBytes.length === 32) {
+            mixedKey = xorBytes(rawKey, keyfileBytes);
+            rawKey.fill(0);
+            rawKey = mixedKey;
+        }
+        return await importAesKey(rawKey);
+    } finally {
+        if (rawKey && rawKey.buffer && rawKey.buffer.byteLength > 0) rawKey.fill(0);
+        if (mixedKey && mixedKey !== rawKey && mixedKey.buffer && mixedKey.buffer.byteLength > 0) mixedKey.fill(0);
+        if (keyfileBytes && typeof keyfileBytes.fill === 'function' && keyfileBytes.buffer && keyfileBytes.buffer.byteLength > 0) {
+            keyfileBytes.fill(0);
+        }
     }
-    return importAesKey(rawKey);
 }
 
 /**
@@ -7030,8 +7097,21 @@ function initUsbBackupKit() {
 
     if (btnNav) btnNav.addEventListener('click', openModal);
     if (btnMobile) btnMobile.addEventListener('click', () => {
-        const drawer = document.getElementById('mobile-nav-drawer');
-        if (drawer) drawer.classList.remove('open');
+        if (typeof window.closeMobileNavDrawer === 'function') {
+            window.closeMobileNavDrawer();
+        } else {
+            const drawer = document.getElementById('mobile-nav-drawer');
+            if (drawer) {
+                drawer.classList.remove('open');
+                drawer.setAttribute('aria-hidden', 'true');
+            }
+            const toggleBtn = document.getElementById('btn-mobile-nav-toggle');
+            if (toggleBtn) {
+                toggleBtn.classList.remove('is-active');
+                toggleBtn.setAttribute('aria-expanded', 'false');
+            }
+            document.body.style.overflow = '';
+        }
         openModal();
     });
     if (btnClose) btnClose.addEventListener('click', closeModal);

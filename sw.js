@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v58';
+const APP_VERSION    = 'v59';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -171,6 +171,42 @@ self.addEventListener('fetch', event => {
  * 3. Fetch from network, sanitize redirected responses for Cache API, cache safely.
  * 4. Section-specific offline fallbacks so Chrome never redirects to homepage erroneously.
  */
+const SECTION_ROUTES = [
+    'how-to-use-zevsafe',
+    'change-log',
+    'security-audit',
+    'knowledge',
+    'knowledge/core-vault',
+    'knowledge/virtual-filesystem',
+    'knowledge/duress-decoy',
+    'knowledge/polyglot-camouflage',
+    'knowledge/health-and-salvage',
+    'knowledge/media-cinema',
+    'knowledge/passwords-autolock',
+    'knowledge/key-derivation-2fa',
+    'knowledge/mobile-streaming',
+    'knowledge/airgap-usb-backup'
+];
+
+async function matchSectionRoute(pathname, cacheName) {
+    for (const route of SECTION_ROUTES) {
+        if (pathname.endsWith('/' + route) || pathname.endsWith('/' + route + '/index.html')) {
+            const subCached = await caches.match('./' + route + '/index.html', { cacheName })
+                           || await caches.match('./' + route + '/', { cacheName });
+            if (subCached) return subCached;
+        }
+    }
+    // Dynamic fallback for any /knowledge/<slug> route
+    const km = pathname.match(/\/knowledge\/([a-z0-9_-]+)(?:\/index\.html)?$/i);
+    if (km) {
+        const slug = km[1];
+        const subCached = await caches.match(`./knowledge/${slug}/index.html`, { cacheName })
+                       || await caches.match(`./knowledge/${slug}/`, { cacheName });
+        if (subCached) return subCached;
+    }
+    return null;
+}
+
 async function cacheFirst(request, cacheName) {
     let cached = await caches.match(request, { cacheName });
     if (cached) {
@@ -181,21 +217,8 @@ async function cacheFirst(request, cacheName) {
     const pathname = reqUrl.pathname.replace(/\/+$/, ''); // strips trailing slashes
 
     // ── Subfolder canonical alias resolution ─────────────────────────
-    if (pathname.endsWith('/how-to-use-zevsafe') || pathname.endsWith('/how-to-use-zevsafe/index.html')) {
-        const subCached = await caches.match('./how-to-use-zevsafe/index.html', { cacheName })
-                       || await caches.match('./how-to-use-zevsafe/', { cacheName });
-        if (subCached) return subCached;
-    }
-    if (pathname.endsWith('/change-log') || pathname.endsWith('/change-log/index.html')) {
-        const subCached = await caches.match('./change-log/index.html', { cacheName })
-                       || await caches.match('./change-log/', { cacheName });
-        if (subCached) return subCached;
-    }
-    if (pathname.endsWith('/security-audit') || pathname.endsWith('/security-audit/index.html')) {
-        const subCached = await caches.match('./security-audit/index.html', { cacheName })
-                       || await caches.match('./security-audit/', { cacheName });
-        if (subCached) return subCached;
-    }
+    const sectionMatch = await matchSectionRoute(pathname, cacheName);
+    if (sectionMatch) return sectionMatch;
     if (pathname === '' || pathname === '/' || pathname.endsWith('/index.html')) {
         const rootCached = await caches.match('./index.html', { cacheName })
                         || await caches.match('./', { cacheName });
@@ -238,22 +261,9 @@ async function cacheFirst(request, cacheName) {
         }
         return networkResponse;
     } catch {
-        // Offline or network error: return section-specific fallback
-        if (pathname.endsWith('/how-to-use-zevsafe') || pathname.endsWith('/how-to-use-zevsafe/index.html')) {
-            const subCached = await caches.match('./how-to-use-zevsafe/index.html', { cacheName })
-                           || await caches.match('./how-to-use-zevsafe/', { cacheName });
-            if (subCached) return subCached;
-        }
-        if (pathname.endsWith('/change-log') || pathname.endsWith('/change-log/index.html')) {
-            const subCached = await caches.match('./change-log/index.html', { cacheName })
-                           || await caches.match('./change-log/', { cacheName });
-            if (subCached) return subCached;
-        }
-        if (pathname.endsWith('/security-audit') || pathname.endsWith('/security-audit/index.html')) {
-            const subCached = await caches.match('./security-audit/index.html', { cacheName })
-                           || await caches.match('./security-audit/', { cacheName });
-            if (subCached) return subCached;
-        }
+        // Offline fallback: check section routes first
+        const sectionFallback = await matchSectionRoute(pathname, cacheName);
+        if (sectionFallback) return sectionFallback;
 
         // Fallback for root app
         const fallback = await caches.match('./index.html', { cacheName })

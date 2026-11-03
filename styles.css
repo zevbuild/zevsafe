@@ -24,7 +24,7 @@
 
     --text:        #f1f5f9;
     --text-2:      #94a3b8;
-    --text-3:      #64748b;
+    --text-3:      #7c8ba1; /* Dark theme: 5.70:1 contrast against #08091a (Exceeds WCAG 2.1 AA) */
 
     --danger:      #f43f5e;
     --warn:        #f59e0b;
@@ -1816,7 +1816,7 @@ body {
     --border-hover:rgba(15, 23, 42, 0.16);
     --text:        #0f172a;
     --text-2:      #475569;
-    --text-3:      #94a3b8;
+    --text-3:      #475569; /* Light theme: 7.24:1 contrast against #f8fafc (Exceeds WCAG 2.1 AAA) */
     --shadow-card: 0 12px 32px -4px rgba(15, 23, 42, 0.08);
     --purple-light: #7c3aed;
     --teal-light:   #0d9488;
@@ -5591,8 +5591,10 @@ audio.media-player-element {
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        width: 42px;
-        height: 42px;
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
         padding: 0;
         margin-left: auto !important; /* Forces right-side alignment */
         background: rgba(255, 255, 255, 0.06);
@@ -5716,8 +5718,10 @@ audio.media-player-element {
         border: none;
         background: rgba(255, 255, 255, 0.08);
         color: var(--text-2);
-        width: 32px;
-        height: 32px;
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
         border-radius: 50%;
         cursor: pointer;
         display: grid;
@@ -6005,9 +6009,10 @@ audio.media-player-element {
 }
 
 .btn-max-security-pill {
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    padding: 0.5rem 0.85rem;
+    min-height: 48px;
+    border-radius: 8px;
+    font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
     display: inline-flex;
@@ -6019,6 +6024,12 @@ audio.media-player-element {
     transition: all 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
+}
+
+.btn-max-security-pill:focus-visible {
+    outline: 2px solid var(--purple-light);
+    outline-offset: 2px;
+    box-shadow: 0 0 12px var(--purple-glow);
 }
 
 .btn-max-security-pill:hover {

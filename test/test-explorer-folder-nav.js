@@ -1068,7 +1068,7 @@ const catalogFiles = [
     const swPath = path.resolve(__dirname, '..', 'sw.js');
     const swContent = fs.readFileSync(swPath, 'utf8');
 
-    assert.strictEqual(swContent.includes("APP_VERSION    = 'v58';"), true, 'Service Worker bumped to v58');
+    assert.strictEqual(swContent.includes("APP_VERSION    = 'v59';"), true, 'Service Worker bumped to v59');
     const precacheExpected = [
         './knowledge/',
         './knowledge/index.html',
@@ -1091,7 +1091,7 @@ const catalogFiles = [
         assert.strictEqual(swContent.includes(asset), true, `sw.js precaches ${asset}`);
     }
 
-    console.log('  ✓ 34. PWA Service Worker v58 precaches all 15 Knowledge Hub shell assets for 100% offline access');
+    console.log('  ✓ 34. PWA Service Worker v59 precaches all 15 Knowledge Hub shell assets for 100% offline access');
 }
 
 
@@ -1293,10 +1293,10 @@ const catalogFiles = [
     assert.strictEqual(mainIndexHtml.includes('id="btn-usb-write-drive"'), true, 'btn-usb-write-drive exists in index.html');
     assert.strictEqual(mainIndexHtml.includes('js/usb-backup-kit.js'), true, 'js/usb-backup-kit.js script included in index.html');
 
-    // Verify sw.js includes usb-backup-kit.js and APP_VERSION = 'v56'
+    // Verify sw.js includes usb-backup-kit.js and APP_VERSION = 'v59'
     const swContent = fs.readFileSync(path.resolve(__dirname, '../sw.js'), 'utf8');
     assert.strictEqual(swContent.includes("'./js/usb-backup-kit.js'"), true, 'sw.js precaches js/usb-backup-kit.js');
-    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v58';"), true, 'sw.js bumped to APP_VERSION v56');
+    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v59';"), true, 'sw.js bumped to APP_VERSION v59');
 
     console.log('  ✓ 37. Phase 13 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine & multi-OS offline launchers verified');
 

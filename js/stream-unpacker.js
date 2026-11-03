@@ -939,21 +939,9 @@
             throw createOperationError('This v3 vault was encrypted with a keyfile. Please provide the keyfile.');
         }
 
-        // 2. Resolve Master CryptoKey
-        let masterKey;
-        if (passwordOrKey && typeof passwordOrKey === 'object' && passwordOrKey.algorithm) {
-            masterKey = passwordOrKey;
-        } else if (typeof passwordOrKey === 'string') {
-            const StreamCrypto = getStreamCrypto();
-            masterKey = await StreamCrypto.deriveMasterKey(
-                passwordOrKey,
-                header.salt,
-                opts.iterations || 600000,
-                keyfileBytes
-            );
-        } else {
-            throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
-        }
+        let masterKey = null;
+        let parsedRaw = null;
+        let isDuressDecoy = false;
 
         // 3. Slice and read manifest envelope from vault trailer
         const manifestStart = Number(header.manifestOffset);
@@ -961,38 +949,82 @@
         const manifestEnd = totalVaultSize !== null ? totalVaultSize : undefined;
 
         const envelopeBytes = await readRange(vaultSource, manifestStart, manifestEnd);
-        if (envelopeBytes.byteLength < MANIFEST_HEADER_SIZE + TAG_LENGTH) {
+        if (!envelopeBytes || envelopeBytes.byteLength < MANIFEST_HEADER_SIZE + TAG_LENGTH) {
             throw createOperationError('Manifest envelope at trailer is truncated or missing');
         }
-
-        // 4. Decrypt and parse JSON catalog (with Duress Decoy Plausible Deniability fallback)
-        let parsedRaw = null;
-        let isDuressDecoy = false;
 
         // Compute total byte length of Envelope 0
         const envView = new DataView(envelopeBytes.buffer, envelopeBytes.byteOffset, envelopeBytes.byteLength);
         const declaredLen0 = envView.getUint32(MANIFEST_SALT_LENGTH + MANIFEST_IV_LENGTH, false);
         const env0TotalLen = MANIFEST_HEADER_SIZE + declaredLen0 + TAG_LENGTH;
 
-        try {
-            const env0Bytes = (envelopeBytes.byteLength > env0TotalLen)
-                ? envelopeBytes.subarray(0, env0TotalLen)
-                : envelopeBytes;
-            parsedRaw = await parseManifestEnvelope(env0Bytes, masterKey);
-            isDuressDecoy = false;
-        } catch (env0Err) {
-            // If primary envelope failed authentication, check for secondary (Decoy) envelope
-            if (envelopeBytes.byteLength >= env0TotalLen + MANIFEST_HEADER_SIZE + TAG_LENGTH) {
-                try {
+        if (passwordOrKey && typeof passwordOrKey === 'object' && passwordOrKey.algorithm) {
+            // Master CryptoKey supplied directly
+            masterKey = passwordOrKey;
+            try {
+                const env0Bytes = (envelopeBytes.byteLength > env0TotalLen)
+                    ? envelopeBytes.subarray(0, env0TotalLen)
+                    : envelopeBytes;
+                parsedRaw = await parseManifestEnvelope(env0Bytes, masterKey);
+                isDuressDecoy = false;
+            } catch (env0Err) {
+                if (envelopeBytes.byteLength >= env0TotalLen + MANIFEST_HEADER_SIZE + TAG_LENGTH) {
                     const env1Bytes = envelopeBytes.subarray(env0TotalLen);
                     parsedRaw = await parseManifestEnvelope(env1Bytes, masterKey);
                     isDuressDecoy = true;
-                } catch (env1Err) {
+                } else {
                     throw env0Err;
                 }
-            } else {
-                throw env0Err;
             }
+        } else if (typeof passwordOrKey === 'string') {
+            const StreamCrypto = getStreamCrypto();
+            const candidateTiers = opts.iterations ? [opts.iterations] : [600000, 1200000, 2400000];
+            let lastAuthError = null;
+
+            for (const tierRounds of candidateTiers) {
+                try {
+                    const testKey = await StreamCrypto.deriveMasterKey(
+                        passwordOrKey,
+                        header.salt,
+                        tierRounds,
+                        keyfileBytes
+                    );
+
+                    // Test Envelope 0 (Primary)
+                    try {
+                        const env0Bytes = (envelopeBytes.byteLength > env0TotalLen)
+                            ? envelopeBytes.subarray(0, env0TotalLen)
+                            : envelopeBytes;
+                        parsedRaw = await parseManifestEnvelope(env0Bytes, testKey);
+                        isDuressDecoy = false;
+                        masterKey = testKey;
+                        break;
+                    } catch (env0Err) {
+                        // Test Envelope 1 (Duress Decoy)
+                        if (envelopeBytes.byteLength >= env0TotalLen + MANIFEST_HEADER_SIZE + TAG_LENGTH) {
+                            try {
+                                const env1Bytes = envelopeBytes.subarray(env0TotalLen);
+                                parsedRaw = await parseManifestEnvelope(env1Bytes, testKey);
+                                isDuressDecoy = true;
+                                masterKey = testKey;
+                                break;
+                            } catch (env1Err) {
+                                lastAuthError = env0Err;
+                            }
+                        } else {
+                            lastAuthError = env0Err;
+                        }
+                    }
+                } catch (dErr) {
+                    lastAuthError = dErr;
+                }
+            }
+
+            if (!masterKey || !parsedRaw) {
+                throw lastAuthError || createOperationError('Failed to decrypt vault manifest (invalid password, keyfile, or corrupted trailer)');
+            }
+        } else {
+            throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
         }
 
         // 5. Build structured catalog

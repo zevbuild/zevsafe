@@ -1529,10 +1529,9 @@
 
                 // 7. Create Container Header
                 const manifestOffset = BigInt(StreamCrypto.V3_HEADER_SIZE + totalEncryptedBytes);
+                // Plausible Deniability: NEVER broadcast presence of duress decoy in plaintext header flags.
+                // Dual-manifest parser decrypts Envelope 1 seamlessly without requiring public flag disclosure.
                 let containerFlags = hasKeyfile ? StreamCrypto.V3_FLAG_KEYFILE : 0x00;
-                if (hasDuress) {
-                    containerFlags |= StreamCrypto.V3_FLAG_DURESS;
-                }
 
                 const header = StreamCrypto.createContainerHeader({
                     salt,
@@ -2161,6 +2160,7 @@
 
         let worker = null;
         let telemetry = null;
+        let keyfileBytes = null;
 
         try {
             // 1. Read v3 Container Header (reuse cached header if available)
@@ -2179,7 +2179,6 @@
                 throw new Error('This vault requires a keyfile for 2FA authentication, but none was provided');
             }
 
-            let keyfileBytes = null;
             const kf = keyfile || opts.keyfileBytes;
             if (kf) {
                 if (kf instanceof Uint8Array) keyfileBytes = kf;
@@ -2214,8 +2213,8 @@
                     ? keyfileBytes.buffer.slice(keyfileBytes.byteOffset, keyfileBytes.byteOffset + keyfileBytes.byteLength)
                     : null;
 
-                const initTransfers = [saltBuf.slice(0)];
-                if (kfBuf) initTransfers.push(kfBuf.slice(0));
+                const initTransfers = [saltBuf];
+                if (kfBuf) initTransfers.push(kfBuf);
 
                 await sendWorkerRequest(worker, {
                     type: 'INIT_KEY',
@@ -2297,6 +2296,9 @@
             if (telemetry) telemetry.dispose();
             if (worker && !opts.keepWorkerAlive) {
                 worker.terminate();
+            }
+            if (keyfileBytes && keyfileBytes.buffer && keyfileBytes.buffer.byteLength > 0 && typeof keyfileBytes.fill === 'function') {
+                keyfileBytes.fill(0);
             }
         }
     }

@@ -522,7 +522,7 @@
                     const cleanTimer = setTimeout(async () => {
                         try { URL.revokeObjectURL(objectUrl); } catch (_) {}
                         try { await root.removeEntry(tempName); } catch (_) {}
-                    }, 5000);
+                    }, 120000); // 120s safety window for mobile downloads of multi-GB vaults
                     if (cleanTimer && typeof cleanTimer.unref === 'function') cleanTimer.unref();
                 }
             },

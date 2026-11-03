@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.4.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.8.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -705,6 +705,89 @@
 
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
+
+            <!-- ── VERSION 8.8.0 (WEB-VERSION-59) ── -->
+            <article class="cl-card" data-version="v8">
+                <div class="cl-marker">🛡️</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.8.0 (WEB-VERSION-59)</h2>
+                            <span class="cl-badge cl-badge--date">November 3, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Multi-Tier KDF</span>
+                            <span class="cl-tag">Plausible Deniability</span>
+                            <span class="cl-tag">Memory Zeroization</span>
+                            <span class="cl-tag">Offline Resilience</span>
+                            <span class="cl-tag">WCAG 2.1 AA</span>
+                            <span class="cl-tag">PWA v59</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Multi-Tier PBKDF2 Iteration Auto-Resolution (<code>js/stream-unpacker.js</code>):</strong> <code>readVaultManifest</code> reads manifest trailer envelopes prior to key candidate derivation, sequentially testing candidate tiers (600K, 1.2M, 2.4M rounds) against primary Envelope 0 and duress Envelope 1. Retains the authenticated <code>masterKey</code> for zero-latency subsequent operations, eliminating vault lockouts on hardened vaults.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Plausible Deniability Header Protection (<code>js/worker-bridge.js</code>):</strong> Suppressed <code>V3_FLAG_DURESS (0x02)</code> in unencrypted container header flags. Decoy manifests are authenticated strictly via trial decryption without leaking duress status in plaintext.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Direct Transfer &amp; Memory Zeroization (<code>js/worker-bridge.js</code>, <code>app.js</code>):</strong> Direct transfer of array buffers in <code>initTransfers</code> without heap duplication leaks, and comprehensive <code>.fill(0)</code> byte scrubbing in <code>finally</code> blocks for <code>keyfileBytes</code>, <code>passBytes</code>, <code>rawKey</code>, and <code>mixedKey</code>.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Multi-GB Mobile Staging Protection (<code>js/stream-saver.js</code>):</strong> Extended OPFS staging file deletion timeout from 5,000 ms to 120,000 ms, ensuring stable multi-GB downloads on mobile Chrome and Safari.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Unified Subfolder Routing for Knowledge Hub (<code>sw.js</code>):</strong> Centralized <code>SECTION_ROUTES</code> matching and dynamic alias resolution across <code>cacheFirst</code> and offline fallbacks, guaranteeing all 11 Knowledge Hub subfolder routes load reliably offline.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>31-Asset USB Air-Gap Kit &amp; Dynamic Cache (<code>js/usb-backup-kit.js</code>):</strong> Expanded <code>AIRGAP_ASSET_PATHS</code> manifest to 31 complete local assets with dynamic <code>zevsafe-shell-*</code> cache resolution and directory fix in Windows launcher.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>PWA Shortcut Hash Navigation (<code>app.js</code>):</strong> Added <code>initPwaShortcutRouting()</code> to switch between Encrypt and Decrypt tabs seamlessly on launch and <code>hashchange</code>.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Mobile Drawer Focus Trap &amp; Scroll Lock Integrity (<code>app.js</code>):</strong> Implemented Tab key focus trapping in mobile navigation drawer, focus restoration to toggle button, exposed <code>window.closeMobileNavDrawer</code>, and released body scroll lock before opening modals.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>WCAG 2.1 Contrast &amp; 48px Touch Targets (<code>styles.css</code>):</strong> Upgraded secondary text contrast to 5.7:1 dark / 7.24:1 light and enforced minimum 48px touch targets for mobile nav toggle, close button, and security pill.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>SEO Canonicalization &amp; Card 10 Markup:</strong> Canonical links added across all 11 Knowledge Hub pages, standardized Card 10 markup in <code>knowledge/index.html</code>, standard footer in <code>knowledge/airgap-usb-backup/index.html</code>, and ingested all 11 URLs into <code>sitemap.xml</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
 
             <!-- ── VERSION 8.3.0 (WEB-VERSION-58) ── -->
             <article class="cl-card" data-version="v8">

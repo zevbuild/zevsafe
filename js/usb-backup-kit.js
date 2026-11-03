@@ -61,14 +61,17 @@
         'app.js',
         'sw.js',
         'manifest.json',
-        'crypto-worker.js',
-        'js/stream-saver.js',
+        'jszip.min.js',
+        'js/stream-crypto.js',
+        'js/stream-packer.js',
         'js/stream-unpacker.js',
-        'js/file-saver.js',
+        'js/crypto-worker.js',
+        'js/stream-saver.js',
+        'js/worker-bridge.js',
         'js/usb-backup-kit.js',
-        'favicon.png',
-        'icon-192.png',
-        'icon-512.png',
+        'assets/favicon.svg',
+        'assets/icon-192.png',
+        'assets/icon-512.png',
         'how-to-use-zevsafe/index.html',
         'security-audit/index.html',
         'change-log/index.html',
@@ -83,13 +86,15 @@
         'knowledge/mobile-streaming/index.html',
         'knowledge/passwords-autolock/index.html',
         'knowledge/polyglot-camouflage/index.html',
-        'knowledge/virtual-filesystem/index.html'
+        'knowledge/virtual-filesystem/index.html',
+        'knowledge/airgap-usb-backup/index.html'
     ];
 
     /**
      * Launcher Scripts for Windows, Mac, and Linux
      */
     const WINDOWS_LAUNCHER = `@echo off
+cd /d "%~dp0"
 title ZevSafe Air-Gap Vault
 echo ========================================================
 echo   ZevSafe Air-Gap Offline Vault Launcher (Windows)
@@ -286,13 +291,18 @@ compatible with the web version, native Android app, and PC batch toolkit.
         try {
             // First attempt Cache Storage API if in browser
             if (typeof caches !== 'undefined') {
-                const cache = await caches.open('zevsafe-shell-v56').catch(() => null)
-                    || await caches.open('zevsafe-shell-v55').catch(() => null);
-                if (cache) {
-                    const match = await cache.match(path);
-                    if (match) {
-                        const buffer = await match.arrayBuffer();
-                        return new Uint8Array(buffer);
+                const cacheNames = await caches.keys().catch(() => []);
+                for (const cName of cacheNames) {
+                    if (cName.startsWith('zevsafe-shell-')) {
+                        const cache = await caches.open(cName).catch(() => null);
+                        if (cache) {
+                            const match = await cache.match(path).catch(() => null)
+                                || await cache.match(`./${path}`).catch(() => null);
+                            if (match) {
+                                const buffer = await match.arrayBuffer();
+                                return new Uint8Array(buffer);
+                            }
+                        }
                     }
                 }
             }

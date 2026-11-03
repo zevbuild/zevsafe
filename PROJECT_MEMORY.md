@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.7.0` (`WEB-VERSION-58`, Service Worker `v58`)  
+> **Web Portal Version:** `v8.8.0` (`WEB-VERSION-59`, Service Worker `v59`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 > **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 13 & 14; Upcoming Phases 8–12: Argon2id WASM, Visual Paper-Safe QR Sheet, Document Redaction, Hardware Profiler, Offline i18n, True Offline USB Backup Kit).
 
@@ -88,9 +88,24 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   7. `knowledge/passwords-autolock/index.html`: Passwords & Auto-Lock Protocol (CSPRNG Diceware, Shannon Entropy, Inactivity Timers, Buffer Zeroization)
   8. `knowledge/key-derivation-2fa/index.html`: Key Derivation & 2FA Physical Keyfiles (600k-2.4M PBKDF2 Tiers, SHA-256 Keyfile Mixing)
   9. `knowledge/mobile-streaming/index.html`: Multi-Tier Mobile Streaming Storage (Tier 1 FSA, Tier 3 OPFS, Tier 2 SW, Tier 4 Fallback, Memory Bounding < 150 MB)
-- **Air-Gapped PWA Precaching:** All 12 Knowledge Hub pages and assets are precached in `SHELL_ASSETS` (`APP_VERSION = 'v54'`) for 100% offline availability in airplane mode.
+- **Air-Gapped PWA Precaching:** All 12 Knowledge Hub pages and assets are precached in `SHELL_ASSETS` (`APP_VERSION = 'v59'`) for 100% offline availability in airplane mode.
 
-### 3.3 Component Directory
+### 3.5 Strategic Remediation & Hardening Roadmap (v8.8.0)
+- **Phase A — Cryptographic & Memory Integrity Remediation:**
+  - **Multi-Tier PBKDF2 Iteration Auto-Resolution (`js/stream-unpacker.js`):** `readVaultManifest` reads the manifest envelope trailer before testing candidate keys, sequentially trialing candidate tiers `[600000, 1200000, 2400000]` against Envelope 0 and Envelope 1, retaining the successfully derived `masterKey` so downstream operations avoid re-derivation.
+  - **Plausible Deniability Protection (`js/worker-bridge.js`):** Suppressed `V3_FLAG_DURESS (0x02)` in unencrypted container header flags. The dual-manifest parser decrypts Envelope 1 seamlessly without requiring public flag disclosure.
+  - **Zero-Copy Direct Buffer Transfer & Zeroization (`js/worker-bridge.js`):** Eliminated buffer cloning in `initTransfers = [saltBuf, kfBuf]`, transferring array buffers directly to prevent memory leaks, and added `.fill(0)` wiping for `keyfileBytes` in `extractSingleFile`'s `finally` block.
+  - **Precursor Byte Scrubbing (`app.js`):** Wrapped `deriveKeyV2Raw` and `deriveKeyV2` with `try...finally` memory scrubbing with `.fill(0)` for `passBytes`, `rawKey`, `mixedKey`, and `keyfileBytes`.
+  - **OPFS Mobile Staging Deletion Window (`js/stream-saver.js`):** Extended `createTier3Writer.close()` OPFS staging file deletion timeout from 5,000 ms to 120,000 ms, preventing premature deletion during mobile download transfers of multi-GB vaults.
+- **Phase B — Service Worker & PWA Offline Resilience Remediation:**
+  - **Unified Subfolder Routing (`sw.js`):** Implemented `SECTION_ROUTES` array (14 paths) and `matchSectionRoute(pathname, cacheName)` in `cacheFirst` and offline `catch` blocks, providing automatic routing and offline fallbacks for all 11 Knowledge Hub subfolder routes (`/knowledge/(.*)` -> `./knowledge/$1/index.html`).
+  - **Comprehensive USB Air-Gap Kit Asset Manifest (`js/usb-backup-kit.js`):** Updated `AIRGAP_ASSET_PATHS` to 31 essential runtime assets (including `jszip.min.js`, `js/stream-crypto.js`, `js/stream-packer.js`, `js/stream-unpacker.js`, `js/crypto-worker.js`, `js/stream-saver.js`, `js/worker-bridge.js`, `js/usb-backup-kit.js`, assets, and all 11 Knowledge Hub HTML pages). Updated `fetchAssetBytes` to dynamically match any active `zevsafe-shell-*` cache via `caches.keys()`, and added `cd /d "%~dp0"` to `WINDOWS_LAUNCHER`.
+  - **PWA Shortcuts Hash Navigation Router (`app.js`):** Added `initPwaShortcutRouting()` to handle initial load and `hashchange` events for `#decrypt` and `#encrypt`, switching tabs cleanly when launched via PWA shortcuts.
+- **Phase C — Mobile UX, Accessibility & Cross-Page Integrity Remediation:**
+  - **Mobile Drawer Focus Trap & Scroll Lock (`app.js`):** Implemented Tab key focus trapping in `#mobile-nav-drawer`, focus restoration to `#btn-mobile-nav-toggle` on close, global exposure of `window.closeMobileNavDrawer`, and integrated drawer closing into `#btn-open-usb-backup-mobile` to cleanly release body scroll lock before opening modals.
+  - **WCAG 2.1 Contrast AA/AAA & Touch Targets (`styles.css`):** Updated dark theme `--text-3` to `#7c8ba1` (5.7:1 AA contrast against `#08091a`) and light theme `--text-3` to `#475569` (7.24:1 AAA contrast against `#f8fafc`). Ensured minimum 48px touch targets for `#btn-mobile-nav-toggle`, `#btn-mobile-nav-close`, and `.btn-max-security-pill`.
+  - **Knowledge Hub SEO & Structural Standardization:** Ingested `<link rel="canonical">` into `<head>` across all 11 Knowledge Hub pages, standardized Card 10 markup in `knowledge/index.html` (`data-service="10"`, `.kb-badge-number`, `.kb-tag-list`), added standard `.kb-footer` in `knowledge/airgap-usb-backup/index.html`, and ingested all 11 Knowledge Hub URLs into `sitemap.xml`.
+  - **Version Badge Synchronization (`index.html`):** Synchronized mobile drawer badges and footer version references to `v8.8.0 / WEB-VERSION-59`.
 
 | File / Directory | Responsibility |
 |---|---|
