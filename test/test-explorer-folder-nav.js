@@ -1068,7 +1068,7 @@ const catalogFiles = [
     const swPath = path.resolve(__dirname, '..', 'sw.js');
     const swContent = fs.readFileSync(swPath, 'utf8');
 
-    assert.strictEqual(swContent.includes("APP_VERSION    = 'v60';"), true, 'Service Worker bumped to v59');
+    assert.strictEqual(swContent.includes("APP_VERSION    = 'v61';"), true, 'Service Worker bumped to v61');
     const precacheExpected = [
         './knowledge/',
         './knowledge/index.html',
@@ -1091,7 +1091,7 @@ const catalogFiles = [
         assert.strictEqual(swContent.includes(asset), true, `sw.js precaches ${asset}`);
     }
 
-    console.log('  ✓ 34. PWA Service Worker v60 precaches all 15 Knowledge Hub shell assets for 100% offline access');
+    console.log('  ✓ 34. PWA Service Worker v61 precaches all 15 Knowledge Hub shell assets for 100% offline access');
 }
 
 
@@ -1296,7 +1296,7 @@ const catalogFiles = [
     // Verify sw.js includes usb-backup-kit.js and APP_VERSION = 'v59'
     const swContent = fs.readFileSync(path.resolve(__dirname, '../sw.js'), 'utf8');
     assert.strictEqual(swContent.includes("'./js/usb-backup-kit.js'"), true, 'sw.js precaches js/usb-backup-kit.js');
-    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v60';"), true, 'sw.js bumped to APP_VERSION v59');
+    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v61';"), true, 'sw.js bumped to APP_VERSION v59');
 
     console.log('  ✓ 37. Phase 13 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine & multi-OS offline launchers verified');
 
@@ -1366,13 +1366,56 @@ const catalogFiles = [
 
     console.log('  ✔ 39. Phase 11 Know Your Device Power - Cryptographic Hardware Benchmark & Profiler verified');
 
+    // -------------------------------------------------------------------------
+    // TEST 40: Phase 9 Visual Paper-Safe & Optical QR Recovery System
+    // -------------------------------------------------------------------------
+    const qrEngine = require('../js/qr-engine.js');
+    assert.strictEqual(typeof qrEngine.generateQRMatrix, 'function', 'QREngine.generateQRMatrix is a function');
+    assert.strictEqual(typeof qrEngine.createSVG, 'function', 'QREngine.createSVG is a function');
+    assert.strictEqual(typeof qrEngine.buildPaperSafePayload, 'function', 'QREngine.buildPaperSafePayload is a function');
+    assert.strictEqual(typeof qrEngine.parsePaperSafePayload, 'function', 'QREngine.parsePaperSafePayload is a function');
+    assert.strictEqual(typeof qrEngine.formatSaltFingerprint, 'function', 'QREngine.formatSaltFingerprint is a function');
+    assert.strictEqual(typeof qrEngine.generatePaperSheetHTML, 'function', 'QREngine.generatePaperSheetHTML is a function');
+
+    // Round-trip verification
+    const testPayload = qrEngine.buildPaperSafePayload({
+        vaultName: 'Cold-Storage-2026.zev',
+        saltHex: '8f2a99b14d027ca8105e63fba14290dd8f2a99b14d027ca8105e63fba14290dd',
+        kdfIterations: 1200000,
+        hint: 'Safe deposit box 42'
+    });
+    const parsedPayload = qrEngine.parsePaperSafePayload(testPayload);
+    assert.strictEqual(parsedPayload.vaultName, 'Cold-Storage-2026.zev');
+    assert.strictEqual(parsedPayload.kdfIterations, 1200000);
+    assert.strictEqual(parsedPayload.hint, 'Safe deposit box 42');
+
+    // Verify DOM components in index.html
+    const indexCurrent = fs.readFileSync(indexPath, 'utf8');
+    assert.strictEqual(indexCurrent.includes('id="paper-safe-modal"'), true, 'index.html contains paper-safe-modal');
+    assert.strictEqual(indexCurrent.includes('id="qr-scanner-modal"'), true, 'index.html contains qr-scanner-modal');
+    assert.strictEqual(indexCurrent.includes('id="btn-scan-paper-qr"'), true, 'index.html contains btn-scan-paper-qr');
+    assert.strictEqual(indexCurrent.includes('id="btn-open-paper-safe"'), true, 'index.html contains btn-open-paper-safe');
+    assert.strictEqual(indexCurrent.includes('id="paper-safe-scanned-banner"'), true, 'index.html contains paper-safe-scanned-banner');
+    assert.strictEqual(indexCurrent.includes('<script src="js/qr-engine.js"></script>'), true, 'index.html includes js/qr-engine.js');
+
+    // Verify sw.js includes qr-engine.js and APP_VERSION = 'v61'
+    const swCurrent = fs.readFileSync(swPath, 'utf8');
+    assert.strictEqual(swCurrent.includes("'./js/qr-engine.js'"), true, 'sw.js precaches ./js/qr-engine.js');
+    assert.strictEqual(swCurrent.includes("APP_VERSION    = 'v61'"), true, 'sw.js has APP_VERSION v61');
+
+    // Verify usb-backup-kit.js includes qr-engine.js
+    const usbContent = fs.readFileSync(path.resolve(__dirname, '../js/usb-backup-kit.js'), 'utf8');
+    assert.strictEqual(usbContent.includes("'js/qr-engine.js'"), true, 'usb-backup-kit.js includes js/qr-engine.js');
+
+    console.log('  ✔ 40. Phase 9 Visual Paper-Safe & Optical QR Code Recovery verified');
+
 
 })().then(() => {
     console.log('===============================================================');
-    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 39/39 PASSED    ');
+    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 40/40 PASSED    ');
     console.log('===============================================================');
 }).catch(err => {
-    console.error('Test 36 failed:', err);
+    console.error('Test 40 failed:', err);
     process.exit(1);
 });
 

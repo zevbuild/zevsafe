@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.9.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.10.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -706,6 +706,66 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
+            <!-- ── VERSION 8.10.0 (WEB-VERSION-61) ── -->
+            <article class="cl-card" data-version="v8">
+                <div class="cl-marker">🖨️</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.10.0 (WEB-VERSION-61)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 5, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Paper-Safe Sheet</span>
+                            <span class="cl-tag">Air-Gap QR Engine</span>
+                            <span class="cl-tag">Optical Scanner</span>
+                            <span class="cl-tag">Cold Storage</span>
+                            <span class="cl-tag">Guilloche Border</span>
+                            <span class="cl-tag">PWA v61</span>
+                        </div>
+                    </header>
+                    <div class="cl-items">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Phase 9 "Visual Paper-Safe &amp; Optical QR Emergency Recovery Sheet" (<code>js/qr-engine.js</code>, <code>index.html</code>, <code>app.js</code>):</strong> Built an air-gapped, pure-JS, zero-dependency QR Code Model 2 engine (ISO/IEC 18004) that renders crisp, scalable vector SVG QR codes encoding vault reconstruction metadata (salt, KDF iterations, keyfile presence, vault name, and safe location hints).
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Cold-Storage Zero-Knowledge Principle:</strong> Raw passwords are never transmitted to shared or network printers; provides structured handwriting boxes for indelible pen Diceware passphrases and formatted 8-group CSPRNG salt fingerprints (<code>XXXX-XXXX-XXXX-...</code>) for fireproof home safe cold storage.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Standalone Air-Gapped Printable Recovery Certificate (.html):</strong> One-click download of a self-contained, single-file HTML cold-storage certificate featuring security Guilloche dashed borders, high-contrast <code>@media print</code> rules for A4/Letter paper safes, embedded SVG QR, and offline restoration manuals.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>In-App Optical QR Scanner &amp; Image Drop Decoder:</strong> Integrated a camera viewfinder (<code>navigator.mediaDevices.getUserMedia</code>) with animated laser targeting utilizing the native W3C <code>BarcodeDetector</code> API for real-time camera scanning, plus a drag-and-drop image decoder for scanned photos and screenshots.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Decrypt View One-Click Parameter Auto-Fill:</strong> Added "📷 Scan Paper QR" button next to password field, automatic parameter population (salt fingerprint verification badge, KDF iteration preset, safe location hint), and smooth autofocus into the passphrase input.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>PWA Service Worker Cache v61 (<code>sw.js</code>, <code>js/usb-backup-kit.js</code>):</strong> Precaches <code>./js/qr-engine.js</code> in <code>SHELL_ASSETS</code> for instant offline execution, and includes it inside the 1-Click USB Air-Gap Backup Kit payload.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
             <!-- ── VERSION 8.9.0 (WEB-VERSION-60) ── -->
             <article class="cl-card" data-version="v8">
                 <div class="cl-marker">⚡</div>
@@ -713,7 +773,6 @@
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.9.0 (WEB-VERSION-60)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
                             <span class="cl-badge cl-badge--date">November 3, 2026</span>
                         </div>
                         <div class="cl-tags">

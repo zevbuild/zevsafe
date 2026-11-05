@@ -1,9 +1,9 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.9.0` (`WEB-VERSION-60`, Service Worker `v60`)  
+> **Web Portal Version:** `v8.10.0` (`WEB-VERSION-61`, Service Worker `v61`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
-> **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 11, 13 & 14; Upcoming Phases 8–10, 12: Argon2id WASM, Visual Paper-Safe QR Sheet, In-Vault Document Redaction, Offline i18n).
+> **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14; Upcoming Phases 8, 10, 12: Argon2id WASM, In-Vault Document Redaction, Offline i18n).
 
 > **🤖 MANDATORY AI AGENT RULE:**  
 > Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
@@ -187,6 +187,15 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **PWA & Offline Integration:** Precached under Service Worker cache `v60` in `sw.js` with section routing for `/device-power` and `/know-your-device-power`, bundled into `usb-backup-kit.js`, and indexed in `sitemap.xml`.
 - **Dynamic Active State Highlighting (`.btn-max-security-pill.is-active`):** If any non-default security feature is engaged (e.g. 1.2M or 2.4M PBKDF2 rounds, polyglot cover enabled, or decoy vault armed), the pill button glows emerald and automatically expands so the user retains immediate visibility of their active security configuration.
 - **Zero-Friction Default Experience:** First-time and standard users enjoy a clutter-free, fast 1-field password flow without visual overload.
+
+### 3.11 Phase 9: Visual Paper-Safe & Optical QR Emergency Recovery Sheet (`js/qr-engine.js`, `index.html`, `app.js`, `styles.css`) [v8.10.0]
+- **Air-Gapped Pure-JS QR Engine (`js/qr-engine.js`):** Built a zero-dependency ISO/IEC 18004 QR Code Model 2 engine implementing Byte Mode data encoding (UTF-8), Galois Field GF(256) arithmetic, standard Reed-Solomon polynomial division, dynamic version scaling (V1 to V14), and 8-mask penalty scoring.
+- **Scalable Vector SVG Rendering:** Outputs crisp, standalone `<svg>` markup with configurable pixel sizing, color palettes, quiet zones, and accessible title tags. Supports direct canvas drawing with `window.devicePixelRatio` scaling.
+- **Cold-Storage Zero-Knowledge Principle:** Raw passwords are never transmitted to shared or network printers; provides structured handwriting boxes for indelible pen Diceware passphrases and formatted 8-group CSPRNG salt fingerprints (`XXXX-XXXX-XXXX-...`).
+- **Standalone Air-Gapped Printable Recovery Certificate (.html):** One-click download of a self-contained, single-file HTML cold-storage certificate featuring security Guilloche dashed borders, high-contrast `@media print` rules for physical A4/Letter paper safes, embedded SVG QR, and offline restoration manuals.
+- **In-App Optical QR Scanner & Image Drop Decoder (`#qr-scanner-modal`):** Integrated a camera viewfinder (`navigator.mediaDevices.getUserMedia`) with animated laser targeting utilizing the native W3C `BarcodeDetector` API for real-time camera scanning, plus a drag-and-drop image decoder for scanned photos and screenshots.
+- **Decrypt View Auto-Fill:** "📷 Scan Paper QR" button next to password field, automatic parameter population (salt fingerprint verification badge, KDF iteration preset, safe location hint), and smooth autofocus into the passphrase input.
+- **PWA & Offline Integration:** Precached under Service Worker cache `v61` in `sw.js` and bundled into `js/usb-backup-kit.js` for 100% offline air-gap portability.
 
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 

@@ -6063,3 +6063,351 @@ audio.media-player-element {
     margin-top: 0.6rem;
     animation: fadeIn 0.2s ease-in-out;
 }
+
+/* ==========================================================================
+   PHASE 9: VISUAL PAPER-SAFE & OPTICAL QR CODE RECOVERY STYLING
+   ========================================================================== */
+
+/* Paper-Safe Customization Bar */
+.paper-safe-custom-bar {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    border-radius: var(--radius-md, 8px);
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+/* Physical Paper Sheet Preview Container */
+.paper-safe-sheet-preview {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.paper-safe-sheet {
+    width: 100%;
+    max-width: 820px;
+    background: #ffffff;
+    color: #0f172a;
+    border-radius: 10px;
+    padding: 2.5rem 3rem;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Security Guilloche Dashed Border */
+.paper-safe-sheet::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    border: 2px dashed #059669;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+.paper-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 1.25rem;
+}
+
+.paper-sheet-logo {
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.paper-sheet-sub {
+    font-size: 0.78rem;
+    color: #475569;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-top: 3px;
+}
+
+.paper-sheet-badge {
+    background: #ecfdf5;
+    border: 1px solid #059669;
+    color: #059669;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-align: right;
+    letter-spacing: 0.05em;
+}
+
+.paper-sheet-grid {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    gap: 2rem;
+    align-items: start;
+}
+
+.paper-sheet-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.85rem;
+}
+
+.paper-sheet-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.paper-sheet-val {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    font-family: var(--font-mono, monospace);
+    word-break: break-all;
+}
+
+.paper-fp-box {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85rem;
+    color: #0f172a;
+    letter-spacing: 0.06em;
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.paper-fp-group {
+    background: #e2e8f0;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-weight: 700;
+}
+
+.paper-handwrite-wrap {
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    border-radius: 6px;
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.paper-handwrite-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 5px;
+}
+
+.paper-char-cell {
+    height: 36px;
+    border: 1.5px solid #94a3b8;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.paper-qr-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 1rem 0.75rem;
+    text-align: center;
+}
+
+.paper-qr-card svg {
+    max-width: 170px;
+    height: auto;
+    display: block;
+}
+
+.paper-instructions-grid {
+    border-top: 1px solid #cbd5e1;
+    padding-top: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    font-size: 0.75rem;
+    color: #475569;
+    line-height: 1.45;
+}
+
+.paper-instructions-grid h4 {
+    color: #0f172a;
+    font-size: 0.82rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Optical QR Scanner Viewfinder & Dropzone */
+.qr-scanner-viewfinder {
+    height: 260px;
+    background: #000000;
+    border-radius: 12px;
+    border: 2px dashed rgba(56, 189, 248, 0.45);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.qr-camera-element {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.qr-laser-line {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+    box-shadow: 0 0 10px #38bdf8;
+    z-index: 3;
+    animation: qrScanLaser 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes qrScanLaser {
+    0% { top: 15%; }
+    100% { top: 85%; }
+}
+
+.qr-target-corners {
+    position: relative;
+    z-index: 2;
+    width: 170px;
+    height: 170px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-target-corners::before,
+.qr-target-corners::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: #38bdf8;
+    border-style: solid;
+}
+
+.qr-target-corners::before {
+    top: -2px;
+    left: -2px;
+    border-width: 3px 0 0 3px;
+}
+
+.qr-target-corners::after {
+    bottom: -2px;
+    right: -2px;
+    border-width: 0 3px 3px 0;
+}
+
+.qr-scan-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem;
+}
+
+.qr-drop-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--border-color, rgba(255, 255, 255, 0.15));
+    border-radius: 10px;
+    padding: 0.85rem;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.2s ease;
+}
+
+.qr-drop-zone:hover,
+.qr-drop-zone.dragover {
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.08);
+}
+
+.qr-detected-card {
+    background: rgba(16, 185, 129, 0.09);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Dedicated Print Stylesheet */
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+
+    #paper-safe-sheet-container,
+    #paper-safe-sheet-container * {
+        visibility: visible !important;
+    }
+
+    #paper-safe-sheet-container {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .paper-safe-sheet {
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+        max-width: 100% !important;
+        padding: 24px !important;
+    }
+
+    .pw-modal-overlay,
+    .pw-modal-header,
+    .pw-modal-footer,
+    .paper-safe-custom-bar,
+    .app-header,
+    .tab-bar,
+    .site-nav,
+    .site-footer {
+        display: none !important;
+    }
+}

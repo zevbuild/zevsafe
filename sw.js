@@ -7,7 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v60';
+const APP_VERSION    = 'v61';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -64,7 +64,8 @@ const SHELL_ASSETS = [
     './js/worker-bridge.js',
     './js/stream-saver.js',
     './js/usb-backup-kit.js',
-    './js/device-benchmark.js'
+    './js/device-benchmark.js',
+    './js/qr-engine.js'
 ];
 
 // ── Install: precache the app shell ────────────────────────────

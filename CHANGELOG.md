@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 8.10.0 (WEB-VERSION-61) — November 5, 2026
+
+- `New` (`js/qr-engine.js`, `index.html`, `app.js`): Phase 9 "Visual Paper-Safe & Optical QR Code Emergency Recovery Sheet". Built an air-gapped, pure-JS, zero-dependency QR Code Model 2 engine (ISO/IEC 18004) that generates crisp, scalable vector SVG QR codes encoding vault reconstruction metadata (salt, KDF iterations, keyfile presence, vault name, and safe location hints).
+- `Security` (`js/qr-engine.js`, `app.js`): Cold-Storage Zero-Knowledge Principle. Guarantees raw passwords are never printed to network or shared printers; provides structured handwriting boxes for indelible pen Diceware passphrases and formatted 8-group CSPRNG salt fingerprints (`XXXX-XXXX-XXXX-...`) for fireproof home safe cold storage.
+- `New` (`js/qr-engine.js`, `index.html`, `app.js`): Standalone Air-Gapped Printable Recovery Certificate (.html). One-click download of a self-contained, single-file HTML cold-storage certificate featuring security Guilloche dashed borders, high-contrast `@media print` rules for A4/Letter paper safes, embedded SVG QR, and offline restoration manuals.
+- `New` (`index.html`, `app.js`, `styles.css`): In-App Optical QR Scanner & Image Drop Decoder. Implemented a camera viewfinder (`navigator.mediaDevices.getUserMedia`) with animated laser targeting utilizing the native W3C `BarcodeDetector` API for real-time camera scanning, plus a drag-and-drop image decoder for scanned photos and screenshots.
+- `UI` (`index.html`, `app.js`, `styles.css`): Decrypt View One-Click Parameter Auto-Fill. Added "📷 Scan Paper QR" button next to password field, automatic parameter population (salt fingerprint verification badge, KDF iteration preset, safe location hint), and smooth autofocus into the passphrase input.
+- `PWA` (`sw.js`): Service Worker Cache Bump to `v61` (`APP_VERSION = 'v61'`). Precaches `./js/qr-engine.js` in `SHELL_ASSETS` for instant offline cold starts.
+- `PWA` (`js/usb-backup-kit.js`): Ingested `js/qr-engine.js` into the 1-Click USB Air-Gap Backup Kit payload for zero-network USB drive backups.
+- `Tests` (`test/test-paper-safe-qr.js`, `test/test-explorer-folder-nav.js`): Created dedicated unit test suite with 14 comprehensive tests and added Test 40 to folder navigation suite (40/40 passed, 97/97 passed across all 5 test suites).
+
 ## Version 8.9.0 (WEB-VERSION-60) — November 3, 2026
 
 - `New` (`device-power/index.html`, `js/device-benchmark.js`): Phase 11 "Know Your Device Power" Cryptographic Hardware Benchmark & Profiler. Built an interactive, 100% client-side hardware profiler that benchmarks raw WebCrypto hardware acceleration (AES-NI / NEON), parallel chunk streaming throughput, and PBKDF2-SHA512 key derivation latency across standard and hardened tiers (600,000, 1,200,000, and 2,400,000 rounds).

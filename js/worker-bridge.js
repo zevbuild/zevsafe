@@ -1600,6 +1600,7 @@
                         vault: fullVault,
                         vaultBytes: fullVault,
                         header,
+                        salt,
                         manifest: manifestCatalog,
                         manifestEnvelope,
                         chunks: shouldBuffer ? encryptedChunks : [],

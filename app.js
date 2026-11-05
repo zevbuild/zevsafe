@@ -2246,6 +2246,12 @@ btnEncrypt.addEventListener('click', async () => {
                             resetTelemetryHUD();
                             currentStreamingOp = null;
                             totalVaultBytes = result.totalBytes;
+                            if (result.salt) {
+                                recoveryRecord.saltHex = bytesToHex(result.salt);
+                            } else if (result.header && result.header.byteLength >= 42) {
+                                recoveryRecord.saltHex = bytesToHex(result.header.subarray(10, 42));
+                            }
+                            recoveryRecord.kdfIterations = kdfIterations;
                             if (streamWriter && typeof streamWriter.finalize === 'function') {
                                 await streamWriter.finalize();
                             } else if (result.vault) {
@@ -2738,14 +2744,392 @@ function closePwModal() {
     }
 }
 
+// ============================================
+// PHASE 9: VISUAL PAPER-SAFE & OPTICAL QR CONTROLLERS
+// ============================================
+
+let currentScannerStream = null;
+let scannerAnimFrameId = null;
+let activeScannedPaperSafe = null;
+
+function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
+    const modal = document.getElementById('paper-safe-modal');
+    const container = document.getElementById('paper-safe-sheet-container');
+    const hintInput = document.getElementById('paper-hint-input');
+    if (!modal || !container) return;
+
+    const vaultName = record?.vaultFilename || (record?.folderName ? `${record.folderName}.zev` : 'ZevSafe-Vault.zev');
+    let saltHex = record?.saltHex;
+    if (!saltHex || saltHex.length < 32) {
+        const tmpSalt = new Uint8Array(32);
+        crypto.getRandomValues(tmpSalt);
+        saltHex = bytesToHex(tmpSalt);
+        if (record) record.saltHex = saltHex;
+    }
+    const kdfIterations = record?.kdfIterations || parseInt(document.getElementById('encrypt-kdf-select')?.value || '600000', 10);
+    const keyfileRequired = !!record?.keyfileRequired;
+    const initialHint = hintInput?.value?.trim() || record?.hint || '';
+
+    function renderSheet() {
+        const currentHint = hintInput ? hintInput.value.trim() : initialHint;
+        const payloadData = {
+            vaultName,
+            saltHex,
+            kdfIterations,
+            hint: currentHint,
+            keyfileRequired,
+            createdDate: new Date().toISOString().split('T')[0]
+        };
+
+        const payload = typeof QREngine !== 'undefined' ? QREngine.buildPaperSafePayload(payloadData) : JSON.stringify(payloadData);
+        const qrSVG = typeof QREngine !== 'undefined'
+            ? QREngine.createSVG(payload, { size: 180, margin: 2, color: '#0f172a', bgColor: '#ffffff' })
+            : '<div style="padding:40px;border:1px solid #000;">QR Engine Loading...</div>';
+        const saltFormatted = typeof QREngine !== 'undefined' ? QREngine.formatSaltFingerprint(saltHex) : saltHex.slice(0, 32);
+        const kdfFormatted = kdfIterations.toLocaleString('en-US');
+
+        container.innerHTML = `
+            <div class="paper-safe-sheet">
+                <div class="paper-sheet-header">
+                    <div>
+                        <div class="paper-sheet-logo">
+                            <span>🛡️</span> ZevSafe Paper-Safe Recovery Certificate
+                        </div>
+                        <div class="paper-sheet-sub">Zero-Knowledge Offline Vault Cold-Storage Certificate</div>
+                    </div>
+                    <div class="paper-sheet-badge">
+                        <div>ZV3 STREAM AEAD</div>
+                        <div style="font-size: 0.65rem; opacity: 0.85;">RFC 8018 / NIST SP 800-38D</div>
+                    </div>
+                </div>
+
+                <div class="paper-sheet-grid">
+                    <div>
+                        <div class="paper-sheet-field">
+                            <span class="paper-sheet-label">Vault Container Identity</span>
+                            <div class="paper-sheet-val">${escapeHtml(vaultName)}</div>
+                        </div>
+
+                        <div class="paper-sheet-field">
+                            <span class="paper-sheet-label">Cryptographic Salt Fingerprint (32 Bytes CSPRNG)</span>
+                            <div class="paper-fp-box">${escapeHtml(saltFormatted || saltHex.slice(0, 32))}</div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.85rem;">
+                            <div class="paper-sheet-field" style="margin: 0;">
+                                <span class="paper-sheet-label">Key Derivation</span>
+                                <div class="paper-sheet-val" style="font-size: 0.95rem;">${kdfFormatted} Rounds (PBKDF2)</div>
+                            </div>
+                            <div class="paper-sheet-field" style="margin: 0;">
+                                <span class="paper-sheet-label">2FA Keyfile Status</span>
+                                <div class="paper-sheet-val" style="font-size: 0.95rem; color: ${keyfileRequired ? '#dc2626' : '#059669'};">
+                                    ${keyfileRequired ? 'REQUIRED' : 'Not Required'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="paper-handwrite-wrap">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="paper-sheet-label" style="color: #0f172a; margin: 0;">Handwritten Passphrase or Password Hint (Physical Safe)</span>
+                                <span style="font-size: 0.72rem; color: #64748b; font-style: italic;">Write with pen · Never photograph</span>
+                            </div>
+                            <div class="paper-handwrite-grid">
+                                <div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div>
+                                <div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div>
+                                <div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #64748b;">
+                                <strong>Hint / Safe Location:</strong> ${escapeHtml(currentHint || 'None provided')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="paper-qr-card">
+                            ${qrSVG}
+                            <div style="font-size: 0.75rem; font-weight: 700; color: #0f172a;">Optical Recovery QR</div>
+                            <div style="font-size: 0.68rem; color: #64748b; line-height: 1.35;">
+                                Scan with camera on ZevSafe to auto-fill vault configuration.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="paper-instructions-grid">
+                    <div>
+                        <h4>🔒 Safe Cold Storage</h4>
+                        <p>Store this document in a fireproof safe, safety deposit box, or trusted lockbox. Contains the mathematical salt and parameters needed to reconstruct your vault.</p>
+                    </div>
+                    <div>
+                        <h4>⚡ How to Restore Vault</h4>
+                        <p>Open <strong>https://zevsafe.pages.dev</strong> (or launch the USB Air-Gap Kit offline). On Decrypt, click <strong>"Scan Paper QR"</strong> or enter your handwritten password.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderSheet();
+
+    if (hintInput) {
+        hintInput.oninput = () => renderSheet();
+    }
+
+    const btnPrint = document.getElementById('btn-print-paper-safe');
+    if (btnPrint) {
+        btnPrint.onclick = () => {
+            window.print();
+        };
+    }
+
+    const btnDownload = document.getElementById('btn-download-paper-html');
+    if (btnDownload) {
+        btnDownload.onclick = () => {
+            const currentHint = hintInput ? hintInput.value.trim() : initialHint;
+            if (typeof QREngine !== 'undefined') {
+                const standaloneHTML = QREngine.generatePaperSheetHTML({
+                    vaultName,
+                    saltHex,
+                    kdfIterations,
+                    hint: currentHint,
+                    keyfileRequired,
+                    createdDate: new Date().toISOString().split('T')[0]
+                });
+                const blob = new Blob([standaloneHTML], { type: 'text/html;charset=utf-8' });
+                const safeName = sanitizeFilenamePart(vaultName.replace(/\.zev$/i, ''));
+                triggerDownload(blob, `${safeName}_paper_safe_certificate.html`);
+                showToast('Standalone Paper-Safe HTML certificate downloaded!', 'success');
+            }
+        };
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closePaperSafeModal() {
+    const modal = document.getElementById('paper-safe-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function openQRScannerModal() {
+    const modal = document.getElementById('qr-scanner-modal');
+    const detectedCard = document.getElementById('qr-detected-card');
+    const detectedDetails = document.getElementById('qr-detected-details');
+    const video = document.getElementById('qr-camera-feed');
+    const placeholder = document.getElementById('qr-camera-placeholder');
+    const dropzone = document.getElementById('qr-image-dropzone');
+    const fileInput = document.getElementById('qr-file-input');
+
+    if (!modal) return;
+    activeScannedPaperSafe = null;
+    if (detectedCard) detectedCard.style.display = 'none';
+    modal.style.display = 'flex';
+
+    async function handleFoundPayload(rawText) {
+        if (typeof QREngine === 'undefined') return false;
+        const parsed = QREngine.parsePaperSafePayload(rawText);
+        if (!parsed) {
+            showToast('Scanned QR code is not a valid ZevSafe Paper-Safe certificate.', 'warning');
+            return false;
+        }
+
+        activeScannedPaperSafe = parsed;
+        if (detectedCard && detectedDetails) {
+            const saltGrouped = QREngine.formatSaltFingerprint(parsed.saltHex);
+            const kdfFormatted = parsed.kdfIterations.toLocaleString('en-US');
+            detectedDetails.innerHTML = `
+                Vault: <strong style="color:#fff;">${escapeHtml(parsed.vaultName)}</strong><br>
+                Salt: <span style="color:#a855f7; font-family:monospace;">${escapeHtml(saltGrouped || parsed.saltHex.slice(0, 24))}...</span><br>
+                KDF: <span style="color:#38bdf8;">${kdfFormatted} Rounds (PBKDF2)</span><br>
+                ${parsed.hint ? `Hint: <em style="color:#fbbf24;">${escapeHtml(parsed.hint)}</em>` : ''}
+            `;
+            detectedCard.style.display = 'block';
+        }
+        showToast('Paper-Safe certificate detected!', 'success');
+        stopCamera();
+        return true;
+    }
+
+    async function startCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showToast('Camera not supported in this browser. Please drop an image instead.', 'info');
+            return;
+        }
+        try {
+            stopCamera();
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }
+            });
+            currentScannerStream = stream;
+            if (video) {
+                video.srcObject = stream;
+                video.style.display = 'block';
+                if (placeholder) placeholder.style.display = 'none';
+                await video.play();
+                startDetectionLoop();
+            }
+        } catch (err) {
+            console.warn('[QR Scanner Camera]', err);
+            if (placeholder) {
+                placeholder.style.display = 'flex';
+                const label = placeholder.querySelector('span:nth-child(2)');
+                if (label) label.textContent = 'Camera access denied or unavailable.';
+            }
+        }
+    }
+
+    function startDetectionLoop() {
+        if (!window.BarcodeDetector || !video) return;
+        const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+
+        async function tick() {
+            if (!currentScannerStream || video.paused || video.ended) return;
+            try {
+                const barcodes = await detector.detect(video);
+                if (barcodes && barcodes.length > 0) {
+                    const found = await handleFoundPayload(barcodes[0].rawValue);
+                    if (found) return;
+                }
+            } catch (_) {}
+            scannerAnimFrameId = requestAnimationFrame(tick);
+        }
+
+        scannerAnimFrameId = requestAnimationFrame(tick);
+    }
+
+    function stopCamera() {
+        if (scannerAnimFrameId) {
+            cancelAnimationFrame(scannerAnimFrameId);
+            scannerAnimFrameId = null;
+        }
+        if (currentScannerStream) {
+            currentScannerStream.getTracks().forEach(t => t.stop());
+            currentScannerStream = null;
+        }
+        if (video) {
+            video.srcObject = null;
+            video.style.display = 'none';
+        }
+        if (placeholder) placeholder.style.display = 'flex';
+    }
+
+    const btnStartCam = document.getElementById('btn-start-camera');
+    if (btnStartCam) btnStartCam.onclick = () => startCamera();
+
+    if (dropzone && fileInput) {
+        dropzone.onclick = () => fileInput.click();
+
+        dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add('dragover'); };
+        dropzone.ondragleave = () => dropzone.classList.remove('dragover');
+        dropzone.ondrop = async (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+                await processImageFile(e.dataTransfer.files[0]);
+            }
+        };
+
+        fileInput.onchange = async () => {
+            if (fileInput.files && fileInput.files[0]) {
+                await processImageFile(fileInput.files[0]);
+                fileInput.value = '';
+            }
+        };
+    }
+
+    async function processImageFile(file) {
+        try {
+            if (!window.BarcodeDetector) {
+                showToast('Image barcode decoding requires Chrome, Edge, or Android Webview.', 'warning');
+                return;
+            }
+            const imgBitmap = await createImageBitmap(file);
+            const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+            const barcodes = await detector.detect(imgBitmap);
+            if (barcodes && barcodes.length > 0) {
+                await handleFoundPayload(barcodes[0].rawValue);
+            } else {
+                showToast('No QR code detected in this image. Try another photo with clear lighting.', 'warning');
+            }
+        } catch (err) {
+            console.error('[QR File Process Error]', err);
+            showToast('Failed to decode image. Ensure image is clear and well-lit.', 'warning');
+        }
+    }
+
+    const btnApply = document.getElementById('btn-apply-scanned-qr');
+    if (btnApply) {
+        btnApply.onclick = () => {
+            if (!activeScannedPaperSafe) return;
+            const p = activeScannedPaperSafe;
+
+            const banner = document.getElementById('paper-safe-scanned-banner');
+            const bannerVault = document.getElementById('scanned-banner-vault');
+            const bannerHint = document.getElementById('scanned-banner-hint');
+            if (banner) {
+                if (bannerVault) bannerVault.textContent = p.vaultName;
+                if (bannerHint) {
+                    const saltGroup = typeof QREngine !== 'undefined' ? QREngine.formatSaltFingerprint(p.saltHex) : p.saltHex;
+                    bannerHint.innerHTML = `Salt: <code>${saltGroup}</code> · KDF: <code>${p.kdfIterations.toLocaleString('en-US')}</code>${p.hint ? ` · <em>Hint: ${escapeHtml(p.hint)}</em>` : ''}`;
+                }
+                banner.style.display = 'block';
+            }
+
+            const pwdInput = document.getElementById('decrypt-password');
+            if (pwdInput) {
+                pwdInput.focus();
+                pwdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            showToast(`Paper-Safe parameters for "${p.vaultName}" applied!`, 'success');
+            closeQRScannerModal();
+        };
+    }
+
+    if (window.BarcodeDetector && navigator.mediaDevices) {
+        startCamera();
+    }
+}
+
+function closeQRScannerModal() {
+    const modal = document.getElementById('qr-scanner-modal');
+    if (modal) modal.style.display = 'none';
+    if (scannerAnimFrameId) {
+        cancelAnimationFrame(scannerAnimFrameId);
+        scannerAnimFrameId = null;
+    }
+    if (currentScannerStream) {
+        currentScannerStream.getTracks().forEach(t => t.stop());
+        currentScannerStream = null;
+    }
+    const video = document.getElementById('qr-camera-feed');
+    if (video) {
+        video.srcObject = null;
+        video.style.display = 'none';
+    }
+}
+
 // Wire up the password save modal events
 document.addEventListener('DOMContentLoaded', () => {
     const btnClosePwModal = document.getElementById('btn-close-pw-modal');
     const btnCopyPw = document.getElementById('btn-copy-pw');
+    const btnOpenPaperSafe = document.getElementById('btn-open-paper-safe');
     const btnPrintPwSheet = document.getElementById('btn-print-pw-sheet');
     const btnDownloadPwSheet = document.getElementById('btn-download-pw-sheet');
     const btnSavePwManager = document.getElementById('btn-save-pw-manager');
     const pwSaveModal = document.getElementById('pw-save-modal');
+    
+    // Paper-Safe Modal Elements
+    const btnClosePaperModal = document.getElementById('btn-close-paper-modal');
+    const btnDismissPaperModal = document.getElementById('btn-dismiss-paper-modal');
+    const paperSafeModal = document.getElementById('paper-safe-modal');
+
+    // QR Scanner Modal Elements
+    const btnScanPaperQr = document.getElementById('btn-scan-paper-qr');
+    const btnCloseScannerModal = document.getElementById('btn-close-scanner-modal');
+    const btnCancelScanner = document.getElementById('btn-cancel-scanner');
+    const qrScannerModal = document.getElementById('qr-scanner-modal');
+    const btnClearScannedQr = document.getElementById('btn-clear-scanned-qr');
     
     btnClosePwModal?.addEventListener('click', closePwModal);
     
@@ -2753,6 +3137,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.id === 'pw-save-modal') {
             closePwModal();
         }
+    });
+
+    btnOpenPaperSafe?.addEventListener('click', () => {
+        closePwModal();
+        openPaperSafeModal();
+    });
+
+    btnClosePaperModal?.addEventListener('click', closePaperSafeModal);
+    btnDismissPaperModal?.addEventListener('click', closePaperSafeModal);
+    paperSafeModal?.addEventListener('click', (e) => {
+        if (e.target.id === 'paper-safe-modal') closePaperSafeModal();
+    });
+
+    btnScanPaperQr?.addEventListener('click', () => {
+        openQRScannerModal();
+    });
+
+    btnCloseScannerModal?.addEventListener('click', closeQRScannerModal);
+    btnCancelScanner?.addEventListener('click', closeQRScannerModal);
+    qrScannerModal?.addEventListener('click', (e) => {
+        if (e.target.id === 'qr-scanner-modal') closeQRScannerModal();
+    });
+
+    btnClearScannedQr?.addEventListener('click', () => {
+        const banner = document.getElementById('paper-safe-scanned-banner');
+        if (banner) banner.style.display = 'none';
+        activeScannedPaperSafe = null;
+        showToast('Paper-Safe parameters cleared.', 'info');
     });
     
     btnCopyPw?.addEventListener('click', async () => {
@@ -2774,7 +3186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     btnPrintPwSheet?.addEventListener('click', () => {
-        printPasswordRecoverySheet();
+        openPaperSafeModal();
     });
     
     btnSavePwManager?.addEventListener('click', async () => {
