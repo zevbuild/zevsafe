@@ -1,5 +1,17 @@
 # Changelog
 
+## Version 8.11.0 (WEB-VERSION-62) — November 5, 2026
+
+- `New` (`roadmap/index.html`): Master Plan & Strategic Roadmap Interactive Portal. Created a dedicated zero-external-network portal documenting the 14-phase engineering master plan tracking ZevSafe's evolution from an authenticated streaming container into an ephemeral zero-footprint virtual operating environment.
+- `UI` (`index.html`, `styles.css`): Future Plans "Pill UI" Navigation Button (`#nav-roadmap-pill`, `.plan-pill-nav`). Added a cybernetic gradient pill button in the top navbar and responsive drawer displaying a real-time progress counter badge (`11 / 14`) with smooth hover glow and elevation.
+- `UI` (`roadmap/index.html`): Interactive Phase Filtering & Milestone HUD. Provides instant status filtering (`All 14`, `Shipped 11`, `Up Next 1`, `Planned 2`) and visual progress bar (`78.5% Complete`, 11 of 14 shipped) with responsive phase cards highlighting cryptographic algorithms and system requirements.
+- `UI` (`roadmap/index.html`): Deep-Dive Technical Architecture Inspector Drawer (`#rm-drawer`). Slide-out drawer displaying detailed cryptographic algorithms, standard RFCs, memory costs, execution times, parallelism lanes, binary sizes, and fallback strategies for each roadmap phase.
+- `Security` (`roadmap/index.html`): Zero-Knowledge Air-Gap Compliance. Enforces strict Content Security Policy (`default-src 'self'`), zero external CDN requests, zero remote Google fonts, and zero telemetry tracking.
+- `PWA` (`sw.js`, `index.html`): Service Worker Cache Bump to `v62` (`APP_VERSION = 'v62'`). Precaches `./roadmap/` and `./roadmap/index.html` in `SHELL_ASSETS` and adds `roadmap` / `master-plan` to `SECTION_ROUTES` for offline routing resilience.
+- `PWA` (`js/usb-backup-kit.js`): USB Air-Gap Backup Kit Ingestion. Added `roadmap/index.html` to `AIRGAP_ASSET_PATHS` for standalone offline USB packaging.
+- `SEO` (`sitemap.xml`): Added `https://zevsafe.pages.dev/roadmap/` to sitemap for search engine indexing.
+- `Tests` (`test/test-roadmap-plan.js`, `test/test-explorer-folder-nav.js`): Created dedicated 11-test validation suite and added Test 41 to the explorer test suite (41/41 passed, 108/108 passed across all test suites).
+
 ## Version 8.10.0 (WEB-VERSION-61) — November 5, 2026
 
 - `New` (`js/qr-engine.js`, `index.html`, `app.js`): Phase 9 "Visual Paper-Safe & Optical QR Code Emergency Recovery Sheet". Built an air-gapped, pure-JS, zero-dependency QR Code Model 2 engine (ISO/IEC 18004) that generates crisp, scalable vector SVG QR codes encoding vault reconstruction metadata (salt, KDF iterations, keyfile presence, vault name, and safe location hints).

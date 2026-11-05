@@ -6411,3 +6411,43 @@ audio.media-player-element {
         display: none !important;
     }
 }
+
+/* ==========================================================================
+   FUTURE PLANS & ROADMAP PILL UI STYLING
+   ========================================================================== */
+
+.plan-pill-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(168, 85, 247, 0.12));
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #f0f9ff;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+}
+
+.plan-pill-nav:hover {
+    border-color: #38bdf8;
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+    transform: translateY(-1.5px);
+    color: #ffffff;
+}
+
+.plan-pill-nav .counter-badge {
+    background: rgba(16, 185, 129, 0.25);
+    border: 1px solid #10b981;
+    color: #34d399;
+    padding: 0.1rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    font-family: var(--font-mono, monospace);
+}

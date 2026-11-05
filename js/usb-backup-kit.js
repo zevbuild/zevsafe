@@ -71,6 +71,7 @@
         'js/usb-backup-kit.js',
         'js/device-benchmark.js',
         'js/qr-engine.js',
+        'roadmap/index.html',
         'device-power/index.html',
         'assets/favicon.svg',
         'assets/icon-192.png',

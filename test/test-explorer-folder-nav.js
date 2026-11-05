@@ -1068,7 +1068,7 @@ const catalogFiles = [
     const swPath = path.resolve(__dirname, '..', 'sw.js');
     const swContent = fs.readFileSync(swPath, 'utf8');
 
-    assert.strictEqual(swContent.includes("APP_VERSION    = 'v61';"), true, 'Service Worker bumped to v61');
+    assert.strictEqual(swContent.includes("APP_VERSION    = 'v62';"), true, 'Service Worker bumped to v62');
     const precacheExpected = [
         './knowledge/',
         './knowledge/index.html',
@@ -1296,7 +1296,7 @@ const catalogFiles = [
     // Verify sw.js includes usb-backup-kit.js and APP_VERSION = 'v59'
     const swContent = fs.readFileSync(path.resolve(__dirname, '../sw.js'), 'utf8');
     assert.strictEqual(swContent.includes("'./js/usb-backup-kit.js'"), true, 'sw.js precaches js/usb-backup-kit.js');
-    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v61';"), true, 'sw.js bumped to APP_VERSION v59');
+    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v62';"), true, 'sw.js bumped to APP_VERSION v62');
 
     console.log('  ✓ 37. Phase 13 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine & multi-OS offline launchers verified');
 
@@ -1401,7 +1401,7 @@ const catalogFiles = [
     // Verify sw.js includes qr-engine.js and APP_VERSION = 'v61'
     const swCurrent = fs.readFileSync(swPath, 'utf8');
     assert.strictEqual(swCurrent.includes("'./js/qr-engine.js'"), true, 'sw.js precaches ./js/qr-engine.js');
-    assert.strictEqual(swCurrent.includes("APP_VERSION    = 'v61'"), true, 'sw.js has APP_VERSION v61');
+    assert.strictEqual(swCurrent.includes("APP_VERSION    = 'v62'"), true, 'sw.js has APP_VERSION v62');
 
     // Verify usb-backup-kit.js includes qr-engine.js
     const usbContent = fs.readFileSync(path.resolve(__dirname, '../js/usb-backup-kit.js'), 'utf8');
@@ -1409,13 +1409,43 @@ const catalogFiles = [
 
     console.log('  ✔ 40. Phase 9 Visual Paper-Safe & Optical QR Code Recovery verified');
 
+    // -------------------------------------------------------------------------
+    // TEST 41: Master Plan & Strategic Roadmap Portal (v8.11.0 / WEB-VERSION-62)
+    // -------------------------------------------------------------------------
+    const roadmapFilePath = path.resolve(__dirname, '../roadmap/index.html');
+    assert.strictEqual(fs.existsSync(roadmapFilePath), true, 'roadmap/index.html exists');
+    const roadmapContent = fs.readFileSync(roadmapFilePath, 'utf8');
+    assert.strictEqual(roadmapContent.includes("default-src 'self'"), true, 'roadmap/index.html has strict CSP');
+    assert.strictEqual(roadmapContent.includes('id="rm-drawer"'), true, 'roadmap/index.html has rm-drawer');
+    assert.strictEqual(roadmapContent.includes('data-status="delivered"'), true, 'roadmap/index.html has delivered phases');
+
+    const indexForRoadmap = fs.readFileSync(indexPath, 'utf8');
+    assert.strictEqual(indexForRoadmap.includes('id="nav-roadmap-pill"'), true, 'index.html has #nav-roadmap-pill');
+    assert.strictEqual(indexForRoadmap.includes('11 / 14'), true, 'index.html displays 11 / 14');
+    assert.strictEqual(indexForRoadmap.includes('href="./roadmap/"'), true, 'index.html links to ./roadmap/');
+
+    const swForRoadmap = fs.readFileSync(swPath, 'utf8');
+    assert.strictEqual(swForRoadmap.includes("'./roadmap/'"), true, 'sw.js precaches ./roadmap/');
+    assert.strictEqual(swForRoadmap.includes("'./roadmap/index.html'"), true, 'sw.js precaches ./roadmap/index.html');
+    assert.strictEqual(swForRoadmap.includes("'roadmap'"), true, 'sw.js includes roadmap in SECTION_ROUTES');
+    assert.strictEqual(swForRoadmap.includes("APP_VERSION    = 'v62'"), true, 'sw.js has APP_VERSION v62');
+
+    const usbForRoadmap = fs.readFileSync(path.resolve(__dirname, '../js/usb-backup-kit.js'), 'utf8');
+    assert.strictEqual(usbForRoadmap.includes("'roadmap/index.html'"), true, 'usb-backup-kit.js includes roadmap/index.html');
+
+    const sitemapPathRoadmap = path.resolve(__dirname, '../sitemap.xml');
+    const sitemapForRoadmap = fs.readFileSync(sitemapPathRoadmap, 'utf8');
+    assert.strictEqual(sitemapForRoadmap.includes('https://zevsafe.pages.dev/roadmap/'), true, 'sitemap.xml includes roadmap URL');
+
+    console.log('  ✔ 41. Master Plan & Strategic Roadmap Portal verified');
+
 
 })().then(() => {
     console.log('===============================================================');
-    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 40/40 PASSED    ');
+    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 41/41 PASSED    ');
     console.log('===============================================================');
 }).catch(err => {
-    console.error('Test 40 failed:', err);
+    console.error('Test 41 failed:', err);
     process.exit(1);
 });
 

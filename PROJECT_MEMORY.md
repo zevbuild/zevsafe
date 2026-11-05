@@ -1,9 +1,9 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.10.0` (`WEB-VERSION-61`, Service Worker `v61`)  
+> **Web Portal Version:** `v8.11.0` (`WEB-VERSION-62`, Service Worker `v62`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
-> **Future Plans & Roadmap:** Documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14; Upcoming Phases 8, 10, 12: Argon2id WASM, In-Vault Document Redaction, Offline i18n).
+> **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
 > **🤖 MANDATORY AI AGENT RULE:**  
 > Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
@@ -196,6 +196,14 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **In-App Optical QR Scanner & Image Drop Decoder (`#qr-scanner-modal`):** Integrated a camera viewfinder (`navigator.mediaDevices.getUserMedia`) with animated laser targeting utilizing the native W3C `BarcodeDetector` API for real-time camera scanning, plus a drag-and-drop image decoder for scanned photos and screenshots.
 - **Decrypt View Auto-Fill:** "📷 Scan Paper QR" button next to password field, automatic parameter population (salt fingerprint verification badge, KDF iteration preset, safe location hint), and smooth autofocus into the passphrase input.
 - **PWA & Offline Integration:** Precached under Service Worker cache `v61` in `sw.js` and bundled into `js/usb-backup-kit.js` for 100% offline air-gap portability.
+
+
+### 3.12 Master Plan & Strategic Roadmap Pill UI Portal (`roadmap/index.html`, `styles.css`, `index.html`) [v8.11.0]
+- **Interactive 14-Phase Ecosystem Blueprint (`roadmap/index.html`):** A dedicated, zero-external-network portal documenting the 14-phase engineering roadmap that evolves ZevSafe from an authenticated streaming container into a zero-footprint ephemeral virtual operating environment.
+- **Desktop & Mobile Navbar Pill UI (`#nav-roadmap-pill`, `.plan-pill-nav`):** Cybernetic pill button embedded in the main navigation bar, mobile hamburger navigation drawer, and footer, displaying a real-time progress counter badge (`11 / 14`) with smooth hover elevation and responsive layout adaptations.
+- **Filterable Status Matrix & Live Progress HUD:** Instant client-side status filtering (`All 14`, `Shipped 11`, `Up Next 1`, `Planned 2`) and visual progress bar (`78.5% Complete`, 11 of 14 shipped) with interactive phase cards highlighting architectural deliverables and cryptographic tags.
+- **Deep-Dive Technical Architecture Inspector Drawer (`#rm-drawer`):** Slide-out inspector modal exposing detailed cryptographic parameters, standard RFCs, memory bounding bounds, execution latencies, binary footprints, and fallback strategies for each roadmap phase.
+- **Zero-Network & Air-Gap Compliance:** Strict Content Security Policy (`default-src 'self'`), zero Google font requests, zero CDN scripts, and zero telemetry. Precached in Service Worker cache `v62` (`sw.js`), included in `SECTION_ROUTES`, bundled into the 1-Click USB Air-Gap Backup Kit (`js/usb-backup-kit.js`), and indexed in `sitemap.xml`.
 
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 

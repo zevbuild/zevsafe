@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="application-name" content="ZevSafe">
+    <meta name="theme-color" content="#08091a">
+    <meta name="msapplication-TileColor" content="#08091a">
+
+    <!-- Content Security Policy: Strict Air-Gapped Zero-Exfiltration Defense -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <!-- PWA Manifest & Favicons -->
+    <link rel="manifest" href="../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/icon-192.png">
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Future Plans &amp; Strategic Roadmap — Master Architecture | ZevSafe</title>
+    <meta name="description" content="Explore the authoritative 14-phase engineering roadmap and future architectural blueprint for ZevSafe. Discover delivered milestones, Argon2id WASM plans, and document redaction tools.">
+    <meta name="keywords" content="ZevSafe roadmap, encryption future plan, client-side encryption roadmap, Argon2id WASM, zero-knowledge architecture, air-gap security blueprint">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://zevsafe.pages.dev/roadmap/">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../styles.css">
+
+    <style>
+        .rm-shell {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem 6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Top Nav */
+        .rm-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 1.25rem;
+            background: rgba(13, 17, 32, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            backdrop-filter: blur(14px);
+        }
+
+        .rm-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .rm-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-2, #94a3b8);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .rm-back-link:hover {
+            color: #fff;
+        }
+
+        .rm-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .rm-nav-item {
+            color: var(--text-2, #94a3b8);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.35rem 0.65rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .rm-nav-item:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Hero */
+        .rm-hero {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 0.5rem;
+        }
+
+        .rm-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: #38bdf8;
+            padding: 0.35rem 0.95rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #38bdf8;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #38bdf8;
+        }
+
+        .rm-hero h1 {
+            font-family: var(--font-display, sans-serif);
+            font-size: clamp(2rem, 5vw, 3.1rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #ffffff 30%, #38bdf8 70%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.15;
+        }
+
+        .rm-hero p {
+            color: var(--text-2, #94a3b8);
+            max-width: 680px;
+            font-size: 1.02rem;
+            line-height: 1.65;
+        }
+
+        /* Progress Card */
+        .rm-progress-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.6));
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 18px;
+            padding: 1.5rem 1.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+        }
+
+        .rm-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+
+        .rm-progress-track {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .rm-progress-fill {
+            height: 100%;
+            width: 78.5%;
+            background: linear-gradient(90deg, #10b981, #06b6d4, #8b5cf6);
+            border-radius: 9999px;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
+        }
+
+        .rm-progress-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: var(--text-3, #64748b);
+            font-weight: 600;
+        }
+
+        /* Filter Status Pills */
+        .rm-filter-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+            margin: 0.5rem 0;
+        }
+
+        .rm-filter-pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-2, #94a3b8);
+            padding: 0.5rem 1.15rem;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .rm-filter-pill:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+            transform: translateY(-1.5px);
+        }
+
+        .rm-filter-pill.active {
+            background: rgba(56, 189, 248, 0.16);
+            border-color: #38bdf8;
+            color: #fff;
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+        }
+
+        .rm-filter-pill.active.pill-delivered {
+            background: rgba(16, 185, 129, 0.16);
+            border-color: #34d399;
+            color: #34d399;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+        }
+
+        .rm-filter-pill.active.pill-next {
+            background: rgba(251, 191, 36, 0.16);
+            border-color: #fbbf24;
+            color: #fbbf24;
+            box-shadow: 0 0 16px rgba(251, 191, 36, 0.25);
+        }
+
+        /* Roadmap Grid of Phase Cards */
+        .rm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(315px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .rm-phase-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            padding: 1.4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .rm-phase-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .rm-phase-card.delivered {
+            border-left: 4px solid #10b981;
+        }
+
+        .rm-phase-card.active-next {
+            border-left: 4px solid #fbbf24;
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(251, 191, 36, 0.05));
+            box-shadow: 0 0 24px rgba(251, 191, 36, 0.1);
+        }
+
+        .rm-phase-card.planned {
+            border-left: 4px solid #a855f7;
+            opacity: 0.92;
+        }
+
+        .rm-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .rm-phase-id {
+            font-size: 0.72rem;
+            font-family: var(--font-mono, monospace);
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .rm-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.22rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .rm-status-badge.delivered {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+
+        .rm-status-badge.next {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.45);
+            animation: pulseGlowNext 2s infinite;
+        }
+
+        @keyframes pulseGlowNext {
+            0%, 100% { box-shadow: 0 0 6px rgba(251, 191, 36, 0.3); }
+            50% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.6); }
+        }
+
+        .rm-status-badge.planned {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.35);
+        }
+
+        .rm-phase-title {
+            font-size: 1.08rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.35;
+        }
+
+        .rm-phase-desc {
+            font-size: 0.82rem;
+            color: var(--text-2, #94a3b8);
+            line-height: 1.55;
+            flex-grow: 1;
+        }
+
+        .rm-tags-row {
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+            padding-top: 0.65rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .rm-mini-tag {
+            font-size: 0.66rem;
+            font-family: var(--font-mono, monospace);
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            padding: 0.18rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* Drawer Overlay */
+        .rm-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: flex-end;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .rm-drawer-content {
+            width: 100%;
+            max-width: 540px;
+            background: #0b0f1e;
+            border-left: 1px solid rgba(99, 102, 241, 0.3);
+            height: 100%;
+            padding: 2rem 2.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+            box-shadow: -15px 0 45px rgba(0, 0, 0, 0.85);
+        }
+
+        .rm-drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1.25rem;
+        }
+
+        .rm-spec-table {
+            width: 100%;
+            font-size: 0.82rem;
+            border-collapse: collapse;
+        }
+
+        .rm-spec-table td {
+            padding: 0.55rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .rm-spec-table td:first-child {
+            color: #64748b;
+            font-weight: 700;
+            width: 38%;
+        }
+
+        .rm-spec-table td:last-child {
+            color: #f1f5f9;
+            font-family: var(--font-mono, monospace);
+        }
+
+        .rm-close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .rm-close-btn:hover {
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .rm-nav-links { display: none; }
+            .rm-grid { grid-template-columns: 1fr; }
+            .rm-drawer-content { max-width: 100%; padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="rm-shell">
+        <!-- Navigation Header -->
+        <header class="rm-nav">
+            <div class="rm-nav-left">
+                <a href="../" class="rm-back-link">
+                    <span>←</span>
+                    <span>Back to ZevSafe</span>
+                </a>
+            </div>
+
+            <div class="rm-nav-links">
+                <a href="../how-to-use-zevsafe/" class="rm-nav-item">Documentation</a>
+                <a href="../device-power/" class="rm-nav-item">⚡ Device Power</a>
+                <a href="../security-audit/" class="rm-nav-item">Security Audit</a>
+                <a href="../change-log/" class="rm-nav-item">Changelog</a>
+                <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="rm-nav-item">GitHub ↗</a>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="rm-hero">
+            <div class="rm-badge">
+                <span class="pulse-dot"></span>
+                Ecosystem Architecture Master Plan
+            </div>
+            <h1>Future Roadmap &amp; Blueprints</h1>
+            <p>
+                Authoritative 14-phase engineering plan tracking the evolution of ZevSafe from an authenticated streaming encryption container into a complete zero-footprint ephemeral virtual workspace.
+            </p>
+
+            <!-- Progress Tracker Card -->
+            <div class="rm-progress-card">
+                <div class="rm-progress-header">
+                    <span style="color: #fff;">Roadmap Milestone Delivery</span>
+                    <span style="color: #34d399; font-family: var(--font-mono, monospace);">78.5% Complete (11 of 14 Shipped)</span>
+                </div>
+                <div class="rm-progress-track">
+                    <div class="rm-progress-fill"></div>
+                </div>
+                <div class="rm-progress-footer">
+                    <span>✔ Delivered: Phases 1–7, 9, 11, 13, 14</span>
+                    <span>⚡ In-Flight: Phase 8 · 🔮 Planned: Phases 10, 12</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filter Status Pills -->
+        <div class="rm-filter-row">
+            <button type="button" class="rm-filter-pill active" onclick="filterRoadmap('all', this)">
+                <span>📋 All Phases</span> <span style="opacity: 0.7;">(14)</span>
+            </button>
+            <button type="button" class="rm-filter-pill pill-delivered" onclick="filterRoadmap('delivered', this)">
+                <span>✔ Shipped &amp; Active</span> <span style="opacity: 0.7;">(11)</span>
+            </button>
+            <button type="button" class="rm-filter-pill pill-next" onclick="filterRoadmap('next', this)">
+                <span>⚡ Up Next</span> <span style="opacity: 0.7;">(1)</span>
+            </button>
+            <button type="button" class="rm-filter-pill" onclick="filterRoadmap('planned', this)">
+                <span>🔮 Future Architecture</span> <span style="opacity: 0.7;">(2)</span>
+            </button>
+        </div>
+
+        <!-- 14-Phase Grid -->
+        <main class="rm-grid" id="rm-phase-grid">
+            <!-- PHASE 08: UP NEXT -->
+            <article class="rm-phase-card active-next" data-status="next" onclick="openPhaseDrawer('p8')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 08 · v8.12</span>
+                    <span class="rm-status-badge next">⚡ Up Next</span>
+                </div>
+                <h3 class="rm-phase-title">Argon2id WASM Memory-Hard KDF</h3>
+                <p class="rm-phase-desc">
+                    Memory-hard key derivation via compiled WebAssembly runtime to render GPU/ASIC brute-force clusters economically infeasible, complementing standard PBKDF2.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">RFC 9106</span>
+                    <span class="rm-mini-tag">WASM</span>
+                    <span class="rm-mini-tag">64MB RAM Cost</span>
+                    <span class="rm-mini-tag">ASIC Resistance</span>
+                </div>
+            </article>
+
+            <!-- PHASE 09: DELIVERED (v8.10) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p9')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 09 · v8.10</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">Visual Paper-Safe &amp; QR Sheet</h3>
+                <p class="rm-phase-desc">
+                    Printable physical cold-storage recovery certificates with Guilloche borders, non-plaintext handwriting boxes, formatted 8-group salt fingerprints, and optical camera QR scanner.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">Pure-JS QR</span>
+                    <span class="rm-mini-tag">Cold Storage</span>
+                    <span class="rm-mini-tag">Guilloche Border</span>
+                    <span class="rm-mini-tag">BarcodeDetector</span>
+                </div>
+            </article>
+
+            <!-- PHASE 11: DELIVERED (v8.9) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p11')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 11 · v8.9</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">Know Your Device Power Profiler</h3>
+                <p class="rm-phase-desc">
+                    100% offline WebCrypto hardware profiler benchmarking raw AES-NI / NEON throughput (MB/s) and PBKDF2 stretching latency across Class S, A, B, and C tiers.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">Hardware Benchmark</span>
+                    <span class="rm-mini-tag">AES-NI / NEON</span>
+                    <span class="rm-mini-tag">PBKDF2 Latency</span>
+                    <span class="rm-mini-tag">Zero RAM Leak</span>
+                </div>
+            </article>
+
+            <!-- PHASE 14: DELIVERED (v8.4) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p14')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 14 · v8.4</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">Native Password Manager Sync</h3>
+                <p class="rm-phase-desc">
+                    W3C Credential Management API &amp; semantic hidden forms enabling 1-click password saving into Chrome, Bitwarden, 1Password, and Apple Keychain.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">W3C Credential</span>
+                    <span class="rm-mini-tag">Autofill</span>
+                    <span class="rm-mini-tag">Password Managers</span>
+                </div>
+            </article>
+
+            <!-- PHASE 13: DELIVERED (v8.3) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p13')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 13 · v8.3</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">1-Click USB Air-Gap Backup Kit</h3>
+                <p class="rm-phase-desc">
+                    Pure-JS PKZIP 2.0 generator exporting 100% standalone zero-network vaults with multi-OS launchers (.bat, .sh) and zero Google font CDN dependencies.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">PKZIP Engine</span>
+                    <span class="rm-mini-tag">USB Air-Gap</span>
+                    <span class="rm-mini-tag">Zero CDNs</span>
+                </div>
+            </article>
+
+            <!-- PHASE 07: DELIVERED (v8.2) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p7')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 07 · v8.2</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">Knowledge Hub &amp; Manuals</h3>
+                <p class="rm-phase-desc">
+                    Interactive knowledge portal disclosing all services with real-time keyword search, dual perspective (Simple vs Technical), and offline Service Worker precaching.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">Knowledge Portal</span>
+                    <span class="rm-mini-tag">Dual Perspective</span>
+                    <span class="rm-mini-tag">10 Manuals</span>
+                </div>
+            </article>
+
+            <!-- PHASE 06: DELIVERED (v8.1) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p6')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 06 · v8.1</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">Duress Decoys &amp; Plausible Deniability</h3>
+                <p class="rm-phase-desc">
+                    Dual-manifest framing enabling believable secondary decoy vaults unlocked by alternate passwords without revealing primary confidential payloads.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">Duress Decoy</span>
+                    <span class="rm-mini-tag">Dual-Manifest</span>
+                    <span class="rm-mini-tag">IND-CPA</span>
+                </div>
+            </article>
+
+            <!-- PHASE 05: DELIVERED (v8.0) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p5')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 05 · v8.0</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">Polyglot Camouflage &amp; Hardened KDF</h3>
+                <p class="rm-phase-desc">
+                    Steganographic packaging disguising .zev vaults inside valid JPEG/PNG files with sliding-window marker detection and multi-tier KDF (up to 2.4M rounds).
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">Steganography</span>
+                    <span class="rm-mini-tag">Polyglot</span>
+                    <span class="rm-mini-tag">2.4M Rounds</span>
+                </div>
+            </article>
+
+            <!-- PHASE 04: DELIVERED (v7.2) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p4')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 04 · v7.2</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">AEAD Deep Scan &amp; Salvage Engine</h3>
+                <p class="rm-phase-desc">
+                    Diagnostic health verifier and fault-tolerant salvage engine that scans 4MB chunk auth tags, detects bit-rot, and rescues intact files from damaged vaults.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">Bit-Rot Scan</span>
+                    <span class="rm-mini-tag">Chunk Salvage</span>
+                    <span class="rm-mini-tag">Diagnostic Report</span>
+                </div>
+            </article>
+
+            <!-- PHASE 03: DELIVERED (v7.1) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p3')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 03 · v7.1</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">Cinema Player &amp; Audio Dock</h3>
+                <p class="rm-phase-desc">
+                    Direct in-browser media extraction and streaming playback for video and audio files with bottom persistent audio docking and keyboard control shortcuts.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">Cinema Player</span>
+                    <span class="rm-mini-tag">Floating Audio Dock</span>
+                    <span class="rm-mini-tag">Zero Disk Writes</span>
+                </div>
+            </article>
+
+            <!-- PHASE 02: DELIVERED (v7.0) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p2')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 02 · v7.0</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">In-Vault Virtual Filesystem (VFS)</h3>
+                <p class="rm-phase-desc">
+                    Interactive file manager with hierarchical folder navigation, breadcrumb drill-down, live in-browser text editing, note creation, and image lightbox.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">Virtual Filesystem</span>
+                    <span class="rm-mini-tag">Breadcrumbs</span>
+                    <span class="rm-mini-tag">Note Creator</span>
+                </div>
+            </article>
+
+            <!-- PHASE 01: DELIVERED (v6.9.6) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p1')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 01 · v6.9.6</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
+                </div>
+                <h3 class="rm-phase-title">Security Ergonomics &amp; Re-Encrypt</h3>
+                <p class="rm-phase-desc">
+                    Direct in-vault file re-encryption, CSPRNG Diceware passphrase generator with entropy scoring, and automated inactivity lock timer.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">Direct Re-Encrypt</span>
+                    <span class="rm-mini-tag">Diceware Passphrase</span>
+                    <span class="rm-mini-tag">Auto-Lock Timer</span>
+                </div>
+            </article>
+
+            <!-- PHASE 10: PLANNED -->
+            <article class="rm-phase-card planned" data-status="planned" onclick="openPhaseDrawer('p10')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 10 · v8.13</span>
+                    <span class="rm-status-badge planned">🔮 Planned</span>
+                </div>
+                <h3 class="rm-phase-title">In-Vault Document Redaction</h3>
+                <p class="rm-phase-desc">
+                    Client-side zero-knowledge document sanitizer that scrubs EXIF metadata, GPS tags, and camera serials, providing interactive black-box redaction before encryption.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">EXIF Sanitizer</span>
+                    <span class="rm-mini-tag">PDF Redaction</span>
+                    <span class="rm-mini-tag">Zero Cloud Leak</span>
+                </div>
+            </article>
+
+            <!-- PHASE 12: PLANNED -->
+            <article class="rm-phase-card planned" data-status="planned" onclick="openPhaseDrawer('p12')">
+                <div class="rm-card-top">
+                    <span class="rm-phase-id">Phase 12 · v9.0</span>
+                    <span class="rm-status-badge planned">🔮 Planned</span>
+                </div>
+                <h3 class="rm-phase-title">Offline Multi-Language i18n</h3>
+                <p class="rm-phase-desc">
+                    100% offline internationalization engine with localized JSON bundles for Spanish, German, French, Japanese, and Hindi without remote translation APIs.
+                </p>
+                <div class="rm-tags-row">
+                    <span class="rm-mini-tag">i18n Engine</span>
+                    <span class="rm-mini-tag">Offline Packs</span>
+                    <span class="rm-mini-tag">Zero Telemetry</span>
+                </div>
+            </article>
+        </main>
+    </div>
+
+    <!-- Slide-Out Architecture Inspector Drawer -->
+    <div id="rm-drawer" class="rm-drawer-overlay" style="display: none;" onclick="closeDrawer(event)">
+        <div class="rm-drawer-content" onclick="event.stopPropagation()">
+            <div class="rm-drawer-header">
+                <div>
+                    <div class="rm-badge" id="d-badge" style="background: rgba(251,191,36,0.15); color:#fbbf24; border-color: rgba(251,191,36,0.4);">
+                        Phase 08 · Up Next
+                    </div>
+                    <h2 id="d-title" style="font-size: 1.35rem; font-weight: 800; color: #fff; margin-top: 0.4rem;">
+                        Argon2id WASM Memory-Hard KDF
+                    </h2>
+                </div>
+                <button type="button" class="rm-close-btn" onclick="closeDrawerDirect()" title="Close Inspector">✕</button>
+            </div>
+
+            <div>
+                <h5 style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">
+                    Architectural Overview
+                </h5>
+                <p id="d-desc" style="font-size: 0.88rem; color: #94a3b8; line-height: 1.6;">
+                    Provides memory-hard password derivation via a lightweight compiled WebAssembly runtime to render GPU and ASIC cluster attacks economically infeasible.
+                </p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.25rem;">
+                <h5 style="color: #38bdf8; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem;">
+                    Cryptographic &amp; System Invariants
+                </h5>
+                <table class="rm-spec-table">
+                    <tr>
+                        <td>Standard</td>
+                        <td id="d-algo">Argon2id (RFC 9106)</td>
+                    </tr>
+                    <tr>
+                        <td>Memory Cost (m)</td>
+                        <td id="d-mem">64 MB (65,536 KiB)</td>
+                    </tr>
+                    <tr>
+                        <td>Time Cost (t)</td>
+                        <td id="d-time">3 Iterations</td>
+                    </tr>
+                    <tr>
+                        <td>Parallelism (p)</td>
+                        <td id="d-par">4 Lanes</td>
+                    </tr>
+                    <tr>
+                        <td>Binary Footprint</td>
+                        <td id="d-bin">&lt; 35 KB gzipped WASM</td>
+                    </tr>
+                    <tr>
+                        <td>Fallback Strategy</td>
+                        <td id="d-fallback">PBKDF2-SHA512 (600k rounds)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: 10px; padding: 0.85rem; font-size: 0.8rem; color: #34d399;">
+                🔒 <strong>Zero-Network Guarantee:</strong> All runtime modules and architecture specifications are 100% precached in the browser cache and execute entirely in client-side RAM.
+            </div>
+
+            <button type="button" class="rm-filter-pill" style="justify-content: center; width: 100%; border-color: rgba(255,255,255,0.2); color:#fff; padding: 0.75rem;" onclick="closeDrawerDirect()">
+                Close Spec Inspector
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const phaseSpecs = {
+            p8: {
+                badge: 'Phase 08 · Up Next',
+                badgeColor: 'rgba(251,191,36,0.15)',
+                badgeTextColor: '#fbbf24',
+                title: 'Argon2id WASM Memory-Hard KDF',
+                desc: 'Integrates memory-hard password derivation via compiled WebAssembly runtime to render GPU and ASIC password cracking rigs economically infeasible, offering state-of-the-art protection alongside PBKDF2.',
+                algo: 'Argon2id (RFC 9106)',
+                mem: '64 MB (65,536 KiB)',
+                time: '3 Iterations',
+                par: '4 Lanes',
+                bin: '< 35 KB gzipped WASM',
+                fallback: 'PBKDF2-SHA512 (600k rounds)'
+            },
+            p9: {
+                badge: 'Phase 09 · Delivered (v8.10)',
+                badgeColor: 'rgba(16,185,129,0.15)',
+                badgeTextColor: '#34d399',
+                title: 'Visual Paper-Safe & Optical QR Recovery',
+                desc: 'Generates physical cold-storage recovery sheets with Guilloche security borders, non-plaintext handwriting boxes, formatted 8-group salt fingerprints, and an in-app optical camera viewfinder with laser targeting.',
+                algo: 'ISO/IEC 18004 QR Model 2',
+                mem: 'Zero Heap Accumulation',
+                time: 'Instant (< 10 ms render)',
+                par: '100% Pure JS (Zero Libs)',
+                bin: 'SVG Vector / Standalone HTML',
+                fallback: 'Manual Passphrase Entry'
+            },
+            p11: {
+                badge: 'Phase 11 · Delivered (v8.9)',
+                badgeColor: 'rgba(16,185,129,0.15)',
+                badgeTextColor: '#34d399',
+                title: 'Know Your Device Power Profiler',
+                desc: 'Benchmarks raw WebCrypto hardware acceleration (AES-NI / NEON instructions), measuring parallel chunk streaming throughput (MB/s) and PBKDF2-SHA512 key derivation latency across standard and hardened tiers.',
+                algo: 'WebCrypto AES-256-GCM + PBKDF2',
+                mem: '< 20 MB Bounded Stream',
+                time: 'Real-time Benchmark (~3s)',
+                par: 'Multi-Core WorkerPool',
+                bin: 'Native Browser API',
+                fallback: 'Class C Standard Profile'
+            },
+            p14: {
+                badge: 'Phase 14 · Delivered (v8.4)',
+                badgeColor: 'rgba(16,185,129,0.15)',
+                badgeTextColor: '#34d399',
+                title: 'Native Password Manager Sync',
+                desc: 'Standard W3C navigator.credentials.store() and get() integration with semantic hidden form tokens to trigger Chrome Password Manager, Bitwarden, 1Password, and Apple Keychain natively.',
+                algo: 'W3C Credential Management API',
+                mem: 'Ephemeral DOM Tokens',
+                time: 'Instant (< 1 ms)',
+                par: 'Browser Native Host',
+                bin: 'Zero External SDKs',
+                fallback: 'Manual Password Copy'
+            },
+            p13: {
+                badge: 'Phase 13 · Delivered (v8.3)',
+                badgeColor: 'rgba(16,185,129,0.15)',
+                badgeTextColor: '#34d399',
+                title: '1-Click USB Air-Gap Backup Kit',
+                desc: 'Pure JavaScript ZIP implementation complying with PKZIP 2.0 specifications without npm or CDN dependencies. Bundles 31 essential runtime scripts, Knowledge Hub manuals, and multi-OS offline launchers.',
+                algo: 'Pure-JS PKZIP 2.0 (IEEE 802.3 CRC32)',
+                mem: '< 30 MB Streaming Heap',
+                time: '1-Click Package (< 1s)',
+                par: 'Synchronous ArrayBuffer Pack',
+                bin: 'Self-Contained .zip archive',
+                fallback: 'Standard Web PWA Cache'
+            },
+            p10: {
+                badge: 'Phase 10 · Planned (v8.13)',
+                badgeColor: 'rgba(168,85,247,0.15)',
+                badgeTextColor: '#c084fc',
+                title: 'In-Vault Document Redaction & Sanitizer',
+                desc: 'Client-side zero-knowledge document sanitizer and redactor that scrubs EXIF metadata, GPS coordinates, camera serials, and allows black-box redaction of PDFs and images before vault encryption.',
+                algo: 'Canvas Binarizer + PDF Token Scrub',
+                mem: '< 25 MB RAM ceiling',
+                time: 'Streaming Canvas Paint',
+                par: 'Web Worker Rasterizer',
+                bin: 'Zero Server APIs',
+                fallback: 'Direct Raw Encryption'
+            },
+            p12: {
+                badge: 'Phase 12 · Planned (v9.0)',
+                badgeColor: 'rgba(168,85,247,0.15)',
+                badgeTextColor: '#c084fc',
+                title: 'Offline Multi-Language Localization (i18n)',
+                desc: '100% offline internationalization engine with localized JSON bundles for Spanish, German, French, Japanese, and Hindi without remote translation APIs.',
+                algo: 'Client-Side i18n JSON Map',
+                mem: '< 500 KB RAM',
+                time: 'Instant DOM Swapping',
+                par: 'Single-Thread String Resolver',
+                bin: 'JSON Language Packs',
+                fallback: 'English (US) Standard'
+            }
+        };
+
+        function filterRoadmap(status, btn) {
+            document.querySelectorAll('.rm-filter-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.querySelectorAll('.rm-phase-card').forEach(card => {
+                if (status === 'all' || card.dataset.status === status) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function openPhaseDrawer(phaseKey) {
+            const data = phaseSpecs[phaseKey] || phaseSpecs.p8;
+            document.getElementById('d-badge').textContent = data.badge;
+            document.getElementById('d-badge').style.background = data.badgeColor;
+            document.getElementById('d-badge').style.color = data.badgeTextColor;
+            document.getElementById('d-title').textContent = data.title;
+            document.getElementById('d-desc').textContent = data.desc;
+            document.getElementById('d-algo').textContent = data.algo;
+            document.getElementById('d-mem').textContent = data.mem;
+            document.getElementById('d-time').textContent = data.time;
+            document.getElementById('d-par').textContent = data.par;
+            document.getElementById('d-bin').textContent = data.bin;
+            document.getElementById('d-fallback').textContent = data.fallback;
+
+            document.getElementById('rm-drawer').style.display = 'flex';
+        }
+
+        function closeDrawer(e) {
+            if (e.target.id === 'rm-drawer') {
+                document.getElementById('rm-drawer').style.display = 'none';
+            }
+        }
+
+        function closeDrawerDirect() {
+            document.getElementById('rm-drawer').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
