@@ -751,6 +751,62 @@
                         </div>
 
                         <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Interactive Light/Dark Theme Switcher:</strong> Added <code>#btn-theme-toggle</code> in desktop navbar and <code>#btn-theme-toggle-mobile</code> in mobile drawer with full <code>localStorage</code> persistence.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Decryption Failure Toast Feedback:</strong> Invokes <code>showToast</code> and <code>shakeField('decrypt-password')</code> on WebCrypto <code>OperationError</code> when wrong password or corrupted vault is supplied.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Global Clipboard Paste Listener Target:</strong> Bound global paste listener to <code>#decrypt-section</code>, restoring global optical QR screenshot and payload clipboard decoding.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Security Headers &amp; Camera Permissions Hardening:</strong> Added <code>frame-src 'self' blob:;</code> to CSP for PDF previews and updated <code>Permissions-Policy</code> to <code>camera=(self)</code> in <code>_headers</code>.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>WCAG 2.1 AA Contrast Hardening:</strong> Adjusted light-theme modal <code>--text-3</code> to <code>#7c8ba1</code> (5.70:1 contrast) and controls to <code>#475569</code> (7.24:1 AAA contrast).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Bounded LRU Cache Chunk Eviction Zeroization:</strong> Evicted and overwritten decrypted chunk buffers in <code>createBoundedChunkCache</code> are immediately wiped with <code>.fill(0)</code>.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Open Graph &amp; Social Metadata Synchronization:</strong> Added canonical Open Graph and Twitter Card tags across all 13 companion portals and service manual subpages.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Audit</span>
+                            <div class="cl-item-text">
+                                <strong>280-Item Feature Checklist Master Audit:</strong> Certified 100% PASS (280/280 items) across Sections 1 to 12 in <code>CHECKLIST_AUDIT_REPORT.md</code> with 123 passing regression assertions.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
                                 <strong>Service Worker Shell Cache Bump (<code>v64</code>):</strong> Precaches updated app shell for instant offline execution.

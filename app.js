@@ -2651,10 +2651,13 @@ btnDecrypt.addEventListener('click', async () => {
         if (err.name === 'OperationError') {
             ProgressTracker.onCryptoDone(false);  // ← auth tag FAILED — shows ❌
             ProgressTracker.onError('crypto');
+            showToast('Decryption failed: Wrong password, wrong keyfile, or corrupted vault.', 'error');
+            if (typeof shakeField === 'function') shakeField('decrypt-password');
             log('❌ Decryption failed: Wrong password, wrong keyfile, or the file has been tampered with.', 'error');
             log('💡 Tip: If this archive suffered bit-rot or disk damage, click "Salvage Corrupted / Bit-Rot Vault" below to rescue all intact files.', 'info');
         } else {
             ProgressTracker.onError('crypto');
+            showToast(`Decryption error: ${err.message}`, 'error');
             log(`❌ Error: ${err.message}`, 'error');
         }
         updateProgress('Failed', 0);
@@ -2667,18 +2670,81 @@ btnDecrypt.addEventListener('click', async () => {
 });
 
 // ============================================
-// AUTO-THEME PREFERENCE TRACKING
+// THEME PREFERENCE ENGINE WITH LOCALSTORAGE PERSISTENCE
 // ============================================
 function initThemeEngine() {
+    const THEME_STORAGE_KEY = 'zevsafe_theme';
     const themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const applyTheme = (isDark) => {
-        document.documentElement.classList.toggle('light-theme', !isDark);
-    };
-    applyTheme(themeMediaQuery.matches);
-    themeMediaQuery.addEventListener('change', e => applyTheme(e.matches));
+
+    function getSavedTheme() {
+        try {
+            return localStorage.getItem(THEME_STORAGE_KEY);
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function setSavedTheme(theme) {
+        try {
+            localStorage.setItem(THEME_STORAGE_KEY, theme);
+        } catch (_) {}
+    }
+
+    function updateToggleButtons(isLight) {
+        const desktopBtn = document.getElementById('btn-theme-toggle');
+        if (desktopBtn) {
+            desktopBtn.title = isLight ? 'Switch to Dark Theme' : 'Switch to Light Theme';
+            desktopBtn.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+            const lightIcon = desktopBtn.querySelector('.theme-icon-light');
+            const darkIcon = desktopBtn.querySelector('.theme-icon-dark');
+            if (lightIcon && darkIcon) {
+                lightIcon.style.display = isLight ? 'inline' : 'none';
+                darkIcon.style.display = isLight ? 'none' : 'inline';
+            }
+        }
+        const mobileBadge = document.getElementById('mn-theme-badge');
+        if (mobileBadge) {
+            mobileBadge.textContent = isLight ? 'Light' : 'Dark';
+        }
+    }
+
+    function applyTheme(isLight) {
+        document.documentElement.classList.toggle('light-theme', isLight);
+        updateToggleButtons(isLight);
+    }
+
+    // Determine initial theme state
+    const saved = getSavedTheme();
+    if (saved === 'light') {
+        applyTheme(true);
+    } else if (saved === 'dark') {
+        applyTheme(false);
+    } else {
+        // Fallback to system preference (OS dark -> dark, OS light -> light)
+        applyTheme(!themeMediaQuery.matches);
+    }
+
+    // Listen for OS scheme changes if no manual override is set
+    themeMediaQuery.addEventListener('change', (e) => {
+        if (!getSavedTheme()) {
+            applyTheme(!e.matches);
+        }
+    });
+
+    // Theme toggle action
+    function toggleTheme() {
+        const currentlyLight = document.documentElement.classList.contains('light-theme');
+        const nextIsLight = !currentlyLight;
+        setSavedTheme(nextIsLight ? 'light' : 'dark');
+        applyTheme(nextIsLight);
+    }
+
+    document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme);
+    document.getElementById('btn-theme-toggle-mobile')?.addEventListener('click', toggleTheme);
+    document.getElementById('btn-mobile-theme-toggle')?.addEventListener('click', toggleTheme);
 }
 
-// Run theme check immediately
+// Run theme engine immediately
 initThemeEngine();
 
 
@@ -7820,8 +7886,8 @@ window.addEventListener('paste', async (e) => {
     const qrModal = document.getElementById('qr-scanner-modal');
     if (qrModal && qrModal.style.display !== 'none') return; // Handled by modal listener
 
-    const decryptView = document.getElementById('view-decrypt');
-    if (!decryptView || decryptView.classList.contains('hidden') || decryptView.style.display === 'none') {
+    const decryptSection = document.getElementById('decrypt-section');
+    if (!decryptSection || (window.innerWidth <= 820 && decryptSection.style.display === 'none')) {
         return;
     }
 

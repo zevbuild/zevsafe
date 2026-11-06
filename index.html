@@ -181,6 +181,10 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #2dd4bf;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Install App
                 </button>
+                <button type="button" class="nav-btn-secondary btn-theme-toggle" id="btn-theme-toggle" title="Toggle Light / Dark Theme" aria-label="Toggle theme">
+                    <span class="theme-icon-light" style="display: none;">☀️</span>
+                    <span class="theme-icon-dark">🌙</span>
+                </button>
                 <button class="nav-btn-primary" id="btn-download-pc-setup" title="Download 1-Click 25GB+ PC Toolkit">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
                     PC Toolkit (25GB+)
@@ -221,7 +225,7 @@
                             <span class="mn-title">Knowledge Hub &amp; Manual</span>
                             <span class="mn-desc">10 In-Depth Service Specifications</span>
                         </div>
-                        <span class="mn-badge">v8.8.0</span>
+                        <span class="mn-badge">v8.13.0</span>
                     </a>
                     <a href="./how-to-use-zevsafe/" class="mobile-nav-link">
                         <span class="mn-icon">📖</span>
@@ -269,6 +273,14 @@
                             <span class="mn-desc">Zero-knowledge source</span>
                         </div>
                     </a>
+                    <button type="button" class="mobile-nav-link btn-theme-toggle-mobile" id="btn-theme-toggle-mobile" aria-label="Toggle light or dark theme">
+                        <span class="mn-icon theme-icon-mobile">🌓</span>
+                        <div class="mn-text-wrap">
+                            <span class="mn-title">Switch Appearance</span>
+                            <span class="mn-desc" id="mn-theme-desc">Toggle Light or Dark Mode</span>
+                        </div>
+                        <span class="mn-badge" id="mn-theme-badge">Dark</span>
+                    </button>
                 </div>
                 <div class="mobile-nav-actions">
                     <button type="button" class="mobile-nav-btn-install" id="btn-mobile-install-pwa">

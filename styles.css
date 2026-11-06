@@ -345,6 +345,44 @@ body {
     transform: translateY(-1px);
 }
 
+.btn-theme-toggle {
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0.45rem 0.65rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+}
+
+.btn-theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.light-theme .btn-theme-toggle {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(15, 23, 42, 0.15);
+    color: #1e293b;
+}
+
+.light-theme .btn-theme-toggle:hover {
+    background: rgba(124, 58, 237, 0.08);
+    border-color: rgba(124, 58, 237, 0.3);
+    color: #6d28d9;
+}
+
+.btn-theme-toggle-mobile {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+}
+
 /* ── HERO ───────────────────────────────────────────── */
 .hero {
     display: flex;
@@ -1921,8 +1959,8 @@ body {
 }
 
 .light-theme .toggle-pw {
-    color: #64748b;
-    opacity: 0.75;
+    color: #475569;
+    opacity: 0.85;
 }
 
 .light-theme .toggle-pw:hover {
@@ -1957,7 +1995,7 @@ body {
 }
 
 .light-theme .drop-selected {
-    color: #64748b;
+    color: #475569;
 }
 
 .light-theme .btn-browse {
@@ -2017,7 +2055,7 @@ body {
 }
 
 .light-theme .mobile-tab {
-    color: #64748b;
+    color: #475569;
 }
 
 .light-theme .mobile-tab--active {
@@ -2027,13 +2065,19 @@ body {
 /* ── Light theme contrast overrides for dark-surface modals & panels ── */
 .light-theme .explorer-modal,
 .light-theme .media-modal-container,
-.light-theme .progress-panel-inner {
+.light-theme .progress-panel-inner,
+.light-theme #vault-health-modal .pw-modal {
     --text: #f1f5f9;
     --text-2: #94a3b8;
-    --text-3: #64748b;
+    --text-3: #7c8ba1; /* Contrast 5.70:1 against #08091a (Exceeds WCAG 2.1 AA) */
     --border: rgba(255, 255, 255, 0.09);
     --border-hover: rgba(255, 255, 255, 0.18);
     color: #f1f5f9;
+}
+
+.light-theme #vault-health-modal .vh-spec-item .vh-spec-val,
+.light-theme .vh-spec-val {
+    color: #475569;
 }
 
 .light-theme .explorer-title {

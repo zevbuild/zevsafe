@@ -1085,10 +1085,11 @@
                 return val;
             },
             set(key, val) {
-                if (map.has(key)) map.delete(key);
-                else if (map.size >= limit) {
+                if (map.has(key)) {
+                    this.delete(key);
+                } else if (map.size >= limit) {
                     const oldestKey = map.keys().next().value;
-                    map.delete(oldestKey);
+                    this.delete(oldestKey);
                 }
                 map.set(key, val);
                 return this;

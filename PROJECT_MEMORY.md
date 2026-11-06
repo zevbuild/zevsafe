@@ -220,6 +220,19 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Visual Keycard Sheet Design:** When password embedding is enabled, the printed recovery certificate automatically switches to a prominent `⚡ ZV3 MASTER KEYCARD` layout displaying `⚡ Instant Unlock QR Keycard` and a clear monospace keycard box, while preserving the standard blank handwriting mode when unchecked.
 - **PWA & Offline Integration:** Precached under Service Worker shell cache `v64` in `sw.js`.
 
+
+### 3.15 280-Item Feature Checklist Master Audit & Strategic Remediations [v8.13.0]
+- **Exhaustive 280-Item Audit Certification (`CHECKLIST_AUDIT_REPORT.md`):** Conducted a deep technical audit covering all 280 items across Sections 1 to 12 (Core Encryption, Core Decryption, Vault Explorer VFS, Paper-Safe QR System, Vault Health Tools, Password Manager Integration, Navigation & UI, Companion Portals, PWA & Offline, Security & CSP, Performance & Mobile, SEO & Sitemap). Certified 100% PASS post-remediation.
+- **Decryption `OperationError` User Feedback:** Updated `app.js:2651-2658` to invoke `showToast('Decryption failed: Wrong password, wrong keyfile, or corrupted vault.', 'error')` and `shakeField('decrypt-password')` on WebCrypto authentication tag / decryption failure.
+- **Global Clipboard Paste Target Fix:** Corrected element reference in `app.js:7886-7892` from non-existent `view-decrypt` to `decrypt-section`, restoring global optical QR screenshot and payload clipboard auto-fill.
+- **Interactive Light/Dark Theme Switcher & Persistence:** Added `#btn-theme-toggle` in the desktop navbar and `#btn-theme-toggle-mobile` in the mobile drawer with sun/moon icons and state badges. Persists user preference via `localStorage.getItem('zevsafe_theme')` / `localStorage.setItem('zevsafe_theme')`.
+- **Mobile Drawer Version Badge Synchronization:** Synchronized Knowledge Hub mobile drawer badge from `v8.8.0` to `v8.13.0` in `index.html:228`.
+- **Security Headers & Camera Permissions Hardening:** Added `frame-src 'self' blob:;` to CSP for sandboxed PDF previews and updated `Permissions-Policy` to `camera=(self)` in `_headers` to enable optical QR camera scanning on Cloudflare Pages.
+- **WCAG 2.1 AA Color Contrast Hardening:** Updated light-theme modal `--text-3` to `#7c8ba1` (5.70:1 contrast against `#08091a`) and mobile tab / toggle text to `#475569` (7.24:1 AAA contrast) in `styles.css`.
+- **Bounded LRU Cache Eviction Zeroization:** Updated `createBoundedChunkCache.set()` in `js/stream-unpacker.js:1085-1095` to invoke `this.delete(oldestKey)` on LRU eviction and key overwrite, ensuring all plaintext chunk buffers are immediately zeroized with `.fill(0)`.
+- **Open Graph & Social Metadata Synchronization:** Added canonical Open Graph and Twitter Card meta tags across all 13 companion portals and service manual subpages.
+- **Automated Regression Verification Suite:** Created `test/test-checklist-remediations.js` (8/8 tests passed; 123/123 assertions passed across all 7 suites).
+
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 
 Located at `C:\Users\Raju\Another-world\GitHub\zevbuild-studio\app-zevsafe` (GitHub: [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe)):
