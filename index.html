@@ -168,7 +168,7 @@
                 <a href="./how-to-use-zevsafe/" class="nav-link-subtle">Documentation</a>
                 <a href="./device-power/" class="nav-link-subtle" title="Benchmark Your Device Hardware Encryption Power">⚡ Device Power</a>
                 <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span style="font-size: 0.72rem; opacity: 0.9; padding: 2px 6px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); color: #34d399; margin-left: 2px; font-weight: 700;">99.3/100</span></a>
-                <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-63)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v8.12.0</span></a>
+                <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-64)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v8.13.0</span></a>
                 <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
                 <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="nav-link-subtle">
                     GitHub <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
@@ -252,7 +252,7 @@
                             <span class="mn-title">Changelog &amp; Releases</span>
                             <span class="mn-desc">Full release history</span>
                         </div>
-                        <span class="mn-badge">v8.12.0</span>
+                        <span class="mn-badge">v8.13.0</span>
                     </a>
                     <a href="./roadmap/" class="mobile-nav-link">
                         <span class="mn-icon">🧭</span>
@@ -953,7 +953,7 @@
                 <span>·</span>
                 <a href="./roadmap/" style="color: #38bdf8; font-weight: 600;">Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.12.0 / WEB-VERSION-63)</a>
+                <a href="./change-log/">Changelog (v8.13.0 / WEB-VERSION-64)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1342,6 +1342,10 @@
                     <div style="flex: 1; min-width: 220px;">
                         <label for="paper-hint-input" style="font-size: 0.75rem; color: var(--text-2); font-weight: 600; text-transform: uppercase;">Optional Passphrase Hint / Location</label>
                         <input type="text" id="paper-hint-input" class="field-input" placeholder="e.g. 4 Diceware words in the blue safe ledger" style="margin-top: 4px; padding: 0.45rem 0.75rem; font-size: 0.85rem;" maxlength="80">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #f1f5f9; cursor: pointer; user-select: none; margin-top: 8px;">
+                            <input type="checkbox" id="chk-paper-embed-password" checked style="accent-color: #10b981; width: 16px; height: 16px; cursor: pointer;">
+                            <span>⚡ <strong style="color: #34d399;">Master Key QR:</strong> Embed password into QR for 1-scan instant unlock</span>
+                        </label>
                     </div>
                     <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
                         <button class="pw-modal-btn pw-modal-btn--primary" id="btn-print-paper-safe">🖨️ Print Sheet</button>

@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 8.13.0 (WEB-VERSION-64) — November 6, 2026
+
+- `New` & `UI` (`app.js`, `js/qr-engine.js`, `index.html`): Master Key QR 1-Scan Instant Vault Unlock. Turned the Optical QR Code into a true instant **Master Keycard**. When generating a Paper-Safe sheet, users can embed their password into the QR code (`#chk-paper-embed-password`, enabled by default) so scanning or pasting the QR code instantly unlocks the vault with zero typing!
+- `UI` (`app.js`, `index.html`): 1-Click Instant Unlock Trigger. When a Master Key QR is scanned or pasted while a `.zev` file is selected, ZevSafe immediately auto-fills the password and automatically triggers decryption in 150 ms!
+- `UI` (`js/qr-engine.js`, `app.js`): Master Keycard Certificate Theme. The printed and exported HTML recovery certificate dynamically adapts to a `⚡ ZV3 MASTER KEYCARD` theme with an instant unlock keycard box and clear scanning guidance.
+- `PWA` (`sw.js`, `index.html`): Service Worker Cache Bump to `v64` (`APP_VERSION = 'v64'`). Precaches updated application shell assets for offline cold starts.
+- `Tests` (`test/test-paper-safe-qr.js`, `test/test-explorer-folder-nav.js`): Added Master Key embedding and extraction tests (20/20 paper-safe tests passed, 41/41 explorer tests passed, 100% pass rate).
+
 ## Version 8.12.0 (WEB-VERSION-63) — November 6, 2026
 
 - `New` & `UI` (`app.js`, `index.html`, `styles.css`): Optical QR Clipboard & Screenshot Paste System (`#btn-paste-qr-clipboard`). Added seamless `Ctrl+V` / `Cmd+V` clipboard paste support across the Decrypt screen and the QR Scanner modal. Users can now copy a screenshot of a Paper-Safe QR code (via Snipping Tool or screenshot shortcuts) and paste it directly to decode in client-side RAM.

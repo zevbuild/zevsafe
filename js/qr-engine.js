@@ -745,7 +745,7 @@
         if (!data || !data.vaultName || !data.saltHex) {
             throw new Error('vaultName and saltHex are required to build Paper-Safe payload');
         }
-        return JSON.stringify({
+        const payload = {
             app: 'ZevSafe',
             v: 3,
             n: String(data.vaultName).trim(),
@@ -754,7 +754,11 @@
             h: data.hint ? String(data.hint).trim().slice(0, 100) : '',
             kf: data.keyfileRequired ? 1 : 0,
             d: data.createdDate || new Date().toISOString().split('T')[0]
-        });
+        };
+        if (data.password) {
+            payload.pw = String(data.password);
+        }
+        return JSON.stringify(payload);
     }
 
     /**
@@ -817,7 +821,8 @@
                 kdfIterations: Number(parsed.k) || 600000,
                 hint: parsed.h || '',
                 keyfileRequired: Boolean(parsed.kf),
-                createdDate: parsed.d || ''
+                createdDate: parsed.d || '',
+                password: parsed.pw ? String(parsed.pw) : ''
             };
         } catch (_) {
             return null;
@@ -1042,11 +1047,11 @@
 <div class="sheet">
   <div class="header">
     <div>
-      <div class="logo">🛡️ ZevSafe Paper-Safe Recovery Certificate</div>
-      <div class="subtitle">Zero-Knowledge Offline Vault Cold-Storage Certificate</div>
+      <div class="logo">🛡️ ${data.password ? 'ZevSafe Master Key &amp; Recovery Certificate' : 'ZevSafe Paper-Safe Recovery Certificate'}</div>
+      <div class="subtitle">${data.password ? '⚡ Instant 1-Scan Vault Unlock Keycard &amp; Cold Storage' : 'Zero-Knowledge Offline Vault Cold-Storage Certificate'}</div>
     </div>
     <div class="badge">
-      <div>ZV3 STREAM AEAD</div>
+      <div>${data.password ? '⚡ ZV3 MASTER KEYCARD' : 'ZV3 STREAM AEAD'}</div>
       <div style="font-size:9px; opacity:0.8;">RFC 8018 / NIST SP 800-38D</div>
     </div>
   </div>
@@ -1076,14 +1081,21 @@
 
       <div class="handwrite-wrap">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span class="field-label" style="color:var(--ink); margin:0;">Handwritten Diceware Passphrase / Password (Physical Safe)</span>
-          <span style="font-size:11px; color:#64748b; font-style:italic;">Write with pen · Never photograph</span>
+          <span class="field-label" style="color:var(--ink); margin:0;">${data.password ? 'Master Key Passphrase (Embedded in QR Keycard)' : 'Handwritten Diceware Passphrase / Password (Physical Safe)'}</span>
+          <span style="font-size:11px; color:#64748b; font-style:italic;">${data.password ? '⚡ Instant Unlock Active' : 'Write with pen · Never photograph'}</span>
         </div>
+        ${data.password ? `
+        <div style="font-family:monospace; font-size:15px; font-weight:700; color:#0f172a; background:#fff; border:1.5px solid #059669; border-radius:4px; padding:10px 14px; margin:8px 0; letter-spacing:0.04em; display:flex; justify-content:space-between; align-items:center;">
+          <span>🔑 ${escapeHtml(data.password)}</span>
+          <span style="font-size:10px; color:#059669; font-weight:800; text-transform:uppercase;">Instant Unlock Key</span>
+        </div>
+        ` : `
         <div class="handwrite-grid">
           <div class="char-cell"></div><div class="char-cell"></div><div class="char-cell"></div><div class="char-cell"></div>
           <div class="char-cell"></div><div class="char-cell"></div><div class="char-cell"></div><div class="char-cell"></div>
           <div class="char-cell"></div><div class="char-cell"></div><div class="char-cell"></div><div class="char-cell"></div>
         </div>
+        `}
         <div style="font-size:11px; color:#64748b; margin-top:4px;">
           <strong>Hint / Location:</strong> ${hintText} · <strong>Created:</strong> ${dateText}
         </div>
@@ -1093,9 +1105,9 @@
     <div>
       <div class="qr-box">
         ${qrSVG}
-        <div style="font-size:11px; font-weight:700; color:var(--ink);">Optical Recovery QR</div>
+        <div style="font-size:11px; font-weight:700; color:var(--ink);">${data.password ? '⚡ Instant Unlock Master Keycard' : 'Optical Recovery QR'}</div>
         <div style="font-size:10px; color:#64748b; line-height:1.4;">
-          Point camera or drop this sheet on ZevSafe to auto-fill vault parameters.
+          ${data.password ? 'Scan with camera or paste image on ZevSafe to instantly decrypt & unlock without typing!' : 'Point camera or drop this sheet on ZevSafe to auto-fill vault parameters.'}
         </div>
       </div>
     </div>

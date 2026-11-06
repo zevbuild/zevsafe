@@ -293,6 +293,33 @@ test('isPaperSafePayload accurately rejects arbitrary non-ZevSafe strings', () =
     assert.strictEqual(QREngine.isPaperSafePayload('{"other":"json"}'), false);
 });
 
+
+test('Master Key QR payload embeds pw and round-trips password for 1-scan unlock', () => {
+    const input = {
+        vaultName: 'Instant-Unlock.zev',
+        saltHex: '8f2a99b14d027ca8105e63fba14290dd12345678abcdef0123456789abcdef01',
+        kdfIterations: 600000,
+        password: 'correct-horse-battery-staple'
+    };
+    const payloadStr = QREngine.buildPaperSafePayload(input);
+    assert.ok(payloadStr.includes('"pw":"correct-horse-battery-staple"'), 'Must embed pw in JSON');
+
+    const parsed = QREngine.parsePaperSafePayload(payloadStr);
+    assert.strictEqual(parsed.password, 'correct-horse-battery-staple', 'Must extract password');
+    assert.strictEqual(parsed.vaultName, 'Instant-Unlock.zev');
+});
+
+test('generatePaperSheetHTML with password renders Master Keycard badge & instructions', () => {
+    const html = QREngine.generatePaperSheetHTML({
+        vaultName: 'Secret-Keycard.zev',
+        saltHex: '8f2a99b14d027ca8105e63fba14290dd12345678abcdef0123456789abcdef01',
+        password: 'UltraSecretPassphrase123'
+    });
+    assert.ok(html.includes('ZV3 MASTER KEYCARD'), 'Must include Master Keycard badge');
+    assert.ok(html.includes('UltraSecretPassphrase123'), 'Must display password');
+    assert.ok(html.includes('Instant Unlock Master Keycard'), 'Must label QR as Instant Unlock Master Keycard');
+});
+
 console.log('\n===============================================================');
 console.log(`  PAPER-SAFE QR SUITE: ${passCount}/${totalCount} PASSED (100%)`);
 console.log('===============================================================\n');

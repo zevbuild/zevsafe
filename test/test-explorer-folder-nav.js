@@ -1068,7 +1068,7 @@ const catalogFiles = [
     const swPath = path.resolve(__dirname, '..', 'sw.js');
     const swContent = fs.readFileSync(swPath, 'utf8');
 
-    assert.strictEqual(swContent.includes("APP_VERSION    = 'v63';"), true, 'Service Worker bumped to v62');
+    assert.strictEqual(swContent.includes("APP_VERSION    = 'v64';"), true, 'Service Worker bumped to v62');
     const precacheExpected = [
         './knowledge/',
         './knowledge/index.html',
@@ -1296,7 +1296,7 @@ const catalogFiles = [
     // Verify sw.js includes usb-backup-kit.js and APP_VERSION = 'v59'
     const swContent = fs.readFileSync(path.resolve(__dirname, '../sw.js'), 'utf8');
     assert.strictEqual(swContent.includes("'./js/usb-backup-kit.js'"), true, 'sw.js precaches js/usb-backup-kit.js');
-    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v63';"), true, 'sw.js bumped to APP_VERSION v62');
+    assert.strictEqual(swContent.includes("const APP_VERSION    = 'v64';"), true, 'sw.js bumped to APP_VERSION v62');
 
     console.log('  ✓ 37. Phase 13 1-Click USB Air-Gap Backup Kit, pure-JS PKZIP engine & multi-OS offline launchers verified');
 
@@ -1398,13 +1398,17 @@ const catalogFiles = [
     assert.strictEqual(indexCurrent.includes('id="btn-open-paper-safe"'), true, 'index.html contains btn-open-paper-safe');
     assert.strictEqual(indexCurrent.includes('id="paper-safe-scanned-banner"'), true, 'index.html contains paper-safe-scanned-banner');
     assert.strictEqual(indexCurrent.includes('id="btn-paste-qr-clipboard"'), true, 'index.html contains btn-paste-qr-clipboard');
+    assert.strictEqual(indexCurrent.includes('id="chk-paper-embed-password"'), true, 'index.html contains chk-paper-embed-password');
+    const mkPayload = qrEngine.buildPaperSafePayload({ vaultName: 'Master.zev', saltHex: '8f2a99b14d027ca8105e63fba14290dd8f2a99b14d027ca8105e63fba14290dd', password: 'SecretMasterPassword123' });
+    const mkParsed = qrEngine.parsePaperSafePayload(mkPayload);
+    assert.strictEqual(mkParsed.password, 'SecretMasterPassword123', 'QREngine extracts master key password');
     assert.strictEqual(indexCurrent.includes('<script src="js/qr-engine.js"></script>'), true, 'index.html includes js/qr-engine.js');
     assert.strictEqual(qrEngine.isPaperSafePayload('ZEVSAFE_PAPER:{"app":"ZevSafe","v":3,"n":"Pasted.zev","s":"8f2a99b14d027ca8105e63fba14290dd8f2a99b14d027ca8105e63fba14290dd","k":600000}'), true, 'QREngine parses prefixed clipboard paste');
 
     // Verify sw.js includes qr-engine.js and APP_VERSION = 'v61'
     const swCurrent = fs.readFileSync(swPath, 'utf8');
     assert.strictEqual(swCurrent.includes("'./js/qr-engine.js'"), true, 'sw.js precaches ./js/qr-engine.js');
-    assert.strictEqual(swCurrent.includes("APP_VERSION    = 'v63'"), true, 'sw.js has APP_VERSION v62');
+    assert.strictEqual(swCurrent.includes("APP_VERSION    = 'v64'"), true, 'sw.js has APP_VERSION v62');
 
     // Verify usb-backup-kit.js includes qr-engine.js
     const usbContent = fs.readFileSync(path.resolve(__dirname, '../js/usb-backup-kit.js'), 'utf8');
@@ -1431,7 +1435,7 @@ const catalogFiles = [
     assert.strictEqual(swForRoadmap.includes("'./roadmap/'"), true, 'sw.js precaches ./roadmap/');
     assert.strictEqual(swForRoadmap.includes("'./roadmap/index.html'"), true, 'sw.js precaches ./roadmap/index.html');
     assert.strictEqual(swForRoadmap.includes("'roadmap'"), true, 'sw.js includes roadmap in SECTION_ROUTES');
-    assert.strictEqual(swForRoadmap.includes("APP_VERSION    = 'v63'"), true, 'sw.js has APP_VERSION v62');
+    assert.strictEqual(swForRoadmap.includes("APP_VERSION    = 'v64'"), true, 'sw.js has APP_VERSION v62');
 
     const usbForRoadmap = fs.readFileSync(path.resolve(__dirname, '../js/usb-backup-kit.js'), 'utf8');
     assert.strictEqual(usbForRoadmap.includes("'roadmap/index.html'"), true, 'usb-backup-kit.js includes roadmap/index.html');

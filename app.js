@@ -2756,8 +2756,10 @@ function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
     const modal = document.getElementById('paper-safe-modal');
     const container = document.getElementById('paper-safe-sheet-container');
     const hintInput = document.getElementById('paper-hint-input');
+    const chkEmbedPw = document.getElementById('chk-paper-embed-password');
     if (!modal || !container) return;
 
+    const passwordVal = record?.password || document.getElementById('pw-save-display')?.value || document.getElementById('encrypt-password')?.value || '';
     const vaultName = record?.vaultFilename || (record?.folderName ? `${record.folderName}.zev` : 'ZevSafe-Vault.zev');
     let saltHex = record?.saltHex;
     if (!saltHex || saltHex.length < 32) {
@@ -2772,6 +2774,7 @@ function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
 
     function renderSheet() {
         const currentHint = hintInput ? hintInput.value.trim() : initialHint;
+        const isMasterKey = chkEmbedPw ? chkEmbedPw.checked : true;
         const payloadData = {
             vaultName,
             saltHex,
@@ -2780,6 +2783,9 @@ function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
             keyfileRequired,
             createdDate: new Date().toISOString().split('T')[0]
         };
+        if (isMasterKey && passwordVal) {
+            payloadData.password = passwordVal;
+        }
 
         const payload = typeof QREngine !== 'undefined' ? QREngine.buildPaperSafePayload(payloadData) : JSON.stringify(payloadData);
         const qrSVG = typeof QREngine !== 'undefined'
@@ -2798,7 +2804,7 @@ function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                         <div class="paper-sheet-sub">Zero-Knowledge Offline Vault Cold-Storage Certificate</div>
                     </div>
                     <div class="paper-sheet-badge">
-                        <div>ZV3 STREAM AEAD</div>
+                        <div>${(isMasterKey && passwordVal) ? '⚡ ZV3 MASTER KEYCARD' : 'ZV3 STREAM AEAD'}</div>
                         <div style="font-size: 0.65rem; opacity: 0.85;">RFC 8018 / NIST SP 800-38D</div>
                     </div>
                 </div>
@@ -2830,14 +2836,21 @@ function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
 
                         <div class="paper-handwrite-wrap">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span class="paper-sheet-label" style="color: #0f172a; margin: 0;">Handwritten Passphrase or Password Hint (Physical Safe)</span>
-                                <span style="font-size: 0.72rem; color: #64748b; font-style: italic;">Write with pen · Never photograph</span>
+                                <span class="paper-sheet-label" style="color: #0f172a; margin: 0;">${(isMasterKey && passwordVal) ? 'Master Key Passphrase (Embedded in QR Keycard)' : 'Handwritten Passphrase or Password Hint (Physical Safe)'}</span>
+                                <span style="font-size: 0.72rem; color: ${(isMasterKey && passwordVal) ? '#059669' : '#64748b'}; font-weight: 700;">${(isMasterKey && passwordVal) ? '⚡ Instant 1-Scan Unlock Active' : 'Write with pen · Never photograph'}</span>
                             </div>
+                            ${(isMasterKey && passwordVal) ? `
+                            <div style="font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #0f172a; background: #fff; border: 1.5px solid #059669; border-radius: 6px; padding: 8px 12px; margin: 8px 0; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center;">
+                                <span>🔑 ${escapeHtml(passwordVal)}</span>
+                                <span style="font-size: 0.7rem; color: #059669; font-weight: 800; text-transform: uppercase;">Ready to Scan</span>
+                            </div>
+                            ` : `
                             <div class="paper-handwrite-grid">
                                 <div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div>
                                 <div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div>
                                 <div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div>
                             </div>
+                            `}
                             <div style="font-size: 0.75rem; color: #64748b;">
                                 <strong>Hint / Safe Location:</strong> ${escapeHtml(currentHint || 'None provided')}
                             </div>
@@ -2847,9 +2860,9 @@ function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                     <div>
                         <div class="paper-qr-card">
                             ${qrSVG}
-                            <div style="font-size: 0.75rem; font-weight: 700; color: #0f172a;">Optical Recovery QR</div>
+                            <div style="font-size: 0.75rem; font-weight: 700; color: #0f172a;">${(isMasterKey && passwordVal) ? '⚡ Instant Unlock QR Keycard' : 'Optical Recovery QR'}</div>
                             <div style="font-size: 0.68rem; color: #64748b; line-height: 1.35;">
-                                Scan with camera on ZevSafe to auto-fill vault configuration.
+                                ${(isMasterKey && passwordVal) ? 'Scan on ZevSafe to decrypt & unlock instantly without typing!' : 'Scan with camera on ZevSafe to auto-fill vault configuration.'}
                             </div>
                         </div>
                     </div>
@@ -2874,6 +2887,9 @@ function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
     if (hintInput) {
         hintInput.oninput = () => renderSheet();
     }
+    if (chkEmbedPw) {
+        chkEmbedPw.onchange = () => renderSheet();
+    }
 
     const btnPrint = document.getElementById('btn-print-paper-safe');
     if (btnPrint) {
@@ -2886,6 +2902,7 @@ function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
     if (btnDownload) {
         btnDownload.onclick = () => {
             const currentHint = hintInput ? hintInput.value.trim() : initialHint;
+            const isMasterKey = chkEmbedPw ? chkEmbedPw.checked : true;
             if (typeof QREngine !== 'undefined') {
                 const standaloneHTML = QREngine.generatePaperSheetHTML({
                     vaultName,
@@ -2893,6 +2910,7 @@ function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                     kdfIterations,
                     hint: currentHint,
                     keyfileRequired,
+                    password: (isMasterKey && passwordVal) ? passwordVal : undefined,
                     createdDate: new Date().toISOString().split('T')[0]
                 });
                 const blob = new Blob([standaloneHTML], { type: 'text/html;charset=utf-8' });
@@ -2921,15 +2939,30 @@ function applyPaperSafeParameters(p) {
         if (bannerVault) bannerVault.textContent = p.vaultName;
         if (bannerHint) {
             const saltGroup = typeof QREngine !== 'undefined' ? QREngine.formatSaltFingerprint(p.saltHex) : p.saltHex;
-            bannerHint.innerHTML = `Salt: <code>${saltGroup}</code> · KDF: <code>${p.kdfIterations.toLocaleString('en-US')}</code>${p.hint ? ` · <em>Hint: ${escapeHtml(p.hint)}</em>` : ''}`;
+            const pwStatus = p.password ? ' · <strong style="color:#34d399;">🔑 Password Auto-Filled</strong>' : '';
+            bannerHint.innerHTML = `Salt: <code>${saltGroup}</code> · KDF: <code>${p.kdfIterations.toLocaleString('en-US')}</code>${pwStatus}${p.hint ? ` · <em>Hint: ${escapeHtml(p.hint)}</em>` : ''}`;
         }
         banner.style.display = 'block';
     }
 
     const pwdInput = document.getElementById('decrypt-password');
     if (pwdInput) {
+        if (p.password) {
+            pwdInput.value = p.password;
+            try { pwdInput.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
+        }
         pwdInput.focus();
         pwdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    if (p.password && selectedDecryptFile) {
+        showToast(`⚡ Master Key applied! Decrypting "${selectedDecryptFile.name}"...`, 'success');
+        setTimeout(() => {
+            const btn = document.getElementById('btn-decrypt');
+            if (btn) btn.click();
+        }, 150);
+    } else if (p.password) {
+        showToast(`Master Key loaded for "${p.vaultName}"! Drop your vault file to unlock instantly.`, 'success');
     }
 }
 
@@ -2960,15 +2993,22 @@ async function openQRScannerModal() {
         if (detectedCard && detectedDetails) {
             const saltGrouped = QREngine.formatSaltFingerprint(parsed.saltHex);
             const kdfFormatted = parsed.kdfIterations.toLocaleString('en-US');
+            const hasPassword = Boolean(parsed.password);
+
             detectedDetails.innerHTML = `
                 Vault: <strong style="color:#fff;">${escapeHtml(parsed.vaultName)}</strong><br>
+                ${hasPassword ? `<span style="color:#34d399; font-weight:800;">⚡ Master Key: Password Embedded (Instant Unlock Ready)</span><br>` : ''}
                 Salt: <span style="color:#a855f7; font-family:monospace;">${escapeHtml(saltGrouped || parsed.saltHex.slice(0, 24))}...</span><br>
                 KDF: <span style="color:#38bdf8;">${kdfFormatted} Rounds (PBKDF2)</span><br>
                 ${parsed.hint ? `Hint: <em style="color:#fbbf24;">${escapeHtml(parsed.hint)}</em>` : ''}
             `;
+            const btnApply = document.getElementById('btn-apply-scanned-qr');
+            if (btnApply) {
+                btnApply.textContent = hasPassword ? '⚡ Instant Unlock Vault Now ➔' : 'Apply Parameters & Unlock Vault ➔';
+            }
             detectedCard.style.display = 'block';
         }
-        showToast('Paper-Safe certificate detected!', 'success');
+        showToast(parsed.password ? '⚡ Master Key QR detected! Ready to unlock.' : 'Paper-Safe certificate detected!', 'success');
         stopCamera();
         return true;
     }

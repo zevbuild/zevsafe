@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.12.0` (`WEB-VERSION-63`, Service Worker `v63`)  
+> **Web Portal Version:** `v8.13.0` (`WEB-VERSION-64`, Service Worker `v64`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -212,6 +212,13 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **1-Click Clipboard Paste Action (`#btn-paste-qr-clipboard`):** Added an accessible, cybernetic clipboard paste button that leverages the native `navigator.clipboard.read()` (for image blobs) and `navigator.clipboard.readText()` (for JSON strings) with descriptive toast feedback.
 - **Forgiving & Multi-Format Payload Parsing (`QREngine.parsePaperSafePayload`):** Upgraded parser to tolerate surrounding markdown, codeblocks (```json), optional prefixes (`ZEVSAFE_PAPER:`, `ZEVSAFE:`), base64-encoded strings, and whitespace while strictly verifying cryptographic bounds.
 - **PWA & Offline Integration:** Precached under Service Worker cache `v63` in `sw.js`.
+
+
+### 3.14 Master Key QR 1-Scan Vault Unlock Engine (`js/qr-engine.js`, `app.js`, `index.html`) [v8.13.0]
+- **Master Key QR Code Embedding:** Allows the QR code on the Paper-Safe recovery sheet to act as a physical **Master Keycard** by embedding the master password directly into the QR payload (`pw: String(password)`). Controlled by an intuitive toggle (`#chk-paper-embed-password`, enabled by default).
+- **1-Scan Zero-Typing Vault Unlock:** When the Master Key QR is scanned via camera, pasted via `Ctrl+V` screenshot, or uploaded as an image, ZevSafe instantly extracts the password, populates `#decrypt-password`, and immediately triggers decryption if the `.zev` vault file is already selected. Eliminates manual passphrase typing and technical parameter configuration.
+- **Visual Keycard Sheet Design:** When password embedding is enabled, the printed recovery certificate automatically switches to a prominent `⚡ ZV3 MASTER KEYCARD` layout displaying `⚡ Instant Unlock QR Keycard` and a clear monospace keycard box, while preserving the standard blank handwriting mode when unchecked.
+- **PWA & Offline Integration:** Precached under Service Worker shell cache `v64` in `sw.js`.
 
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 
