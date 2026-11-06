@@ -256,6 +256,43 @@ test('generatePaperSheetHTML escapes HTML entities in vaultName and hint to prev
     assert.ok(!html.includes('<script>alert(1)</script>'), 'Must not contain raw script tags');
 });
 
+// -----------------------------------------------------------------------------
+// 7. Clipboard Paste & Flexible Payload Parsing Tests
+// -----------------------------------------------------------------------------
+
+test('parsePaperSafePayload parses prefixed payload (ZEVSAFE_PAPER:)', () => {
+    const raw = 'ZEVSAFE_PAPER:{"app":"ZevSafe","v":3,"n":"Prefixed.zev","s":"8f2a99b14d027ca8105e63fba14290dd8f2a99b14d027ca8105e63fba14290dd","k":600000}';
+    const parsed = QREngine.parsePaperSafePayload(raw);
+    assert.ok(parsed, 'Must parse prefixed payload');
+    assert.strictEqual(parsed.vaultName, 'Prefixed.zev');
+    assert.strictEqual(QREngine.isPaperSafePayload(raw), true);
+});
+
+test('parsePaperSafePayload extracts JSON from surrounding markdown or notes', () => {
+    const raw = 'Hello world! Below is my paper-safe payload:\n```json\n{"app":"ZevSafe","v":3,"n":"Notes.zev","s":"8f2a99b14d027ca8105e63fba14290dd8f2a99b14d027ca8105e63fba14290dd","k":1200000,"h":"Blue safe"}\n```\nDo not share!';
+    const parsed = QREngine.parsePaperSafePayload(raw);
+    assert.ok(parsed, 'Must extract JSON from markdown');
+    assert.strictEqual(parsed.vaultName, 'Notes.zev');
+    assert.strictEqual(parsed.kdfIterations, 1200000);
+    assert.strictEqual(parsed.hint, 'Blue safe');
+    assert.strictEqual(QREngine.isPaperSafePayload(raw), true);
+});
+
+test('parsePaperSafePayload parses base64-encoded payload', () => {
+    const jsonStr = '{"app":"ZevSafe","v":3,"n":"Base64.zev","s":"8f2a99b14d027ca8105e63fba14290dd8f2a99b14d027ca8105e63fba14290dd","k":600000}';
+    const b64 = Buffer.from(jsonStr, 'utf8').toString('base64');
+    const parsed = QREngine.parsePaperSafePayload(b64);
+    assert.ok(parsed, 'Must parse base64 payload');
+    assert.strictEqual(parsed.vaultName, 'Base64.zev');
+    assert.strictEqual(QREngine.isPaperSafePayload(b64), true);
+});
+
+test('isPaperSafePayload accurately rejects arbitrary non-ZevSafe strings', () => {
+    assert.strictEqual(QREngine.isPaperSafePayload('regular user password 12345'), false);
+    assert.strictEqual(QREngine.isPaperSafePayload('https://example.com'), false);
+    assert.strictEqual(QREngine.isPaperSafePayload('{"other":"json"}'), false);
+});
+
 console.log('\n===============================================================');
 console.log(`  PAPER-SAFE QR SUITE: ${passCount}/${totalCount} PASSED (100%)`);
 console.log('===============================================================\n');

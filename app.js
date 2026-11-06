@@ -2911,6 +2911,28 @@ function closePaperSafeModal() {
     if (modal) modal.style.display = 'none';
 }
 
+function applyPaperSafeParameters(p) {
+    if (!p) return;
+    activeScannedPaperSafe = p;
+    const banner = document.getElementById('paper-safe-scanned-banner');
+    const bannerVault = document.getElementById('scanned-banner-vault');
+    const bannerHint = document.getElementById('scanned-banner-hint');
+    if (banner) {
+        if (bannerVault) bannerVault.textContent = p.vaultName;
+        if (bannerHint) {
+            const saltGroup = typeof QREngine !== 'undefined' ? QREngine.formatSaltFingerprint(p.saltHex) : p.saltHex;
+            bannerHint.innerHTML = `Salt: <code>${saltGroup}</code> · KDF: <code>${p.kdfIterations.toLocaleString('en-US')}</code>${p.hint ? ` · <em>Hint: ${escapeHtml(p.hint)}</em>` : ''}`;
+        }
+        banner.style.display = 'block';
+    }
+
+    const pwdInput = document.getElementById('decrypt-password');
+    if (pwdInput) {
+        pwdInput.focus();
+        pwdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
 async function openQRScannerModal() {
     const modal = document.getElementById('qr-scanner-modal');
     const detectedCard = document.getElementById('qr-detected-card');
@@ -2919,6 +2941,7 @@ async function openQRScannerModal() {
     const placeholder = document.getElementById('qr-camera-placeholder');
     const dropzone = document.getElementById('qr-image-dropzone');
     const fileInput = document.getElementById('qr-file-input');
+    const btnPasteClipboard = document.getElementById('btn-paste-qr-clipboard');
 
     if (!modal) return;
     activeScannedPaperSafe = null;
@@ -3040,16 +3063,26 @@ async function openQRScannerModal() {
     async function processImageFile(file) {
         try {
             if (!window.BarcodeDetector) {
-                showToast('Image barcode decoding requires Chrome, Edge, or Android Webview.', 'warning');
+                showToast('Image QR decoding requires Chrome, Edge, or Android Webview. In Firefox, please paste the Paper-Safe code as text (Ctrl+V).', 'warning');
                 return;
             }
-            const imgBitmap = await createImageBitmap(file);
+            let imgBitmap;
+            if (typeof createImageBitmap === 'function') {
+                imgBitmap = await createImageBitmap(file);
+            } else {
+                imgBitmap = await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = URL.createObjectURL(file);
+                });
+            }
             const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
             const barcodes = await detector.detect(imgBitmap);
             if (barcodes && barcodes.length > 0) {
                 await handleFoundPayload(barcodes[0].rawValue);
             } else {
-                showToast('No QR code detected in this image. Try another photo with clear lighting.', 'warning');
+                showToast('No QR code detected in this image. Try another photo or screenshot with clear contrast.', 'warning');
             }
         } catch (err) {
             console.error('[QR File Process Error]', err);
@@ -3061,28 +3094,94 @@ async function openQRScannerModal() {
     if (btnApply) {
         btnApply.onclick = () => {
             if (!activeScannedPaperSafe) return;
-            const p = activeScannedPaperSafe;
-
-            const banner = document.getElementById('paper-safe-scanned-banner');
-            const bannerVault = document.getElementById('scanned-banner-vault');
-            const bannerHint = document.getElementById('scanned-banner-hint');
-            if (banner) {
-                if (bannerVault) bannerVault.textContent = p.vaultName;
-                if (bannerHint) {
-                    const saltGroup = typeof QREngine !== 'undefined' ? QREngine.formatSaltFingerprint(p.saltHex) : p.saltHex;
-                    bannerHint.innerHTML = `Salt: <code>${saltGroup}</code> · KDF: <code>${p.kdfIterations.toLocaleString('en-US')}</code>${p.hint ? ` · <em>Hint: ${escapeHtml(p.hint)}</em>` : ''}`;
-                }
-                banner.style.display = 'block';
-            }
-
-            const pwdInput = document.getElementById('decrypt-password');
-            if (pwdInput) {
-                pwdInput.focus();
-                pwdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-
-            showToast(`Paper-Safe parameters for "${p.vaultName}" applied!`, 'success');
+            applyPaperSafeParameters(activeScannedPaperSafe);
+            showToast(`Paper-Safe parameters for "${activeScannedPaperSafe.vaultName}" applied!`, 'success');
             closeQRScannerModal();
+        };
+    }
+
+    // Modal Clipboard Paste Handler
+    const handleModalPaste = async (e) => {
+        if (!modal || modal.style.display === 'none') return;
+        const cd = e.clipboardData;
+        if (!cd) return;
+
+        // Image in clipboard
+        if (cd.files && cd.files.length > 0) {
+            for (let i = 0; i < cd.files.length; i++) {
+                if (cd.files[i].type.startsWith('image/')) {
+                    e.preventDefault();
+                    showToast('Pasted screenshot detected! Decoding QR...', 'info');
+                    await processImageFile(cd.files[i]);
+                    return;
+                }
+            }
+        }
+        if (cd.items) {
+            for (let i = 0; i < cd.items.length; i++) {
+                if (cd.items[i].type.startsWith('image/')) {
+                    const file = cd.items[i].getAsFile();
+                    if (file) {
+                        e.preventDefault();
+                        showToast('Pasted screenshot detected! Decoding QR...', 'info');
+                        await processImageFile(file);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Text in clipboard
+        const text = cd.getData('text/plain');
+        if (text && typeof QREngine !== 'undefined' && QREngine.isPaperSafePayload(text)) {
+            e.preventDefault();
+            await handleFoundPayload(text);
+            return;
+        }
+    };
+
+    if (activeModalPasteHandler) {
+        window.removeEventListener('paste', activeModalPasteHandler);
+    }
+    activeModalPasteHandler = handleModalPaste;
+    window.addEventListener('paste', handleModalPaste);
+
+    // 1-Click Clipboard Paste Button
+    if (btnPasteClipboard) {
+        btnPasteClipboard.onclick = async () => {
+            // Try image from clipboard API
+            if (navigator.clipboard && navigator.clipboard.read) {
+                try {
+                    const items = await navigator.clipboard.read();
+                    for (const item of items) {
+                        for (const type of item.types) {
+                            if (type.startsWith('image/')) {
+                                const blob = await item.getType(type);
+                                showToast('Reading image from clipboard...', 'info');
+                                await processImageFile(blob);
+                                return;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn('[Clipboard read image error]', err);
+                }
+            }
+
+            // Try text from clipboard API
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text && typeof QREngine !== 'undefined' && QREngine.isPaperSafePayload(text)) {
+                        await handleFoundPayload(text);
+                        return;
+                    }
+                } catch (err) {
+                    console.warn('[Clipboard readText error]', err);
+                }
+            }
+
+            showToast('Clipboard does not contain an image or valid Paper-Safe code. Press Ctrl+V to paste or drop an image.', 'info');
         };
     }
 
@@ -3091,9 +3190,15 @@ async function openQRScannerModal() {
     }
 }
 
+let activeModalPasteHandler = null;
+
 function closeQRScannerModal() {
     const modal = document.getElementById('qr-scanner-modal');
     if (modal) modal.style.display = 'none';
+    if (activeModalPasteHandler) {
+        window.removeEventListener('paste', activeModalPasteHandler);
+        activeModalPasteHandler = null;
+    }
     if (scannerAnimFrameId) {
         cancelAnimationFrame(scannerAnimFrameId);
         scannerAnimFrameId = null;
@@ -7668,3 +7773,69 @@ function initMaxSecurityCollapsible() {
         window.initMaxSecurityCollapsible = initMaxSecurityCollapsible;
     }
 }
+
+
+// Global Clipboard Paste Listener for Decrypt Screen & Paper-Safe Auto-Fill
+window.addEventListener('paste', async (e) => {
+    const qrModal = document.getElementById('qr-scanner-modal');
+    if (qrModal && qrModal.style.display !== 'none') return; // Handled by modal listener
+
+    const decryptView = document.getElementById('view-decrypt');
+    if (!decryptView || decryptView.classList.contains('hidden') || decryptView.style.display === 'none') {
+        return;
+    }
+
+    const cd = e.clipboardData;
+    if (!cd) return;
+
+    // 1. Text payload check (e.g. pasted into decrypt-password or onto decrypt panel)
+    const activeEl = document.activeElement;
+    const isPasswordInput = activeEl && activeEl.id === 'decrypt-password';
+    const text = cd.getData('text/plain');
+
+    if (text && typeof QREngine !== 'undefined' && QREngine.isPaperSafePayload(text)) {
+        e.preventDefault();
+        const parsed = QREngine.parsePaperSafePayload(text);
+        if (parsed) {
+            applyPaperSafeParameters(parsed);
+            if (isPasswordInput) {
+                activeEl.value = ''; // Clean up so JSON payload isn't left as password
+            }
+            showToast(`Paper-Safe parameters for "${parsed.vaultName}" applied from clipboard!`, 'success');
+            return;
+        }
+    }
+
+    // 2. Image in clipboard check (e.g. screenshot pressed while viewing Decrypt tab)
+    if (cd.files && cd.files.length > 0) {
+        for (let i = 0; i < cd.files.length; i++) {
+            if (cd.files[i].type.startsWith('image/')) {
+                e.preventDefault();
+                openQRScannerModal();
+                showToast('Screenshot detected from clipboard! Decoding QR...', 'info');
+                // Allow modal to open then process image
+                setTimeout(() => {
+                    const dropzone = document.getElementById('qr-image-dropzone');
+                    if (dropzone) {
+                        const file = cd.files[i];
+                        if (typeof processImageFile === 'function') processImageFile(file);
+                    }
+                }, 100);
+                return;
+            }
+        }
+    }
+    if (cd.items) {
+        for (let i = 0; i < cd.items.length; i++) {
+            if (cd.items[i].type.startsWith('image/')) {
+                const file = cd.items[i].getAsFile();
+                if (file) {
+                    e.preventDefault();
+                    openQRScannerModal();
+                    showToast('Screenshot detected from clipboard! Decoding QR...', 'info');
+                    return;
+                }
+            }
+        }
+    }
+});

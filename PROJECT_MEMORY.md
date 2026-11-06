@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.11.0` (`WEB-VERSION-62`, Service Worker `v62`)  
+> **Web Portal Version:** `v8.12.0` (`WEB-VERSION-63`, Service Worker `v63`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -204,6 +204,14 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Filterable Status Matrix & Live Progress HUD:** Instant client-side status filtering (`All 14`, `Shipped 11`, `Up Next 1`, `Planned 2`) and visual progress bar (`78.5% Complete`, 11 of 14 shipped) with interactive phase cards highlighting architectural deliverables and cryptographic tags.
 - **Deep-Dive Technical Architecture Inspector Drawer (`#rm-drawer`):** Slide-out inspector modal exposing detailed cryptographic parameters, standard RFCs, memory bounding bounds, execution latencies, binary footprints, and fallback strategies for each roadmap phase.
 - **Zero-Network & Air-Gap Compliance:** Strict Content Security Policy (`default-src 'self'`), zero Google font requests, zero CDN scripts, and zero telemetry. Precached in Service Worker cache `v62` (`sw.js`), included in `SECTION_ROUTES`, bundled into the 1-Click USB Air-Gap Backup Kit (`js/usb-backup-kit.js`), and indexed in `sitemap.xml`.
+
+
+### 3.13 Optical Paper-Safe Clipboard & Paste System (`js/qr-engine.js`, `app.js`, `index.html`, `styles.css`) [v8.12.0]
+- **Unified Clipboard & Screenshot Paste System:** Users can press `Ctrl+V` (or `Cmd+V`) anywhere on the Decrypt screen or within the Optical QR Scanner modal with an image/screenshot in their clipboard (from Snipping Tool, Win+Shift+S, PrtScn, or browser copy) to instantly decode and apply Paper-Safe parameters in client-side RAM.
+- **Intelligent Password Field Interception:** Pasting raw Paper-Safe text payloads (JSON, `ZEVSAFE_PAPER:`, or markdown code blocks) directly into the `decrypt-password` input automatically extracts the vault parameters, applies the salt fingerprint and KDF preset, and clears the password field so the user can enter their handwritten passphrase cleanly without payload contamination.
+- **1-Click Clipboard Paste Action (`#btn-paste-qr-clipboard`):** Added an accessible, cybernetic clipboard paste button that leverages the native `navigator.clipboard.read()` (for image blobs) and `navigator.clipboard.readText()` (for JSON strings) with descriptive toast feedback.
+- **Forgiving & Multi-Format Payload Parsing (`QREngine.parsePaperSafePayload`):** Upgraded parser to tolerate surrounding markdown, codeblocks (```json), optional prefixes (`ZEVSAFE_PAPER:`, `ZEVSAFE:`), base64-encoded strings, and whitespace while strictly verifying cryptographic bounds.
+- **PWA & Offline Integration:** Precached under Service Worker cache `v63` in `sw.js`.
 
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 8.12.0 (WEB-VERSION-63) — November 6, 2026
+
+- `New` & `UI` (`app.js`, `index.html`, `styles.css`): Optical QR Clipboard & Screenshot Paste System (`#btn-paste-qr-clipboard`). Added seamless `Ctrl+V` / `Cmd+V` clipboard paste support across the Decrypt screen and the QR Scanner modal. Users can now copy a screenshot of a Paper-Safe QR code (via Snipping Tool or screenshot shortcuts) and paste it directly to decode in client-side RAM.
+- `New` (`app.js`, `js/qr-engine.js`): Intelligent Decrypt Password Field Interception. Pasting a Paper-Safe payload string or code into the password field automatically parses the vault parameters, populates the salt and KDF preset, and clears the input for the handwritten Diceware passphrase.
+- `UI` (`index.html`, `styles.css`): 1-Click Clipboard Paste Action Button. Added a prominent `📋 Paste Image or Code from Clipboard (Ctrl+V)` button inside the QR Scanner modal leveraging `navigator.clipboard.read()` and `navigator.clipboard.readText()`.
+- `Security` & `Fix` (`js/qr-engine.js`): Forgiving Multi-Format Payload Parser. Enhanced `QREngine.parsePaperSafePayload` and added `QREngine.isPaperSafePayload` to handle markdown code blocks, prefixes (`ZEVSAFE_PAPER:`), base64 encodings, and surrounding notes without failing.
+- `PWA` (`sw.js`, `index.html`): Service Worker Cache Bump to `v63` (`APP_VERSION = 'v63'`). Precached updated application shell assets for instant offline execution.
+- `Tests` (`test/test-paper-safe-qr.js`, `test/test-explorer-folder-nav.js`): Expanded test suites with 4 new clipboard and payload parsing tests (18/18 paper-safe tests passed, 41/41 explorer tests passed, 100% pass across all regression test suites).
+
 ## Version 8.11.0 (WEB-VERSION-62) — November 5, 2026
 
 - `New` (`roadmap/index.html`): Master Plan & Strategic Roadmap Interactive Portal. Created a dedicated zero-external-network portal documenting the 14-phase engineering master plan tracking ZevSafe's evolution from an authenticated streaming container into an ephemeral zero-footprint virtual operating environment.

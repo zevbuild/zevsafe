@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.11.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.12.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -706,14 +706,74 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-                        <!-- ── VERSION 8.11.0 (WEB-VERSION-62) ── -->
+                                    <!-- ── VERSION 8.12.0 (WEB-VERSION-63) ── -->
+            <article class="cl-card" data-version="v8">
+                <div class="cl-marker">📋</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.12.0 (WEB-VERSION-63)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 6, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Clipboard Paste</span>
+                            <span class="cl-tag">Paper-Safe QR</span>
+                            <span class="cl-tag">Screenshot Decoder</span>
+                            <span class="cl-tag">Ergonomics</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Unified <strong>Optical QR Clipboard &amp; Screenshot Paste Engine</strong>, enabling seamless <code>Ctrl+V</code> pasting of copied screenshots, images, and Paper-Safe codes directly into the app and Decrypt view.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Screenshot &amp; Image Paste (Ctrl+V):</strong> Paste any screenshot (Snipping Tool, PrtScn, browser image copy) anywhere on the Decrypt screen or within the scanner modal to immediately decode the QR code in client-side RAM.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>1-Click Clipboard Action Button:</strong> Prominent <code>📋 Paste Image or Code from Clipboard (Ctrl+V)</code> button inside the scanner modal querying native clipboard APIs with helpful toast notifications.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Smart Password Field Interception:</strong> Pasting a Paper-Safe payload code directly into the Decrypt password field automatically applies the parameters and clears the input, preventing JSON contamination of password fields.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Forgiving Payload Parsing:</strong> Upgraded <code>QREngine.parsePaperSafePayload</code> to extract parameters from markdown blocks, prefixes (<code>ZEVSAFE_PAPER:</code>), base64 payloads, and surrounding notes.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker Shell Cache Bump (<code>v63</code>):</strong> Precaches updated app shell for instant offline execution.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+<!-- ── VERSION 8.11.0 (WEB-VERSION-62) ── -->
             <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🧭</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.11.0 (WEB-VERSION-62)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
                             <span class="cl-badge cl-badge--date">November 5, 2026</span>
                         </div>
                         <div class="cl-tags">

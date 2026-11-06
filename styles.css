@@ -6360,9 +6360,12 @@ audio.media-player-element {
 }
 
 .qr-drop-zone:hover,
+.qr-drop-zone:focus-visible,
 .qr-drop-zone.dragover {
     border-color: #38bdf8;
     background: rgba(56, 189, 248, 0.08);
+    outline: none;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
 }
 
 .qr-detected-card {

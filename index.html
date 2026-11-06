@@ -168,7 +168,7 @@
                 <a href="./how-to-use-zevsafe/" class="nav-link-subtle">Documentation</a>
                 <a href="./device-power/" class="nav-link-subtle" title="Benchmark Your Device Hardware Encryption Power">⚡ Device Power</a>
                 <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span style="font-size: 0.72rem; opacity: 0.9; padding: 2px 6px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); color: #34d399; margin-left: 2px; font-weight: 700;">99.3/100</span></a>
-                <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-62)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v8.11.0</span></a>
+                <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-63)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v8.12.0</span></a>
                 <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
                 <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="nav-link-subtle">
                     GitHub <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
@@ -252,7 +252,7 @@
                             <span class="mn-title">Changelog &amp; Releases</span>
                             <span class="mn-desc">Full release history</span>
                         </div>
-                        <span class="mn-badge">v8.11.0</span>
+                        <span class="mn-badge">v8.12.0</span>
                     </a>
                     <a href="./roadmap/" class="mobile-nav-link">
                         <span class="mn-icon">🧭</span>
@@ -621,7 +621,7 @@
                         <div class="field-label-row">
                             <label class="field-label" for="decrypt-password">Password or PIN</label>
                             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                <button class="btn-pw-mgr btn-pw-mgr--teal" id="btn-scan-paper-qr" type="button" title="Scan Paper-Safe Recovery QR code with camera or drop an image">📷 Scan Paper QR</button>
+                                <button class="btn-pw-mgr btn-pw-mgr--teal" id="btn-scan-paper-qr" type="button" title="Scan Paper-Safe Recovery QR code with camera, drop an image, or paste from clipboard (Ctrl+V)">📷 Scan Paper QR</button>
                                 <button class="btn-pw-mgr btn-pw-mgr--teal" id="btn-autofill-pwd" type="button" title="Autofill password from your browser or password manager (Chrome, Bitwarden, 1Password, Apple Keychain)">🔑 Autofill</button>
                             </div>
                         </div>
@@ -953,7 +953,7 @@
                 <span>·</span>
                 <a href="./roadmap/" style="color: #38bdf8; font-weight: 600;">Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.11.0 / WEB-VERSION-62)</a>
+                <a href="./change-log/">Changelog (v8.12.0 / WEB-VERSION-63)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1390,14 +1390,21 @@
                     </div>
                 </div>
 
-                <!-- Alternative: Image Drop Zone / File Picker -->
-                <div class="qr-drop-zone" id="qr-image-dropzone">
+                <!-- Alternative: Image Drop Zone / File Picker / Clipboard Paste -->
+                <div class="qr-drop-zone" id="qr-image-dropzone" tabindex="0" role="button" aria-label="Drop QR image, click to browse, or paste from clipboard">
                     <input type="file" id="qr-file-input" accept="image/*" style="display: none;">
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none;">
                         <span style="font-size: 1.2rem;">📁</span>
-                        <span style="font-size: 0.82rem; color: var(--text-1); font-weight: 600;">Or select / drop a photo of your Paper-Safe sheet</span>
-                        <span style="font-size: 0.74rem; color: var(--text-2);">JPG, PNG, WebP supported · 100% processed in RAM</span>
+                        <span style="font-size: 0.82rem; color: var(--text-1); font-weight: 600;">Drop QR photo or click to browse</span>
+                        <span style="font-size: 0.74rem; color: var(--text-2);">JPG, PNG, WebP · Or press <strong style="color:var(--teal-light);">Ctrl+V</strong> to paste screenshot</span>
                     </div>
+                </div>
+
+                <!-- 1-Click Clipboard Paste Action -->
+                <div style="display: flex; gap: 8px; justify-content: center; width: 100%;">
+                    <button type="button" class="btn-pw-mgr btn-pw-mgr--teal" id="btn-paste-qr-clipboard" style="width: 100%; justify-content: center; padding: 0.55rem 1rem; font-size: 0.84rem;" title="Paste screenshot, image, or recovery code directly from your clipboard">
+                        📋 Paste Image or Code from Clipboard (Ctrl+V)
+                    </button>
                 </div>
 
                 <!-- Detected Parameters Card (Hidden until scan success) -->

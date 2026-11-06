@@ -758,20 +758,62 @@
     }
 
     /**
-     * Validates and parses a scanned Paper-Safe QR payload
+     * Checks if a string contains a valid Paper-Safe payload indicator
+     */
+    function isPaperSafePayload(raw) {
+        if (!raw || typeof raw !== 'string') return false;
+        return parsePaperSafePayload(raw) !== null;
+    }
+
+    /**
+     * Validates and parses a scanned or pasted Paper-Safe QR payload.
+     * Supports raw JSON, prefixed strings (ZEVSAFE_PAPER:), base64 payloads,
+     * and markdown/surrounding text tolerance.
      */
     function parsePaperSafePayload(raw) {
         if (!raw || typeof raw !== 'string') return null;
+        let str = raw.trim();
+
+        // 1. Strip optional prefixes
+        if (str.startsWith('ZEVSAFE_PAPER:')) {
+            str = str.slice(14).trim();
+        } else if (str.startsWith('ZEVSAFE:')) {
+            str = str.slice(8).trim();
+        }
+
+        // 2. Base64 payload decoding fallback
+        if (!str.includes('{') && /^[A-Za-z0-9+/=]+$/.test(str) && str.length >= 20) {
+            try {
+                if (typeof atob === 'function') {
+                    const decoded = atob(str);
+                    if (decoded && decoded.includes('{')) str = decoded.trim();
+                } else if (typeof Buffer !== 'undefined') {
+                    const decoded = Buffer.from(str, 'base64').toString('utf8');
+                    if (decoded && decoded.includes('{')) str = decoded.trim();
+                }
+            } catch (_) {}
+        }
+
+        // 3. Extract JSON object substring if surrounded by extra text or markdown
+        const start = str.indexOf('{');
+        const end = str.lastIndexOf('}');
+        if (start !== -1 && end > start) {
+            str = str.slice(start, end + 1);
+        }
+
         try {
-            const parsed = JSON.parse(raw);
+            const parsed = JSON.parse(str);
             if (parsed.app !== 'ZevSafe' && parsed.v !== 3) return null;
             if (!parsed.s || typeof parsed.s !== 'string') return null;
+
+            const cleanSalt = parsed.s.toLowerCase().replace(/^0x/i, '');
+            if (cleanSalt.length < 32) return null;
 
             return {
                 app: 'ZevSafe',
                 version: parsed.v || 3,
                 vaultName: parsed.n || 'Unnamed-Vault.zev',
-                saltHex: parsed.s.toLowerCase(),
+                saltHex: cleanSalt,
                 kdfIterations: Number(parsed.k) || 600000,
                 hint: parsed.h || '',
                 keyfileRequired: Boolean(parsed.kf),
@@ -1125,6 +1167,7 @@
         // Paper-Safe Cold Storage
         formatSaltFingerprint,
         buildPaperSafePayload,
+        isPaperSafePayload,
         parsePaperSafePayload,
         generatePaperSheetHTML,
 
