@@ -132,6 +132,12 @@ runTest('Item 11.5 & 11.7: StreamUnpacker bounded cache zeroizes evicted chunks'
     for (let i = 0; i < chunk0.length; i++) {
         assert.strictEqual(chunk0[i], 0, `Byte at index ${i} of evicted chunk must be zeroized`);
     }
+
+    // Assert that getMemoryStats exposes accurate telemetry
+    const stats = cache.getMemoryStats();
+    assert.strictEqual(stats.cachedChunks, 2);
+    assert.strictEqual(stats.cachedBytes, 10);
+    assert.strictEqual(stats.maxChunks, 2);
 });
 
 // 8. Item 12.3: Open Graph and Twitter Card tags in all 17 user-facing HTML files

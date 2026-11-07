@@ -774,6 +774,13 @@
                         </div>
 
                         <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Memory</span>
+                            <div class="cl-item-text">
+                                <strong>Device-Adaptive Memory Scaling &amp; Telemetry:</strong> Upgraded <code>createBoundedChunkCache</code> to dynamically adjust cache sizes using <code>navigator.deviceMemory</code> (8 chunks for 8GB+ RAM, 6 for 4GB, 2 for low-RAM mobile) and added <code>getMemoryStats()</code> telemetry for deep memory observability.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--perf">PWA</span>
                             <div class="cl-item-text">
                                 <strong>Service Worker Shell Cache Bump (<code>v67</code>):</strong> Bumped <code>APP_VERSION = 'v67'</code> in <code>sw.js</code> and synchronized version tags across the application shell for offline cold starts.

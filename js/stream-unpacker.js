@@ -1072,7 +1072,10 @@
      */
     function createBoundedChunkCache(maxChunks = 4) {
         const map = new Map();
-        const limit = Math.max(1, Number(maxChunks) || 4);
+        const autoLimit = (typeof navigator !== 'undefined' && typeof navigator.deviceMemory === 'number')
+            ? (navigator.deviceMemory >= 8 ? 8 : (navigator.deviceMemory <= 2 ? 2 : 4))
+            : 4;
+        const limit = Math.max(1, Number(maxChunks) || autoLimit);
         return {
             _map: map,
             _maxChunks: limit,
@@ -1104,6 +1107,18 @@
                     if (chunk && typeof chunk.fill === 'function') chunk.fill(0);
                 }
                 map.clear();
+            },
+            getMemoryStats() {
+                let bytes = 0;
+                for (const chunk of map.values()) {
+                    if (chunk && chunk.byteLength) bytes += chunk.byteLength;
+                }
+                return {
+                    cachedChunks: map.size,
+                    cachedBytes: bytes,
+                    maxChunks: limit,
+                    maxBytes: limit * 4194304
+                };
             },
             entries() { return map.entries(); },
             values() { return map.values(); },
