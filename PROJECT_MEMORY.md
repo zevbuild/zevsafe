@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.16.0` (`WEB-VERSION-67`, Service Worker `v67`)  
+> **Web Portal Version:** `v8.17.0` (`WEB-VERSION-68`, Service Worker `v68`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -205,6 +205,25 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Revokes all tracked Blob URLs.
   - Scrubs password and keyfile input fields from the DOM.
 
+### 3.20 Main Website Header & Cybernetic Navbar Redesign [v8.17.0]
+- **Elevated Cybernetic Glassmorphism:**
+  - Navbar styled with `backdrop-filter: blur(24px) saturate(190%)`, high-depth drop shadow (`box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35)`), and cybernetic border highlight.
+  - Logo wrapped in accessible `<a href="./" class="brand-link">` with interactive rotation (`transform: rotate(-8deg) scale(1.1)`) and visible focus states.
+- **3-Zone Streamlined Desktop Navigation Hierarchy:**
+  - Zone 1: Interactive Brand & Offline Status Badge (`.brand-link`, `.brand-status-badge`, glowing pulse dot).
+  - Zone 2: Informational Links Group (`.nav-links-group`): Knowledge Hub (`Manual` pill), Documentation, Device Power, Security Audit (`99.3/100` pill), Changelog (`v8.17.0` pill), Master Plan (`11 / 14` pill), and GitHub.
+  - Zone 3: Action Deck (`.nav-actions-deck`): Divided by vertical separator (`.nav-actions-divider`), housing 1-Click USB Backup Kit, Install PWA App, Theme Toggle, and PC Toolkit (25GB+).
+- **Responsive 1-Row Protection (769px–1240px):**
+  - Solved desktop/laptop wrapping where 11 items previously broke onto two lines.
+  - At $\le 1240\text{px}$: Non-essential badge pills (`.nav-badge-pill`) auto-hide to keep items compactly aligned.
+  - At $\le 1040\text{px}$: Action button labels collapse (`span { display: none; }`) to clean icon-only buttons with tooltips, guaranteeing 100% single-row layout across all intermediate displays without breaking mobile drawer functionality ($\le 768\text{px}$).
+- **Comprehensive WCAG AAA Light Theme Overrides:**
+  - Added full light theme styling for `.light-theme .navbar` (`background: rgba(255, 255, 255, 0.88)`), brand gradient, status badge, navigation links, and action buttons.
+  - Full light theme styling for Hero header: `.light-theme .hero-title-refined` (`#0f172a`), `.light-theme .hero-gradient-text`, `.light-theme .hero-sub-refined` (`#475569`), `.light-theme .hero-security-badge`, and `.light-theme .hero-trust-strip`.
+- **Hero Header Trust Strip Enhancement:**
+  - Added 4th Trust Pill: `<div class="trust-pill trust-pill--highlight">` highlighting `5 GB Instant Streaming` powered by Video Player 4.0 on-demand range streaming.
+  - Interactive hover transitions (`transform: translateY(-1px)`) and glowing borders across badge and trust strip.
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]
@@ -217,34 +236,37 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ## 5. Mandatory Verification & Automated Test Battery
 
-Whenever ANY code or documentation is touched, run all 9 automated test suites and ensure **100% pass rate (182/182 assertions)**:
+Whenever ANY code or documentation is touched, run all 10 automated test suites and ensure **100% pass rate (194/194 assertions)**:
 
 ```bash
-# 1. Video Player 4.0 On-Demand Streaming & Pro Studio Suite (29 tests)
+# 1. Main Website Header & Cybernetic Navbar Suite (12 tests)
+node test/test-header-navbar-upgrade.js
+
+# 2. Video Player 4.0 On-Demand Streaming & Pro Studio Suite (31 tests)
 node test/test-video-player-pro.js
 
-# 2. Android Mobile Browser Multi-Tier Encryption & OPFS Regression Suite (33 tests)
+# 3. Android Mobile Browser Multi-Tier Encryption & OPFS Regression Suite (33 tests)
 node test/test-android-encryption.js
 
-# 3. Milestone 5 Streaming Sink & Round-Trip Extraction Suite (5 tests)
+# 4. Milestone 5 Streaming Sink & Round-Trip Extraction Suite (5 tests)
 node test/test-integration-m5.js
 
-# 4. Adversarial Challenger Chunk Wiping & Security Suite (30 tests)
+# 5. Adversarial Challenger Chunk Wiping & Security Suite (30 tests)
 node test/test-adversarial-challenger.js
 
-# 5. Paper-Safe Optical QR Engine & Master Keycard Suite (36 tests)
+# 6. Paper-Safe Optical QR Engine & Master Keycard Suite (36 tests)
 node test/test-paper-safe-qr.js
 
-# 6. Strategic Roadmap & Ecosystem Master Plan Suite (12 tests)
+# 7. Strategic Roadmap & Ecosystem Master Plan Suite (12 tests)
 node test/test-roadmap-plan.js
 
-# 7. Decrypted Vault Explorer & Hierarchical Navigation Suite (21 tests)
+# 8. Decrypted Vault Explorer & Hierarchical Navigation Suite (21 tests)
 node test/test-explorer-folder-nav.js
 
-# 8. Cryptographic Hardware Power Profiler Suite (5 tests)
+# 9. Cryptographic Hardware Power Profiler Suite (5 tests)
 node test/test-device-power.js
 
-# 9. Checklist Remediation & Defensive Security Suite (8 tests)
+# 10. Checklist Remediation & Defensive Security Suite (8 tests)
 node test/test-checklist-remediations.js
 ```
 

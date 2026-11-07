@@ -134,21 +134,22 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem 0;
+    padding: 1.25rem 0;
     position: sticky;
     top: 0;
     z-index: 100;
-    /* subtle frosted bar */
+    /* subtle frosted cybernetic bar */
     margin-left: -1.5rem;
     margin-right: -1.5rem;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    background: rgba(8,9,26,0.75);
-    border-bottom: 1px solid var(--border);
-    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease, background-color 0.3s ease, border-color 0.3s ease;
-    -webkit-transition: -webkit-transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease, background-color 0.3s ease, border-color 0.3s ease;
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    background: rgba(8, 9, 26, 0.82);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    -webkit-transition: -webkit-transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     will-change: transform;
 }
 
@@ -164,6 +165,31 @@ body {
     display: flex;
     align-items: center;
     gap: 0.6rem;
+}
+
+.brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+.brand-link:focus-visible {
+    outline: 2px solid var(--purple-light);
+    outline-offset: 4px;
+    border-radius: 8px;
+}
+
+.brand-logo {
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
+}
+
+.brand-link:hover .brand-logo {
+    transform: rotate(-8deg) scale(1.1);
 }
 
 .brand-icon {
@@ -216,7 +242,68 @@ body {
     50% { opacity: 0.4; transform: scale(0.85); }
 }
 
-.navbar-links { display: flex; align-items: center; gap: 0.6rem; }
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-links-group {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.nav-actions-divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 0 0.35rem;
+    flex-shrink: 0;
+}
+
+.nav-actions-deck {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.nav-badge-pill {
+    font-size: 0.68rem;
+    line-height: 1;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 3px;
+    transition: all 0.2s ease;
+}
+
+.nav-badge-pill--purple {
+    background: rgba(139, 92, 246, 0.2);
+    color: #c084fc;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.nav-badge-pill--green {
+    background: rgba(16, 185, 129, 0.16);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.nav-badge-pill--muted {
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.nav-badge-pill--teal {
+    background: rgba(45, 212, 191, 0.16);
+    color: #2dd4bf;
+    border: 1px solid rgba(45, 212, 191, 0.3);
+}
 
 .nav-pill {
     display: inline-flex;
@@ -406,16 +493,23 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.35rem 1rem;
+    padding: 0.38rem 1.1rem;
     border-radius: 999px;
-    background: rgba(139, 92, 246, 0.08);
-    border: 1px solid rgba(139, 92, 246, 0.22);
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.12);
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.28);
+    box-shadow: 0 0 24px rgba(139, 92, 246, 0.16);
     font-size: 0.76rem;
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #c4b5fd;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hero-security-badge:hover {
+    transform: translateY(-1px);
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.28);
 }
 
 .hero-title-refined {
@@ -426,6 +520,7 @@ body {
     letter-spacing: -0.035em;
     color: #f8fafc;
     margin: 0;
+    transition: color 0.2s ease;
 }
 
 .hero-gradient-text {
@@ -445,6 +540,7 @@ body {
     line-height: 1.6;
     font-weight: 400;
     margin: 0;
+    transition: color 0.2s ease;
 }
 
 .hero-trust-strip {
@@ -453,11 +549,20 @@ body {
     justify-content: center;
     gap: 1.25rem;
     margin-top: 0.25rem;
-    padding: 0.5rem 1.25rem;
+    padding: 0.55rem 1.4rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     flex-wrap: wrap;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hero-trust-strip:hover {
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow: 0 6px 26px rgba(139, 92, 246, 0.16);
 }
 
 .trust-pill {
@@ -468,6 +573,20 @@ body {
     font-weight: 500;
     color: #cbd5e1;
     white-space: nowrap;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.trust-pill:hover {
+    transform: translateY(-1px);
+    color: #ffffff;
+}
+
+.trust-pill--highlight {
+    color: #c4b5fd;
+}
+
+.trust-pill--highlight:hover {
+    color: #e9d5ff;
 }
 
 .trust-pill-sep {
@@ -1626,6 +1745,59 @@ body {
 .bnav-label { letter-spacing: 0.02em; }
 
 /* =====================================================
+   RESPONSIVE — INTERMEDIATE DESKTOP NAVBAR (769px–1240px)
+   ===================================================== */
+@media (max-width: 1240px) and (min-width: 769px) {
+    .navbar {
+        padding: 1rem 0;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    .navbar-links {
+        gap: 0.35rem;
+    }
+    .nav-links-group {
+        gap: 0.25rem;
+    }
+    .nav-link-subtle {
+        padding: 0.38rem 0.55rem;
+        font-size: 0.8rem;
+    }
+    .nav-badge-pill {
+        display: none; /* Hide secondary badge pills to protect single-line horizontal layout */
+    }
+    .nav-actions-deck {
+        gap: 0.35rem;
+    }
+    .nav-btn-secondary {
+        padding: 0.38rem 0.75rem;
+        font-size: 0.78rem;
+    }
+    .nav-btn-primary {
+        padding: 0.38rem 0.85rem;
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 1040px) and (min-width: 769px) {
+    .nav-link--desktop-only {
+        display: none !important; /* Hide device power & github on compact tablets */
+    }
+    .nav-actions-deck .nav-btn-secondary span,
+    .nav-actions-deck .nav-btn-primary span {
+        display: none; /* Icon-only action buttons to guarantee strict 1-row layout */
+    }
+    .nav-actions-deck .nav-btn-secondary,
+    .nav-actions-deck .nav-btn-primary {
+        padding: 0.42rem 0.55rem;
+        min-width: 36px;
+        justify-content: center;
+    }
+}
+
+/* =====================================================
    RESPONSIVE — DESKTOP (821px+)
    ===================================================== */
 @media (min-width: 821px) {
@@ -1861,12 +2033,119 @@ body {
 }
 
 /* ── Light Theme Global Typography & Core Controls ── */
+.light-theme .navbar {
+    background: rgba(255, 255, 255, 0.88);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.04);
+}
+
 .light-theme .brand-name {
     background: linear-gradient(135deg, #0f172a 20%, #7c3aed 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+}
+
+.light-theme .brand-status-badge {
+    background: rgba(5, 150, 105, 0.1);
+    border: 1px solid rgba(5, 150, 105, 0.25);
+    color: #047857;
+    -webkit-text-fill-color: #047857;
+}
+
+.light-theme .nav-link-subtle {
+    color: #334155;
+}
+
+.light-theme .nav-link-subtle:hover {
+    color: #0f172a;
+    background: rgba(15, 23, 42, 0.06);
+}
+
+.light-theme .nav-actions-divider {
+    background: rgba(15, 23, 42, 0.12);
+}
+
+.light-theme .nav-actions-deck .nav-btn-secondary {
+    background: rgba(15, 23, 42, 0.04);
+    border-color: rgba(15, 23, 42, 0.14);
+    color: #1e293b;
+}
+
+.light-theme .nav-actions-deck .nav-btn-secondary:hover {
+    background: rgba(15, 23, 42, 0.08);
+    border-color: rgba(15, 23, 42, 0.22);
+    color: #0f172a;
+}
+
+.light-theme .nav-badge-pill--purple {
+    background: rgba(124, 58, 237, 0.1);
+    color: #6d28d9;
+    border-color: rgba(124, 58, 237, 0.25);
+}
+
+.light-theme .nav-badge-pill--green {
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.light-theme .nav-badge-pill--muted {
+    background: rgba(15, 23, 42, 0.06);
+    color: #475569;
+    border-color: rgba(15, 23, 42, 0.14);
+}
+
+/* Light Theme Hero Section */
+.light-theme .hero-security-badge {
+    background: rgba(124, 58, 237, 0.07);
+    border: 1px solid rgba(124, 58, 237, 0.25);
+    box-shadow: 0 2px 14px rgba(124, 58, 237, 0.08);
+    color: #6d28d9;
+}
+
+.light-theme .hero-title-refined {
+    color: #0f172a;
+}
+
+.light-theme .hero-gradient-text {
+    background: linear-gradient(135deg, #7c3aed 0%, #0d9488 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.light-theme .hero-sub-refined {
+    color: #475569;
+}
+
+.light-theme .hero-trust-strip {
+    background: rgba(15, 23, 42, 0.03);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+}
+
+.light-theme .trust-pill {
+    color: #334155;
+    font-weight: 600;
+}
+
+.light-theme .trust-pill:hover {
+    color: #0f172a;
+}
+
+.light-theme .trust-pill svg {
+    stroke: #0d9488;
+}
+
+.light-theme .trust-pill--highlight svg {
+    stroke: #7c3aed;
+}
+
+.light-theme .trust-pill-sep {
+    background: rgba(15, 23, 42, 0.2);
 }
 
 /* Navbar Pills & Action Buttons */

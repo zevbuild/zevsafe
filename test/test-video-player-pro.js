@@ -212,13 +212,29 @@ runTest('3.9: Extended keyboard shortcuts matrix bound in keydown listener', () 
 console.log('\n--- 4. PWA Service Worker & Version Tags ---');
 const swJs = fs.readFileSync(path.join(ROOT_DIR, 'sw.js'), 'utf8');
 
-runTest('4.1: Service Worker shell cache bumped to v67', () => {
-    assert.ok(swJs.includes("const APP_VERSION    = 'v67';"), 'sw.js must be APP_VERSION v67');
+runTest('4.1: Service Worker shell cache bumped to v68', () => {
+    assert.ok(swJs.includes("const APP_VERSION    = 'v68';"), 'sw.js must be APP_VERSION v68');
 });
 
-runTest('4.2: index.html synchronized to v8.16.0 / WEB-VERSION-67', () => {
-    assert.ok(indexHtml.includes('WEB-VERSION-67'), 'index.html must have WEB-VERSION-67');
-    assert.ok(indexHtml.includes('v8.16.0'), 'index.html must have v8.16.0');
+runTest('4.2: index.html synchronized to v8.17.0 / WEB-VERSION-68', () => {
+    assert.ok(indexHtml.includes('WEB-VERSION-68'), 'index.html must have WEB-VERSION-68');
+    assert.ok(indexHtml.includes('v8.17.0'), 'index.html must have v8.17.0');
+});
+
+runTest('4.3: index.html & styles.css implement upgraded 3-zone cybernetic navbar & brand link', () => {
+    assert.ok(indexHtml.includes('class="brand-link"'), 'index.html must wrap brand in .brand-link');
+    assert.ok(indexHtml.includes('class="nav-links-group"'), 'index.html must contain .nav-links-group');
+    assert.ok(indexHtml.includes('class="nav-actions-deck"'), 'index.html must contain .nav-actions-deck');
+    assert.ok(stylesCss.includes('.brand-link:hover .brand-logo'), 'styles.css must style brand-logo hover rotation');
+    assert.ok(stylesCss.includes('@media (max-width: 1240px) and (min-width: 769px)'), 'styles.css must protect 1-row navbar layout on desktop');
+});
+
+runTest('4.4: index.html & styles.css implement enhanced Hero trust strip with 5 GB range streaming pill & light theme', () => {
+    assert.ok(indexHtml.includes('5 GB Instant Streaming'), 'index.html must include 5 GB Instant Streaming trust pill');
+    assert.ok(stylesCss.includes('.light-theme .navbar'), 'styles.css must provide light-theme navbar background');
+    assert.ok(stylesCss.includes('.light-theme .hero-security-badge'), 'styles.css must provide light-theme hero badge');
+    assert.ok(stylesCss.includes('.light-theme .hero-title-refined'), 'styles.css must provide light-theme hero title');
+    assert.ok(stylesCss.includes('.light-theme .hero-trust-strip'), 'styles.css must provide light-theme trust strip');
 });
 
 // ── 5. ON-DEMAND RANGE STREAMING ENGINE & INSTANT PLAYBACK (< 60 MB RAM) ───

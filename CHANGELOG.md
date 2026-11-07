@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 8.17.0 (WEB-VERSION-68) — November 7, 2026
+
+- `UI` & `New` (`index.html`, `styles.css`): Main Website Header & Cybernetic Navbar Redesign. Elevated visual aesthetics, modern glassmorphic frosted bar (`backdrop-filter: blur(24px) saturate(190%)`), cybernetic hairline border, and deep ambient drop shadow (`box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35)`).
+- `UI` & `Accessibility` (`index.html`, `styles.css`): Interactive Brand Identity & Hover Physics. Brand wrapped in an accessible `<a href="./" class="brand-link">` with smooth GPU-accelerated logo hover rotation and scale (`transform: rotate(-8deg) scale(1.1)`), high-contrast glowing offline status pulse dot, and clean keyboard focus ring.
+- `UI` (`index.html`, `styles.css`): 3-Zone Streamlined Navigation Hierarchy. Organized desktop navbar into three distinct balanced zones: Brand with Offline status badge, Informational Links group (`.nav-links-group` with standardized `.nav-badge-pill` labels), and an Action Deck (`.nav-actions-deck`) partitioned by an elegant vertical separator (`.nav-actions-divider`).
+- `UI` & `Perf` (`styles.css`): Responsive 1-Row Protection (769px–1240px). Completely solved desktop/laptop wrapping where 11 items previously crowded onto two lines. At `<= 1240px`, non-essential badge pills auto-hide to streamline link widths. At `<= 1040px`, secondary action button labels collapse to clean icon-only buttons with tooltips, maintaining a strictly single-row layout without overflowing or triggering horizontal scrollbars.
+- `UI` & `Security` (`styles.css`): Comprehensive WCAG AAA Light Theme Overrides. Fixed dark-bar leakage in Light Mode. Implemented full high-contrast styling for `.light-theme .navbar` (`background: rgba(255, 255, 255, 0.88)`), brand gradient, status badge, navigation links, and action buttons. Implemented full light theme styling for Hero header: `.light-theme .hero-title-refined` (`#0f172a`), `.light-theme .hero-gradient-text`, `.light-theme .hero-sub-refined` (`#475569`), `.light-theme .hero-security-badge`, and `.light-theme .hero-trust-strip`.
+- `UI` & `New` (`index.html`, `styles.css`): Hero Header Trust Strip 4th Breakthrough Pill. Added 4th trust pill `5 GB Instant Streaming` (`.trust-pill--highlight`) showcasing the Video Player 4.0 on-demand range streaming architecture, with interactive hover lift physics and glowing borders.
+- `PWA` (`sw.js`, `index.html`): Service Worker Shell Cache Bump to `v68` (`APP_VERSION = 'v68'`) and `WEB-VERSION-68`. Precaches updated application shell assets for instant offline cold starts.
+- `Tests` (`test/test-header-navbar-upgrade.js`, `test/test-video-player-pro.js`): Added dedicated 12-test automated verification suite for header semantics, brand link accessibility, responsive 1-row breakpoints, and light-theme contrast (194/194 assertions passed across all 10 suites, 100% pass rate).
+
 ## Version 8.16.0 (WEB-VERSION-67) — November 7, 2026
 
 - `New` & `Perf` (`js/stream-unpacker.js`, `sw.js`, `app.js`): Video Player 4.0 (On-Demand Range Streaming Engine & Instant Playback). Solved startup latency and playback stuttering for large video files (> 1 GB up to 5 GB). Videos now start playing **instantly (< 1 second)** instead of waiting 1 to 2 minutes for complete monolithic file extraction.

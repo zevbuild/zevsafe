@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.16.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.17.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -706,14 +706,97 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 8.16.0 (WEB-VERSION-67) ── -->
+            <!-- ── VERSION 8.17.0 (WEB-VERSION-68) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">💎</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.17.0 (WEB-VERSION-68)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 7, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Cybernetic Navbar</span>
+                            <span class="cl-tag">Header Redesign</span>
+                            <span class="cl-tag">1-Row Protection</span>
+                            <span class="cl-tag">Light Theme AAA</span>
+                            <span class="cl-tag">Brand Link</span>
+                            <span class="cl-tag">5 GB Streaming Pill</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Upgraded the <strong>Main Website Header &amp; Cybernetic Navbar</strong>: elevated glassmorphism aesthetics, responsive single-row desktop layout protection (769px–1240px), comprehensive WCAG AAA Light Theme contrast overrides, and added a dedicated <strong>5 GB Instant Streaming</strong> trust pill to the hero header.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Elevated Cybernetic Glassmorphic Navbar:</strong> Re-engineered the top navigation bar with <code>backdrop-filter: blur(24px) saturate(190%)</code>, cybernetic hairline border, and deep ambient box shadow (<code>0 4px 30px rgba(0,0,0,0.35)</code>).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Interactive Brand Identity &amp; Hover Physics:</strong> Wrapped the logo and title in an accessible <code>&lt;a href="./" class="brand-link"&gt;</code> with GPU-accelerated rotation &amp; scale (<code>transform: rotate(-8deg) scale(1.1)</code>), luminous green offline pulse dot, and clean focus rings.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>3-Zone Streamlined Navigation Hierarchy:</strong> Cleanly structured the desktop navbar into three balanced groups: Brand with Offline status badge, Informational Links group (<code>.nav-links-group</code> with colored badge pills), and an Action Deck (<code>.nav-actions-deck</code>) partitioned by a subtle vertical divider.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Responsive 1-Row Protection (769px–1240px):</strong> Solved desktop/laptop wrapping where 11 items previously broke onto two lines. At &le; 1240px, non-essential badge pills auto-hide. At &le; 1040px, secondary action button labels collapse to clean icon-only buttons with tooltips, strictly preserving a 1-row layout.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Comprehensive WCAG AAA Light Theme Overrides:</strong> Fixed dark-bar leakage in Light Mode. Implemented full high-contrast styling for <code>.light-theme .navbar</code>, brand gradient, status badge, navigation links, and action buttons. Implemented full light theme styling for Hero header: <code>.light-theme .hero-title-refined</code> (<code>#0f172a</code>), subtext (<code>#475569</code>), badges, and trust pills.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Hero Header 4th Trust Pill:</strong> Added a 4th trust pill <code>5 GB Instant Streaming</code> (<code>.trust-pill--highlight</code>) with play icon highlighting Video Player 4.0 on-demand range streaming architecture, complete with interactive hover lift physics.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker Shell Cache Bump (<code>v68</code>):</strong> Bumped <code>APP_VERSION = 'v68'</code> in <code>sw.js</code> and synchronized version tags across the application shell for offline cold starts.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Audit</span>
+                            <div class="cl-item-text">
+                                <strong>Automated Verification Suite (12/12 PASS):</strong> Dedicated verification suite in <code>test/test-header-navbar-upgrade.js</code> certifying header semantics, brand link accessibility, responsive 1-row breakpoints, and light-theme contrast with 100% pass rate.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.16.0 (WEB-VERSION-67) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">⚡</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.16.0 (WEB-VERSION-67)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
                             <span class="cl-badge cl-badge--date">November 7, 2026</span>
                         </div>
                         <div class="cl-tags">
