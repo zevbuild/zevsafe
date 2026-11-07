@@ -3804,6 +3804,7 @@ let activeMediaChunkCache = null;
 
 // Player 3.0 Pro Studio State
 let currentMediaZoom = 1.0; // 1.0 to 5.0
+let isTheaterMode = false;
 let currentMediaPanX = 0;
 let currentMediaPanY = 0;
 let isMediaPanning = false;
@@ -4418,6 +4419,11 @@ async function playMediaByIndex(index) {
     if (dockBtn) dockBtn.style.display = item.category === 'audio' ? 'inline-flex' : 'none';
     if (title) title.textContent = item.name;
     if (counter) counter.textContent = `${index + 1} of ${currentMediaPlaylist.length}`;
+    const specsBadge = document.getElementById('media-forensic-specs');
+    if (specsBadge) {
+        specsBadge.style.display = 'none';
+        specsBadge.textContent = '';
+    }
     if (prevBtn) prevBtn.disabled = index <= 0;
     if (nextBtn) nextBtn.disabled = index >= currentMediaPlaylist.length - 1;
 
@@ -4605,6 +4611,48 @@ function openMediaPlayerByPath(filePath) {
     if (idx !== -1) {
         playMediaByIndex(idx);
     }
+}
+
+// ── Video Player 5.0 Pro Studio Cyber Cinema Helpers ──
+function toggleTheaterMode() {
+    const container = document.querySelector('.media-modal-container');
+    const theaterBtn = document.getElementById('btn-media-theater');
+    if (!container) return;
+    isTheaterMode = !isTheaterMode;
+    container.classList.toggle('media-modal-container--theater', isTheaterMode);
+    if (theaterBtn) {
+        theaterBtn.textContent = isTheaterMode ? '🗗 Standard' : '🔲 Theater';
+        theaterBtn.classList.toggle('is-active', isTheaterMode);
+    }
+    showToast(isTheaterMode ? '🔲 Theater Mode: Expansive Studio View' : '🗗 Standard View', 'info');
+}
+
+function toggleHotkeysModal() {
+    const modal = document.getElementById('media-hotkeys-modal');
+    if (!modal) return;
+    const isVisible = modal.style.display !== 'none';
+    modal.style.display = isVisible ? 'none' : 'flex';
+}
+
+function updateVideoForensicSpecs(video, isStream) {
+    const specsEl = document.getElementById('media-forensic-specs');
+    if (!specsEl || !video) return;
+    const w = video.videoWidth || 0;
+    const h = video.videoHeight || 0;
+    let tier = '';
+    if (h >= 2160 || w >= 3840) tier = '4K UHD';
+    else if (h >= 1440 || w >= 2560) tier = '2K QHD';
+    else if (h >= 1080 || w >= 1920) tier = '1080p FHD';
+    else if (h >= 720 || w >= 1280) tier = '720p HD';
+    else if (h >= 480) tier = '480p SD';
+    else if (w > 0 && h > 0) tier = `${w}×${h}`;
+    else tier = 'Video';
+
+    const streamMode = isStream ? '⚡ Range Stream' : '💾 Buffer';
+    const dimText = (w > 0 && h > 0) ? `${tier} (${w}×${h})` : tier;
+    specsEl.textContent = `${dimText} · ${streamMode}`;
+    specsEl.title = `Resolution: ${w}×${h} • Pipeline: ${streamMode} • Memory: Bounded`;
+    specsEl.style.display = 'inline-flex';
 }
 
 // ── Video Player 3.0 Pro Studio Helpers ──
@@ -5138,6 +5186,25 @@ function closeMediaPlayer() {
     if (playBtn) {
         playBtn.innerHTML = '▶️ Play';
         playBtn.title = 'Play (Space)';
+    }
+
+    // Reset Video Player 5.0 Theater Mode, Hotkeys & Specs HUD
+    const hotkeysModal = document.getElementById('media-hotkeys-modal');
+    if (hotkeysModal) hotkeysModal.style.display = 'none';
+
+    const modalContainer = document.querySelector('.media-modal-container');
+    if (modalContainer) modalContainer.classList.remove('media-modal-container--theater');
+    isTheaterMode = false;
+    const theaterBtn = document.getElementById('btn-media-theater');
+    if (theaterBtn) {
+        theaterBtn.textContent = '🔲 Theater';
+        theaterBtn.classList.remove('is-active');
+    }
+
+    const specsBadge = document.getElementById('media-forensic-specs');
+    if (specsBadge) {
+        specsBadge.style.display = 'none';
+        specsBadge.textContent = '';
     }
 }
 
@@ -7780,6 +7847,18 @@ function initExplorerUI() {
             updateTimelineScrubber(el);
         });
         el.addEventListener('volumechange', () => updateVolumeMuteUI(el));
+        el.addEventListener('loadedmetadata', () => {
+            if (id === 'cinema-video') {
+                updateVideoForensicSpecs(el, !!activeMediaStreamId);
+            } else {
+                const specsEl = document.getElementById('media-forensic-specs');
+                if (specsEl) {
+                    specsEl.textContent = activeMediaStreamId ? 'Audio · ⚡ Range Stream' : 'Audio · 💾 Buffer';
+                    specsEl.title = 'Audio Track Pipeline: ' + (activeMediaStreamId ? 'Instant Range Stream' : 'Buffered Memory');
+                    specsEl.style.display = 'inline-flex';
+                }
+            }
+        });
     });
 
     // Play / Pause Button
@@ -7848,6 +7927,16 @@ function initExplorerUI() {
     mediaStepFwdBtn?.addEventListener('click', () => stepVideoFrame(1));
 
     // Snapshot, Loop & Ambient Buttons
+    const mediaTheaterBtn = document.getElementById('btn-media-theater');
+    const mediaHotkeysBtn = document.getElementById('btn-media-hotkeys');
+    const closeHotkeysBtn = document.getElementById('btn-close-hotkeys');
+    mediaTheaterBtn?.addEventListener('click', toggleTheaterMode);
+    mediaHotkeysBtn?.addEventListener('click', toggleHotkeysModal);
+    closeHotkeysBtn?.addEventListener('click', () => {
+        const m = document.getElementById('media-hotkeys-modal');
+        if (m) m.style.display = 'none';
+    });
+
     const mediaSnapshotBtn = document.getElementById('btn-media-snapshot');
     const mediaLoopBtn = document.getElementById('btn-media-loop');
     const mediaAmbientBtn = document.getElementById('btn-media-ambient');
@@ -7969,6 +8058,37 @@ function initExplorerUI() {
             if (e.deltaY < 0) nudgeVideoZoom(0.25);
             else if (e.deltaY > 0) nudgeVideoZoom(-0.25);
         }, { passive: false });
+
+        // Multi-Touch Pinch-to-Zoom Engine (Player 5.0 Pro Studio)
+        let touchPinchDist = null;
+        let touchPinchStartZoom = 1.0;
+
+        videoStage.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length === 2) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                touchPinchDist = Math.hypot(dx, dy);
+                touchPinchStartZoom = currentMediaZoom;
+            }
+        }, { passive: true });
+
+        videoStage.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches.length === 2 && touchPinchDist) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.hypot(dx, dy);
+                if (touchPinchDist > 0) {
+                    const factor = dist / touchPinchDist;
+                    setVideoZoom(touchPinchStartZoom * factor);
+                }
+            }
+        }, { passive: true });
+
+        videoStage.addEventListener('touchend', (e) => {
+            if (!e.touches || e.touches.length < 2) {
+                touchPinchDist = null;
+            }
+        });
 
         videoStage.addEventListener('mousedown', (e) => {
             if (currentMediaZoom > 1.0 && e.button === 0) {
@@ -8208,6 +8328,12 @@ function initExplorerUI() {
         } else if (e.key === 'f' || e.key === 'F') {
             e.preventDefault();
             mediaFullscreenBtn?.click();
+        } else if (e.key === 't' || e.key === 'T') {
+            e.preventDefault();
+            toggleTheaterMode();
+        } else if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+            e.preventDefault();
+            toggleHotkeysModal();
         } else if (e.key === 'p' || e.key === 'P') {
             e.preventDefault();
             mediaPipBtn?.click();
@@ -8220,7 +8346,12 @@ function initExplorerUI() {
                 updateVolumeMuteUI(media);
             }
         } else if (e.key === 'Escape') {
-            closeMediaPlayer();
+            const hotkeysModal = document.getElementById('media-hotkeys-modal');
+            if (hotkeysModal && hotkeysModal.style.display !== 'none') {
+                hotkeysModal.style.display = 'none';
+            } else {
+                closeMediaPlayer();
+            }
         }
     });
 

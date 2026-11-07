@@ -169,7 +169,7 @@
                 <div class="nav-links-group">
                     <a href="./knowledge/" class="nav-link-subtle" title="Comprehensive Knowledge Base & Complete Service Manual">Knowledge Hub <span class="nav-badge-pill nav-badge-pill--purple">Manual</span></a>
                     <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span class="nav-badge-pill nav-badge-pill--green">99.3/100</span></a>
-                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-69)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.18.0</span></a>
+                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-70)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.19.0</span></a>
                     <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
                 </div>
                 <div class="nav-actions-divider" aria-hidden="true"></div>
@@ -250,7 +250,7 @@
                             <span class="mn-title">Knowledge Hub &amp; Manual</span>
                             <span class="mn-desc">10 In-Depth Service Specifications</span>
                         </div>
-                        <span class="mn-badge">v8.18.0</span>
+                        <span class="mn-badge">v8.19.0</span>
                     </a>
                     <a href="./how-to-use-zevsafe/" class="mobile-nav-link">
                         <span class="mn-icon">📖</span>
@@ -281,7 +281,7 @@
                             <span class="mn-title">Changelog &amp; Releases</span>
                             <span class="mn-desc">Full release history</span>
                         </div>
-                        <span class="mn-badge">v8.18.0</span>
+                        <span class="mn-badge">v8.19.0</span>
                     </a>
                     <a href="./roadmap/" class="mobile-nav-link">
                         <span class="mn-icon">🧭</span>
@@ -1001,7 +1001,7 @@
                 <span>·</span>
                 <a href="./roadmap/" style="color: #38bdf8; font-weight: 600;">Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.18.0 / WEB-VERSION-69)</a>
+                <a href="./change-log/">Changelog (v8.19.0 / WEB-VERSION-70)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1127,7 +1127,7 @@
         </div>
     </div>
 
-    <!-- Dedicated In-Browser Media Player Modal (Pro Cinema Upgrade 2.0) -->
+    <!-- Dedicated In-Browser Media Player Modal (Pro Cinema Upgrade 5.0) -->
     <div class="media-modal-overlay" id="vault-media-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="media-modal-title">
         <div class="media-modal-container">
             <header class="media-modal-header">
@@ -1135,8 +1135,11 @@
                     <span class="media-type-badge" id="media-modal-badge">🎬 Video</span>
                     <h3 class="media-modal-title" id="media-modal-title">Media Preview</h3>
                     <span class="media-track-counter" id="media-modal-counter">1 of 1</span>
+                    <span class="media-forensic-specs" id="media-forensic-specs" style="display:none;" title="Video Resolution, Framerate & Streaming Pipeline">1080p FHD · ⚡ Range Stream</span>
                 </div>
                 <div class="media-modal-actions">
+                    <button class="media-btn-action" id="btn-media-theater" title="Toggle Expansive Theater Mode (T)">🔲 Theater</button>
+                    <button class="media-btn-action" id="btn-media-hotkeys" title="View Keyboard Shortcuts Cheatsheet (?)">⌨️ Hotkeys</button>
                     <button class="media-btn-action" id="btn-media-snapshot" title="Extract current video frame at full resolution as PNG (S)">📸 Snap Frame</button>
                     <button class="media-btn-action" id="btn-media-loop" title="Toggle single-video loop / playlist auto-advance">🔁 Loop: Off</button>
                     <button class="media-btn-action" id="btn-media-ambient" title="Toggle immersive ambient backlight glow">✨ Ambient: Off</button>
@@ -1146,6 +1149,46 @@
                     <button class="explorer-btn-close" id="btn-close-media-modal" title="Close Player (Esc)" aria-label="Close Player">✕</button>
                 </div>
             </header>
+
+            <!-- Interactive Hotkeys Cheatsheet Overlay -->
+            <div class="media-hotkeys-modal" id="media-hotkeys-modal" style="display: none;" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+                <div class="media-hotkeys-card">
+                    <div class="media-hotkeys-header">
+                        <h4>⌨️ Video Studio Keyboard Shortcuts</h4>
+                        <button class="media-hotkeys-close" id="btn-close-hotkeys" title="Close Cheatsheet (Esc / ?)">✕</button>
+                    </div>
+                    <div class="media-hotkeys-grid">
+                        <div class="media-hotkeys-col">
+                            <h5>Playback &amp; Navigation</h5>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Play / Pause</span><div><kbd>Space</kbd> / <kbd>K</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Seek ±10s</span><div><kbd>←</kbd> / <kbd>→</kbd> / <kbd>J</kbd> / <kbd>L</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Step Frame (1/30s)</span><div><kbd>,</kbd> / <kbd>.</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Speed Down / Up</span><div><kbd>&lt;</kbd> / <kbd>&gt;</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Next / Prev Track</span><div><kbd>Shift + ←/→</kbd></div></div>
+                        </div>
+                        <div class="media-hotkeys-col">
+                            <h5>Forensics &amp; Viewport</h5>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Theater Mode</span><div><kbd>T</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Fullscreen</span><div><kbd>F</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Picture-in-Picture</span><div><kbd>P</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Zoom In / Out</span><div><kbd>+</kbd> / <kbd>-</kbd> / <kbd>Wheel</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Reset Zoom (1:1)</span><div><kbd>0</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Rotate 90° Clockwise</span><div><kbd>R</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Capture Full-Res PNG</span><div><kbd>S</kbd></div></div>
+                        </div>
+                        <div class="media-hotkeys-col">
+                            <h5>Audio, Loop &amp; Bookmarks</h5>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Mute / Unmute</span><div><kbd>M</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">200% Audio Gain Boost</span><div><kbd>B</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Vocal Clarity EQ</span><div><kbd>V</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Set Loop A / B</span><div><kbd>[</kbd> / <kbd>]</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Clear A-B Loop</span><div><kbd>\</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Bookmark Timestamp</span><div><kbd>Shift + M</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Close Player</span><div><kbd>Esc</kbd></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="media-modal-body" id="media-modal-body">
                 <div class="cinema-video-stage" id="cinema-video-stage" title="Click to Play/Pause • Double-click left/right to seek 10s • Mouse wheel to zoom">

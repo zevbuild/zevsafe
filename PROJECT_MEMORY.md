@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.18.0` (`WEB-VERSION-69`, Service Worker `v69`)  
+> **Web Portal Version:** `v8.19.0` (`WEB-VERSION-70`, Service Worker `v70`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -253,6 +253,28 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Added dedicated `.light-theme` rules for `.vault-card`, `.card-title`, `.btn-pw-mgr`, `.btn-pw-generate`, `.seo-card`, and `.seo-faq-item`, eliminating all low-contrast elements and delivering pristine readability across both dark and light modes.
 - **Preservation of Interactive Contracts:**
   - 100% preservation of all tested IDs (`#encrypt-drop-zone`, `#decrypt-drop-zone`, `#btn-encrypt`, `#btn-decrypt`, `#encrypt-password`, `#decrypt-password`, `#max-security-bar`, `#btn-toggle-max-security`, `#btn-decrypt-salvage`, etc.).
+
+### 3.22 Video Player 5.0 Pro Studio Cyber Cinema & Forensic Ergonomics (v8.19.0)
+- **Expansive Cinematic Theater Mode (`🔲 Theater` / `T`):**
+  - Fluid, expansive viewport (`width: 96vw; max-width: 1560px; height: 92vh;`) with ambient vignetting, togglable via `#btn-media-theater` or `T` shortcut key without hijacking OS fullscreen.
+  - Allows side-by-side note-taking, browser tab switching, and forensic inspection of 1080p and 4K footage.
+- **Automated Video Forensic Specs HUD (`#media-forensic-specs`):**
+  - Auto-detects on `loadedmetadata` event native video dimensions (`videoWidth` × `videoHeight`), calculates resolution tier (`4K UHD`, `2K QHD`, `1080p FHD`, `720p HD`, `480p SD`, or native resolution), aspect ratio, and real-time streaming pipeline status (`⚡ Range Stream` vs `💾 Buffer`).
+  - Provides instant clarity on video playback performance and memory bounding.
+- **Expanding Volume Hover Slider:**
+  - Precision ergonomics with YouTube-style smooth horizontal expansion (`.media-volume-wrap:hover .media-volume-range`) from 0 to 70px on desktop hover/focus, keeping the cinema bar uncluttered while remaining fully accessible on touch screens.
+- **Interactive Keyboard Hotkeys HUD (`⌨️ Hotkeys` / `?`):**
+  - Floating glassmorphic cheatsheet overlay (`#media-hotkeys-modal`) with categorized keyboard shortcuts grid:
+    - *Playback & Navigation:* Play/Pause (`Space` / `K`), Seek ±10s (`←/→` / `J/L`), Step Frame (` , / . `), Speed (`< / >`), Track Advancing (`Shift + ←/→`).
+    - *Forensics & Viewport:* Theater Mode (`T`), Fullscreen (`F`), PiP (`P`), Loupe Zoom (`+ / -` / `Wheel`), 1:1 Reset (`0`), 90° Rotate (`R`), Full-Res Snapshot (`S`).
+    - *Audio, Loop & Bookmarks:* Mute (`M`), 200% Gain Boost (`B`), Vocal Clarity EQ (`V`), Loop A/B (`[ / ]`), Clear Loop (`\`), Bookmark Timestamp (`Shift + M`), Close (`Esc`).
+  - Dismissable via `#btn-close-hotkeys`, `Escape`, or `?`.
+- **Multi-Touch Pinch-to-Zoom Engine:**
+  - Multi-touch pinch-to-zoom engine on `#cinema-video-stage` calculating euclidean touch distance (`Math.hypot`) to seamlessly zoom between `1.0×` and `5.0×` on mobile/tablet touchscreens.
+- **Full WCAG AAA Light Theme System:**
+  - High-contrast overrides for `.light-theme .media-forensic-specs`, `.light-theme .media-hotkeys-modal`, `.light-theme .media-hotkeys-card`, `.light-theme .media-hotkey-row kbd`, and `.light-theme .media-modal-container.media-modal-container--theater`.
+- **100% Backward Compatibility & Automated Regression Certification:**
+  - Preserved all 31 existing IDs and assertions while adding Section 6 assertions (8 new tests, total 39/39 passing in `test/test-video-player-pro.js` and 100% across all 10 suites).
 
 ---
 

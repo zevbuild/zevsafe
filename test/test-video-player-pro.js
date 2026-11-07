@@ -212,13 +212,13 @@ runTest('3.9: Extended keyboard shortcuts matrix bound in keydown listener', () 
 console.log('\n--- 4. PWA Service Worker & Version Tags ---');
 const swJs = fs.readFileSync(path.join(ROOT_DIR, 'sw.js'), 'utf8');
 
-runTest('4.1: Service Worker shell cache bumped to v69', () => {
-    assert.ok(swJs.includes("const APP_VERSION    = 'v69';"), 'sw.js must be APP_VERSION v69');
+runTest('4.1: Service Worker shell cache bumped to v70', () => {
+    assert.ok(swJs.includes("const APP_VERSION    = 'v70';"), 'sw.js must be APP_VERSION v70');
 });
 
-runTest('4.2: index.html synchronized to v8.18.0 / WEB-VERSION-69', () => {
-    assert.ok(indexHtml.includes('WEB-VERSION-69'), 'index.html must have WEB-VERSION-69');
-    assert.ok(indexHtml.includes('v8.18.0'), 'index.html must have v8.18.0');
+runTest('4.2: index.html synchronized to v8.19.0 / WEB-VERSION-70', () => {
+    assert.ok(indexHtml.includes('WEB-VERSION-70'), 'index.html must have WEB-VERSION-70');
+    assert.ok(indexHtml.includes('v8.19.0'), 'index.html must have v8.19.0');
 });
 
 runTest('4.3: index.html & styles.css implement upgraded 3-zone cybernetic navbar & brand link', () => {
@@ -277,6 +277,62 @@ runTest('5.5: app.js closeMediaPlayer cleanly closes activeMediaChannel and acti
 
 runTest('5.6: app.js mediaDlBtn handles on-demand decrypted download fallback', () => {
     assert.ok(appJs.includes('getDecryptedFileBlob(item.path)'), 'mediaDlBtn must fall back to getDecryptedFileBlob if blob not buffered');
+});
+
+// ── 6. VIDEO PLAYER 5.0 PRO STUDIO CYBER CINEMA UPGRADES ──────
+console.log('\n--- 6. Video Player 5.0 Pro Studio Cyber Cinema Upgrades ---');
+
+runTest('6.1: Theater Mode, Hotkeys action buttons & Forensic Specs HUD present in index.html', () => {
+    assert.ok(indexHtml.includes('id="btn-media-theater"'), 'Must have #btn-media-theater');
+    assert.ok(indexHtml.includes('id="btn-media-hotkeys"'), 'Must have #btn-media-hotkeys');
+    assert.ok(indexHtml.includes('id="media-forensic-specs"'), 'Must have #media-forensic-specs');
+});
+
+runTest('6.2: Interactive Hotkeys cheatsheet overlay modal & close button present in index.html', () => {
+    assert.ok(indexHtml.includes('id="media-hotkeys-modal"'), 'Must have #media-hotkeys-modal');
+    assert.ok(indexHtml.includes('id="btn-close-hotkeys"'), 'Must have #btn-close-hotkeys');
+    assert.ok(indexHtml.includes('class="media-hotkeys-grid"'), 'Must have .media-hotkeys-grid');
+    assert.ok(indexHtml.includes('class="media-hotkey-row"'), 'Must have .media-hotkey-row');
+});
+
+runTest('6.3: Theater Mode container & Forensic Specs HUD styled in styles.css', () => {
+    assert.ok(stylesCss.includes('.media-modal-container.media-modal-container--theater'), 'Must define .media-modal-container--theater');
+    assert.ok(stylesCss.includes('max-width: 1560px'), 'Theater container must have max-width: 1560px');
+    assert.ok(stylesCss.includes('.media-forensic-specs'), 'Must define .media-forensic-specs');
+    assert.ok(stylesCss.includes('color: #2dd4bf'), 'Forensic specs must use cybernetic teal accent');
+});
+
+runTest('6.4: Interactive Hotkeys modal card & expanding volume hover slider styled in styles.css', () => {
+    assert.ok(stylesCss.includes('.media-hotkeys-modal'), 'Must define .media-hotkeys-modal');
+    assert.ok(stylesCss.includes('.media-hotkeys-card'), 'Must define .media-hotkeys-card');
+    assert.ok(stylesCss.includes('.media-volume-wrap:hover .media-volume-range'), 'Must define expanding volume hover slider');
+});
+
+runTest('6.5: Theater Mode & Hotkeys modal toggle functions implemented in app.js', () => {
+    assert.ok(appJs.includes('function toggleTheaterMode()'), 'Must define toggleTheaterMode');
+    assert.ok(appJs.includes('function toggleHotkeysModal()'), 'Must define toggleHotkeysModal');
+    assert.ok(appJs.includes('let isTheaterMode = false;'), 'Must initialize isTheaterMode state');
+});
+
+runTest('6.6: Forensic metadata specs detection & loadedmetadata event wired in app.js', () => {
+    assert.ok(appJs.includes('function updateVideoForensicSpecs(video, isStream)'), 'Must define updateVideoForensicSpecs');
+    assert.ok(appJs.includes('el.addEventListener(\'loadedmetadata\''), 'Must listen to loadedmetadata event');
+    assert.ok(appJs.includes('4K UHD'), 'Must compute 4K UHD tier');
+    assert.ok(appJs.includes('1080p FHD'), 'Must compute 1080p FHD tier');
+});
+
+runTest('6.7: Multi-touch pinch-to-zoom engine & keyboard shortcuts bound in app.js', () => {
+    assert.ok(appJs.includes('touchPinchDist'), 'Must track touch pinch distance');
+    assert.ok(appJs.includes('touchPinchStartZoom'), 'Must track touch pinch starting zoom');
+    assert.ok(appJs.includes("e.key === 't' || e.key === 'T'"), 'Must bind T to toggleTheaterMode');
+    assert.ok(appJs.includes("e.key === '?'"), 'Must bind ? to toggleHotkeysModal');
+});
+
+runTest('6.8: Light theme WCAG AAA overrides for Forensic Specs, Hotkeys modal and Theater defined', () => {
+    assert.ok(stylesCss.includes('.light-theme .media-forensic-specs'), 'Must define light theme forensic specs');
+    assert.ok(stylesCss.includes('.light-theme .media-hotkeys-modal'), 'Must define light theme hotkeys modal');
+    assert.ok(stylesCss.includes('.light-theme .media-hotkeys-card'), 'Must define light theme hotkeys card');
+    assert.ok(stylesCss.includes('.light-theme .media-modal-container.media-modal-container--theater'), 'Must define light theme theater container');
 });
 
 async function runEndToEndRangeVerification() {
