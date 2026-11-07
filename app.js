@@ -3693,19 +3693,23 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
         const mediaCat = getMediaCategory(fileItem.name);
         if (mediaCat) {
             currentMediaPlaylist.push({
+                ...f,
                 path: fileItem.path,
                 name: fileItem.name,
                 category: mediaCat,
                 mimeType: getMediaMimeType(fileItem.name),
-                size: fileItem.size
+                size: fileItem.size,
+                entry: f
             });
         }
 
         if (getFileCategory(fileItem.name) === 'photo') {
             currentImagePlaylist.push({
+                ...f,
                 path: fileItem.path,
                 name: fileItem.name,
-                size: fileItem.size
+                size: fileItem.size,
+                entry: f
             });
         }
     }
@@ -4373,6 +4377,23 @@ async function playMediaByIndex(index) {
     currentMediaIndex = index;
     const item = currentMediaPlaylist[index];
 
+    // Resolve full catalog entry if available to ensure exact byte offset binding
+    const catalogEntry = (currentV3Vault && currentV3Vault.catalog && Array.isArray(currentV3Vault.catalog.files))
+        ? currentV3Vault.catalog.files.find(f => f.path === item.path || f.name === item.name)
+        : null;
+    const targetEntry = {
+        ...(catalogEntry || {}),
+        ...(item.entry || {}),
+        ...item
+    };
+    if (catalogEntry) {
+        if (item.offset === undefined) item.offset = catalogEntry.offset;
+        if (item.localHeaderOffset === undefined) item.localHeaderOffset = catalogEntry.localHeaderOffset;
+        if (item.chunkStart === undefined) item.chunkStart = catalogEntry.chunkStart;
+        if (item.chunkEnd === undefined) item.chunkEnd = catalogEntry.chunkEnd;
+        if (item.compressed === undefined) item.compressed = catalogEntry.compressed;
+    }
+
     const modal = document.getElementById('vault-media-modal');
     const badge = document.getElementById('media-modal-badge');
     const title = document.getElementById('media-modal-title');
@@ -4385,6 +4406,22 @@ async function playMediaByIndex(index) {
     const loaderText = document.getElementById('media-loading-text');
 
     if (!modal || (!currentDecryptedZip && !currentV3Vault)) return;
+
+    // Reset video & audio elements to wipe any buffered media chunks from prior tracks
+    if (videoEl) {
+        try {
+            videoEl.pause();
+            videoEl.removeAttribute('src');
+            videoEl.load();
+        } catch (_) {}
+    }
+    if (audioEl) {
+        try {
+            audioEl.pause();
+            audioEl.removeAttribute('src');
+            audioEl.load();
+        } catch (_) {}
+    }
 
     // Clean up previous blob URL
     if (currentMediaBlobUrl && currentMediaBlobUrl.startsWith('blob:')) {
@@ -4434,7 +4471,7 @@ async function playMediaByIndex(index) {
         currentV3Vault &&
         currentV3Vault.file &&
         currentV3Vault.masterKey &&
-        !item.compressed &&
+        !targetEntry.compressed &&
         typeof navigator !== 'undefined' &&
         navigator.serviceWorker &&
         navigator.serviceWorker.controller
@@ -4498,11 +4535,12 @@ async function playMediaByIndex(index) {
                 const rangeBytes = await StreamUnpacker.extractFileRange(
                     currentV3Vault.file,
                     currentV3Vault.masterKey,
-                    item,
+                    targetEntry,
                     start,
                     end,
                     {
-                        manifest: currentV3Vault.manifest,
+                        manifest: currentV3Vault.catalog,
+                        header: currentV3Vault.catalog?.header,
                         chunkCache: activeMediaChunkCache
                     }
                 );
@@ -4523,7 +4561,7 @@ async function playMediaByIndex(index) {
         };
 
         if (item.category === 'video' && videoEl) {
-            if (audioEl) { audioEl.pause(); audioEl.src = ''; audioEl.style.display = 'none'; }
+            if (audioEl) { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); audioEl.style.display = 'none'; }
             videoEl.style.display = 'block';
             videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
             videoEl.src = streamUrl;
@@ -4535,9 +4573,10 @@ async function playMediaByIndex(index) {
             if (pipBtn) pipBtn.style.display = 'inline-flex';
             if (stepBackBtn) stepBackBtn.style.display = 'inline-flex';
             if (stepFwdBtn) stepFwdBtn.style.display = 'inline-flex';
+            videoEl.load();
             videoEl.play().catch(() => {});
         } else if (audioEl) {
-            if (videoEl) { videoEl.pause(); videoEl.src = ''; videoEl.style.display = 'none'; }
+            if (videoEl) { videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load(); videoEl.style.display = 'none'; }
             audioEl.style.display = 'block';
             audioEl.className = 'media-player-element';
             audioEl.src = streamUrl;
@@ -4548,6 +4587,7 @@ async function playMediaByIndex(index) {
             if (pipBtn) pipBtn.style.display = 'none';
             if (stepBackBtn) stepBackBtn.style.display = 'none';
             if (stepFwdBtn) stepFwdBtn.style.display = 'none';
+            audioEl.load();
             audioEl.play().catch(() => {});
         }
     } else {
@@ -4566,7 +4606,7 @@ async function playMediaByIndex(index) {
             if (loader) loader.style.display = 'none';
 
             if (item.category === 'video' && videoEl) {
-                if (audioEl) { audioEl.pause(); audioEl.src = ''; audioEl.style.display = 'none'; }
+                if (audioEl) { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); audioEl.style.display = 'none'; }
                 videoEl.style.display = 'block';
                 videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
                 videoEl.src = currentMediaBlobUrl;
@@ -4578,9 +4618,10 @@ async function playMediaByIndex(index) {
                 if (pipBtn) pipBtn.style.display = 'inline-flex';
                 if (stepBackBtn) stepBackBtn.style.display = 'inline-flex';
                 if (stepFwdBtn) stepFwdBtn.style.display = 'inline-flex';
+                videoEl.load();
                 videoEl.play().catch(() => {});
             } else if (audioEl) {
-                if (videoEl) { videoEl.pause(); videoEl.src = ''; videoEl.style.display = 'none'; }
+                if (videoEl) { videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load(); videoEl.style.display = 'none'; }
                 audioEl.style.display = 'block';
                 audioEl.className = 'media-player-element';
                 audioEl.src = currentMediaBlobUrl;
@@ -4591,6 +4632,7 @@ async function playMediaByIndex(index) {
                 if (pipBtn) pipBtn.style.display = 'none';
                 if (stepBackBtn) stepBackBtn.style.display = 'none';
                 if (stepFwdBtn) stepFwdBtn.style.display = 'none';
+                audioEl.load();
                 audioEl.play().catch(() => {});
             }
         } catch (err) {
@@ -4607,12 +4649,17 @@ function openMediaPlayerByPath(filePath) {
         for (const fileItem of currentDecryptedFileList) {
             const mediaCat = getMediaCategory(fileItem.name);
             if (mediaCat) {
+                const catalogEntry = fileItem.entry || (currentV3Vault && currentV3Vault.catalog && Array.isArray(currentV3Vault.catalog.files)
+                    ? currentV3Vault.catalog.files.find(f => f.path === fileItem.path || f.name === fileItem.name)
+                    : null);
                 currentMediaPlaylist.push({
+                    ...(catalogEntry || {}),
                     path: fileItem.path,
                     name: fileItem.name,
                     category: mediaCat,
                     mimeType: getMediaMimeType(fileItem.name),
-                    size: fileItem.size
+                    size: fileItem.size,
+                    entry: catalogEntry || fileItem.entry
                 });
             }
         }
@@ -5149,12 +5196,14 @@ function closeMediaPlayer() {
 
     if (videoEl) {
         videoEl.pause();
-        videoEl.src = '';
+        videoEl.removeAttribute('src');
+        videoEl.load();
         videoEl.style.display = 'none';
     }
     if (audioEl) {
         audioEl.pause();
-        audioEl.src = '';
+        audioEl.removeAttribute('src');
+        audioEl.load();
         audioEl.style.display = 'none';
     }
 

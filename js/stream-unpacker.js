@@ -1171,6 +1171,15 @@
             } else {
                 throw new TypeError('targetEntry is a string path, but options.manifest was not provided');
             }
+        } else if (typeof entry === 'object' && entry !== null && entry.localHeaderOffset === undefined && entry.offset === undefined) {
+            // Defense-in-depth: If entry object lacks byte offset information, attempt lookup in manifest files
+            if (opts.manifest && Array.isArray(opts.manifest.files)) {
+                const lookupPath = entry.path || entry.name;
+                const found = opts.manifest.files.find(f => f.path === lookupPath || f.name === lookupPath);
+                if (found) {
+                    entry = { ...found, ...entry };
+                }
+            }
         }
 
         // 1. Read vault container header (57 bytes) or reuse pre-parsed header
@@ -1371,6 +1380,15 @@
                 entry = found;
             } else {
                 throw new TypeError('targetEntry is a string path, but options.manifest was not provided');
+            }
+        } else if (typeof entry === 'object' && entry !== null && entry.localHeaderOffset === undefined && entry.offset === undefined) {
+            // Defense-in-depth: If entry object lacks byte offset information, attempt lookup in manifest files
+            if (opts.manifest && Array.isArray(opts.manifest.files)) {
+                const lookupPath = entry.path || entry.name;
+                const found = opts.manifest.files.find(f => f.path === lookupPath || f.name === lookupPath);
+                if (found) {
+                    entry = { ...found, ...entry };
+                }
             }
         }
 

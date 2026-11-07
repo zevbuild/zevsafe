@@ -809,6 +809,13 @@
                             </div>
                         </div>
 
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Multi-Video Distinct Playback &amp; Catalog Offset Binding:</strong> Fixed a critical regression where decrypting a vault with multiple video files would play Video 1 repeatedly when clicking subsequent videos. The decrypted playlist builder now spreads all catalog metadata preserving <code>localHeaderOffset</code>, <code>chunkStart</code>, and <code>chunkEnd</code>, passes <code>manifest: currentV3Vault.catalog</code> to the range streamer, and clears prior media element buffer state (<code>videoEl.removeAttribute('src'); videoEl.load()</code>). In addition, <code>StreamUnpacker.extractFileRange</code> and <code>extractSingleFile</code> include defensive fallback to resolve entries lacking byte offsets via <code>opts.manifest.files</code>.
+                            </div>
+                        </div>
+
 <div class="cl-item">
                             <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
                             <div class="cl-item-text">

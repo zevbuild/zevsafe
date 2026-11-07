@@ -291,6 +291,11 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Converted the header and cinema control bar into translucent floating overlays (`position: absolute`) with subtle backdrop gradients.
   - Controls automatically fade out via `.cinema-ui--hidden` after 2,500ms of user inactivity during active video playback, concealing the mouse cursor on the video stage and presenting an uncompromised full-screen viewing experience.
   - Paused-state & drawer protection: Auto-hide is instantly suspended whenever the video is paused, or when the forensic tools drawer or hotkeys modal is open. Any cursor movement, touch, or keystroke immediately restores controls.
+- **Multi-Video Distinct Playback & Catalog Offset Binding:**
+  - Fixed a critical regression where encrypted vaults containing multiple video files would play Video 1 repeatedly when clicking subsequent videos.
+  - In `openV3VaultExplorer` and `openMediaPlayerByPath`, playlist building now spreads catalog metadata (`...f`) preserving `localHeaderOffset`, `chunkStart`, and `chunkEnd`.
+  - In `playMediaByIndex`, corrected typo `manifest: currentV3Vault.manifest` to `manifest: currentV3Vault.catalog`, bound `targetEntry` with catalog offsets, and performed clean `<video>` element demuxer reset (`videoEl.removeAttribute('src'); videoEl.load()`).
+  - In `StreamUnpacker.extractFileRange` and `extractSingleFile`, added defensive fallback: when passed an entry object lacking byte offsets, automatically looks up the corresponding file in `opts.manifest.files` by path/name, ensuring robust offset extraction across all call sites.
 - **Intermediate Desktop / Tablet Navbar Clearance Protection (`styles.css`):**
   - Added `.brand-status-badge { display: none !important; }` on intermediate tablet viewports (769px–1040px) to guarantee generous horizontal breathing room, eliminating any possibility of navbar overflow or edge clipping.
 

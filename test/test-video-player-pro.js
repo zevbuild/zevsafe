@@ -386,15 +386,29 @@ async function runEndToEndRangeVerification() {
     const videoData = new Uint8Array(16384);
     for (let i = 0; i < videoData.length; i++) videoData[i] = (i * 7 + 13) & 0xff;
 
-    const files = [{
-        name: 'movie.mp4',
-        path: 'movie.mp4',
-        size: videoData.length,
-        lastModified: Date.now(),
-        stream: () => new ReadableStream({
-            start(c) { c.enqueue(videoData); c.close(); }
-        })
-    }];
+    const video2Data = new Uint8Array(14000);
+    for (let i = 0; i < video2Data.length; i++) video2Data[i] = (i * 11 + 47) & 0xff;
+
+    const files = [
+        {
+            name: 'movie1.mp4',
+            path: 'movie1.mp4',
+            size: videoData.length,
+            lastModified: Date.now(),
+            stream: () => new ReadableStream({
+                start(c) { c.enqueue(videoData); c.close(); }
+            })
+        },
+        {
+            name: 'movie2.mp4',
+            path: 'movie2.mp4',
+            size: video2Data.length,
+            lastModified: Date.now(),
+            stream: () => new ReadableStream({
+                start(c) { c.enqueue(video2Data); c.close(); }
+            })
+        }
+    ];
 
     const sinkBytes = [];
     let curPos = 0;
@@ -424,11 +438,12 @@ async function runEndToEndRangeVerification() {
 
     const vaultBytes = new Uint8Array(sinkBytes);
     const catalog = await StreamUnpacker.readVaultManifest(vaultBytes, 'RangeTestPass123!', null, { iterations: 1000 });
-    const entry = catalog.files[0];
+    const entry1 = catalog.files[0];
+    const entry2 = catalog.files[1];
 
     // Sub-test 5.7: Single-chunk partial range extraction
     runTest('5.7: StreamUnpacker.extractFileRange accurately extracts partial single-chunk byte ranges', async () => {
-        const range1 = await StreamUnpacker.extractFileRange(vaultBytes, 'RangeTestPass123!', entry, 100, 500, { iterations: 1000 });
+        const range1 = await StreamUnpacker.extractFileRange(vaultBytes, 'RangeTestPass123!', entry1, 100, 500, { iterations: 1000 });
         assert.strictEqual(range1.length, 401, 'Range 1 length matches');
         for (let i = 0; i < 401; i++) {
             assert.strictEqual(range1[i], videoData[100 + i], `Byte ${i} matches`);
@@ -437,11 +452,52 @@ async function runEndToEndRangeVerification() {
 
     // Sub-test 5.8: Multi-chunk spanning byte range extraction
     runTest('5.8: StreamUnpacker.extractFileRange accurately extracts multi-chunk spanning byte ranges', async () => {
-        const range2 = await StreamUnpacker.extractFileRange(vaultBytes, 'RangeTestPass123!', entry, 1500, 7000, { iterations: 1000 });
+        const range2 = await StreamUnpacker.extractFileRange(vaultBytes, 'RangeTestPass123!', entry1, 1500, 7000, { iterations: 1000 });
         assert.strictEqual(range2.length, 5501, 'Range 2 length matches');
         for (let i = 0; i < 5501; i++) {
             assert.strictEqual(range2[i], videoData[1500 + i], `Byte ${i} matches`);
         }
+    });
+
+    // Sub-test 5.9: Multi-video distinct byte extraction without cross-video contamination
+    runTest('5.9: StreamUnpacker.extractFileRange accurately extracts distinct bytes for video 2 at higher offset', async () => {
+        assert.ok(entry2.localHeaderOffset > 0, 'Video 2 localHeaderOffset must be > 0');
+        const rangeVideo2 = await StreamUnpacker.extractFileRange(vaultBytes, 'RangeTestPass123!', entry2, 200, 800, { iterations: 1000 });
+        assert.strictEqual(rangeVideo2.length, 601, 'Range Video 2 length matches');
+        for (let i = 0; i < 601; i++) {
+            assert.strictEqual(rangeVideo2[i], video2Data[200 + i], `Video 2 byte ${i} matches its own content`);
+        }
+        // Verify it is NOT identical to Video 1
+        assert.notStrictEqual(rangeVideo2[0], videoData[200], 'Video 2 must not return Video 1 content');
+    });
+
+    // Sub-test 5.10: Range extraction defense-in-depth resolves entry lacking offset via options.manifest
+    runTest('5.10: extractFileRange resolves playlist item lacking localHeaderOffset via opts.manifest', async () => {
+        const barePlaylistItem = {
+            name: 'movie2.mp4',
+            path: 'movie2.mp4',
+            category: 'video',
+            size: video2Data.length
+        };
+        const resolvedRange = await StreamUnpacker.extractFileRange(
+            vaultBytes,
+            'RangeTestPass123!',
+            barePlaylistItem,
+            50,
+            350,
+            { iterations: 1000, manifest: catalog }
+        );
+        assert.strictEqual(resolvedRange.length, 301, 'Resolved range length matches');
+        for (let i = 0; i < 301; i++) {
+            assert.strictEqual(resolvedRange[i], video2Data[50 + i], `Byte ${i} matches movie2 bytes`);
+        }
+    });
+
+    // Sub-test 5.11: app.js ensures catalog manifest and entry binding in media player
+    runTest('5.11: app.js accurately passes manifest: currentV3Vault.catalog and spreads catalog entries', () => {
+        assert.ok(appJs.includes('manifest: currentV3Vault.catalog'), 'app.js must pass manifest: currentV3Vault.catalog');
+        assert.ok(appJs.includes('targetEntry'), 'app.js must resolve targetEntry');
+        assert.ok(!appJs.includes('manifest: currentV3Vault.manifest'), 'app.js must not pass undefined currentV3Vault.manifest');
     });
 
     console.log('\n===============================================================');
