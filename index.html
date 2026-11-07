@@ -168,21 +168,43 @@
             <div class="navbar-links">
                 <div class="nav-links-group">
                     <a href="./knowledge/" class="nav-link-subtle" title="Comprehensive Knowledge Base & Complete Service Manual">Knowledge Hub <span class="nav-badge-pill nav-badge-pill--purple">Manual</span></a>
-                    <a href="./how-to-use-zevsafe/" class="nav-link-subtle" title="Step-by-step Quickstart Guide">Documentation</a>
-                    <a href="./device-power/" class="nav-link-subtle nav-link--desktop-only" title="Benchmark Your Device Hardware Encryption Power">⚡ Device Power</a>
                     <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span class="nav-badge-pill nav-badge-pill--green">99.3/100</span></a>
                     <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-69)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.18.0</span></a>
                     <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
-                    <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="nav-link-subtle nav-link--external nav-link--desktop-only" title="Open Source Repository on GitHub">
-                        GitHub <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
-                    </a>
                 </div>
                 <div class="nav-actions-divider" aria-hidden="true"></div>
                 <div class="nav-actions-deck">
-                    <button type="button" class="nav-btn-secondary" id="btn-open-usb-backup-nav" title="Create 1-Click Offline USB Air-Gap Backup Kit">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #10b981;"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="12" cy="12" r="3"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
-                        <span>USB Backup</span>
-                    </button>
+                    <!-- Tools Dropdown (consolidates secondary offline tools & manuals) -->
+                    <div class="nav-dropdown" id="nav-tools-dropdown">
+                        <button type="button" class="nav-btn-secondary nav-dropdown-btn" id="btn-nav-tools-toggle" aria-haspopup="true" aria-expanded="false" title="Additional Offline Tools & Utilities">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            <span>Tools</span>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <div class="nav-dropdown-menu" role="menu" aria-label="Offline Tools and Documentation">
+                            <button type="button" class="nav-dropdown-item" id="btn-open-usb-backup-nav" role="menuitem">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="12" cy="12" r="3"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+                                <span>USB Air-Gap Backup Kit</span>
+                            </button>
+                            <button type="button" class="nav-dropdown-item" id="btn-download-pc-setup" role="menuitem">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+                                <span>25GB+ PC Toolkit</span>
+                            </button>
+                            <div class="nav-dropdown-sep" role="separator"></div>
+                            <a href="./device-power/" class="nav-dropdown-item" role="menuitem">
+                                <span style="margin-right: 2px;">⚡</span>
+                                <span>Device Power Benchmark</span>
+                            </a>
+                            <a href="./how-to-use-zevsafe/" class="nav-dropdown-item" role="menuitem">
+                                <span style="margin-right: 2px;">📖</span>
+                                <span>User Documentation</span>
+                            </a>
+                            <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="nav-dropdown-item" role="menuitem">
+                                <span style="margin-right: 2px;">🐙</span>
+                                <span>GitHub Repository ↗</span>
+                            </a>
+                        </div>
+                    </div>
                     <button type="button" class="nav-btn-secondary" id="btn-install-pwa" title="Install ZevSafe as an offline app on Android, iOS, or PC">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #2dd4bf;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         <span>Install App</span>
@@ -190,10 +212,6 @@
                     <button type="button" class="nav-btn-secondary btn-theme-toggle" id="btn-theme-toggle" title="Toggle Light / Dark Theme" aria-label="Toggle theme">
                         <span class="theme-icon-light" style="display: none;">☀️</span>
                         <span class="theme-icon-dark">🌙</span>
-                    </button>
-                    <button class="nav-btn-primary" id="btn-download-pc-setup" title="Download 1-Click 25GB+ PC Toolkit">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
-                        <span>PC Toolkit</span>
                     </button>
                 </div>
             </div>

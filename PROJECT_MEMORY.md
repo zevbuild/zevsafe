@@ -225,6 +225,9 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Interactive hover transitions (`transform: translateY(-1px)`) and glowing borders across badge and trust strip.
 
 ### 3.21 Main Landing Page UI, Bento Cards & Light Theme Overhaul (v8.18.0)
+- **Desktop Navbar Streamlining & Unified Tools Dropdown:**
+  - Removed clutter by moving redundant top-level buttons and links (`Documentation`, `⚡ Device Power`, `GitHub ↗`) and consolidating secondary utilities (`USB Air-Gap Backup Kit`, `25GB+ PC Toolkit`, documentation) into an accessible, glassmorphic `Tools ▾` dropdown menu (`#nav-tools-dropdown`).
+  - Streamlined desktop navbar footprint from 11 cluttered elements to 4 primary links (`Knowledge Hub`, `Security Audit`, `Changelog`, `Master Plan`) + 3 focused action buttons (`Tools ▾`, `Install App`, `Theme Toggle`), completely resolving button crowding and edge clipping.
 - **Desktop Navbar Right Overflow & Edge Protection:**
   - Resolved desktop layout clipping where `Install App`, `Theme Toggle`, and `PC Toolkit` were pushed off-screen.
   - Elevated `.app-shell` container width from 1100px to 1260px, streamlined links/buttons padding and font metrics, and added automatic collapse of secondary button text on intermediate screens.

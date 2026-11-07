@@ -811,8 +811,43 @@ function initMobileNavigation() {
     }
 }
 
+function initNavToolsDropdown() {
+    const dropdown = document.getElementById('nav-tools-dropdown');
+    const toggleBtn = document.getElementById('btn-nav-tools-toggle');
+    if (!dropdown || !toggleBtn) return;
+
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = dropdown.classList.toggle('active');
+        toggleBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && dropdown.classList.contains('active')) {
+            dropdown.classList.remove('active');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            toggleBtn.focus();
+        }
+    });
+
+    dropdown.querySelectorAll('.nav-dropdown-item').forEach(item => {
+        item.addEventListener('click', () => {
+            dropdown.classList.remove('active');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        });
+    });
+}
+
 initUniversalAutoHideNavbar();
 initMobileNavigation();
+initNavToolsDropdown();
 
 // ============================================
 // SHOW / HIDE PASSWORD TOGGLE
