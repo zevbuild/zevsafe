@@ -8,7 +8,7 @@
 // ================================================================
 
 // Baseline regression assertion preservation: const APP_VERSION    = 'v70';
-const APP_VERSION    = 'v71';
+const APP_VERSION    = 'v72';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -68,7 +68,8 @@ const SHELL_ASSETS = [
     './js/stream-saver.js',
     './js/usb-backup-kit.js',
     './js/device-benchmark.js',
-    './js/qr-engine.js'
+    './js/qr-engine.js',
+    './js/passphrase-words.js'
 ];
 
 // ── Install: precache the app shell ────────────────────────────

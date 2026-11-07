@@ -1,4 +1,40 @@
 // ============================================
+// DYNAMIC SCRIPT LOADER (Phase 1: Faster First Load)
+// ============================================
+const _loadedScriptPromises = new Map();
+
+function loadScript(src) {
+    if (_loadedScriptPromises.has(src)) {
+        return _loadedScriptPromises.get(src);
+    }
+    const promise = new Promise((resolve, reject) => {
+        if (typeof document === 'undefined') {
+            resolve();
+            return;
+        }
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) {
+            resolve();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = (err) => {
+            _loadedScriptPromises.delete(src);
+            reject(new Error(`Failed to load script: ${src}`));
+        };
+        document.head.appendChild(script);
+    });
+    _loadedScriptPromises.set(src, promise);
+    return promise;
+}
+if (typeof window !== 'undefined') {
+    window.loadScript = loadScript;
+}
+
+// ============================================
 // DOM ELEMENTS
 // ============================================
 const encryptDropZone     = document.getElementById('encrypt-drop-zone');
@@ -222,7 +258,13 @@ function showToast(message, type = 'info', duration = 4000) {
         if (timer) clearTimeout(timer);
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(-8px) scale(0.96)';
-        setTimeout(() => toast.remove(), 250);
+        setTimeout(() => {
+            if (typeof toast.remove === 'function') {
+                toast.remove();
+            } else if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 250);
     };
 
     closeBtn.addEventListener('click', dismiss);
@@ -2327,6 +2369,7 @@ btnEncrypt.addEventListener('click', async () => {
         }
 
         // Step 1: Package folder using Granular Per-File Adaptive Compression
+        if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
         const zip = new JSZip();
         let storeCount = 0;
         let deflateCount = 0;
@@ -2665,6 +2708,7 @@ btnDecrypt.addEventListener('click', async () => {
         updateProgress('Extracting ZIP...', 80);
 
         // Validate ZIP structure
+        if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
         const unzipped = await JSZip.loadAsync(decryptedBuffer);
 
         const folderName    = selectedDecryptFile.name.replace(/\.zev$/i, '');
@@ -2854,7 +2898,14 @@ let currentScannerStream = null;
 let scannerAnimFrameId = null;
 let activeScannedPaperSafe = null;
 
-function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
+async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
+    if (typeof QREngine === 'undefined') {
+        try {
+            await loadScript('js/qr-engine.js');
+        } catch (e) {
+            console.warn('[ZevSafe] Failed to load QR engine:', e);
+        }
+    }
     const modal = document.getElementById('paper-safe-modal');
     const container = document.getElementById('paper-safe-sheet-container');
     const hintInput = document.getElementById('paper-hint-input');
@@ -3069,6 +3120,13 @@ function applyPaperSafeParameters(p) {
 }
 
 async function openQRScannerModal() {
+    if (typeof QREngine === 'undefined') {
+        try {
+            await loadScript('js/qr-engine.js');
+        } catch (e) {
+            console.warn('[ZevSafe] Failed to load QR engine:', e);
+        }
+    }
     const modal = document.getElementById('qr-scanner-modal');
     const detectedCard = document.getElementById('qr-detected-card');
     const detectedDetails = document.getElementById('qr-detected-details');
@@ -3823,6 +3881,22 @@ let ambientAnimFrameId = null;
 let currentMediaVocalFilter = null;
 let currentMediaVocalClarity = false;
 
+function getActiveCinemaMedia() {
+    const v = document.getElementById('cinema-video');
+    const a = document.getElementById('cinema-audio');
+    if (v && v.style.display !== 'none') return v;
+    if (a && a.style.display !== 'none') return a;
+    return null;
+}
+
+function updatePlayBtnUI(isPlaying) {
+    const btn = document.getElementById('btn-media-play');
+    if (btn) {
+        btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
+        btn.title = isPlaying ? 'Pause (Space)' : 'Play (Space)';
+    }
+}
+
 // Dedicated Image Lightbox Viewer State
 let currentImageBlobUrl = null;
 let currentImageFilename = '';
@@ -4158,6 +4232,7 @@ async function batchDownloadSelected() {
                 triggerDownload(blob, fileItem.name);
             }
         } else {
+            if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
             const batchZip = new JSZip();
             for (const path of explorerSelectedFiles) {
                 const rawBlob = await getDecryptedFileBlob(path);
@@ -4360,7 +4435,8 @@ function lockVaultSession() {
 }
 
 // Retain alias for full backward compatibility
-const lockV3VaultSession = lockVaultSession;
+function lockV3VaultSession() { return lockVaultSession(); }
+if (typeof window !== 'undefined') window.lockV3VaultSession = lockVaultSession;
 
 function closeVaultExplorer() {
     const modal = document.getElementById('vault-explorer-modal');
@@ -5205,15 +5281,15 @@ function closeMediaPlayer() {
     if (loader) loader.style.display = 'none';
 
     if (videoEl) {
-        videoEl.pause();
-        videoEl.removeAttribute('src');
-        videoEl.load();
+        if (typeof videoEl.pause === 'function') videoEl.pause();
+        if (typeof videoEl.removeAttribute === 'function') videoEl.removeAttribute('src');
+        if (typeof videoEl.load === 'function') videoEl.load();
         videoEl.style.display = 'none';
     }
     if (audioEl) {
-        audioEl.pause();
-        audioEl.removeAttribute('src');
-        audioEl.load();
+        if (typeof audioEl.pause === 'function') audioEl.pause();
+        if (typeof audioEl.removeAttribute === 'function') audioEl.removeAttribute('src');
+        if (typeof audioEl.load === 'function') audioEl.load();
         audioEl.style.display = 'none';
     }
 
@@ -6479,7 +6555,7 @@ function expandAudioDock() {
 function closeAudioDock() {
     const audioDock = document.getElementById('vault-audio-dock');
     const audioEl = document.getElementById('cinema-audio');
-    if (audioEl) {
+    if (audioEl && typeof audioEl.pause === 'function') {
         audioEl.pause();
     }
     if (audioDock) {
@@ -6754,6 +6830,7 @@ async function downloadSalvageZip() {
         showToast('No rescued files to download.', 'warning');
         return;
     }
+    if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
     const zip = new JSZip();
     for (const f of lastSalvageResult.results.rescuedFiles) {
         zip.file(f.path, f.data);
@@ -6780,6 +6857,7 @@ async function openExplorerFromSalvage() {
         showToast('No rescued files to open.', 'warning');
         return;
     }
+    if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
     const zip = new JSZip();
     for (const f of lastSalvageResult.results.rescuedFiles) {
         zip.file(f.path, f.data);
@@ -7010,216 +7088,26 @@ function renderSafeMarkdown(md) {
 // ⚡ CSPRNG PASSWORD & DICEWARE PASSPHRASE GENERATOR
 // =====================================================
 
-const DICEWARE_WORDLIST = [
-    'abandon', 'ability', 'absent', 'absorb', 'abstract', 'academy', 'access', 'account', 'accuse', 'achieve',
-    'acoustic', 'acquire', 'across', 'action', 'active', 'actual', 'adapt', 'addition', 'address', 'adjust',
-    'admit', 'adult', 'advance', 'advice', 'aerobic', 'affair', 'afford', 'afraid', 'agency', 'agenda',
-    'agent', 'agree', 'ahead', 'aim', 'airport', 'aisle', 'alarm', 'album', 'alcohol', 'alert',
-    'alien', 'allied', 'almost', 'alpha', 'already', 'alter', 'always', 'amaze', 'amber', 'ambient',
-    'anchor', 'ancient', 'angel', 'anger', 'angle', 'animal', 'ankle', 'announce', 'annual', 'another',
-    'answer', 'antenna', 'antique', 'anxiety', 'anybody', 'apart', 'apology', 'appear', 'apple', 'approve',
-    'apron', 'arcade', 'arch', 'arctic', 'arena', 'armor', 'arrow', 'artist', 'ascend', 'aspect',
-    'assault', 'asset', 'assist', 'assume', 'athlete', 'atlas', 'atom', 'attach', 'attack', 'attempt',
-    'attend', 'attitude', 'attract', 'auction', 'audio', 'audit', 'august', 'aurora', 'author', 'auto',
-    'autumn', 'avalanche', 'avenue', 'average', 'avocado', 'avoid', 'awake', 'aware', 'awesome', 'axis',
-    'bachelor', 'bacon', 'badge', 'bagel', 'balance', 'balcony', 'bamboo', 'banana', 'banner', 'baron',
-    'barrel', 'barrier', 'basket', 'battery', 'battle', 'beach', 'beacon', 'beam', 'beauty', 'because',
-    'become', 'beef', 'before', 'begin', 'behave', 'behind', 'believe', 'benefit', 'berry', 'betray',
-    'better', 'between', 'beyond', 'bicycle', 'binary', 'biology', 'bird', 'birth', 'bitter', 'blade',
-    'blanket', 'blaze', 'blend', 'bless', 'blind', 'block', 'blonde', 'blood', 'bloom', 'blossom',
-    'board', 'boat', 'body', 'boil', 'bomb', 'bonus', 'boost', 'border', 'borrow', 'boss',
-    'bounce', 'boundary', 'bracket', 'brain', 'branch', 'brass', 'brave', 'bread', 'breeze', 'brick',
-    'bridge', 'brief', 'bright', 'bring', 'brisk', 'broccoli', 'broken', 'bronze', 'broom', 'bubble',
-    'bucket', 'budget', 'buffalo', 'build', 'bulb', 'bullet', 'bundle', 'bunker', 'burden', 'burger',
-    'cabin', 'cable', 'cactus', 'cage', 'cake', 'call', 'calm', 'camera', 'camp', 'canal',
-    'candle', 'canvas', 'canyon', 'capable', 'capital', 'captain', 'carbon', 'card', 'cargo', 'carpet',
-    'carrier', 'carrot', 'castle', 'casual', 'catalyst', 'catch', 'category', 'cattle', 'cause', 'cave',
-    'ceiling', 'celery', 'cement', 'census', 'century', 'cereal', 'certain', 'chair', 'chalk', 'champion',
-    'change', 'channel', 'chaos', 'chapter', 'charge', 'chase', 'chat', 'cheap', 'check', 'cheese',
-    'cherry', 'chest', 'chicken', 'chief', 'child', 'chimney', 'choice', 'choose', 'chronic', 'chuckle',
-    'cinema', 'circle', 'circuit', 'citizen', 'city', 'civil', 'claim', 'clap', 'clarify', 'classic',
-    'claw', 'clay', 'clean', 'clerk', 'clever', 'click', 'client', 'cliff', 'climb', 'clinic',
-    'clip', 'clock', 'clog', 'close', 'cloth', 'cloud', 'clover', 'club', 'clump', 'cluster',
-    'clutch', 'coach', 'coast', 'coconut', 'code', 'coffee', 'coil', 'coin', 'collect', 'colony',
-    'column', 'combine', 'comedy', 'comfort', 'comic', 'common', 'compact', 'company', 'compass', 'compile',
-    'complex', 'compose', 'compute', 'concert', 'conduct', 'confirm', 'connect', 'conquer', 'consent', 'consider',
-    'consist', 'constant', 'control', 'convert', 'cookie', 'copper', 'coral', 'core', 'corner', 'correct',
-    'cortex', 'cosmic', 'cost', 'cotton', 'couch', 'country', 'couple', 'courage', 'cousin', 'cover',
-    'coyote', 'cradle', 'craft', 'crane', 'crash', 'crater', 'crawl', 'crazy', 'cream', 'credit',
-    'creek', 'crew', 'cricket', 'crime', 'crisp', 'critic', 'crop', 'cross', 'crouch', 'crowd',
-    'crucial', 'cruise', 'crumble', 'crunch', 'crush', 'crystal', 'cube', 'culture', 'cupboard', 'curious',
-    'current', 'curtain', 'curve', 'cushion', 'custom', 'cute', 'cycle', 'cylinder', 'daemon', 'daily',
-    'damage', 'dance', 'danger', 'daring', 'dark', 'dawn', 'daylight', 'dazzle', 'dealer', 'debate',
-    'decade', 'decide', 'decimal', 'declare', 'decor', 'decrease', 'dedicate', 'deep', 'defense', 'define',
-    'defy', 'degree', 'delay', 'deliver', 'demand', 'demise', 'denial', 'density', 'deposit', 'depth',
-    'deputy', 'derive', 'describe', 'desert', 'design', 'desk', 'despair', 'destroy', 'detail', 'detect',
-    'develop', 'device', 'devote', 'diagram', 'dial', 'diamond', 'diary', 'diesel', 'differ', 'digital',
-    'dignity', 'dilemma', 'dinner', 'dinosaur', 'direct', 'dirt', 'disagree', 'discover', 'disease', 'dish',
-    'dismiss', 'disorder', 'display', 'distance', 'divert', 'divide', 'divorce', 'dizzy', 'doctor', 'document',
-    'dolphin', 'domain', 'donate', 'donkey', 'donor', 'door', 'dose', 'double', 'dove', 'draft',
-    'dragon', 'drama', 'drastic', 'draw', 'dream', 'dress', 'drift', 'drill', 'drink', 'drip',
-    'drive', 'drop', 'drum', 'dryer', 'duck', 'duet', 'dune', 'during', 'dust', 'dwarf',
-    'dynamic', 'eager', 'eagle', 'early', 'earn', 'earth', 'easily', 'east', 'easy', 'echo',
-    'ecology', 'economy', 'edge', 'edit', 'educate', 'effort', 'eight', 'either', 'elbow', 'elder',
-    'electric', 'elegant', 'element', 'elephant', 'elevator', 'elite', 'embark', 'embody', 'embrace', 'emerge',
-    'emotion', 'employ', 'empower', 'empty', 'enable', 'enact', 'endless', 'endorse', 'enemy', 'energy',
-    'enforce', 'engage', 'engine', 'enhance', 'enjoy', 'enlist', 'enough', 'enrich', 'enroll', 'ensure',
-    'enter', 'entire', 'entry', 'envelope', 'episode', 'equal', 'equip', 'era', 'erase', 'erode',
-    'erosion', 'error', 'erupt', 'escape', 'essay', 'essence', 'estate', 'eternal', 'ethics', 'evidence',
-    'evil', 'evoke', 'evolve', 'exact', 'example', 'excess', 'exchange', 'excite', 'exclude', 'execute',
-    'exercise', 'exhaust', 'exhibit', 'exile', 'exist', 'exit', 'exotic', 'expand', 'expect', 'expire',
-    'explain', 'expose', 'express', 'extend', 'extra', 'eyebrow', 'fabric', 'face', 'faculty', 'fade',
-    'faint', 'faith', 'falcon', 'false', 'fame', 'family', 'famous', 'fantasy', 'farm', 'fashion',
-    'fatal', 'father', 'fatigue', 'fault', 'favorite', 'feature', 'february', 'federal', 'fee', 'feed',
-    'feel', 'female', 'fence', 'festival', 'fetch', 'fever', 'fiber', 'fiction', 'field', 'figure',
-    'file', 'film', 'filter', 'final', 'find', 'fine', 'finger', 'finish', 'fire', 'firm',
-    'first', 'fiscal', 'fish', 'fitness', 'fix', 'flag', 'flame', 'flash', 'flat', 'flavor',
-    'flee', 'flight', 'flip', 'float', 'flock', 'floor', 'flower', 'fluid', 'flush', 'fly',
-    'foam', 'focus', 'fog', 'foil', 'fold', 'follow', 'food', 'foot', 'force', 'forest',
-    'forge', 'forget', 'fork', 'fortune', 'forum', 'forward', 'fossil', 'foster', 'found', 'fox',
-    'fragile', 'frame', 'frequent', 'fresh', 'friend', 'fringe', 'frog', 'front', 'frost', 'frown',
-    'frozen', 'fruit', 'fuel', 'fun', 'funny', 'furnace', 'fury', 'future', 'gadget', 'galaxy',
-    'gallery', 'game', 'gap', 'garage', 'garbage', 'garden', 'garlic', 'garment', 'gas', 'gasp',
-    'gate', 'gather', 'gauge', 'gaze', 'general', 'genius', 'genre', 'gentle', 'genuine', 'gesture',
-    'ghost', 'giant', 'gift', 'giggle', 'ginger', 'giraffe', 'girl', 'give', 'glad', 'glance',
-    'glare', 'glass', 'glide', 'glimpse', 'globe', 'gloom', 'glory', 'glove', 'glow', 'glue',
-    'goat', 'goddess', 'gold', 'good', 'goose', 'gorilla', 'gospel', 'gossip', 'govern', 'gown',
-    'grab', 'grace', 'grain', 'grant', 'grape', 'grass', 'gravity', 'great', 'green', 'grid',
-    'grief', 'grit', 'grocery', 'group', 'grow', 'grunt', 'guard', 'guess', 'guide', 'guilt',
-    'guitar', 'gun', 'gym', 'habit', 'hair', 'half', 'hammer', 'hamster', 'hand', 'happy',
-    'harbor', 'hard', 'harsh', 'harvest', 'hat', 'have', 'hawk', 'hazard', 'head', 'health',
-    'heart', 'heavy', 'hedge', 'height', 'hello', 'helmet', 'help', 'hero', 'hidden', 'high',
-    'hill', 'hint', 'hip', 'hire', 'history', 'hobby', 'hockey', 'hold', 'hole', 'holiday',
-    'hollow', 'home', 'honey', 'hood', 'hope', 'horn', 'horror', 'horse', 'hospital', 'host',
-    'hotel', 'hour', 'hover', 'hub', 'huge', 'human', 'humble', 'humor', 'hundred', 'hungry',
-    'hunt', 'hurdle', 'hurry', 'hurt', 'husband', 'hybrid', 'ice', 'icon', 'idea', 'identify',
-    'idle', 'ignore', 'illness', 'image', 'imitate', 'immense', 'immune', 'impact', 'impose', 'improve',
-    'impulse', 'inch', 'include', 'income', 'increase', 'index', 'indicate', 'indoor', 'industry', 'infant',
-    'inflict', 'inform', 'inhale', 'inherit', 'initial', 'inject', 'injury', 'inmate', 'inner', 'innocent',
-    'input', 'inquiry', 'insane', 'insect', 'inside', 'inspire', 'install', 'intact', 'interest', 'into',
-    'invest', 'invite', 'involve', 'iron', 'island', 'isolate', 'issue', 'item', 'ivory', 'jacket',
-    'jaguar', 'jar', 'jazz', 'jealous', 'jeans', 'jelly', 'jewel', 'job', 'join', 'joke',
-    'journey', 'joy', 'judge', 'juice', 'jump', 'jungle', 'junior', 'junk', 'just', 'kangaroo',
-    'keen', 'keep', 'ketchup', 'key', 'kick', 'kid', 'kidney', 'kind', 'kingdom', 'kiss',
-    'kit', 'kitchen', 'kite', 'kitten', 'kiwi', 'knee', 'knife', 'knock', 'know', 'lab',
-    'label', 'labor', 'ladder', 'lady', 'lake', 'lamp', 'language', 'laptop', 'large', 'later',
-    'latin', 'laugh', 'laundry', 'lava', 'law', 'lawn', 'lawsuit', 'layer', 'lazy', 'leader',
-    'leaf', 'learn', 'leave', 'lecture', 'left', 'leg', 'legal', 'legend', 'leisure', 'lemon',
-    'lend', 'length', 'lens', 'leopard', 'lesson', 'letter', 'level', 'liar', 'liberty', 'library',
-    'license', 'life', 'lift', 'light', 'like', 'limb', 'limit', 'link', 'lion', 'liquid',
-    'list', 'little', 'live', 'lizard', 'load', 'loan', 'lobster', 'local', 'lock', 'logic',
-    'lonely', 'long', 'loop', 'lottery', 'loud', 'lounge', 'love', 'loyal', 'lucky', 'luggage',
-    'lumber', 'lunar', 'lunch', 'luxury', 'lyrics', 'machine', 'mad', 'magic', 'magnet', 'maid',
-    'mail', 'main', 'major', 'make', 'mammal', 'man', 'manage', 'mandate', 'mango', 'mansion',
-    'manual', 'maple', 'marble', 'march', 'margin', 'marine', 'market', 'marriage', 'mask', 'mass',
-    'master', 'match', 'material', 'math', 'matrix', 'matter', 'maximum', 'maze', 'meadow', 'mean',
-    'measure', 'meat', 'mechanic', 'medal', 'media', 'melody', 'melt', 'member', 'memory', 'mention',
-    'menu', 'mercy', 'merge', 'merit', 'merry', 'mesh', 'message', 'metal', 'method', 'middle',
-    'midnight', 'milk', 'million', 'mimic', 'mind', 'minimum', 'minor', 'minute', 'miracle', 'mirror',
-    'misery', 'miss', 'mistake', 'mix', 'mixed', 'mixture', 'mobile', 'model', 'modify', 'module',
-    'momentum', 'monitor', 'monkey', 'monster', 'month', 'moon', 'moral', 'more', 'morning', 'mosquito',
-    'mother', 'motion', 'motor', 'mountain', 'mouse', 'move', 'movie', 'much', 'muffin', 'mule',
-    'multiply', 'muscle', 'museum', 'mushroom', 'music', 'must', 'mutual', 'myself', 'mystery', 'myth',
-    'naive', 'name', 'napkin', 'narrow', 'nasty', 'nation', 'nature', 'near', 'neck', 'need',
-    'negative', 'neglect', 'neither', 'nephew', 'nerve', 'nest', 'net', 'network', 'neutral', 'never',
-    'news', 'next', 'nice', 'night', 'noble', 'noise', 'nominee', 'noodle', 'normal', 'north',
-    'nose', 'notable', 'note', 'nothing', 'notice', 'novel', 'now', 'nuclear', 'number', 'nurse',
-    'nut', 'oak', 'obey', 'object', 'oblige', 'obscure', 'observe', 'obtain', 'obvious', 'occur',
-    'ocean', 'october', 'odor', 'off', 'offer', 'office', 'often', 'oil', 'okay', 'old',
-    'olive', 'olympic', 'omit', 'once', 'one', 'onion', 'online', 'only', 'open', 'opera',
-    'opinion', 'oppose', 'option', 'orange', 'orbit', 'orchard', 'order', 'ordinary', 'organ', 'orient',
-    'original', 'orphan', 'ostrich', 'other', 'outdoor', 'outer', 'output', 'outside', 'oval', 'oven',
-    'over', 'own', 'owner', 'oxygen', 'oyster', 'ozone', 'pact', 'paddle', 'page', 'pair',
-    'palace', 'palm', 'panda', 'panel', 'panic', 'panther', 'paper', 'parade', 'parent', 'park',
-    'parrot', 'party', 'pass', 'patch', 'path', 'patient', 'patrol', 'pattern', 'pause', 'pave',
-    'payment', 'peace', 'peanut', 'pear', 'peasant', 'pelican', 'pen', 'penalty', 'pencil', 'people',
-    'pepper', 'perfect', 'permit', 'person', 'pet', 'phone', 'photo', 'phrase', 'physical', 'piano',
-    'picnic', 'picture', 'piece', 'pig', 'pigeon', 'pill', 'pilot', 'pink', 'pioneer', 'pipe',
-    'pistol', 'pitch', 'pizza', 'place', 'planet', 'plastic', 'plate', 'play', 'please', 'pledge',
-    'pluck', 'plug', 'plunge', 'poem', 'poet', 'point', 'polar', 'pole', 'police', 'pond',
-    'pony', 'pool', 'popular', 'portion', 'position', 'possible', 'post', 'potato', 'pottery', 'poverty',
-    'powder', 'power', 'practice', 'praise', 'predict', 'prefer', 'prepare', 'present', 'pretty', 'prevent',
-    'price', 'pride', 'primary', 'print', 'priority', 'prison', 'private', 'prize', 'problem', 'process',
-    'produce', 'profit', 'program', 'project', 'promote', 'proof', 'property', 'prosper', 'protect', 'proud',
-    'provide', 'public', 'pudding', 'pull', 'pulp', 'pulse', 'pumpkin', 'punch', 'pupil', 'puppy',
-    'purchase', 'purity', 'purpose', 'purse', 'push', 'put', 'puzzle', 'pyramid', 'quality', 'quantum',
-    'quarter', 'question', 'quick', 'quit', 'quiz', 'quote', 'rabbit', 'raccoon', 'race', 'rack',
-    'radar', 'radio', 'rail', 'rain', 'raise', 'rally', 'ramp', 'ranch', 'random', 'range',
-    'rapid', 'rare', 'rate', 'rather', 'raven', 'raw', 'razor', 'ready', 'real', 'reason',
-    'rebel', 'rebuild', 'recall', 'receive', 'recipe', 'record', 'recycle', 'reduce', 'reflect', 'reform',
-    'refuse', 'region', 'regret', 'regular', 'reject', 'relax', 'release', 'relief', 'rely', 'remain',
-    'remember', 'remind', 'remove', 'render', 'renew', 'rent', 'reopen', 'repair', 'repeat', 'replace',
-    'report', 'require', 'rescue', 'resemble', 'resist', 'resource', 'response', 'result', 'retire', 'retreat',
-    'return', 'reunion', 'reveal', 'review', 'reward', 'rhythm', 'ribbon', 'rice', 'rich', 'ride',
-    'ridge', 'rifle', 'right', 'rigid', 'ring', 'riot', 'ripple', 'risk', 'ritual', 'rival',
-    'river', 'road', 'roast', 'robot', 'robust', 'rocket', 'romance', 'roof', 'rookie', 'room',
-    'rose', 'rotate', 'rough', 'round', 'route', 'royal', 'rubber', 'rude', 'rug', 'rule',
-    'run', 'runway', 'rural', 'sad', 'saddle', 'sadness', 'safe', 'sail', 'salad', 'salmon',
-    'salon', 'salt', 'salute', 'same', 'sample', 'sand', 'satisfy', 'satoshi', 'sauce', 'save',
-    'say', 'scale', 'scan', 'scare', 'scatter', 'scene', 'scheme', 'school', 'science', 'scissors',
-    'scooter', 'scope', 'score', 'scout', 'scrap', 'screen', 'script', 'scrub', 'sea', 'search',
-    'season', 'seat', 'second', 'secret', 'section', 'security', 'sedan', 'see', 'seed', 'seek',
-    'segment', 'select', 'sell', 'seminar', 'senior', 'sense', 'sentence', 'series', 'service', 'session',
-    'settle', 'setup', 'seven', 'shadow', 'shaft', 'shallow', 'share', 'shed', 'shell', 'sheriff',
-    'shield', 'shift', 'shine', 'ship', 'shiver', 'shock', 'shoe', 'shoot', 'shop', 'short',
-    'shoulder', 'shove', 'shrimp', 'shrug', 'shuffle', 'shy', 'sibling', 'sick', 'side', 'siege',
-    'sight', 'sign', 'silent', 'silk', 'silly', 'silver', 'similar', 'simple', 'since', 'sing',
-    'siren', 'sister', 'situate', 'six', 'size', 'skate', 'sketch', 'ski', 'skill', 'skin',
-    'skirt', 'skull', 'slab', 'slam', 'sleep', 'slender', 'slice', 'slide', 'slight', 'slim',
-    'slogan', 'slot', 'slow', 'slush', 'small', 'smart', 'smile', 'smoke', 'smooth', 'snack',
-    'snake', 'snap', 'sniff', 'snow', 'soap', 'soccer', 'social', 'sock', 'soda', 'soft',
-    'solar', 'soldier', 'solid', 'solution', 'solve', 'someone', 'song', 'soon', 'sorry', 'sort',
-    'soul', 'sound', 'soup', 'source', 'south', 'space', 'spare', 'spatial', 'spawn', 'speak',
-    'special', 'speed', 'spell', 'spend', 'sphere', 'spice', 'spider', 'spike', 'spin', 'spirit',
-    'split', 'spoil', 'sponsor', 'spoon', 'sport', 'spot', 'spray', 'spread', 'spring', 'spy',
-    'squad', 'square', 'stable', 'stadium', 'staff', 'stage', 'stairs', 'stamp', 'stand', 'start',
-    'state', 'station', 'statue', 'stay', 'steak', 'steel', 'stem', 'step', 'stereo', 'stick',
-    'still', 'sting', 'stock', 'stomach', 'stone', 'stool', 'story', 'stove', 'strategy', 'street',
-    'strike', 'strong', 'struggle', 'student', 'stuff', 'stumble', 'style', 'subject', 'submit', 'subway',
-    'success', 'such', 'sudden', 'suffer', 'sugar', 'suggest', 'suit', 'summer', 'sun', 'sunny',
-    'sunset', 'super', 'supply', 'supreme', 'sure', 'surface', 'surge', 'surprise', 'surround', 'survey',
-    'suspect', 'sustain', 'swallow', 'swamp', 'swap', 'swarm', 'swear', 'sweet', 'swift', 'swim',
-    'swing', 'switch', 'sword', 'symbol', 'symptom', 'syrup', 'system', 'table', 'tackle', 'tag',
-    'tail', 'talent', 'talk', 'tank', 'tape', 'target', 'task', 'taste', 'tattoo', 'taxi',
-    'teach', 'team', 'tell', 'ten', 'tenant', 'tennis', 'tent', 'term', 'test', 'text',
-    'thank', 'that', 'theme', 'then', 'theory', 'there', 'they', 'thing', 'this', 'thought',
-    'three', 'thrive', 'throw', 'thumb', 'thunder', 'ticket', 'tide', 'tiger', 'tilt', 'timber',
-    'time', 'tiny', 'tip', 'tired', 'tissue', 'title', 'toast', 'tobacco', 'today', 'toddler',
-    'toe', 'together', 'toilet', 'token', 'tomato', 'tomorrow', 'tone', 'tongue', 'tonight', 'tool',
-    'tooth', 'top', 'topic', 'topple', 'torch', 'tornado', 'tortoise', 'toss', 'total', 'tourist',
-    'toward', 'tower', 'town', 'toy', 'track', 'trade', 'traffic', 'tragic', 'train', 'transfer',
-    'trap', 'trash', 'travel', 'tray', 'treat', 'tree', 'trend', 'trial', 'tribe', 'trick',
-    'trigger', 'trim', 'trip', 'trophy', 'trouble', 'truck', 'true', 'truly', 'trumpet', 'trust',
-    'truth', 'try', 'tube', 'tuition', 'tumble', 'tuna', 'tunnel', 'turkey', 'turn', 'turtle',
-    'twelve', 'twenty', 'twice', 'twin', 'twist', 'two', 'type', 'typical', 'ugly', 'umbrella',
-    'unable', 'unaware', 'uncle', 'uncover', 'under', 'undo', 'unfair', 'unfold', 'unhappy', 'uniform',
-    'unique', 'unit', 'universe', 'unknown', 'unlock', 'until', 'unusual', 'unveil', 'update', 'upgrade',
-    'uphold', 'upon', 'upper', 'upset', 'urban', 'urge', 'usage', 'use', 'used', 'useful',
-    'useless', 'usual', 'utility', 'vacant', 'vacuum', 'vague', 'valid', 'valley', 'valve', 'van',
-    'vanish', 'vapor', 'various', 'vast', 'vault', 'vehicle', 'velvet', 'vendor', 'venture', 'venue',
-    'verb', 'verify', 'version', 'very', 'vessel', 'veteran', 'viable', 'vibrant', 'vicious', 'victory',
-    'video', 'view', 'village', 'vintage', 'violin', 'virtual', 'virus', 'visa', 'visit', 'visual',
-    'vital', 'vivid', 'vocal', 'voice', 'void', 'volcano', 'volume', 'vote', 'voyage', 'wage',
-    'wagon', 'wait', 'walk', 'wall', 'walnut', 'want', 'warfare', 'warm', 'warrior', 'wash',
-    'wasp', 'waste', 'water', 'wave', 'way', 'wealth', 'weapon', 'wear', 'weasel', 'weather',
-    'web', 'wedding', 'week', 'weird', 'welcome', 'west', 'wet', 'whale', 'what', 'wheat',
-    'wheel', 'when', 'where', 'whip', 'whisper', 'wide', 'width', 'wife', 'wild', 'will',
-    'win', 'window', 'wine', 'wing', 'wink', 'winner', 'winter', 'wire', 'wisdom', 'wise',
-    'wish', 'witness', 'wolf', 'woman', 'wonder', 'wood', 'wool', 'word', 'work', 'world',
-    'worry', 'worth', 'wrap', 'wreck', 'wrestle', 'wrist', 'write', 'wrong', 'yard', 'year',
-    'yellow', 'you', 'young', 'youth', 'zebra', 'zero', 'zone', 'zoo'
-];
+// Wordlist moved to js/passphrase-words.js for on-demand lazy loading (Phase 1)
+async function ensureDicewareWordlist() {
+    if ((typeof DICEWARE_WORDLIST === 'undefined' || !DICEWARE_WORDLIST.length) && (!window.DICEWARE_WORDLIST || !window.DICEWARE_WORDLIST.length)) {
+        await loadScript('js/passphrase-words.js');
+    }
+    return (typeof DICEWARE_WORDLIST !== 'undefined') ? DICEWARE_WORDLIST : (window.DICEWARE_WORDLIST || []);
+}
 
 /**
  * Generates a Diceware passphrase using CSPRNG.
  */
 function generateDicewarePassphrase(wordCount = 5, separator = '-') {
+    const list = (typeof DICEWARE_WORDLIST !== 'undefined') ? DICEWARE_WORDLIST : (window.DICEWARE_WORDLIST || []);
+    if (!list.length) return '';
     const randomIndices = new Uint32Array(wordCount);
     crypto.getRandomValues(randomIndices);
     const words = [];
     for (let i = 0; i < wordCount; i++) {
-        const idx = randomIndices[i] % DICEWARE_WORDLIST.length;
-        words.push(DICEWARE_WORDLIST[idx]);
+        const idx = randomIndices[i] % list.length;
+        words.push(list[idx]);
     }
     return words.join(separator);
 }
@@ -7270,15 +7158,17 @@ function initPasswordGenerator() {
     let currentMode = 'diceware';
     let dicewareWordCount = 5;
 
-    function generateSecret() {
+    async function generateSecret() {
         if (!outputDisplay) return;
         let secret = '';
         let entropyText = '';
 
         if (currentMode === 'diceware') {
+            const list = await ensureDicewareWordlist();
             const sep = separatorSelect ? separatorSelect.value : '-';
             secret = generateDicewarePassphrase(dicewareWordCount, sep);
-            const bits = Math.round(dicewareWordCount * Math.log2(DICEWARE_WORDLIST.length));
+            const listLen = list.length || 2048;
+            const bits = Math.round(dicewareWordCount * Math.log2(listLen));
             const rating = bits >= 70 ? 'Military Strength' : bits >= 50 ? 'Very Strong' : 'Strong';
             entropyText = `~${bits} bits · ${rating}`;
         } else {
@@ -7297,10 +7187,10 @@ function initPasswordGenerator() {
         if (entropyBadge) entropyBadge.textContent = entropyText;
     }
 
-    function openModal() {
+    async function openModal() {
         if (!modal) return;
         modal.style.display = 'flex';
-        generateSecret();
+        await generateSecret();
     }
 
     function closeModal() {
@@ -7311,28 +7201,28 @@ function initPasswordGenerator() {
     btnOpen?.addEventListener('click', openModal);
     btnClose?.addEventListener('click', closeModal);
     btnCancel?.addEventListener('click', closeModal);
-    btnRefresh?.addEventListener('click', generateSecret);
+    btnRefresh?.addEventListener('click', () => { generateSecret(); });
 
     modal?.addEventListener('click', (e) => {
         if (e.target.id === 'pw-generator-modal') closeModal();
     });
 
-    tabDiceware?.addEventListener('click', () => {
+    tabDiceware?.addEventListener('click', async () => {
         currentMode = 'diceware';
         tabDiceware.classList.add('gen-tab--active');
         tabRandom?.classList.remove('gen-tab--active');
         if (panelDiceware) panelDiceware.style.display = 'flex';
         if (panelRandom) panelRandom.style.display = 'none';
-        generateSecret();
+        await generateSecret();
     });
 
-    tabRandom?.addEventListener('click', () => {
+    tabRandom?.addEventListener('click', async () => {
         currentMode = 'random';
         tabRandom.classList.add('gen-tab--active');
         tabDiceware?.classList.remove('gen-tab--active');
         if (panelDiceware) panelDiceware.style.display = 'none';
         if (panelRandom) panelRandom.style.display = 'flex';
-        generateSecret();
+        await generateSecret();
     });
 
     document.querySelectorAll('.gen-pill').forEach(pill => {
@@ -7422,6 +7312,7 @@ function detachExplorerActivityListeners() {
 
 function startExplorerIdleWatcher() {
     stopExplorerIdleWatcher();
+    if (typeof setInterval !== 'function') return;
     if (explorerAutoLockMinutes <= 0) return;
     lastExplorerActivityTime = Date.now();
     attachExplorerActivityListeners();
@@ -7445,7 +7336,7 @@ function startExplorerIdleWatcher() {
 
 function stopExplorerIdleWatcher() {
     if (explorerIdleTimer) {
-        clearInterval(explorerIdleTimer);
+        if (typeof clearInterval === 'function') clearInterval(explorerIdleTimer);
         explorerIdleTimer = null;
     }
     detachExplorerActivityListeners();
@@ -7808,6 +7699,7 @@ function initExplorerUI() {
         if (hasEditedFiles || (currentDecryptedZip && !currentDecryptedBlob)) {
             dlAllBtn.textContent = '⏳ Packaging edited vault...';
             try {
+                if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
                 const outZip = currentDecryptedZip || new JSZip();
                 if (hasEditedFiles) {
                     for (const item of currentDecryptedFileList) {
@@ -8859,6 +8751,7 @@ async function downloadPcSetupToolkit() {
     try {
         if (btn) btn.textContent = '⏳ Creating Package...';
 
+        if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
         const zip = new JSZip();
 
         const encryptBatContent = `@echo off\r\ntitle ZevSafe 25GB+ Vault Encryptor\r\nsetlocal EnableDelayedExpansion\r\n\r\necho ===================================================\r\necho   ZevSafe - 25GB+ Zero-RAM Folder Encryptor (PC)\r\necho ===================================================\r\necho.\r\n\r\nset "TARGET_FOLDER=%~1"\r\n\r\nif "%TARGET_FOLDER%"=="" (\r\n    echo Drag and drop a folder here or enter its path:\r\n    set /p "TARGET_FOLDER=Path: "\r\n)\r\n\r\nset "TARGET_FOLDER=%TARGET_FOLDER:"=%"\r\n\r\nif "%TARGET_FOLDER%"=="" (\r\n    echo [ERROR] No folder specified. Exiting.\r\n    pause\r\n    exit /b 1\r\n)\r\n\r\npowershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0encrypt.ps1" "%TARGET_FOLDER%"\r\n\r\necho.\r\necho ===================================================\r\necho   Process finished. Press any key to exit.\r\necho ===================================================\r\npause >nul`;
@@ -9077,11 +8970,18 @@ function initUsbBackupKit() {
     const statusText = document.getElementById('usb-backup-status-text');
     const percentText = document.getElementById('usb-backup-percent');
 
-    function openModal() {
+    async function openModal() {
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
         if (typeof window !== 'undefined' && 'showDirectoryPicker' in window && btnDrive) {
             btnDrive.style.display = 'flex';
+        }
+        if (!window.ZevSafeUSBBackup) {
+            try {
+                await loadScript('js/usb-backup-kit.js');
+            } catch (e) {
+                console.warn('[ZevSafe] Failed to load USB backup kit:', e);
+            }
         }
     }
 
@@ -9120,6 +9020,14 @@ function initUsbBackupKit() {
     if (btnZip) {
         btnZip.addEventListener('click', async () => {
             if (!window.ZevSafeUSBBackup) {
+                try {
+                    await loadScript('js/usb-backup-kit.js');
+                } catch (e) {
+                    if (typeof showToast === 'function') showToast('⚠️ Failed to load USB Backup module');
+                    return;
+                }
+            }
+            if (!window.ZevSafeUSBBackup) {
                 if (typeof showToast === 'function') showToast('⚠️ USB Backup module initializing, please wait...');
                 return;
             }
@@ -9156,6 +9064,14 @@ function initUsbBackupKit() {
 
     if (btnDrive) {
         btnDrive.addEventListener('click', async () => {
+            if (!window.ZevSafeUSBBackup) {
+                try {
+                    await loadScript('js/usb-backup-kit.js');
+                } catch (e) {
+                    if (typeof showToast === 'function') showToast('⚠️ Failed to load USB Backup module');
+                    return;
+                }
+            }
             if (!window.ZevSafeUSBBackup) return;
             try {
                 const dirHandle = await window.showDirectoryPicker({
@@ -9271,6 +9187,12 @@ window.addEventListener('paste', async (e) => {
     const activeEl = document.activeElement;
     const isPasswordInput = activeEl && activeEl.id === 'decrypt-password';
     const text = cd.getData('text/plain');
+
+    if (text && (text.includes('ZEVSAFE-PAPER-SAFE') || (text.includes('"vaultName"') && text.includes('"saltHex"')))) {
+        if (typeof QREngine === 'undefined') {
+            try { await loadScript('js/qr-engine.js'); } catch (_) {}
+        }
+    }
 
     if (text && typeof QREngine !== 'undefined' && QREngine.isPaperSafePayload(text)) {
         e.preventDefault();

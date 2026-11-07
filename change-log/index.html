@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.20.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.21.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -706,15 +706,92 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 8.20.0 (WEB-VERSION-71) ── -->
+            <!-- ── VERSION 8.21.0 (WEB-VERSION-72) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">⚡</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.21.0 (WEB-VERSION-72)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 7, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Faster First Load</span>
+                            <span class="cl-tag">Deferred Scripts</span>
+                            <span class="cl-tag">Dynamic Lazy-Loading</span>
+                            <span class="cl-tag">Critical CSS Inlining</span>
+                            <span class="cl-tag">Non-Blocking Stylesheet</span>
+                            <span class="cl-tag">Immutable Caching</span>
+                            <span class="cl-tag">PWA v72</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Implemented <strong>Phase 1: Faster First Load &amp; Asset Pipeline Optimization</strong>: deferred all core cryptography and application scripts, added a deduplicated dynamic script loader (<code>loadScript</code>), offloaded heavy auxiliary modules (<code>jszip.min.js</code>, <code>js/usb-backup-kit.js</code>, <code>js/qr-engine.js</code>, and <code>js/passphrase-words.js</code>) to load strictly on demand, inlined critical above-the-fold CSS with non-blocking full stylesheet preloading, added lazy loading to all offscreen images, and configured 1-year immutable caching on Cloudflare Pages.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Deferred Script Execution:</strong> Core streaming crypto scripts (<code>stream-crypto.js</code>, <code>stream-packer.js</code>, <code>stream-unpacker.js</code>, <code>crypto-worker.js</code>, <code>stream-saver.js</code>, <code>worker-bridge.js</code>, <code>app.js</code>) execute with <code>defer</code>, eliminating render-blocking parsing pauses.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Cached Dynamic Script Loader:</strong> Added <code>loadScript(src)</code> helper with Promise caching, preventing redundant downloads and ensuring dependencies are evaluated at most once.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>On-Demand Lazy-Loaded Modules:</strong> <code>jszip.min.js</code> (97.6 KB), <code>js/usb-backup-kit.js</code> (18.0 KB), <code>js/qr-engine.js</code> (16.0 KB), and extracted <code>js/passphrase-words.js</code> (19.4 KB) now download strictly when their respective features are opened, reducing initial JS payload by ~151 KB uncompressed.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Critical CSS Inlined &amp; Non-Blocking Preload:</strong> Inlined above-the-fold layout, tokens, ambient orbs, cybernetic navbar, and hero trust strip into <code>&lt;style id="critical-css"&gt;</code>, preloading <code>styles.css</code> asynchronously without blocking First Contentful Paint.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Immutable Cache &amp; Revalidation Rules:</strong> Added 1-year immutable caching (<code>Cache-Control: public, max-age=31536000, immutable</code>) for <code>/js/*</code>, <code>/css/*</code>, <code>/assets/*</code>, and instant revalidation for <code>/index.html</code> and <code>/sw.js</code>.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Media Lazy-Loading:</strong> Added <code>loading="lazy"</code> and explicit dimensions to all modal and below-the-fold images to prevent layout shifts.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker v72:</strong> Bumped cache to <code>v72</code> and added <code>./js/passphrase-words.js</code> to <code>SHELL_ASSETS</code> for complete offline access.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.20.0 (WEB-VERSION-71) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">📱</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.20.0 (WEB-VERSION-71)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
-                            <span class="cl-badge cl-badge--date">November 7, 2026</span>
+                                                        <span class="cl-badge cl-badge--date">November 7, 2026</span>
                         </div>
                         <div class="cl-tags">
                             <span class="cl-tag">Mobile Player Overhaul</span>

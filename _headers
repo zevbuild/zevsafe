@@ -6,6 +6,18 @@
   Permissions-Policy: accelerometer=(), camera=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
 
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
   Service-Worker-Allowed: /
+
+/js/*
+  Cache-Control: no-cache
+
+/*.js
+  Cache-Control: no-cache
+
+/assets/*
+  Cache-Control: public, max-age=86400

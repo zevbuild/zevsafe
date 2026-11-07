@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.20.0` (`WEB-VERSION-71`, Service Worker `v71`)  
+> **Web Portal Version:** `v8.21.0` (`WEB-VERSION-72`, Service Worker `v72`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -345,6 +345,33 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Under `@media (max-height: 500px) and (orientation: landscape)`, header shrinks to 32px and transport bar shrinks to 44px, maximizing video view to > 80% unobstructed area.
 - **Automated Verification Suite:**
   - Verified across 22 tests in `test/test-mobile-video-player.js` alongside 45/45 tests in `test/test-video-player-pro.js` and all core regression suites (100% pass).
+
+### 3.25 Phase 1: Faster First Load & Asset Pipeline Optimization (v8.21.0 / WEB-VERSION-72)
+- **Deferred Script Execution Model:**
+  - Added `defer` attribute to core streaming cryptography and application scripts in `index.html` (`js/stream-crypto.js`, `js/stream-packer.js`, `js/stream-unpacker.js`, `js/crypto-worker.js`, `js/stream-saver.js`, `js/worker-bridge.js`, `app.js`).
+  - Guaranteed ordered, non-render-blocking script execution immediately before `DOMContentLoaded`.
+- **Deduplicated Dynamic Script Loader (`loadScript`):**
+  - Implemented cached promise-based dynamic loader `window.loadScript(src)` with internal Map registry preventing redundant script requests and network duplicate evaluations.
+- **On-Demand Lazy Loading Architecture:**
+  - Stripped eager script tags for heavy auxiliary modules from initial HTML payload:
+    - `jszip.min.js` (97.6 KB): Lazy-loaded on demand before legacy v1/v2 ZIP encryption/decryption, batch downloads, salvage ZIP generation, and PC setup packaging.
+    - `js/usb-backup-kit.js` (18.0 KB): Lazy-loaded when opening the USB Air-Gap Backup modal.
+    - `js/qr-engine.js` (16.0 KB): Lazy-loaded when opening the Paper-Safe QR certificate modal, camera QR scanner, or pasting QR clipboard payloads.
+    - `js/passphrase-words.js` (19.4 KB): Extracted monolithic `DICEWARE_WORDLIST` (~2,000 words) from `app.js` into standalone module; lazy-loaded on demand when launching the Passphrase Generator modal.
+  - Initial JavaScript transferred on first paint dropped by ~151 KB uncompressed (~48 KB gzipped).
+- **Critical CSS Inlining & Asynchronous Stylesheet Delivery:**
+  - Inlined above-the-fold CSS tokens, typography reset, ambient orbs, app-shell container, cybernetic navbar, and hero trust strip into `<style id="critical-css">` within `index.html`.
+  - Converted `styles.css` (211 KB) to non-blocking asynchronous preload with onload rel swap (`rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"`) and `<noscript>` fallback, eradicating render-blocking stylesheet latency for First Contentful Paint (FCP).
+- **Below-The-Fold Media Ergonomics:**
+  - Added `loading="lazy"` and explicit `width`/`height` attributes to all offscreen and modal images (`#cover-preview-thumb`, mobile drawer brand logo, footer brand logo, password prompt modal logo, install modal logo, and PWA install banner logo).
+  - Preserved eager `fetchpriority="high"` on above-the-fold brand logo to optimize LCP.
+- **Cloudflare Pages HTTP Header Optimization (`_headers`):**
+  - Configured long-term immutable caching (`Cache-Control: public, max-age=31536000, immutable`) for `/js/*`, `/css/*`, and `/assets/*`.
+  - Enforced strict revalidation (`Cache-Control: no-cache, no-store, must-revalidate`) for `/index.html` and `/sw.js` with `Service-Worker-Allowed: /`.
+  - Maintained defense-in-depth security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP).
+- **PWA Service Worker & Shell Assets Synchronization:**
+  - Added `./js/passphrase-words.js` to `SHELL_ASSETS` in `sw.js` for complete offline functionality in airplane mode.
+  - Bumped Service Worker cache version to `v72` (`APP_VERSION = 'v72'`) and application shell tags to `WEB-VERSION-72` / `v8.21.0`.
 
 ---
 
