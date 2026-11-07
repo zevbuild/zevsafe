@@ -343,6 +343,24 @@ runTest('6.9: Logical standard video player organization: unified transport row 
     assert.ok(appJs.includes('btn-toggle-tools'), 'app.js must wire btn-toggle-tools');
 });
 
+runTest('6.10: Mobile browser support & zero-clutter phone cinema architecture', () => {
+    // 1. Mobile browser inline playback attributes
+    assert.ok(indexHtml.includes('playsinline webkit-playsinline'), 'Video element must have playsinline and webkit-playsinline for iOS Safari & Android Chrome');
+    
+    // 2. Mobile decluttering: hide desktop-only & non-touch buttons
+    assert.ok(stylesCss.includes('#btn-media-hotkeys,'), 'Must hide hotkeys button on mobile screens');
+    assert.ok(stylesCss.includes('#btn-media-theater {'), 'Must hide theater button on mobile screens');
+    assert.ok(stylesCss.includes('.media-volume-wrap .media-volume-range {\n        display: none !important;'), 'Must hide volume range slider on mobile screens to preserve hardware button controls');
+    
+    // 3. Mobile swipeable studio tools carousel
+    assert.ok(stylesCss.includes('scroll-snap-type: x mandatory;'), 'Numbered studio tools must form a horizontal swipeable carousel on mobile');
+    assert.ok(stylesCss.includes('overflow-x: auto;'), 'Studio tools must support horizontal touch scrolling');
+    
+    // 4. One-finger touch panning when zoomed in
+    assert.ok(appJs.includes('isTouchPanning'), 'app.js must support 1-finger touch pan when video is zoomed');
+    assert.ok(appJs.includes("toolsBar.classList.add('is-collapsed')"), 'app.js must default studio tools to collapsed on mobile');
+});
+
 async function runEndToEndRangeVerification() {
     const videoData = new Uint8Array(16384);
     for (let i = 0; i < videoData.length; i++) videoData[i] = (i * 7 + 13) & 0xff;

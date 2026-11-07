@@ -4458,6 +4458,9 @@ async function playMediaByIndex(index) {
         btnToggleTools.classList.remove('is-active');
         btnToggleTools.innerHTML = '🎛️ Studio ▾';
     }
+    if (toolsBar && window.innerWidth <= 768) {
+        toolsBar.classList.add('is-collapsed');
+    }
 
     if (canStreamRange) {
         // --- ON-DEMAND STREAMING PATH (< 30ms startup, < 60 MB RAM) ---
@@ -8082,9 +8085,12 @@ function initExplorerUI() {
             else if (e.deltaY > 0) nudgeVideoZoom(-0.25);
         }, { passive: false });
 
-        // Multi-Touch Pinch-to-Zoom Engine (Player 5.0 Pro Studio)
+        // Multi-Touch Pinch-to-Zoom & Touch Pan Engine (Player 5.0 Pro Studio)
         let touchPinchDist = null;
         let touchPinchStartZoom = 1.0;
+        let touchPanStartX = 0;
+        let touchPanStartY = 0;
+        let isTouchPanning = false;
 
         videoStage.addEventListener('touchstart', (e) => {
             if (e.touches && e.touches.length === 2) {
@@ -8092,6 +8098,11 @@ function initExplorerUI() {
                 const dy = e.touches[0].clientY - e.touches[1].clientY;
                 touchPinchDist = Math.hypot(dx, dy);
                 touchPinchStartZoom = currentMediaZoom;
+            } else if (e.touches && e.touches.length === 1 && currentMediaZoom > 1.0) {
+                isTouchPanning = true;
+                panMoved = false;
+                touchPanStartX = e.touches[0].clientX - currentMediaPanX;
+                touchPanStartY = e.touches[0].clientY - currentMediaPanY;
             }
         }, { passive: true });
 
@@ -8104,12 +8115,23 @@ function initExplorerUI() {
                     const factor = dist / touchPinchDist;
                     setVideoZoom(touchPinchStartZoom * factor);
                 }
+            } else if (e.touches && e.touches.length === 1 && isTouchPanning && currentMediaZoom > 1.0) {
+                panMoved = true;
+                currentMediaPanX = e.touches[0].clientX - touchPanStartX;
+                currentMediaPanY = e.touches[0].clientY - touchPanStartY;
+                applyVideoTransforms();
             }
         }, { passive: true });
 
         videoStage.addEventListener('touchend', (e) => {
             if (!e.touches || e.touches.length < 2) {
                 touchPinchDist = null;
+            }
+            if (!e.touches || e.touches.length === 0) {
+                if (isTouchPanning) {
+                    isTouchPanning = false;
+                    applyVideoTransforms();
+                }
             }
         });
 

@@ -284,8 +284,10 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
     - Station 4: Transform (`↺ 90°` / `↻ 90°` / `⇄ Flip H` / `⇅ Flip V`)
     - Station 5: Filters (`☀️ Brightness` / `🌓 Contrast` / `🔄 Invert` / `📹 CCTV B&W` / `Reset`)
   - *Studio Tools Toggle (`#btn-toggle-tools`):* Enables one-click collapse/expansion of the forensic deck, letting users enjoy clean cinematic viewing or deep forensic analysis on demand.
+- **Mobile Browser Support & Zero-Clutter Phone Cinema Architecture:**
+  - Mobile decluttering on screens $\le 600\text{px}$: automatically hides non-touch/desktop-only controls (`#btn-media-hotkeys`, `#btn-media-ambient`, `#btn-media-dock`, `#btn-media-theater`), prevents filename wrapping with clean text ellipsis truncation, hides the volume slider on phones to respect hardware rocker buttons, defaults the studio tools deck to collapsed on mobile startup, transforms the 17-button secondary tools deck into an elegant horizontal swipeable carousel with CSS scroll-snap (`scroll-snap-type: x mandatory`), and enables 1-finger touch drag panning for magnified video ($> 1.0\times$).
 - **100% Backward Compatibility & Automated Regression Certification:**
-  - Preserved all 31 existing IDs and assertions while adding Section 6 assertions (9 new tests, total 40/40 passing in `test/test-video-player-pro.js` and 100% across all 10 suites).
+  - Preserved all 31 existing IDs and assertions while adding Section 6 assertions (10 new tests, total 41/41 passing in `test/test-video-player-pro.js` and 209/209 passing across all 10 suites).
 
 ---
 
