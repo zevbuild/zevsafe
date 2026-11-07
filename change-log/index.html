@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.19.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.20.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -706,8 +706,93 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 8.19.0 (WEB-VERSION-70) ── -->
+            <!-- ── VERSION 8.20.0 (WEB-VERSION-71) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">📱</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.20.0 (WEB-VERSION-71)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 7, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Mobile Player Overhaul</span>
+                            <span class="cl-tag">Zero-Clutter Stage</span>
+                            <span class="cl-tag">Minimal Header</span>
+                            <span class="cl-tag">Slim Transport Bar</span>
+                            <span class="cl-tag">Forensic Studio Drawer</span>
+                            <span class="cl-tag">Auto-Hide Suspension</span>
+                            <span class="cl-tag">Landscape Cinema</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Overhauled the <strong>Mobile Video Player UI</strong>: eliminated video stage squishing on small viewports (smartphones &le; 768px, &le; 600px, &le; 480px, and landscape &le; 500px), maximized stage area to 100% viewport coverage, created a floating minimal header (&le; 40px) hiding 7 desktop actions, condensed playback controls into a slim single horizontal transport row (&le; 56px), and moved all 17 forensic tools into a slide-up bottom sheet drawer with intelligent auto-hide suspension.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Zero-Clutter Mobile Video Stage:</strong> Eliminated artificial <code>calc(100dvh - 210px)</code> squishing. The video stage and player element occupy 100% of the screen (<code>100vw &times; 100dvh</code>) with <code>object-fit: contain</code> and centered OLED black background, delivering an edge-to-edge viewing experience matching native mobile streaming apps.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Minimal Mobile Floating Header (&le; 40px):</strong> Floating translucent top bar displaying only the close button (<code>#btn-close-media-modal</code>), truncated filename with ellipsis, and forensic specs HUD badge (<code>#media-forensic-specs</code>), while cleanly hiding 7 desktop actions (Snapshot, Loop, Ambient, Hotkeys, Dock, New Tab, Download).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Slim Single-Row Bottom Transport Bar (&le; 56px):</strong> Replaced multi-row control stacking with a consolidated single horizontal row (<code>.media-cinema-primary { flex-direction: row; }</code>) including 10px timeline scrubber, prominent &ge; 36px Play/Pause button, monospace time, speed pill, fullscreen, and studio toggle button, while hiding secondary navigation and volume slider.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Slide-Up Forensic Studio Bottom Sheet Drawer:</strong> Transformed <code>#media-tools-bar</code> into a modern off-screen mobile bottom sheet drawer (<code>transform: translateY(100%)</code> sliding to <code>translateY(0)</code> on <code>.is-open</code>, max-height 70vh with touch scrolling), featuring a visual drag handle, title, and dedicated "Done ✕" button (<code>#btn-close-tools-drawer</code>).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Mobile Landscape Optimization (&le; 500px Height):</strong> Dedicated landscape styling shrinking header to 32px and bottom transport bar to 44px, maximizing unobstructed cinema viewing to over 80% of the screen area on horizontal smartphones.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Intelligent Inactivity Auto-Hide Refinement:</strong> Automatically suspends the 2.5s playback auto-hide countdown when the forensic studio drawer is open. Tapping outside the drawer on <code>.cinema-video-stage</code> dismisses the drawer without toggling playback, and tapping when controls are auto-hidden restores overlay visibility cleanly.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Full Desktop Layout &amp; Regression Integrity:</strong> Preserved 100% desktop base styles (lines 4700–5600) and exact string invariants tested by <code>test/test-video-player-pro.js</code> (45/45 tests passing, 100%).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Dedicated Automated Mobile Test Suite:</strong> Added <code>test/test-mobile-video-player.js</code> featuring 22 automated pure Node.js tests verifying transport height (&le; 56px), header bounds (&le; 40px), drawer toggle state transitions, and virtual clock auto-hide timing.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.19.0 (WEB-VERSION-70) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🎬</div>
                 <div class="cl-content">
                     <header class="cl-card-header">

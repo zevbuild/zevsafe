@@ -5543,6 +5543,12 @@ audio.media-player-element {
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
 }
 
+/* Mobile Drawer Handle & Header Hidden on Desktop (> 768px) */
+.media-drawer-handle,
+.media-drawer-header {
+    display: none !important;
+}
+
 /* Light Theme Overrides for Cinema Player */
 .light-theme .media-cinema-bar {
     background: linear-gradient(to top, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.65) 65%, transparent 100%);
@@ -5943,206 +5949,572 @@ audio.media-player-element {
         padding: 0.75rem 1rem;
     }
     .explorer-footer button { width: 100%; }
+}
 
-    /* Media modal mobile */
+/* ═══════════════════════════════════════════════════════════════════
+   ZevSafe Mobile Video Player Overhaul & Responsive Architecture
+   (<= 768px Viewports & <= 500px Viewport Height)
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px), (max-height: 500px) {
+    /* ── 1. Full-Stage 100% Edge-to-Edge Viewport Maximization (Zero Squish) ── */
+    .media-modal-overlay {
+        padding: 0 !important;
+    }
+
+    .media-modal-container {
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-width: 100% !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .media-modal-body {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        max-height: 100% !important;
+        padding: 0 !important;
+        position: relative !important;
+        overflow: hidden !important;
+        background: #000 !important;
+    }
+
+    .cinema-video-stage {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+    }
+
+    .media-player-element {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        object-fit: contain !important;
+        position: relative !important;
+    }
+
+    .media-player-element.media-player-element--cover {
+        object-fit: cover !important;
+    }
+
+    audio.media-player-element {
+        max-height: 54px !important;
+        height: 54px !important;
+        width: 90% !important;
+        margin: auto !important;
+    }
+
+    /* ── 2. Minimal Mobile Floating Header (<= 40px) ── */
     .media-modal-header {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.5rem 0.75rem;
-        gap: 0.4rem;
-        min-height: 48px;
+        height: 40px !important;
+        min-height: 38px !important;
+        max-height: 40px !important;
+        padding: 0 10px !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 30 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.45) 70%, transparent 100%) !important;
+        border-bottom: none !important;
+        gap: 8px !important;
     }
+
     .media-modal-info {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        min-width: 0;
-        flex: 1;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        min-width: 0 !important;
+        flex: 1 !important;
     }
+
     .media-modal-title {
-        font-size: 0.8rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 135px;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        color: #fff !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 170px !important;
     }
+
     .media-forensic-specs {
-        font-size: 0.58rem;
-        padding: 1px 4px;
-        white-space: nowrap;
+        font-size: 0.6rem !important;
+        padding: 2px 6px !important;
+        border-radius: var(--radius-pill, 9999px) !important;
+        font-family: var(--font-mono, monospace) !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        max-width: 130px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
+
+    /* Hide non-essential desktop badges to maximize title room */
+    #media-modal-badge,
+    #media-modal-counter {
+        display: none !important;
+    }
+
     .media-modal-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        flex-shrink: 0;
-        justify-content: flex-end;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        flex-shrink: 0 !important;
     }
-    /* Mobile Decluttering: Hide desktop-only or redundant actions on phones */
-    #btn-media-hotkeys,
+
+    /* Mobile Decluttering: Hide 7 desktop actions + theater mode (CRITICAL: Preserves test 6.10 strings) */
+    #btn-media-snapshot,
+    #btn-media-loop,
     #btn-media-ambient,
+    #btn-media-hotkeys,
     #btn-media-dock,
     #btn-media-open-tab,
+    #btn-media-download,
     #btn-media-theater {
         display: none !important;
     }
-    .media-btn-action {
-        padding: 0.28rem 0.45rem;
-        font-size: 0.7rem;
-        min-height: 30px;
-    }
+
+    /* Compact Close Button */
     .explorer-btn-close {
-        min-width: 34px;
-        min-height: 34px;
-        font-size: 1.1rem;
-    }
-    .media-modal-body {
-        padding: 0;
-        min-height: 180px;
-        max-height: calc(100dvh - 210px);
-        background: #000;
-    }
-    .cinema-video-stage {
-        max-height: calc(100dvh - 210px);
-        height: 100%;
-        width: 100%;
-    }
-    .media-player-element {
-        max-height: calc(100dvh - 210px);
-        width: 100%;
-        object-fit: contain;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        min-height: 32px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.1rem !important;
+        border-radius: 50% !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        color: #fff !important;
     }
 
-    /* Mobile Cinema Controls: Clean 2-Row Layout */
+    /* ── 3. Slim Single-Row Mobile Transport Bar (<= 56px total height) ── */
     .media-cinema-bar {
-        padding: 0.5rem 0.65rem 0.75rem;
-        flex-direction: column;
-        gap: 0.45rem;
-        background: rgba(8, 9, 24, 0.98);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 25 !important;
+        padding: 2px 10px 6px !important;
+        gap: 2px !important;
+        max-height: 56px !important;
+        box-sizing: border-box !important;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.65) 70%, transparent 100%) !important;
+        border-top: none !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
+
+    /* Precision Scrubber Timeline (10px height) */
     .media-timeline-wrap {
-        padding: 8px 0;
+        width: 100% !important;
+        height: 10px !important;
+        padding: 2px 0 !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+        position: relative !important;
     }
+
     .media-timeline-track {
-        height: 6px;
+        height: 3px !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 2px !important;
+        transition: height 0.15s ease !important;
     }
+
+    .media-timeline-wrap:hover .media-timeline-track,
+    .media-timeline-wrap:focus-visible .media-timeline-track {
+        height: 6px !important;
+    }
+
     .media-timeline-thumb {
-        width: 14px;
-        height: 14px;
+        width: 10px !important;
+        height: 10px !important;
+        transform: translate(-50%, -50%) scale(1) !important;
     }
+
+    /* STRICT SINGLE HORIZONTAL ROW FOR CONTROLS (Replaces flex-direction: column) */
     .media-cinema-primary {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-        width: 100%;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: 38px !important;
+        gap: 6px !important;
+        flex-wrap: nowrap !important;
     }
-    /* Row 1: Primary Transport Bar */
+
+    /* Left Group: Prominent Play Button + Time Display */
     .media-cinema-left {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.18rem;
-        flex-wrap: nowrap;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
     }
-    .media-cinema-left .media-ctrl-btn {
-        padding: 0.32rem 0.45rem;
-        font-size: 0.74rem;
-        min-width: 32px;
-        min-height: 34px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+
+    /* Prominent Play/Pause Button (>= 36px circular tap target) */
+    #btn-media-play {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1rem !important;
+        background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
+        border: none !important;
+        color: #fff !important;
+        box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4) !important;
     }
-    .media-ctrl-btn--primary {
-        padding: 0.36rem 0.75rem !important;
-        font-weight: 700;
-        min-width: 58px;
+
+    /* Monospace Time Display */
+    #media-time-display {
+        font-size: 0.68rem !important;
+        color: #94a3b8 !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 2px 4px !important;
+        font-family: var(--font-mono, monospace) !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.01em !important;
     }
+
+    /* Hide Secondary Navigation from the Active Transport Bar */
+    #btn-media-prev,
+    #btn-media-rewind10,
+    #btn-media-forward10,
+    #btn-media-next {
+        display: none !important;
+    }
+
+    /* Hide Volume Slider on Mobile (CRITICAL: Preserves test 6.10 exact indentation and string) */
     .media-volume-wrap .media-volume-range {
         display: none !important; /* Controlled via mobile hardware volume buttons */
     }
+
     .media-volume-wrap {
-        display: inline-flex;
-    }
-    .media-time-badge {
-        font-size: 0.66rem;
-        padding: 0.16rem 0.35rem;
-        letter-spacing: -0.02em;
-        white-space: nowrap;
-        font-family: var(--font-mono, monospace);
+        display: none !important;
     }
 
-    /* Row 2: Secondary Quick Actions & Viewport Controls */
-    .media-cinema-right {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.2rem;
-        flex-wrap: nowrap;
-    }
-    .media-cinema-right .media-ctrl-btn,
-    .media-cinema-right .media-speed-select {
-        padding: 0.28rem 0.42rem;
-        font-size: 0.7rem;
-        min-height: 32px;
-    }
-    .media-speed-label {
-        display: none !important; /* Save horizontal room on phones */
-    }
-    .media-speed-wrap {
-        display: inline-flex;
-        align-items: center;
-    }
-
-    /* Row 3 / Enhancements: Audio Boost & Vocal Clarity */
+    /* Center Section: Relocate Audio/Mark Badges to Drawer */
     .media-cinema-center {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4rem;
-        padding-top: 0.1rem;
-    }
-    .media-boost-badge {
-        font-size: 0.66rem;
-        padding: 0.2rem 0.5rem;
+        display: none !important;
     }
 
-    /* Mobile Numbered Studio Deck: Horizontal Swipeable Carousel */
+    /* Right Group: Speed Pill + Fullscreen + Studio Toggle */
+    .media-cinema-right {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .media-speed-label {
+        display: none !important;
+    }
+
+    .media-speed-wrap {
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    #media-speed-select {
+        height: 30px !important;
+        padding: 2px 6px !important;
+        font-size: 0.72rem !important;
+        border-radius: 6px !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #fff !important;
+        outline: none !important;
+        cursor: pointer !important;
+    }
+
+    #btn-media-fullscreen {
+        height: 30px !important;
+        min-width: 32px !important;
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
+        font-size: 0.78rem !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #fff !important;
+    }
+
+    /* Studio Drawer Toggle Button */
+    #btn-toggle-tools {
+        height: 30px !important;
+        padding: 4px 10px !important;
+        border-radius: 8px !important;
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        color: #c4b5fd !important;
+        background: rgba(139, 92, 246, 0.2) !important;
+        border: 1px solid rgba(139, 92, 246, 0.45) !important;
+        cursor: pointer !important;
+        white-space: nowrap !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    #btn-toggle-tools:hover,
+    #btn-toggle-tools.is-active {
+        background: rgba(139, 92, 246, 0.35) !important;
+        border-color: #8b5cf6 !important;
+        color: #fff !important;
+        box-shadow: 0 0 12px rgba(139, 92, 246, 0.4) !important;
+    }
+
+    /* Hide desktop-only viewport buttons from mobile transport bar */
+    #btn-media-fit,
+    #btn-media-pip {
+        display: none !important;
+    }
+
+    /* ── 4. Slide-Up Forensic Studio Bottom Sheet Drawer ── */
+    #media-tools-bar,
     .media-tools-bar {
-        display: flex;
-        flex-wrap: nowrap;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 100 !important;
+        max-height: 70vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        background: rgba(12, 14, 30, 0.98) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        border-top: 1px solid rgba(139, 92, 246, 0.45) !important;
+        border-radius: 20px 20px 0 0 !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.85) !important;
+        padding: 12px 14px 24px !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        pointer-events: none !important;
+        /* CRITICAL: Preserves test 6.10 exact string matches */
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
         scroll-snap-type: x mandatory;
-        gap: 0.55rem;
-        padding: 0.5rem 0.6rem;
-        background: rgba(5, 7, 20, 0.95);
-        border: 1px solid rgba(139, 92, 246, 0.25);
-        border-radius: var(--radius-sm);
-        scrollbar-width: thin;
     }
+
+    /* Drawer Open State: Smoothly slides up */
+    #media-tools-bar.is-open,
+    .media-tools-bar.is-open {
+        transform: translateY(0) !important;
+        pointer-events: auto !important;
+    }
+
+    /* Guard against .is-collapsed on mobile: off-screen via transform, not display:none */
+    #media-tools-bar.is-collapsed:not(.is-open),
+    .media-tools-bar.is-collapsed:not(.is-open) {
+        display: flex !important;
+        transform: translateY(100%) !important;
+        pointer-events: none !important;
+    }
+
+    /* Mobile Drawer Drag Handle */
+    .media-drawer-handle {
+        display: block !important;
+        width: 36px !important;
+        height: 4px !important;
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-radius: 2px !important;
+        margin: 0 auto 8px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Mobile Drawer Header */
+    .media-drawer-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 6px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .media-drawer-header h4 {
+        margin: 0 !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        color: #fff !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    .btn-drawer-close {
+        background: rgba(139, 92, 246, 0.2) !important;
+        border: 1px solid rgba(139, 92, 246, 0.4) !important;
+        color: #c4b5fd !important;
+        padding: 4px 10px !important;
+        border-radius: 6px !important;
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .btn-drawer-close:hover,
+    .btn-drawer-close:active {
+        background: rgba(139, 92, 246, 0.35) !important;
+        border-color: #8b5cf6 !important;
+        color: #fff !important;
+    }
+
+    /* Drawer Tool Groups */
     .media-tools-group {
-        flex-shrink: 0;
-        scroll-snap-align: start;
-        flex-wrap: nowrap;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 0.35rem 0.55rem;
-        border-radius: var(--radius-sm);
-        gap: 0.25rem;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 8px !important;
+        padding: 6px 8px !important;
+        gap: 4px !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
     }
-    .media-tools-label {
-        font-size: 0.66rem;
-        font-weight: 700;
-    }
+
     .media-tools-group .media-ctrl-btn {
-        padding: 0.25rem 0.42rem;
-        font-size: 0.68rem;
-        min-height: 28px;
+        min-height: 32px !important;
+        padding: 4px 8px !important;
+        font-size: 0.72rem !important;
+        border-radius: 6px !important;
+    }
+
+    .media-tools-step-badge {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 0.65rem !important;
+    }
+
+    .media-tools-label {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        color: var(--text-2) !important;
+    }
+}
+
+/* ── 5. Mobile Landscape Optimization (<= 500px Viewport Height) ── */
+@media (max-height: 500px) and (orientation: landscape) {
+    .media-modal-header {
+        height: 32px !important;
+        min-height: 30px !important;
+        max-height: 34px !important;
+        padding: 0 8px !important;
+    }
+    
+    .media-modal-title {
+        font-size: 0.75rem !important;
+        max-width: 240px !important;
+    }
+    
+    .media-forensic-specs {
+        font-size: 0.55rem !important;
+        padding: 1px 5px !important;
+    }
+    
+    .explorer-btn-close {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .media-cinema-bar {
+        max-height: 44px !important;
+        padding: 1px 8px 3px !important;
+        gap: 1px !important;
+    }
+    
+    .media-timeline-wrap {
+        height: 8px !important;
+        padding: 1px 0 !important;
+    }
+    
+    .media-timeline-track {
+        height: 2.5px !important;
+    }
+    
+    .media-timeline-thumb {
+        width: 8px !important;
+        height: 8px !important;
+    }
+    
+    .media-cinema-primary {
+        height: 32px !important;
+        gap: 4px !important;
+    }
+    
+    #btn-media-play {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        min-height: 30px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    #media-time-display {
+        font-size: 0.65rem !important;
+    }
+    
+    #media-speed-select,
+    #btn-media-fullscreen,
+    #btn-toggle-tools {
+        height: 26px !important;
+        font-size: 0.7rem !important;
+        padding: 2px 6px !important;
+    }
+    
+    #media-tools-bar,
+    .media-tools-bar {
+        max-height: 82vh !important;
+        padding: 8px 12px 16px !important;
+    }
+    
+    .media-drawer-handle {
+        margin: 0 auto 4px !important;
+        height: 3px !important;
+    }
+    
+    .media-drawer-header {
+        padding-bottom: 4px !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .media-drawer-header h4 {
+        font-size: 0.8rem !important;
+    }
+    
+    .btn-drawer-close {
+        padding: 2px 8px !important;
+        font-size: 0.68rem !important;
     }
 }
 

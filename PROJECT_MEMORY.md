@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.19.0` (`WEB-VERSION-70`, Service Worker `v70`)  
+> **Web Portal Version:** `v8.20.0` (`WEB-VERSION-71`, Service Worker `v71`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -316,6 +316,35 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 - **100% Backward Compatibility & Automated Regression Certification:**
   - Preserved all 31 existing IDs and assertions while adding Section 6 assertions (11 new tests, total 42/42 passing in `test/test-video-player-pro.js` and 210/210 passing across all 10 suites).
+
+### 3.24 Mobile Video Player Overhaul & Slide-Up Forensic Studio Bottom Sheet Drawer (v8.20.0 / WEB-VERSION-71)
+- **Zero-Clutter Mobile Video Stage & Viewport Edge-to-Edge:**
+  - Eliminated artificial `calc(100dvh - 210px)` stage squish on viewports <= 768px and landscape <= 500px.
+  - Video stage (`.cinema-video-stage`) and video player element (`.media-player-element`) occupy 100% of the viewport with `object-fit: contain` and OLED black background, delivering edge-to-edge mobile viewing matching native apps.
+- **Minimal Mobile Floating Header (<= 40px):**
+  - Mobile header overlay height capped at <= 40px with a subtle gradient mask.
+  - Suppressed 7 desktop action buttons (`#btn-media-snapshot`, `#btn-media-loop`, `#btn-media-ambient`, `#btn-media-hotkeys`, `#btn-media-dock`, `#btn-media-open-tab`, `#btn-media-download`), category badge, and track counter.
+  - Displays only `#btn-close-media-modal`, truncated title with ellipsis, and `#media-forensic-specs` resolution badge.
+- **Slim Single-Row Mobile Transport Bar (<= 56px):**
+  - Replaced multi-row vertical stacking with a single horizontal row (`.media-cinema-primary { flex-direction: row; }`).
+  - Total transport bar height is strictly bounded <= 56px (nominal 54px).
+  - Contains 10px timeline scrubber, prominent circular Play/Pause button (>= 36px), monospace time display, compact speed pill, fullscreen button, and studio toggle button (`#btn-toggle-tools`).
+  - Hidden on mobile transport: secondary navigation (`#btn-media-prev`, `#btn-media-rewind10`, `#btn-media-forward10`, `#btn-media-next`), volume slider (`.media-volume-wrap`), and center section (`.media-cinema-center`).
+- **Slide-Up Forensic Studio Bottom Sheet Drawer (`#media-tools-bar`):**
+  - Positioned fixed off-screen at bottom (`transform: translateY(100%)`, max-height 70vh, smooth bezier transition) with `-webkit-overflow-scrolling: touch`.
+  - Tapping `#btn-toggle-tools` (`🎛️ Studio ▾` <-> `🎛️ Studio ▴`) slides the drawer up to `translateY(0)` via `.is-open`.
+  - Features visual drag handle (`.media-drawer-handle`), semantic header with title, and dedicated "Done ✕" button (`#btn-close-tools-drawer`).
+  - Houses all 17 forensic tools (Frame Stepping, Zoom Loupe, A-B Loop, Rotation, Flip, Filters, Reset) and relocated audio/playback controls.
+  - Desktop guard: drawer handle and header are hidden on screens > 768px via `.media-drawer-handle, .media-drawer-header { display: none !important; }`.
+- **Intelligent Inactivity Auto-Hide Refinement & Multi-Path Dismissal:**
+  - Auto-hide 2.5s timer (`cinema-ui--hidden`) is suspended while the forensic studio drawer is open.
+  - Tap outside drawer on `.cinema-video-stage` dismisses the drawer without toggling video playback.
+  - Tapping screen when controls are auto-hidden restores controls without triggering play/pause.
+  - Media player modal close (`closeMediaPlayer`) removes `.is-open` and resets `#btn-toggle-tools` state.
+- **Mobile Landscape Optimization (<= 500px Height):**
+  - Under `@media (max-height: 500px) and (orientation: landscape)`, header shrinks to 32px and transport bar shrinks to 44px, maximizing video view to > 80% unobstructed area.
+- **Automated Verification Suite:**
+  - Verified across 22 tests in `test/test-mobile-video-player.js` alongside 45/45 tests in `test/test-video-player-pro.js` and all core regression suites (100% pass).
 
 ---
 

@@ -4496,8 +4496,11 @@ async function playMediaByIndex(index) {
         btnToggleTools.classList.remove('is-active');
         btnToggleTools.innerHTML = '🎛️ Studio ▾';
     }
-    if (toolsBar && window.innerWidth <= 768) {
-        toolsBar.classList.add('is-collapsed');
+    if (toolsBar) {
+        toolsBar.classList.remove('is-open');
+        if (window.innerWidth <= 768) {
+            toolsBar.classList.add('is-collapsed');
+        }
     }
 
     if (canStreamRange) {
@@ -4706,15 +4709,22 @@ function resetCinemaInactivityTimer() {
         cinemaInactivityTimeout = null;
     }
 
+    // Suspend auto-hide if Forensic Studio Drawer is open on mobile
+    const toolsBar = document.getElementById('media-tools-bar');
+    if (toolsBar && toolsBar.classList.contains('is-open')) {
+        return;
+    }
+
     const media = getActiveCinemaMedia();
     // Only auto-hide if media is currently playing and is a video
     if (media && !media.paused && media.tagName === 'VIDEO') {
         cinemaInactivityTimeout = setTimeout(() => {
-            const toolsBar = document.getElementById('media-tools-bar');
+            const bar = document.getElementById('media-tools-bar');
             const hotkeysModal = document.getElementById('media-hotkeys-modal');
-            const isToolsOpen = toolsBar && !toolsBar.classList.contains('is-collapsed');
+            const isDrawerOpen = bar && bar.classList.contains('is-open');
+            const isToolsOpen = bar && (!bar.classList.contains('is-collapsed') || isDrawerOpen);
             const isHotkeysOpen = hotkeysModal && hotkeysModal.style.display !== 'none';
-            if (isToolsOpen || isHotkeysOpen) return;
+            if (isDrawerOpen || isToolsOpen || isHotkeysOpen) return;
 
             if (media && !media.paused) {
                 modal.classList.add('cinema-ui--hidden');
@@ -5309,7 +5319,10 @@ function closeMediaPlayer() {
     }
 
     const bar = document.getElementById('media-tools-bar');
-    if (bar) bar.classList.remove('is-collapsed');
+    if (bar) {
+        bar.classList.remove('is-collapsed');
+        bar.classList.remove('is-open');
+    }
     const btnToggleTools = document.getElementById('btn-toggle-tools');
     if (btnToggleTools) {
         btnToggleTools.classList.remove('is-active');
@@ -8062,13 +8075,36 @@ function initExplorerUI() {
         const m = document.getElementById('media-hotkeys-modal');
         if (m) m.style.display = 'none';
     });
-    btnToggleTools?.addEventListener('click', () => {
+    btnToggleTools?.addEventListener('click', (e) => {
+        if (e) e.stopPropagation();
         const bar = document.getElementById('media-tools-bar');
         if (!bar) return;
-        const isCollapsed = bar.classList.contains('is-collapsed');
-        bar.classList.toggle('is-collapsed', !isCollapsed);
-        btnToggleTools.classList.toggle('is-active', isCollapsed);
-        btnToggleTools.innerHTML = isCollapsed ? '🎛️ Studio ▴' : '🎛️ Studio ▾';
+        const isMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
+        if (isMobile) {
+            const isOpen = bar.classList.contains('is-open');
+            bar.classList.toggle('is-open', !isOpen);
+            bar.classList.remove('is-collapsed');
+            btnToggleTools.classList.toggle('is-active', !isOpen);
+            btnToggleTools.innerHTML = !isOpen ? '🎛️ Studio ▴' : '🎛️ Studio ▾';
+        } else {
+            const isCollapsed = bar.classList.contains('is-collapsed');
+            bar.classList.toggle('is-collapsed', !isCollapsed);
+            btnToggleTools.classList.toggle('is-active', isCollapsed);
+            btnToggleTools.innerHTML = isCollapsed ? '🎛️ Studio ▴' : '🎛️ Studio ▾';
+        }
+        resetCinemaInactivityTimer();
+    });
+
+    const btnCloseToolsDrawer = document.getElementById('btn-close-tools-drawer');
+    btnCloseToolsDrawer?.addEventListener('click', (e) => {
+        if (e) e.stopPropagation();
+        const bar = document.getElementById('media-tools-bar');
+        if (bar) bar.classList.remove('is-open');
+        if (btnToggleTools) {
+            btnToggleTools.classList.remove('is-active');
+            btnToggleTools.innerHTML = '🎛️ Studio ▾';
+        }
+        resetCinemaInactivityTimer();
     });
 
     const mediaSnapshotBtn = document.getElementById('btn-media-snapshot');
@@ -8277,6 +8313,31 @@ function initExplorerUI() {
                 panMoved = false;
                 return;
             }
+            const modal = document.getElementById('vault-media-modal');
+            const bar = document.getElementById('media-tools-bar');
+            const btnToggleTools = document.getElementById('btn-toggle-tools');
+
+            // 1. Tap-outside dismissal on .cinema-video-stage when Forensic Studio Drawer is open
+            if (bar && bar.classList.contains('is-open')) {
+                const target = e.target;
+                if (!target || (!target.closest('#media-tools-bar') && !target.closest('#btn-toggle-tools'))) {
+                    bar.classList.remove('is-open');
+                    if (btnToggleTools) {
+                        btnToggleTools.classList.remove('is-active');
+                        btnToggleTools.innerHTML = '🎛️ Studio ▾';
+                    }
+                    resetCinemaInactivityTimer();
+                    return;
+                }
+            }
+
+            // 2. Tap to reveal controls if currently auto-hidden (without triggering play/pause)
+            if (modal && modal.classList.contains('cinema-ui--hidden')) {
+                modal.classList.remove('cinema-ui--hidden');
+                resetCinemaInactivityTimer();
+                return;
+            }
+
             const media = getActiveCinemaMedia();
             if (!media) return;
 
