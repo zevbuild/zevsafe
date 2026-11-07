@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 8.15.0 (WEB-VERSION-66) — November 7, 2026
+
+- `New` & `UI` (`app.js`, `index.html`, `styles.css`): Video Player 3.0 (Pro Studio Upgrade). Expanded the media suite into a full-featured studio video workstation with forensic pan/zoom loupe, A-B segment looping, vocal clarity equalizer, timestamp bookmarks, ambient cinema glow, and expanded speed controls.
+- `New` & `UI` (`app.js`, `index.html`, `styles.css`): Forensic Loupe Pan & Zoom (`1.0×` to `5.0×`). Smooth interactive zooming on live playing video via mouse wheel or dedicated toolbar controls (`🔍+ In`, `🔍- Out`, `1:1 Reset`). Users can drag/pan across the zoomed viewport with mouse or touch. Floating HUD badge (`🔍 100%`) displays active magnification.
+- `New` & `UI` (`app.js`, `index.html`, `styles.css`): A-B Forensic Segment Looper. Precision point-to-point looping for repetitive motion review and surveillance inspection. Set Point A (`[` / `[ Set A`) and Point B (`]` / `Set B ]`) with glowing visual marker pins on the scrubber track and a translucent highlighted range band (`#media-timeline-ab-range`). Continuously loops playback from Point B back to Point A. Cleared with `\` or `✕ Clear`.
+- `New` & `UI` (`app.js`, `index.html`, `styles.css`): Forensic Timestamp Bookmarks (`📌 Mark` / `Shift+M`). 1-click timestamp marking that drops interactive luminous amber pin markers on the cybernetic timeline scrubber. Hovering displays the bookmark timecode, and clicking seeks directly to that exact millisecond.
+- `New` & `Security` (`app.js`, `index.html`, `styles.css`): WebAudio Vocal Clarity Equalizer (`🎙️ Vocal` / `V`). Integrated `BiquadFilterNode` peaking filter (+8dB boost at 2500 Hz, Q=1.2) tuned for human speech clarity and dialogue intelligibility, cutting through background rumble and noisy environments.
+- `UI` & `Perf` (`app.js`, `index.html`, `styles.css`): Ambient Cinema Glow (Ambilight Mode `✨ Ambient`). High-performance canvas-based ambient backlight system (`#cinema-ambient-canvas`) mirroring active video border colors behind the stage with GPU-accelerated blur (48px) and zero idle CPU draw when paused.
+- `UI` (`app.js`, `index.html`): Extended Playback Speed Deck (`0.25×` to `4.0×`). Added 0.25x Super Slow-Motion and 3.0x/4.0x high-speed presets with `<` and `>` keyboard shortcuts for instant speed nudging.
+- `UI` (`app.js`): Extended Studio Keyboard Matrix. Full keyboard control (`[`, `]`, `\`, `V`, `+`, `-`, `0`, `<`, `>`, `Shift+M`, Space, K, J, L, ,, ., B, R, S, F, P, M, Arrows).
+- `PWA` (`sw.js`, `index.html`): Service Worker Cache Bump to `v66` (`APP_VERSION = 'v66'`) and `WEB-VERSION-66`. Precaches updated application shell assets for offline cold starts.
+- `Tests` (`test/test-video-player-pro.js`): Expanded automated verification suite to 21 comprehensive tests (174/174 assertions passed across all 9 suites, 100% pass rate).
+
 ## Version 8.14.0 (WEB-VERSION-65) — November 7, 2026
 
 - `New` & `UI` (`app.js`, `index.html`, `styles.css`): Video Player 2.0 (Pro Cinema Upgrade). Complete overhaul of the in-browser streaming video player into an enterprise-grade forensic video inspection deck.

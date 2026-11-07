@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.14.0` (`WEB-VERSION-65`, Service Worker `v65`)  
+> **Web Portal Version:** `v8.15.0` (`WEB-VERSION-66`, Service Worker `v66`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -244,6 +244,16 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Aspect Ratio & Loop Controls:** 1-click aspect switcher (Fit, Fill, 16:9, 4:3) and loop toggle (`🔁 Loop: On/Off`).
 - **Extended Keyboard Matrix:** Full keyboard control (Space, K, J, L, ,, ., B, R, S, F, P, M, Arrows).
 - **PWA & Offline Integration:** Precached under Service Worker cache `v65` (`APP_VERSION = 'v65'`) in `sw.js`. Verified by `test/test-video-player-pro.js` (19/19 tests).
+
+### 3.17 Video Player 3.0 (Pro Studio Upgrade) [v8.15.0]
+- **Interactive Forensic Loupe Pan & Zoom (`1.0×` to `5.0×`):** Allows smooth forensic zooming on live playing or paused video via mouse wheel or dedicated toolbar controls (`🔍+ In`, `🔍- Out`, `1:1 Reset`). Users can drag/pan across the zoomed viewport with mouse or touch. Floating HUD badge (`🔍 100%`) provides real-time magnification level feedback.
+- **A-B Forensic Segment Looper:** Precision point-to-point looping for repetitive motion review, surveillance analysis, or learning. Set Point A (`[` / `[ Set A`) and Point B (`]` / `Set B ]`) with glowing visual marker pins on the scrubber track and a translucent highlighted range band (`#media-timeline-ab-range`). Seamlessly loops playback from Point B back to Point A. Cleared with `\` or `✕ Clear`.
+- **Forensic Timestamp Bookmarks (`📌 Mark` / `Shift+M`):** 1-click timestamp marking that drops interactive luminous amber pin markers on the cybernetic timeline scrubber. Hovering displays the bookmark timecode, and clicking seeks directly to that exact millisecond.
+- **WebAudio Vocal Clarity Equalizer (`🎙️ Vocal` / `V`):** Integrated `BiquadFilterNode` peaking filter (+8dB boost at 2500 Hz, Q=1.2) tuned for human speech clarity and dialogue intelligibility, cutting through background rumble and noisy environments.
+- **Ambient Cinema Glow (Ambilight Mode `✨ Ambient`):** High-performance canvas-based ambient backlight system (`#cinema-ambient-canvas`) mirroring active video border colors behind the stage with GPU-accelerated blur (48px) and zero idle CPU draw when paused.
+- **Extended Playback Speed Deck (`0.25×` to `4.0×`):** Added 0.25x Super Slow-Motion and 3.0x/4.0x high-speed presets with `<` and `>` keyboard shortcuts for instant speed nudging.
+- **Extended Keyboard Shortcuts Matrix:** Full studio keyboard matrix (`[`, `]`, `\`, `V`, `+`, `-`, `0`, `<`, `>`, `Shift+M`, Space, K, J, L, ,, ., B, R, S, F, P, M, Arrows).
+- **Service Worker & Verification:** Precached under `APP_VERSION = 'v66'` in `sw.js`. Verified by `test/test-video-player-pro.js` (21/21 assertions, 100% pass).
 
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 

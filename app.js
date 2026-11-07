@@ -3762,6 +3762,21 @@ let currentMediaGainNode = null;
 let currentMediaAudioSource = null;
 let isTimelineScrubbing = false;
 
+// Player 3.0 Pro Studio State
+let currentMediaZoom = 1.0; // 1.0 to 5.0
+let currentMediaPanX = 0;
+let currentMediaPanY = 0;
+let isMediaPanning = false;
+let mediaPanStartX = 0;
+let mediaPanStartY = 0;
+let mediaLoopPointA = null; // in seconds
+let mediaLoopPointB = null; // in seconds
+let currentMediaBookmarks = []; // [{ time, label }]
+let currentMediaAmbientGlow = false;
+let ambientAnimFrameId = null;
+let currentMediaVocalFilter = null;
+let currentMediaVocalClarity = false;
+
 // Dedicated Image Lightbox Viewer State
 let currentImageBlobUrl = null;
 let currentImageFilename = '';
@@ -4426,17 +4441,218 @@ function openMediaPlayerByPath(filePath) {
     }
 }
 
-// ── Video Player 2.0 Pro Helpers ──
+// ── Video Player 3.0 Pro Studio Helpers ──
 function applyVideoTransforms() {
     const video = document.getElementById('cinema-video');
     if (!video) return;
-    video.style.transform = `rotate(${currentMediaRotation}deg) scale(${currentMediaFlipH}, ${currentMediaFlipV})`;
+    video.style.transform = `translate(${currentMediaPanX}px, ${currentMediaPanY}px) scale(${currentMediaZoom}) rotate(${currentMediaRotation}deg) scale(${currentMediaFlipH}, ${currentMediaFlipV})`;
     let filterStr = '';
     if (currentMediaFilters.bright) filterStr += 'brightness(1.35) ';
     if (currentMediaFilters.contrast) filterStr += 'contrast(1.5) ';
     if (currentMediaFilters.invert) filterStr += 'invert(1) ';
     if (currentMediaFilters.cctv) filterStr += 'grayscale(1) contrast(1.2) ';
     video.style.filter = filterStr.trim();
+
+    const stage = document.getElementById('cinema-video-stage');
+    if (stage) {
+        stage.classList.toggle('is-zoomed', currentMediaZoom > 1.0);
+        stage.classList.toggle('is-panning', isMediaPanning);
+    }
+}
+
+// ── Zoom & Pan (Forensic Loupe) ──
+let zoomBadgeTimeout = null;
+function showCinemaZoomBadge() {
+    const badge = document.getElementById('cinema-zoom-badge');
+    if (!badge) return;
+    badge.textContent = `🔍 ${Math.round(currentMediaZoom * 100)}%`;
+    badge.style.display = 'block';
+    badge.style.opacity = '1';
+    if (zoomBadgeTimeout) clearTimeout(zoomBadgeTimeout);
+    if (currentMediaZoom === 1.0) {
+        zoomBadgeTimeout = setTimeout(() => {
+            badge.style.opacity = '0';
+            setTimeout(() => { if (currentMediaZoom === 1.0) badge.style.display = 'none'; }, 200);
+        }, 1200);
+    }
+}
+
+function setVideoZoom(zoom) {
+    currentMediaZoom = Math.max(1.0, Math.min(5.0, +zoom.toFixed(2)));
+    if (currentMediaZoom === 1.0) {
+        currentMediaPanX = 0;
+        currentMediaPanY = 0;
+    }
+    applyVideoTransforms();
+    showCinemaZoomBadge();
+}
+
+function nudgeVideoZoom(delta) {
+    setVideoZoom(currentMediaZoom + delta);
+}
+
+function resetVideoZoom() {
+    currentMediaZoom = 1.0;
+    currentMediaPanX = 0;
+    currentMediaPanY = 0;
+    applyVideoTransforms();
+    showCinemaZoomBadge();
+}
+
+// ── A-B Segment Looper ──
+function setMediaLoopPointA() {
+    const media = getActiveCinemaMedia();
+    if (!media || !media.duration) return;
+    mediaLoopPointA = media.currentTime;
+    if (mediaLoopPointB !== null && mediaLoopPointB <= mediaLoopPointA) {
+        mediaLoopPointB = null;
+    }
+    updateABLoopUI(media);
+    showToast(`[ A-B Loop: Point A set at ${formatTime(mediaLoopPointA)}`, 'info');
+}
+
+function setMediaLoopPointB() {
+    const media = getActiveCinemaMedia();
+    if (!media || !media.duration) return;
+    if (mediaLoopPointA === null) {
+        mediaLoopPointA = 0;
+    }
+    mediaLoopPointB = Math.max(mediaLoopPointA + 0.3, media.currentTime);
+    updateABLoopUI(media);
+    showToast(`] A-B Loop: Point B set at ${formatTime(mediaLoopPointB)} (Active)`, 'info');
+}
+
+function clearMediaABLoop() {
+    mediaLoopPointA = null;
+    mediaLoopPointB = null;
+    updateABLoopUI();
+    showToast('✕ A-B Loop cleared', 'info');
+}
+
+function updateABLoopUI(media) {
+    const markerA = document.getElementById('media-timeline-marker-a');
+    const markerB = document.getElementById('media-timeline-marker-b');
+    const rangeEl = document.getElementById('media-timeline-ab-range');
+    const m = media || getActiveCinemaMedia();
+    if (!m || !m.duration) return;
+
+    if (mediaLoopPointA !== null) {
+        const pctA = (mediaLoopPointA / m.duration) * 100;
+        if (markerA) {
+            markerA.style.display = 'block';
+            markerA.style.left = `${pctA}%`;
+            markerA.title = `Loop Point A: ${formatTime(mediaLoopPointA)}`;
+        }
+    } else if (markerA) {
+        markerA.style.display = 'none';
+    }
+
+    if (mediaLoopPointB !== null) {
+        const pctB = (mediaLoopPointB / m.duration) * 100;
+        if (markerB) {
+            markerB.style.display = 'block';
+            markerB.style.left = `${pctB}%`;
+            markerB.title = `Loop Point B: ${formatTime(mediaLoopPointB)}`;
+        }
+    } else if (markerB) {
+        markerB.style.display = 'none';
+    }
+
+    if (mediaLoopPointA !== null && mediaLoopPointB !== null && rangeEl) {
+        const pctA = (mediaLoopPointA / m.duration) * 100;
+        const pctB = (mediaLoopPointB / m.duration) * 100;
+        rangeEl.style.display = 'block';
+        rangeEl.style.left = `${Math.min(pctA, pctB)}%`;
+        rangeEl.style.width = `${Math.abs(pctB - pctA)}%`;
+    } else if (rangeEl) {
+        rangeEl.style.display = 'none';
+    }
+}
+
+// ── Timestamp Bookmarks ──
+function addMediaBookmark() {
+    const media = getActiveCinemaMedia();
+    if (!media || !media.duration) return;
+    const t = media.currentTime;
+    if (currentMediaBookmarks.some(b => Math.abs(b.time - t) < 0.5)) {
+        showToast('📌 Marker already exists at this timestamp', 'info');
+        return;
+    }
+    currentMediaBookmarks.push({ time: t, label: formatTime(t) });
+    currentMediaBookmarks.sort((a, b) => a.time - b.time);
+    renderMediaBookmarks();
+    showToast(`📌 Bookmark added at ${formatTime(t)}`, 'success');
+}
+
+function renderMediaBookmarks() {
+    const wrap = document.getElementById('media-timeline-bookmarks-wrap');
+    const media = getActiveCinemaMedia();
+    if (!wrap || !media || !media.duration) {
+        if (wrap) wrap.innerHTML = '';
+        return;
+    }
+    wrap.innerHTML = '';
+    currentMediaBookmarks.forEach((bm) => {
+        const pct = (bm.time / media.duration) * 100;
+        const pin = document.createElement('div');
+        pin.className = 'media-timeline-bookmark-pin';
+        pin.style.left = `${pct}%`;
+        pin.title = `Bookmark: ${bm.label} (Click to jump)`;
+        pin.addEventListener('click', (e) => {
+            e.stopPropagation();
+            media.currentTime = bm.time;
+            updateTimelineScrubber(media);
+            showToast(`Jumped to bookmark: ${bm.label}`, 'info');
+        });
+        wrap.appendChild(pin);
+    });
+}
+
+// ── Ambient Cinema Glow (Ambilight) ──
+function toggleAmbientGlow() {
+    currentMediaAmbientGlow = !currentMediaAmbientGlow;
+    const btn = document.getElementById('btn-media-ambient');
+    const canvas = document.getElementById('cinema-ambient-canvas');
+    if (btn) {
+        btn.textContent = currentMediaAmbientGlow ? '✨ Ambient: On' : '✨ Ambient: Off';
+        btn.style.background = currentMediaAmbientGlow ? 'rgba(56, 189, 248, 0.25)' : '';
+        btn.style.color = currentMediaAmbientGlow ? '#38bdf8' : '';
+    }
+    if (canvas) {
+        canvas.classList.toggle('active', currentMediaAmbientGlow);
+    }
+    if (currentMediaAmbientGlow) {
+        updateAmbientGlow();
+        showToast('✨ Ambient backlight glow enabled', 'info');
+    } else {
+        if (ambientAnimFrameId) {
+            cancelAnimationFrame(ambientAnimFrameId);
+            ambientAnimFrameId = null;
+        }
+        showToast('✨ Ambient glow disabled', 'info');
+    }
+}
+
+function updateAmbientGlow() {
+    if (!currentMediaAmbientGlow) return;
+    const video = document.getElementById('cinema-video');
+    const canvas = document.getElementById('cinema-ambient-canvas');
+    if (!video || !canvas || video.paused || video.ended || video.videoWidth === 0) {
+        if (ambientAnimFrameId) cancelAnimationFrame(ambientAnimFrameId);
+        ambientAnimFrameId = null;
+        return;
+    }
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+        if (canvas.width !== 64 || canvas.height !== 36) {
+            canvas.width = 64;
+            canvas.height = 36;
+        }
+        try {
+            ctx.drawImage(video, 0, 0, 64, 36);
+        } catch (_) {}
+    }
+    ambientAnimFrameId = requestAnimationFrame(updateAmbientGlow);
 }
 
 function rotateVideo(deg) {
@@ -4471,6 +4687,7 @@ function resetVideoTransforms() {
         const btn = document.getElementById(`btn-filter-${f}`);
         if (btn) btn.classList.remove('is-active');
     });
+    resetVideoZoom();
     applyVideoTransforms();
 }
 
@@ -4554,8 +4771,17 @@ function initAudioBoostContext(videoEl) {
             currentMediaAudioCtx = new AudioCtxClass();
             currentMediaAudioSource = currentMediaAudioCtx.createMediaElementSource(videoEl);
             currentMediaGainNode = currentMediaAudioCtx.createGain();
+
+            // WebAudio BiquadFilter for Vocal / Speech Clarity
+            currentMediaVocalFilter = currentMediaAudioCtx.createBiquadFilter();
+            currentMediaVocalFilter.type = 'peaking';
+            currentMediaVocalFilter.frequency.value = 2500;
+            currentMediaVocalFilter.Q.value = 1.2;
+            currentMediaVocalFilter.gain.value = currentMediaVocalClarity ? 8.0 : 0.0;
+
             currentMediaAudioSource.connect(currentMediaGainNode);
-            currentMediaGainNode.connect(currentMediaAudioCtx.destination);
+            currentMediaGainNode.connect(currentMediaVocalFilter);
+            currentMediaVocalFilter.connect(currentMediaAudioCtx.destination);
         } catch (e) {
             console.warn('[Audio Boost Init Warning]', e);
         }
@@ -4580,6 +4806,23 @@ function toggleAudioGainBoost() {
         btn.classList.toggle('is-active', currentMediaAudioBoost);
     }
     showToast(currentMediaAudioBoost ? '⚡ Audio Boost: 200% Active (GainNode)' : '⚡ Audio Boost: Normal (100%)', 'info');
+}
+
+function toggleVocalClarity() {
+    const video = document.getElementById('cinema-video');
+    const btn = document.getElementById('btn-media-vocal-clarity');
+    if (!video) return;
+
+    initAudioBoostContext(video);
+    currentMediaVocalClarity = !currentMediaVocalClarity;
+
+    if (currentMediaVocalFilter) {
+        currentMediaVocalFilter.gain.value = currentMediaVocalClarity ? 8.0 : 0.0;
+    }
+    if (btn) {
+        btn.classList.toggle('is-active', currentMediaVocalClarity);
+    }
+    showToast(currentMediaVocalClarity ? '🎙️ Vocal Clarity: ON (+8dB at 2.5kHz)' : '🎙️ Vocal Clarity: OFF (Flat)', 'info');
 }
 
 function updateTimelineScrubber(media) {
@@ -4658,14 +4901,40 @@ function closeMediaPlayer() {
     currentMediaBlob = null;
     currentMediaFilename = '';
 
-    // Reset Player 2.0 transforms, audio boost & scrubber
+    // Reset Player 3.0 Pro Studio transforms, audio boost, EQ & scrubber
     resetVideoTransforms();
+    resetVideoZoom();
+    clearMediaABLoop();
+    currentMediaBookmarks = [];
+    renderMediaBookmarks();
+
+    if (ambientAnimFrameId) {
+        cancelAnimationFrame(ambientAnimFrameId);
+        ambientAnimFrameId = null;
+    }
+    currentMediaAmbientGlow = false;
+    const ambientBtn = document.getElementById('btn-media-ambient');
+    if (ambientBtn) {
+        ambientBtn.textContent = '✨ Ambient: Off';
+        ambientBtn.style.background = '';
+        ambientBtn.style.color = '';
+    }
+    const ambientCanvas = document.getElementById('cinema-ambient-canvas');
+    if (ambientCanvas) ambientCanvas.classList.remove('active');
+
     if (currentMediaGainNode) {
         currentMediaGainNode.gain.value = 1.0;
     }
     currentMediaAudioBoost = false;
     const boostBtn = document.getElementById('btn-media-audio-boost');
     if (boostBtn) boostBtn.classList.remove('is-active');
+
+    if (currentMediaVocalFilter) {
+        currentMediaVocalFilter.gain.value = 0.0;
+    }
+    currentMediaVocalClarity = false;
+    const vocalBtn = document.getElementById('btn-media-vocal-clarity');
+    if (vocalBtn) vocalBtn.classList.remove('is-active');
 
     const progressEl = document.getElementById('media-timeline-progress');
     const thumbEl = document.getElementById('media-timeline-thumb');
@@ -7279,11 +7548,14 @@ function initExplorerUI() {
         }
     }
 
-    // Bind video & audio sync events (Pro Cinema Player 2.0)
+    // Bind video & audio sync events (Pro Cinema Player 3.0 Studio)
     ['cinema-video', 'cinema-audio'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        el.addEventListener('play', () => updatePlayBtnUI(true));
+        el.addEventListener('play', () => {
+            updatePlayBtnUI(true);
+            if (currentMediaAmbientGlow) updateAmbientGlow();
+        });
         el.addEventListener('pause', () => updatePlayBtnUI(false));
         el.addEventListener('ended', () => {
             updatePlayBtnUI(false);
@@ -7296,6 +7568,11 @@ function initExplorerUI() {
             }
         });
         el.addEventListener('timeupdate', () => {
+            // A-B Segment Loop Check
+            if (mediaLoopPointA !== null && mediaLoopPointB !== null && el.currentTime >= mediaLoopPointB) {
+                el.currentTime = mediaLoopPointA;
+                if (el.paused) el.play().catch(() => {});
+            }
             updateTimelineScrubber(el);
         });
         el.addEventListener('progress', () => {
@@ -7369,10 +7646,12 @@ function initExplorerUI() {
     mediaStepBackBtn?.addEventListener('click', () => stepVideoFrame(-1));
     mediaStepFwdBtn?.addEventListener('click', () => stepVideoFrame(1));
 
-    // Snapshot & Loop Buttons
+    // Snapshot, Loop & Ambient Buttons
     const mediaSnapshotBtn = document.getElementById('btn-media-snapshot');
     const mediaLoopBtn = document.getElementById('btn-media-loop');
+    const mediaAmbientBtn = document.getElementById('btn-media-ambient');
     mediaSnapshotBtn?.addEventListener('click', captureVideoFrameSnapshot);
+    mediaAmbientBtn?.addEventListener('click', toggleAmbientGlow);
     mediaLoopBtn?.addEventListener('click', () => {
         currentMediaIsLooping = !currentMediaIsLooping;
         if (mediaLoopBtn) {
@@ -7383,9 +7662,23 @@ function initExplorerUI() {
         showToast(currentMediaIsLooping ? '🔁 Single-video loop enabled' : '🔁 Playlist auto-advance enabled', 'info');
     });
 
-    // Audio Boost 200% Button
+    // Audio Boost 200% & Vocal Clarity Buttons
     const mediaAudioBoostBtn = document.getElementById('btn-media-audio-boost');
+    const mediaVocalClarityBtn = document.getElementById('btn-media-vocal-clarity');
+    const mediaBookmarkBtn = document.getElementById('btn-media-bookmark');
     mediaAudioBoostBtn?.addEventListener('click', toggleAudioGainBoost);
+    mediaVocalClarityBtn?.addEventListener('click', toggleVocalClarity);
+    mediaBookmarkBtn?.addEventListener('click', addMediaBookmark);
+
+    // Zoom Controls (Forensic Loupe)
+    document.getElementById('btn-media-zoom-in')?.addEventListener('click', () => nudgeVideoZoom(0.25));
+    document.getElementById('btn-media-zoom-out')?.addEventListener('click', () => nudgeVideoZoom(-0.25));
+    document.getElementById('btn-media-zoom-reset')?.addEventListener('click', resetVideoZoom);
+
+    // A-B Segment Loop Controls
+    document.getElementById('btn-media-ab-a')?.addEventListener('click', setMediaLoopPointA);
+    document.getElementById('btn-media-ab-b')?.addEventListener('click', setMediaLoopPointB);
+    document.getElementById('btn-media-ab-clear')?.addEventListener('click', clearMediaABLoop);
 
     // Transform Controls (Rotation & Flip)
     const mediaRotLeftBtn = document.getElementById('btn-media-rot-left');
@@ -7464,11 +7757,52 @@ function initExplorerUI() {
         });
     }
 
-    // Video Stage Click & Double-Tap Gestures
+    // Video Stage Click, Double-Tap, Wheel Zoom & Pan Drag (Player 3.0 Pro Studio)
     const videoStage = document.getElementById('cinema-video-stage');
     if (videoStage) {
         let clickTimer = null;
+        let panMoved = false;
+
+        videoStage.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0) nudgeVideoZoom(0.25);
+            else if (e.deltaY > 0) nudgeVideoZoom(-0.25);
+        }, { passive: false });
+
+        videoStage.addEventListener('mousedown', (e) => {
+            if (currentMediaZoom > 1.0 && e.button === 0) {
+                isMediaPanning = true;
+                panMoved = false;
+                mediaPanStartX = e.clientX - currentMediaPanX;
+                mediaPanStartY = e.clientY - currentMediaPanY;
+                applyVideoTransforms();
+                const onMove = (ev) => {
+                    if (isMediaPanning) {
+                        if (Math.abs(ev.clientX - (mediaPanStartX + currentMediaPanX)) > 4 ||
+                            Math.abs(ev.clientY - (mediaPanStartY + currentMediaPanY)) > 4) {
+                            panMoved = true;
+                        }
+                        currentMediaPanX = ev.clientX - mediaPanStartX;
+                        currentMediaPanY = ev.clientY - mediaPanStartY;
+                        applyVideoTransforms();
+                    }
+                };
+                const onUp = () => {
+                    isMediaPanning = false;
+                    applyVideoTransforms();
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mouseup', onUp);
+                };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+            }
+        });
+
         videoStage.addEventListener('click', (e) => {
+            if (panMoved) {
+                panMoved = false;
+                return;
+            }
             const media = getActiveCinemaMedia();
             if (!media) return;
 
@@ -7503,6 +7837,19 @@ function initExplorerUI() {
         const media = getActiveCinemaMedia();
         if (media) media.playbackRate = parseFloat(e.target.value || '1');
     });
+
+    function nudgePlaybackSpeed(direction) {
+        const select = document.getElementById('media-speed-select');
+        if (!select) return;
+        const options = Array.from(select.options);
+        const currIdx = select.selectedIndex;
+        const nextIdx = Math.max(0, Math.min(options.length - 1, currIdx + direction));
+        if (nextIdx !== currIdx) {
+            select.selectedIndex = nextIdx;
+            select.dispatchEvent(new Event('change'));
+            showToast(`Playback speed: ${options[nextIdx].text}`, 'info');
+        }
+    }
 
     // Aspect Ratio Modes Cycle: Fit -> Fill -> 16:9 -> 4:3
     const aspectModes = ['fit', 'fill', '16:9', '4:3'];
@@ -7575,7 +7922,7 @@ function initExplorerUI() {
         }
     });
 
-    // Keyboard Shortcuts for Media Player (Pro Cinema 2.0 Extended Matrix)
+    // Keyboard Shortcuts for Media Player (Pro Cinema 3.0 Studio Extended Matrix)
     window.addEventListener('keydown', (e) => {
         const mediaModalEl = document.getElementById('vault-media-modal');
         if (!mediaModalEl || mediaModalEl.style.display === 'none') return;
@@ -7606,12 +7953,39 @@ function initExplorerUI() {
             e.preventDefault();
             media.currentTime = Math.min(media.duration || 0, media.currentTime + 10);
             showCinemaGestureBadge('right', '10s ⏩');
-        } else if (e.key === ',' || e.key === '<') {
+        } else if (e.key === '<' || (e.shiftKey && e.key === ',')) {
+            e.preventDefault();
+            nudgePlaybackSpeed(-1);
+        } else if (e.key === '>' || (e.shiftKey && e.key === '.')) {
+            e.preventDefault();
+            nudgePlaybackSpeed(1);
+        } else if (e.key === ',') {
             e.preventDefault();
             stepVideoFrame(-1);
-        } else if (e.key === '.' || e.key === '>') {
+        } else if (e.key === '.') {
             e.preventDefault();
             stepVideoFrame(1);
+        } else if (e.key === '[') {
+            e.preventDefault();
+            setMediaLoopPointA();
+        } else if (e.key === ']') {
+            e.preventDefault();
+            setMediaLoopPointB();
+        } else if (e.key === '\\') {
+            e.preventDefault();
+            clearMediaABLoop();
+        } else if (e.key === 'v' || e.key === 'V') {
+            e.preventDefault();
+            toggleVocalClarity();
+        } else if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            nudgeVideoZoom(0.25);
+        } else if (e.key === '-' || e.key === '_') {
+            e.preventDefault();
+            nudgeVideoZoom(-0.25);
+        } else if (e.key === '0') {
+            e.preventDefault();
+            resetVideoZoom();
         } else if (e.key === 'b' || e.key === 'B') {
             e.preventDefault();
             toggleAudioGainBoost();
@@ -7638,8 +8012,12 @@ function initExplorerUI() {
             mediaPipBtn?.click();
         } else if (e.key === 'm' || e.key === 'M') {
             e.preventDefault();
-            media.muted = !media.muted;
-            updateVolumeMuteUI(media);
+            if (e.shiftKey) {
+                addMediaBookmark();
+            } else {
+                media.muted = !media.muted;
+                updateVolumeMuteUI(media);
+            }
         } else if (e.key === 'Escape') {
             closeMediaPlayer();
         }

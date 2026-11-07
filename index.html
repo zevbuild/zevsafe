@@ -168,7 +168,7 @@
                 <a href="./how-to-use-zevsafe/" class="nav-link-subtle">Documentation</a>
                 <a href="./device-power/" class="nav-link-subtle" title="Benchmark Your Device Hardware Encryption Power">⚡ Device Power</a>
                 <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span style="font-size: 0.72rem; opacity: 0.9; padding: 2px 6px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); color: #34d399; margin-left: 2px; font-weight: 700;">99.3/100</span></a>
-                <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-65)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v8.14.0</span></a>
+                <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-66)">Changelog <span style="font-size: 0.72rem; opacity: 0.75; padding: 2px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-left: 2px;">v8.15.0</span></a>
                 <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
                 <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="nav-link-subtle">
                     GitHub <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
@@ -225,7 +225,7 @@
                             <span class="mn-title">Knowledge Hub &amp; Manual</span>
                             <span class="mn-desc">10 In-Depth Service Specifications</span>
                         </div>
-                        <span class="mn-badge">v8.14.0</span>
+                        <span class="mn-badge">v8.15.0</span>
                     </a>
                     <a href="./how-to-use-zevsafe/" class="mobile-nav-link">
                         <span class="mn-icon">📖</span>
@@ -256,7 +256,7 @@
                             <span class="mn-title">Changelog &amp; Releases</span>
                             <span class="mn-desc">Full release history</span>
                         </div>
-                        <span class="mn-badge">v8.14.0</span>
+                        <span class="mn-badge">v8.15.0</span>
                     </a>
                     <a href="./roadmap/" class="mobile-nav-link">
                         <span class="mn-icon">🧭</span>
@@ -965,7 +965,7 @@
                 <span>·</span>
                 <a href="./roadmap/" style="color: #38bdf8; font-weight: 600;">Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.14.0 / WEB-VERSION-65)</a>
+                <a href="./change-log/">Changelog (v8.15.0 / WEB-VERSION-66)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1103,6 +1103,7 @@
                 <div class="media-modal-actions">
                     <button class="media-btn-action" id="btn-media-snapshot" title="Extract current video frame at full resolution as PNG (S)">📸 Snap Frame</button>
                     <button class="media-btn-action" id="btn-media-loop" title="Toggle single-video loop / playlist auto-advance">🔁 Loop: Off</button>
+                    <button class="media-btn-action" id="btn-media-ambient" title="Toggle immersive ambient backlight glow">✨ Ambient: Off</button>
                     <button class="media-btn-action" id="btn-media-dock" title="Minimize player to bottom dock" style="display:none;background:rgba(45,212,191,0.18);color:#2dd4bf;border-color:rgba(45,212,191,0.4);">📥 Dock</button>
                     <button class="media-btn-action" id="btn-media-open-tab" title="Open and play in new browser tab">↗️ New Tab</button>
                     <button class="media-btn-action" id="btn-media-download" title="Save file to device">⬇️ Save</button>
@@ -1111,10 +1112,14 @@
             </header>
 
             <div class="media-modal-body" id="media-modal-body">
-                <div class="cinema-video-stage" id="cinema-video-stage" title="Click to Play/Pause • Double-click left/right to seek 10s">
+                <div class="cinema-video-stage" id="cinema-video-stage" title="Click to Play/Pause • Double-click left/right to seek 10s • Mouse wheel to zoom">
+                    <canvas id="cinema-ambient-canvas" class="cinema-ambient-canvas" aria-hidden="true"></canvas>
                     <video id="cinema-video" class="media-player-element" style="display:none;" playsinline webkit-playsinline preload="auto"></video>
                     <audio id="cinema-audio" class="media-player-element" style="display:none;" controls preload="auto"></audio>
                     
+                    <!-- Zoom HUD indicator -->
+                    <div class="cinema-zoom-badge" id="cinema-zoom-badge" style="display:none;" title="Zoom level">🔍 100%</div>
+
                     <!-- Center Ripple Animation Indicator -->
                     <div class="cinema-center-ripple" id="cinema-center-ripple" aria-hidden="true">▶</div>
 
@@ -1129,14 +1134,18 @@
                 </div>
             </div>
 
-            <!-- Advanced Cinema Controls Bar (Player 2.0) -->
+            <!-- Advanced Cinema Controls Bar (Player 3.0 Pro Studio) -->
             <div class="media-cinema-bar" id="media-cinema-bar">
                 <!-- Precision Cyber Scrubber Timeline -->
                 <div class="media-timeline-wrap" id="media-timeline-wrap" role="slider" aria-label="Video scrubber" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0" title="Click or drag to seek">
                     <div class="media-timeline-track" id="media-timeline-track">
                         <div class="media-timeline-buffer" id="media-timeline-buffer"></div>
+                        <div class="media-timeline-ab-range" id="media-timeline-ab-range" style="display:none;"></div>
                         <div class="media-timeline-progress" id="media-timeline-progress"></div>
                         <div class="media-timeline-thumb" id="media-timeline-thumb"></div>
+                        <div class="media-timeline-ab-marker media-timeline-ab-marker--a" id="media-timeline-marker-a" style="display:none;" title="Loop Point A">A</div>
+                        <div class="media-timeline-ab-marker media-timeline-ab-marker--b" id="media-timeline-marker-b" style="display:none;" title="Loop Point B">B</div>
+                        <div class="media-timeline-bookmarks-wrap" id="media-timeline-bookmarks-wrap"></div>
                     </div>
                     <div class="media-timeline-tooltip" id="media-timeline-tooltip">00:00</div>
                 </div>
@@ -1160,18 +1169,24 @@
                             <input type="range" id="media-volume-slider" min="0" max="1" step="0.05" value="1" class="media-volume-range" aria-label="Volume">
                         </div>
                         <button class="media-boost-badge" id="btn-media-audio-boost" title="WebAudio GainNode: Boost quiet recordings up to 200% (B)">⚡ Boost 200%</button>
+                        <button class="media-boost-badge media-eq-badge" id="btn-media-vocal-clarity" title="Vocal Clarity Equalizer: Cuts low rumble and boosts speech frequencies (V)">🎙️ Vocal</button>
+                        <button class="media-ctrl-btn" id="btn-media-bookmark" title="Add timestamp bookmark pin (Shift+M)">📌 Mark</button>
                     </div>
 
                     <div class="media-cinema-right">
                         <div class="media-speed-wrap">
                             <span class="media-speed-label">Speed:</span>
                             <select id="media-speed-select" class="media-speed-select" aria-label="Playback Speed">
+                                <option value="0.25">0.25×</option>
                                 <option value="0.5">0.5×</option>
                                 <option value="0.75">0.75×</option>
                                 <option value="1" selected>1.0×</option>
                                 <option value="1.25">1.25×</option>
                                 <option value="1.5">1.5×</option>
+                                <option value="1.75">1.75×</option>
                                 <option value="2">2.0×</option>
+                                <option value="3">3.0×</option>
+                                <option value="4">4.0×</option>
                             </select>
                         </div>
 
@@ -1181,8 +1196,22 @@
                     </div>
                 </div>
 
-                <!-- Secondary Tools Row: Rotation, Flip & Real-Time Video Filters -->
+                <!-- Secondary Tools Row: Zoom, A-B Loop, Rotation, Flip & Real-Time Video Filters -->
                 <div class="media-tools-bar" id="media-tools-bar">
+                    <div class="media-tools-group">
+                        <span class="media-tools-label">Zoom:</span>
+                        <button class="media-ctrl-btn" id="btn-media-zoom-in" title="Zoom in video (Wheel Up / +)">🔍+ In</button>
+                        <button class="media-ctrl-btn" id="btn-media-zoom-out" title="Zoom out video (Wheel Down / -)">🔍- Out</button>
+                        <button class="media-ctrl-btn" id="btn-media-zoom-reset" title="Reset zoom (0)">1:1</button>
+                    </div>
+
+                    <div class="media-tools-group">
+                        <span class="media-tools-label">A-B Loop:</span>
+                        <button class="media-ctrl-btn" id="btn-media-ab-a" title="Set Point A at current time ([)">[ A</button>
+                        <button class="media-ctrl-btn" id="btn-media-ab-b" title="Set Point B at current time (])">B ]</button>
+                        <button class="media-ctrl-btn" id="btn-media-ab-clear" title="Clear A-B Loop (\)" style="color:var(--text-3);">✕ Clear</button>
+                    </div>
+
                     <div class="media-tools-group">
                         <span class="media-tools-label">Transform:</span>
                         <button class="media-ctrl-btn" id="btn-media-rot-left" title="Rotate 90° counter-clockwise">↺ 90°</button>
