@@ -4452,6 +4452,12 @@ async function playMediaByIndex(index) {
     const pipBtn = document.getElementById('btn-media-pip');
     const stepBackBtn = document.getElementById('btn-media-step-back');
     const stepFwdBtn = document.getElementById('btn-media-step-fwd');
+    const btnToggleTools = document.getElementById('btn-toggle-tools');
+    if (btnToggleTools) {
+        btnToggleTools.style.display = item.category === 'video' ? 'inline-flex' : 'none';
+        btnToggleTools.classList.remove('is-active');
+        btnToggleTools.innerHTML = '🎛️ Studio ▾';
+    }
 
     if (canStreamRange) {
         // --- ON-DEMAND STREAMING PATH (< 30ms startup, < 60 MB RAM) ---
@@ -5205,6 +5211,14 @@ function closeMediaPlayer() {
     if (specsBadge) {
         specsBadge.style.display = 'none';
         specsBadge.textContent = '';
+    }
+
+    const bar = document.getElementById('media-tools-bar');
+    if (bar) bar.classList.remove('is-collapsed');
+    const btnToggleTools = document.getElementById('btn-toggle-tools');
+    if (btnToggleTools) {
+        btnToggleTools.classList.remove('is-active');
+        btnToggleTools.innerHTML = '🎛️ Studio ▾';
     }
 }
 
@@ -7926,15 +7940,24 @@ function initExplorerUI() {
     mediaStepBackBtn?.addEventListener('click', () => stepVideoFrame(-1));
     mediaStepFwdBtn?.addEventListener('click', () => stepVideoFrame(1));
 
-    // Snapshot, Loop & Ambient Buttons
+    // Video Player 5.0 Theater, Hotkeys & Studio Tools Toggle
     const mediaTheaterBtn = document.getElementById('btn-media-theater');
     const mediaHotkeysBtn = document.getElementById('btn-media-hotkeys');
     const closeHotkeysBtn = document.getElementById('btn-close-hotkeys');
+    const btnToggleTools = document.getElementById('btn-toggle-tools');
     mediaTheaterBtn?.addEventListener('click', toggleTheaterMode);
     mediaHotkeysBtn?.addEventListener('click', toggleHotkeysModal);
     closeHotkeysBtn?.addEventListener('click', () => {
         const m = document.getElementById('media-hotkeys-modal');
         if (m) m.style.display = 'none';
+    });
+    btnToggleTools?.addEventListener('click', () => {
+        const bar = document.getElementById('media-tools-bar');
+        if (!bar) return;
+        const isCollapsed = bar.classList.contains('is-collapsed');
+        bar.classList.toggle('is-collapsed', !isCollapsed);
+        btnToggleTools.classList.toggle('is-active', isCollapsed);
+        btnToggleTools.innerHTML = isCollapsed ? '🎛️ Studio ▴' : '🎛️ Studio ▾';
     });
 
     const mediaSnapshotBtn = document.getElementById('btn-media-snapshot');

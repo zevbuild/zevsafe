@@ -273,8 +273,19 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Multi-touch pinch-to-zoom engine on `#cinema-video-stage` calculating euclidean touch distance (`Math.hypot`) to seamlessly zoom between `1.0×` and `5.0×` on mobile/tablet touchscreens.
 - **Full WCAG AAA Light Theme System:**
   - High-contrast overrides for `.light-theme .media-forensic-specs`, `.light-theme .media-hotkeys-modal`, `.light-theme .media-hotkeys-card`, `.light-theme .media-hotkey-row kbd`, and `.light-theme .media-modal-container.media-modal-container--theater`.
+- **Standard Video Player Flow & Numbered Forensic Steps Organization:**
+  - *Left Transport Row:* Standard logical flow: `▶️ Play` (prominent main action) → `⏮️ Prev` → `⏪ 10s` → `10s ⏩` → `⏭️ Next` → `🔊 Mute` (with expanding slider) → `00:00 / 00:00` (time display). Eliminated accidental frame steps by moving single-frame stepping off the primary transport bar.
+  - *Center Enhancements:* Cleanly grouped `⚡ Boost 200%`, `🎙️ Vocal`, and `📌 Mark`.
+  - *Right Viewport & Tools:* Speed selector, `↔️ Fit`, `📺 PiP`, `🔲 Theater`, `⛶ Fullscreen`, and `🎛️ Studio ▾` toggle.
+  - *Numbered Forensic Studio Deck (`#media-tools-bar`):* Explicit numbered workflow stations with `.media-tools-step-badge`:
+    - Station 1: Frame Stepper (`⯬ Step` / `Step ⯮`)
+    - Station 2: Loupe Zoom (`🔍+ In` / `🔍- Out` / `1:1`)
+    - Station 3: A-B Loop (`[ A` / `B ]` / `✕ Clear`)
+    - Station 4: Transform (`↺ 90°` / `↻ 90°` / `⇄ Flip H` / `⇅ Flip V`)
+    - Station 5: Filters (`☀️ Brightness` / `🌓 Contrast` / `🔄 Invert` / `📹 CCTV B&W` / `Reset`)
+  - *Studio Tools Toggle (`#btn-toggle-tools`):* Enables one-click collapse/expansion of the forensic deck, letting users enjoy clean cinematic viewing or deep forensic analysis on demand.
 - **100% Backward Compatibility & Automated Regression Certification:**
-  - Preserved all 31 existing IDs and assertions while adding Section 6 assertions (8 new tests, total 39/39 passing in `test/test-video-player-pro.js` and 100% across all 10 suites).
+  - Preserved all 31 existing IDs and assertions while adding Section 6 assertions (9 new tests, total 40/40 passing in `test/test-video-player-pro.js` and 100% across all 10 suites).
 
 ---
 

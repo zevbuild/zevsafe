@@ -335,6 +335,14 @@ runTest('6.8: Light theme WCAG AAA overrides for Forensic Specs, Hotkeys modal a
     assert.ok(stylesCss.includes('.light-theme .media-modal-container.media-modal-container--theater'), 'Must define light theme theater container');
 });
 
+runTest('6.9: Logical standard video player organization: unified transport row & numbered studio steps', () => {
+    assert.ok(indexHtml.includes('id="btn-toggle-tools"'), 'Must have #btn-toggle-tools');
+    assert.ok(indexHtml.includes('class="media-tools-step-badge"'), 'Must have .media-tools-step-badge for numbered steps');
+    assert.ok(stylesCss.includes('.media-tools-step-badge'), 'styles.css must style .media-tools-step-badge');
+    assert.ok(stylesCss.includes('.media-ctrl-btn--tools'), 'styles.css must style .media-ctrl-btn--tools');
+    assert.ok(appJs.includes('btn-toggle-tools'), 'app.js must wire btn-toggle-tools');
+});
+
 async function runEndToEndRangeVerification() {
     const videoData = new Uint8Array(16384);
     for (let i = 0; i < videoData.length; i++) videoData[i] = (i * 7 + 13) & 0xff;

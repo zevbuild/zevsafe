@@ -1138,11 +1138,10 @@
                     <span class="media-forensic-specs" id="media-forensic-specs" style="display:none;" title="Video Resolution, Framerate & Streaming Pipeline">1080p FHD · ⚡ Range Stream</span>
                 </div>
                 <div class="media-modal-actions">
-                    <button class="media-btn-action" id="btn-media-theater" title="Toggle Expansive Theater Mode (T)">🔲 Theater</button>
-                    <button class="media-btn-action" id="btn-media-hotkeys" title="View Keyboard Shortcuts Cheatsheet (?)">⌨️ Hotkeys</button>
                     <button class="media-btn-action" id="btn-media-snapshot" title="Extract current video frame at full resolution as PNG (S)">📸 Snap Frame</button>
                     <button class="media-btn-action" id="btn-media-loop" title="Toggle single-video loop / playlist auto-advance">🔁 Loop: Off</button>
                     <button class="media-btn-action" id="btn-media-ambient" title="Toggle immersive ambient backlight glow">✨ Ambient: Off</button>
+                    <button class="media-btn-action" id="btn-media-hotkeys" title="View Keyboard Shortcuts Cheatsheet (?)">⌨️ Hotkeys</button>
                     <button class="media-btn-action" id="btn-media-dock" title="Minimize player to bottom dock" style="display:none;background:rgba(45,212,191,0.18);color:#2dd4bf;border-color:rgba(45,212,191,0.4);">📥 Dock</button>
                     <button class="media-btn-action" id="btn-media-open-tab" title="Open and play in new browser tab">↗️ New Tab</button>
                     <button class="media-btn-action" id="btn-media-download" title="Save file to device">⬇️ Save</button>
@@ -1229,29 +1228,32 @@
                     <div class="media-timeline-tooltip" id="media-timeline-tooltip">00:00</div>
                 </div>
 
-                <!-- Primary Controls Row -->
+                <!-- Primary Controls Row: Standard Video Player Organization -->
                 <div class="media-cinema-primary">
+                    <!-- Left Section: Playback Transport, Volume & Time in unified logical flow -->
                     <div class="media-cinema-left">
-                        <button class="media-ctrl-btn" id="btn-media-prev" title="Previous media track (Shift+Left)">⏮️</button>
-                        <button class="media-ctrl-btn" id="btn-media-step-back" title="Step back 1 frame (,)">⯬ Frame</button>
-                        <button class="media-ctrl-btn" id="btn-media-rewind10" title="Rewind 10s (Left Arrow / J)">⏪ -10s</button>
                         <button class="media-ctrl-btn media-ctrl-btn--primary" id="btn-media-play" title="Play/Pause (Space / K)">▶️ Play</button>
-                        <button class="media-ctrl-btn" id="btn-media-forward10" title="Forward 10s (Right Arrow / L)">⏩ +10s</button>
-                        <button class="media-ctrl-btn" id="btn-media-step-fwd" title="Step forward 1 frame (.)">Frame ⯮</button>
+                        <button class="media-ctrl-btn" id="btn-media-prev" title="Previous media track (Shift+Left)">⏮️</button>
+                        <button class="media-ctrl-btn" id="btn-media-rewind10" title="Rewind 10s (Left Arrow / J)">⏪ 10s</button>
+                        <button class="media-ctrl-btn" id="btn-media-forward10" title="Forward 10s (Right Arrow / L)">10s ⏩</button>
                         <button class="media-ctrl-btn" id="btn-media-next" title="Next media track (Shift+Right)">⏭️</button>
-                    </div>
-
-                    <div class="media-cinema-center">
-                        <span class="media-time-badge" id="media-time-display" title="Click to toggle remaining time">00:00 / 00:00</span>
-                        <div class="media-volume-wrap" style="display:inline-flex;align-items:center;gap:4px;">
+                        
+                        <div class="media-volume-wrap">
                             <button class="media-ctrl-btn" id="btn-media-mute" title="Mute/Unmute (M)">🔊</button>
                             <input type="range" id="media-volume-slider" min="0" max="1" step="0.05" value="1" class="media-volume-range" aria-label="Volume">
                         </div>
+
+                        <span class="media-time-badge" id="media-time-display" title="Click to toggle remaining time">00:00 / 00:00</span>
+                    </div>
+
+                    <!-- Center Section: Audio Enhancements & Timestamp Bookmark -->
+                    <div class="media-cinema-center">
                         <button class="media-boost-badge" id="btn-media-audio-boost" title="WebAudio GainNode: Boost quiet recordings up to 200% (B)">⚡ Boost 200%</button>
                         <button class="media-boost-badge media-eq-badge" id="btn-media-vocal-clarity" title="Vocal Clarity Equalizer: Cuts low rumble and boosts speech frequencies (V)">🎙️ Vocal</button>
                         <button class="media-ctrl-btn" id="btn-media-bookmark" title="Add timestamp bookmark pin (Shift+M)">📌 Mark</button>
                     </div>
 
+                    <!-- Right Section: Speed, Viewport Modes & Tools Drawer Toggle -->
                     <div class="media-cinema-right">
                         <div class="media-speed-wrap">
                             <span class="media-speed-label">Speed:</span>
@@ -1271,13 +1273,23 @@
 
                         <button class="media-ctrl-btn" id="btn-media-fit" title="Toggle aspect ratio (Fit / Fill / 16:9 / 4:3)">↔️ Fit</button>
                         <button class="media-ctrl-btn" id="btn-media-pip" title="Picture-in-Picture (P)">📺 PiP</button>
+                        <button class="media-ctrl-btn" id="btn-media-theater" title="Toggle Expansive Theater Mode (T)">🔲 Theater</button>
                         <button class="media-ctrl-btn" id="btn-media-fullscreen" title="Fullscreen (F)">⛶ Fullscreen</button>
+                        <button class="media-ctrl-btn media-ctrl-btn--tools" id="btn-toggle-tools" title="Toggle Forensic Studio Deck">🎛️ Studio ▾</button>
                     </div>
                 </div>
 
-                <!-- Secondary Tools Row: Zoom, A-B Loop, Rotation, Flip & Real-Time Video Filters -->
+                <!-- Secondary Studio Deck: Numbered Forensic Analysis Stations / Steps -->
                 <div class="media-tools-bar" id="media-tools-bar">
                     <div class="media-tools-group">
+                        <span class="media-tools-step-badge">1</span>
+                        <span class="media-tools-label">Frame:</span>
+                        <button class="media-ctrl-btn" id="btn-media-step-back" title="Step back 1 frame (,)">⯬ Step</button>
+                        <button class="media-ctrl-btn" id="btn-media-step-fwd" title="Step forward 1 frame (.)">Step ⯮</button>
+                    </div>
+
+                    <div class="media-tools-group">
+                        <span class="media-tools-step-badge">2</span>
                         <span class="media-tools-label">Zoom:</span>
                         <button class="media-ctrl-btn" id="btn-media-zoom-in" title="Zoom in video (Wheel Up / +)">🔍+ In</button>
                         <button class="media-ctrl-btn" id="btn-media-zoom-out" title="Zoom out video (Wheel Down / -)">🔍- Out</button>
@@ -1285,6 +1297,7 @@
                     </div>
 
                     <div class="media-tools-group">
+                        <span class="media-tools-step-badge">3</span>
                         <span class="media-tools-label">A-B Loop:</span>
                         <button class="media-ctrl-btn" id="btn-media-ab-a" title="Set Point A at current time ([)">[ A</button>
                         <button class="media-ctrl-btn" id="btn-media-ab-b" title="Set Point B at current time (])">B ]</button>
@@ -1292,6 +1305,7 @@
                     </div>
 
                     <div class="media-tools-group">
+                        <span class="media-tools-step-badge">4</span>
                         <span class="media-tools-label">Transform:</span>
                         <button class="media-ctrl-btn" id="btn-media-rot-left" title="Rotate 90° counter-clockwise">↺ 90°</button>
                         <button class="media-ctrl-btn" id="btn-media-rot-right" title="Rotate 90° clockwise (R)">↻ 90°</button>
@@ -1300,6 +1314,7 @@
                     </div>
 
                     <div class="media-tools-group">
+                        <span class="media-tools-step-badge">5</span>
                         <span class="media-tools-label">Filters:</span>
                         <button class="media-ctrl-btn media-filter-btn" id="btn-filter-bright" title="Boost brightness (+35%) for dark footage">☀️ Brightness</button>
                         <button class="media-ctrl-btn media-filter-btn" id="btn-filter-contrast" title="High contrast (+50%) for text/document clarity">🌓 Contrast</button>
