@@ -136,6 +136,43 @@ runTest('4.3: Light theme hero title, subtitle, security badge, and trust strip 
     assert.ok(stylesCss.includes('.light-theme .trust-pill'), 'Must style .light-theme .trust-pill');
 });
 
+// ── 5. MAIN LANDING PAGE UI, BENTO CARDS & LIGHT THEME ──────────────
+console.log('\n--- 5. Main Landing Page UI, Bento Cards & Polish ---');
+
+runTest('5.1: Card tags include live pulsing indicator dots', () => {
+    assert.ok(indexHtml.includes('<span class="card-tag-dot"></span>'), 'Card tag must contain .card-tag-dot');
+    assert.ok(stylesCss.includes('.card-tag-dot'), 'CSS must define .card-tag-dot pulse animation');
+});
+
+runTest('5.2: Primary action buttons feature Lock/Unlock SVG icons', () => {
+    assert.ok(indexHtml.includes('class="btn-icon"'), 'Primary buttons must include .btn-icon SVG');
+    assert.ok(stylesCss.includes('.btn-icon'), 'CSS must style .btn-icon');
+});
+
+runTest('5.3: SEO features use bento card layout with icon wrap badges', () => {
+    assert.ok(indexHtml.includes('class="seo-card-icon-wrap"'), 'SEO cards must contain .seo-card-icon-wrap');
+    assert.ok(stylesCss.includes('.seo-card-icon-wrap'), 'CSS must style .seo-card-icon-wrap');
+});
+
+runTest('5.4: Light theme landing page overrides provide WCAG AAA contrast', () => {
+    assert.ok(stylesCss.includes('.light-theme .vault-card'), 'Must style .light-theme .vault-card');
+    assert.ok(stylesCss.includes('.light-theme .card-title'), 'Must style .light-theme .card-title');
+    assert.ok(stylesCss.includes('.light-theme .seo-card'), 'Must style .light-theme .seo-card');
+    assert.ok(stylesCss.includes('.light-theme .seo-faq-item'), 'Must style .light-theme .seo-faq-item');
+});
+
+runTest('5.5: Critical interactive IDs and accessibility hooks remain intact', () => {
+    assert.ok(indexHtml.includes('id="encrypt-drop-zone"'), 'Must preserve #encrypt-drop-zone');
+    assert.ok(indexHtml.includes('id="decrypt-drop-zone"'), 'Must preserve #decrypt-drop-zone');
+    assert.ok(indexHtml.includes('id="btn-encrypt"'), 'Must preserve #btn-encrypt');
+    assert.ok(indexHtml.includes('id="btn-decrypt"'), 'Must preserve #btn-decrypt');
+    assert.ok(indexHtml.includes('id="max-security-bar"'), 'Must preserve #max-security-bar');
+    assert.ok(indexHtml.includes('id="btn-toggle-max-security"'), 'Must preserve #btn-toggle-max-security');
+    assert.ok(indexHtml.includes('id="btn-decrypt-salvage"'), 'Must preserve #btn-decrypt-salvage');
+    assert.ok(indexHtml.includes('id="encrypt-password"'), 'Must preserve #encrypt-password');
+    assert.ok(indexHtml.includes('id="decrypt-password"'), 'Must preserve #decrypt-password');
+});
+
 console.log('===============================================================');
 console.log(`  ALL ${passed}/${total} HEADER & NAVBAR TESTS PASSED (100%)       `);
 console.log('===============================================================');

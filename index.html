@@ -171,7 +171,7 @@
                     <a href="./how-to-use-zevsafe/" class="nav-link-subtle" title="Step-by-step Quickstart Guide">Documentation</a>
                     <a href="./device-power/" class="nav-link-subtle nav-link--desktop-only" title="Benchmark Your Device Hardware Encryption Power">⚡ Device Power</a>
                     <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span class="nav-badge-pill nav-badge-pill--green">99.3/100</span></a>
-                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-68)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.17.0</span></a>
+                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-69)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.18.0</span></a>
                     <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
                     <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="nav-link-subtle nav-link--external nav-link--desktop-only" title="Open Source Repository on GitHub">
                         GitHub <span style="font-size: 0.75rem; opacity: 0.7;">↗</span>
@@ -232,7 +232,7 @@
                             <span class="mn-title">Knowledge Hub &amp; Manual</span>
                             <span class="mn-desc">10 In-Depth Service Specifications</span>
                         </div>
-                        <span class="mn-badge">v8.17.0</span>
+                        <span class="mn-badge">v8.18.0</span>
                     </a>
                     <a href="./how-to-use-zevsafe/" class="mobile-nav-link">
                         <span class="mn-icon">📖</span>
@@ -263,7 +263,7 @@
                             <span class="mn-title">Changelog &amp; Releases</span>
                             <span class="mn-desc">Full release history</span>
                         </div>
-                        <span class="mn-badge">v8.17.0</span>
+                        <span class="mn-badge">v8.18.0</span>
                     </a>
                     <a href="./roadmap/" class="mobile-nav-link">
                         <span class="mn-icon">🧭</span>
@@ -364,7 +364,7 @@
                      role="tabpanel" aria-labelledby="tab-encrypt">
                 <div class="card-glow card-glow--purple"></div>
                 <div class="card-inner">
-                    <div class="card-tag card-tag--purple">ENCRYPT</div>
+                    <div class="card-tag card-tag--purple"><span class="card-tag-dot"></span> ENCRYPT</div>
                     <h2 class="card-title">Encrypt Folder</h2>
                     <p class="card-desc">Compress &amp; encrypt an entire folder into a single portable vault file.</p>
 
@@ -593,7 +593,10 @@
 
                     <button class="btn btn--purple" id="btn-encrypt">
                         <span class="btn-shimmer"></span>
-                        <span class="btn-content">Encrypt &amp; Download</span>
+                        <span class="btn-content">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            Encrypt &amp; Download Vault
+                        </span>
                     </button>
                 </div>
             </section>
@@ -603,7 +606,7 @@
                      role="tabpanel" aria-labelledby="tab-decrypt">
                 <div class="card-glow card-glow--teal"></div>
                 <div class="card-inner">
-                    <div class="card-tag card-tag--teal">DECRYPT</div>
+                    <div class="card-tag card-tag--teal"><span class="card-tag-dot"></span> DECRYPT</div>
                     <h2 class="card-title">Decrypt Folder</h2>
                     <p class="card-desc">Restore your original folder from a <code>.zev</code> vault file with your password.</p>
 
@@ -687,7 +690,10 @@
 
                     <button class="btn btn--teal" id="btn-decrypt">
                         <span class="btn-shimmer"></span>
-                        <span class="btn-content">Decrypt &amp; Download</span>
+                        <span class="btn-content">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                            Decrypt &amp; Download Vault
+                        </span>
                     </button>
                     <button type="button" class="btn btn--outline-salvage" id="btn-decrypt-salvage" style="margin-top: 0.6rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.55rem; background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.4); color: #f59e0b; border-radius: var(--radius-sm, 8px); cursor: pointer; transition: all 0.2s ease;">
                         <span>🔧</span>
@@ -872,37 +878,37 @@
 
             <div class="seo-grid">
                 <article class="seo-card">
-                    <span class="seo-card-icon" aria-hidden="true">🛡️</span>
+                    <div class="seo-card-icon-wrap"><span class="seo-card-icon" aria-hidden="true">🛡️</span></div>
                     <h3 class="seo-card-title">100% Client-Side &amp; Zero-Knowledge</h3>
                     <p class="seo-card-text">All encryption and decryption runs entirely in your browser using the native Web Crypto API. Files, passwords, and keys never leave your device.</p>
                 </article>
 
                 <article class="seo-card">
-                    <span class="seo-card-icon" aria-hidden="true">🔐</span>
+                    <div class="seo-card-icon-wrap"><span class="seo-card-icon" aria-hidden="true">🔐</span></div>
                     <h3 class="seo-card-title">AES-256-GCM Military-Grade Cipher</h3>
                     <p class="seo-card-text">Authenticated Galois/Counter Mode encryption automatically verifies data integrity and prevents tampering, bit-flipping, and corruption.</p>
                 </article>
 
                 <article class="seo-card">
-                    <span class="seo-card-icon" aria-hidden="true">⚙️</span>
+                    <div class="seo-card-icon-wrap"><span class="seo-card-icon" aria-hidden="true">⚙️</span></div>
                     <h3 class="seo-card-title">PBKDF2-SHA512 (600,000 Iterations)</h3>
                     <p class="seo-card-text">Strengthened key stretching with a 32-byte CSPRNG random salt provides robust resistance against GPU/ASIC brute-force and dictionary attacks.</p>
                 </article>
 
                 <article class="seo-card">
-                    <span class="seo-card-icon" aria-hidden="true">🗝️</span>
+                    <div class="seo-card-icon-wrap"><span class="seo-card-icon" aria-hidden="true">🗝️</span></div>
                     <h3 class="seo-card-title">Keyfile Two-Factor Authentication</h3>
                     <p class="seo-card-text">Enhance security by combining your password with any personal file (image, document, key) as an indispensable second factor.</p>
                 </article>
 
                 <article class="seo-card">
-                    <span class="seo-card-icon" aria-hidden="true">📦</span>
+                    <div class="seo-card-icon-wrap"><span class="seo-card-icon" aria-hidden="true">📦</span></div>
                     <h3 class="seo-card-title">Full Folder Tree Compression</h3>
                     <p class="seo-card-text">Smart adaptive packaging compresses text files while using instant STORE mode for pre-compressed videos and photos, maximizing performance.</p>
                 </article>
 
                 <article class="seo-card">
-                    <span class="seo-card-icon" aria-hidden="true">✈️</span>
+                    <div class="seo-card-icon-wrap"><span class="seo-card-icon" aria-hidden="true">✈️</span></div>
                     <h3 class="seo-card-title">Air-Gapped &amp; 100% Offline PWA</h3>
                     <p class="seo-card-text">Install as a Progressive Web App and operate in complete airplane mode. No network connection or account sign-up is ever needed.</p>
                 </article>
@@ -977,7 +983,7 @@
                 <span>·</span>
                 <a href="./roadmap/" style="color: #38bdf8; font-weight: 600;">Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.17.0 / WEB-VERSION-68)</a>
+                <a href="./change-log/">Changelog (v8.18.0 / WEB-VERSION-69)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>

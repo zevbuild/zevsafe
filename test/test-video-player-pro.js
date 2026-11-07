@@ -212,13 +212,13 @@ runTest('3.9: Extended keyboard shortcuts matrix bound in keydown listener', () 
 console.log('\n--- 4. PWA Service Worker & Version Tags ---');
 const swJs = fs.readFileSync(path.join(ROOT_DIR, 'sw.js'), 'utf8');
 
-runTest('4.1: Service Worker shell cache bumped to v68', () => {
-    assert.ok(swJs.includes("const APP_VERSION    = 'v68';"), 'sw.js must be APP_VERSION v68');
+runTest('4.1: Service Worker shell cache bumped to v69', () => {
+    assert.ok(swJs.includes("const APP_VERSION    = 'v69';"), 'sw.js must be APP_VERSION v69');
 });
 
-runTest('4.2: index.html synchronized to v8.17.0 / WEB-VERSION-68', () => {
-    assert.ok(indexHtml.includes('WEB-VERSION-68'), 'index.html must have WEB-VERSION-68');
-    assert.ok(indexHtml.includes('v8.17.0'), 'index.html must have v8.17.0');
+runTest('4.2: index.html synchronized to v8.18.0 / WEB-VERSION-69', () => {
+    assert.ok(indexHtml.includes('WEB-VERSION-69'), 'index.html must have WEB-VERSION-69');
+    assert.ok(indexHtml.includes('v8.18.0'), 'index.html must have v8.18.0');
 });
 
 runTest('4.3: index.html & styles.css implement upgraded 3-zone cybernetic navbar & brand link', () => {

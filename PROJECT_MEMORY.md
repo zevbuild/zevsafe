@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.17.0` (`WEB-VERSION-68`, Service Worker `v68`)  
+> **Web Portal Version:** `v8.18.0` (`WEB-VERSION-69`, Service Worker `v69`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -224,6 +224,29 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Added 4th Trust Pill: `<div class="trust-pill trust-pill--highlight">` highlighting `5 GB Instant Streaming` powered by Video Player 4.0 on-demand range streaming.
   - Interactive hover transitions (`transform: translateY(-1px)`) and glowing borders across badge and trust strip.
 
+### 3.21 Main Landing Page UI, Bento Cards & Light Theme Overhaul (v8.18.0)
+- **Cybernetic Card Elevation (`.vault-card--encrypt`, `.vault-card--decrypt`):**
+  - Integrated glowing top accent hairlines (`border-top: 2px solid ...`) with purple (`#8b5cf6`) and teal (`#14b8a6`) gradients.
+  - Added pulsing live status dot (`.card-tag-dot`) inside `.card-tag--purple` and `.card-tag--teal` with keyframe breathing animation.
+  - Card titles upgraded to high-contrast cybernetic gradients (`#ffffff` to `#c4b5fd` / `#5eead4`).
+- **Interactive Radial Drop Zones (`.drop-zone`):**
+  - Ambient radial background glow on hover (`radial-gradient(circle at center, ...)`) giving a futuristic portal aesthetic.
+  - Animated drop icon scaling (`transform: translateY(-3px) scale(1.08)`) with dynamic drop-shadow filter on drag-over.
+  - High-density selected files widget with elevated pill styling.
+- **Primary Buttons with Lock/Unlock Visuals (`#btn-encrypt`, `#btn-decrypt`):**
+  - Embedded responsive `.btn-icon` SVGs representing cryptographic Lock and Unlock states with hover scaling.
+  - Added multi-layer drop shadows and active press physics (`transform: translateY(1px)`).
+- **Bento SEO Grid Architecture (`.seo-grid`, `.seo-card`):**
+  - Elevated bento-box cards with top hairline highlights, hover lift (`transform: translateY(-4px)`), and glowing shadow depth.
+  - Wrapped card icons in dedicated `.seo-card-icon-wrap` badge containers with micro-interaction hover scaling.
+- **Elevated FAQ Accordions (`.seo-faq-item`, `.seo-faq-summary`):**
+  - Custom rotating chevrons with smooth 0.3s bezier transitions.
+  - Dynamic left accent glow (`border-left: 3px solid var(--purple-light)`) and tinted background when items are toggled open.
+- **Complete WCAG AAA Light Theme System:**
+  - Added dedicated `.light-theme` rules for `.vault-card`, `.card-title`, `.btn-pw-mgr`, `.btn-pw-generate`, `.seo-card`, and `.seo-faq-item`, eliminating all low-contrast elements and delivering pristine readability across both dark and light modes.
+- **Preservation of Interactive Contracts:**
+  - 100% preservation of all tested IDs (`#encrypt-drop-zone`, `#decrypt-drop-zone`, `#btn-encrypt`, `#btn-decrypt`, `#encrypt-password`, `#decrypt-password`, `#max-security-bar`, `#btn-toggle-max-security`, `#btn-decrypt-salvage`, etc.).
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]
@@ -236,10 +259,10 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ## 5. Mandatory Verification & Automated Test Battery
 
-Whenever ANY code or documentation is touched, run all 10 automated test suites and ensure **100% pass rate (194/194 assertions)**:
+Whenever ANY code or documentation is touched, run all 10 automated test suites and ensure **100% pass rate (199/199 assertions)**:
 
 ```bash
-# 1. Main Website Header & Cybernetic Navbar Suite (12 tests)
+# 1. Main Website Header, Navbar & Landing Page Suite (17 tests)
 node test/test-header-navbar-upgrade.js
 
 # 2. Video Player 4.0 On-Demand Streaming & Pro Studio Suite (31 tests)

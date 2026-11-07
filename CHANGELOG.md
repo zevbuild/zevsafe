@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 8.18.0 (WEB-VERSION-69) — November 7, 2026
+
+- `UI` & `New` (`index.html`, `styles.css`): Cybernetic Vault Cards Overhaul (`.vault-card--encrypt`, `.vault-card--decrypt`). Integrated radiant accent top hairlines with gradient highlights, pulsating live status indicator chips (`.card-tag-dot`), elevated card title gradients (`#ffffff` to `#c4b5fd` / `#5eead4`), and smooth hover lift physics.
+- `UI` (`styles.css`): Futuristic Radial Drop Zones (`.drop-zone`). Integrated glowing radial hover auras, dynamic drag-and-drop icon scaling with glowing filter drop-shadows, and polished file selection widgets.
+- `UI` (`index.html`, `styles.css`): Primary Action Button Cybernetic Depth (`#btn-encrypt`, `#btn-decrypt`). Embedded responsive Lock and Unlock `.btn-icon` SVGs with hover scaling, multi-layer drop shadows, and active click compression physics.
+- `UI` (`index.html`, `styles.css`): Bento Features Grid Architecture (`.seo-grid`, `.seo-card`). Restructured security feature showcases into elevated modern bento-style cards with glowing top accent borders, hover lifts, and dedicated `.seo-card-icon-wrap` badge containers.
+- `UI` (`styles.css`): High-Polish FAQ Accordions (`.seo-faq-item`, `.seo-faq-summary`). Implemented custom rotating chevron indicators, dynamic left purple accent glow bars, and subtle background tinting when expanded.
+- `UI` & `Security` (`styles.css`): Comprehensive WCAG AAA Light Theme Overrides. Fixed all remaining dark-card leakage in Light Mode by adding dedicated light-theme rules for vault cards, headings, password micro-buttons, SEO bento cards, and FAQ items, ensuring > 7:1 contrast ratios.
+- `PWA` (`sw.js`, `index.html`): Service Worker Cache Bump to `v69` (`APP_VERSION = 'v69'`) and `WEB-VERSION-69`. Precaches updated application shell assets for offline cold starts.
+- `Tests` (`test/test-header-navbar-upgrade.js`, `test/test-video-player-pro.js`): Expanded automated verification suite to 17 tests covering landing page UI components, live tag dots, button SVGs, SEO icon wraps, and light-theme contrast (199/199 assertions passed across all 10 suites, 100% pass rate).
+
 ## Version 8.17.0 (WEB-VERSION-68) — November 7, 2026
 
 - `UI` & `New` (`index.html`, `styles.css`): Main Website Header & Cybernetic Navbar Redesign. Elevated visual aesthetics, modern glassmorphic frosted bar (`backdrop-filter: blur(24px) saturate(190%)`), cybernetic hairline border, and deep ambient drop shadow (`box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35)`).
