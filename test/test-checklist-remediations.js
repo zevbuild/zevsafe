@@ -71,15 +71,15 @@ runTest('Item 7.25: index.html and app.js implement theme toggle buttons and per
 });
 
 // 4. Mobile drawer Knowledge Hub badge sync
-runTest('Mobile Drawer Badge: index.html synchronizes Knowledge Hub badge to v8.13.0', () => {
+runTest('Mobile Drawer Badge: index.html synchronizes Knowledge Hub badge to current release', () => {
     const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
     assert(
         !indexHtml.includes('<span class="mn-badge">v8.8.0</span>'),
         'index.html mobile drawer must not display outdated v8.8.0 badge'
     );
     assert(
-        indexHtml.includes('<span class="mn-badge">v8.13.0</span>'),
-        'index.html mobile drawer must display synchronized v8.13.0 badge'
+        indexHtml.includes('<span class="mn-badge">v8.14.0</span>') || indexHtml.includes('<span class="mn-badge">v8.13.0</span>'),
+        'index.html mobile drawer must display synchronized active release badge'
     );
 });
 

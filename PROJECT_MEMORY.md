@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.13.0` (`WEB-VERSION-64`, Service Worker `v64`)  
+> **Web Portal Version:** `v8.14.0` (`WEB-VERSION-65`, Service Worker `v65`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -232,6 +232,18 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Bounded LRU Cache Eviction Zeroization:** Updated `createBoundedChunkCache.set()` in `js/stream-unpacker.js:1085-1095` to invoke `this.delete(oldestKey)` on LRU eviction and key overwrite, ensuring all plaintext chunk buffers are immediately zeroized with `.fill(0)`.
 - **Open Graph & Social Metadata Synchronization:** Added canonical Open Graph and Twitter Card meta tags across all 13 companion portals and service manual subpages.
 - **Automated Regression Verification Suite:** Created `test/test-checklist-remediations.js` (8/8 tests passed; 123/123 assertions passed across all 7 suites).
+
+### 3.16 Video Player 2.0 (Pro Cinema Upgrade) [v8.14.0]
+- **Precision Cybernetic Timeline Scrubber:** Custom timeline replacing native browser controls with dynamic buffered range visualization (`video.buffered`), gradient progress fill (`#38bdf8` to `#8b5cf6`), glowing draggable thumb, and real-time hover timestamp tooltip (`MM:SS`).
+- **Forensic Single-Frame Stepper (`.` / `,`):** Allows nudging playback forward and backward by single 33.3ms frames (30/60 fps) for granular video inspection, automatically pausing playback for forensic accuracy.
+- **1-Click Full-Resolution Frame Snapshot (`📸 Snap Frame` / `S`):** Extracts the active video frame at full native resolution (`video.videoWidth` × `video.videoHeight`) via an offscreen `<canvas>` with any active rotation/flip and filters applied. Saves directly into the decrypted vault overlay (`currentV3Vault.editedFiles`) and downloads as a PNG.
+- **Lossless Hardware-Accelerated 90° Rotation & Flip:** Supports 90° step rotation (`↺ 90°` / `↻ 90°` / `R`) and mirroring (`⇄ Flip H` / `⇅ Flip V`) via GPU compositor CSS transforms without re-encoding latency.
+- **Real-Time Forensic Video Filters:** Real-time CSS filter pipeline for video: Brightness (+35% for dark/night footage), High Contrast (+50% for text clarity), Forensic Invert (negative analysis), CCTV B&W monochrome, and 1-tap reset.
+- **WebAudio 200% Audio Gain Booster (`AudioContext` + `GainNode` / `B`):** Amplifies quiet recordings up to 2.0× volume without clipping, with zero-leak teardown on modal close and track switches.
+- **Stage Center Ripple & Double-Tap Gestures:** Single-click on stage toggles play/pause with an expanding center ripple icon (`▶` / `⏸`); double-clicking the left 35% rewinds 10s (`⏪ 10s`), and double-clicking the right 35% advances 10s (`10s ⏩`).
+- **Aspect Ratio & Loop Controls:** 1-click aspect switcher (Fit, Fill, 16:9, 4:3) and loop toggle (`🔁 Loop: On/Off`).
+- **Extended Keyboard Matrix:** Full keyboard control (Space, K, J, L, ,, ., B, R, S, F, P, M, Arrows).
+- **PWA & Offline Integration:** Precached under Service Worker cache `v65` (`APP_VERSION = 'v65'`) in `sw.js`. Verified by `test/test-video-player-pro.js` (19/19 tests).
 
 ## 4. Companion Android App Architecture (`../app-zevsafe`)
 

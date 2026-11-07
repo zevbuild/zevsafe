@@ -1,5 +1,20 @@
 # Changelog
 
+## Version 8.14.0 (WEB-VERSION-65) — November 7, 2026
+
+- `New` & `UI` (`app.js`, `index.html`, `styles.css`): Video Player 2.0 (Pro Cinema Upgrade). Complete overhaul of the in-browser streaming video player into an enterprise-grade forensic video inspection deck.
+- `UI` (`index.html`, `styles.css`, `app.js`): Precision Cybernetic Timeline Scrubber (`#media-timeline-wrap`). Custom timeline replacing native browser controls with dynamic buffered range visualization (`video.buffered`), gradient progress fill (`#38bdf8` to `#8b5cf6`), glowing draggable thumb, and real-time hover timestamp tooltip (`MM:SS`).
+- `New` & `UI` (`app.js`, `index.html`): Forensic Single-Frame Stepper (`#btn-media-step-back`, `#btn-media-step-fwd`). Allows nudging playback forward and backward by single 33.3ms frames (30/60 fps) for granular video inspection via `,` and `.` keyboard shortcuts.
+- `New` (`app.js`, `index.html`): 1-Click Full-Resolution Frame Snapshot (`#btn-media-snapshot`). Extracts active video frames at full native resolution (`video.videoWidth` × `video.videoHeight`) via an offscreen `<canvas>` with any active rotation/flip and filters applied. Saves directly into the decrypted vault overlay (`currentV3Vault.editedFiles`) and downloads as a PNG.
+- `UI` & `Perf` (`app.js`, `index.html`, `styles.css`): Lossless Hardware-Accelerated 90° Video Rotation & Flip. Supports 90° step rotation (`↺ 90°` / `↻ 90°` / `R`) and mirroring (`⇄ Flip H` / `⇅ Flip V`) via GPU compositor CSS transforms without re-encoding latency.
+- `Security` & `UI` (`app.js`, `index.html`, `styles.css`): Real-Time Forensic Video Filters. Real-time CSS filter pipeline for video: Brightness (+35% for dark/night footage), High Contrast (+50% for text clarity), Forensic Invert (negative analysis), CCTV B&W monochrome, and 1-tap reset.
+- `New` & `UI` (`app.js`, `index.html`, `styles.css`): WebAudio 200% Audio Gain Booster (`#btn-media-audio-boost`). Amplifies quiet recordings up to 2.0× volume using `AudioContext` and `GainNode` without clipping distortion, with zero-leak teardown on modal close and track switches.
+- `UI` (`index.html`, `styles.css`, `app.js`): Video Stage Center Ripple & Double-Tap Seeking Gestures. Single-click on stage toggles play/pause with an expanding center ripple icon (`▶` / `⏸`); double-clicking the left 35% rewinds 10s (`⏪ 10s`), and double-clicking the right 35% advances 10s (`10s ⏩`).
+- `UI` (`app.js`): Aspect Ratio & Loop Controls. 1-click aspect switcher (Fit, Fill, 16:9, 4:3) and loop toggle (`🔁 Loop: On/Off`).
+- `UI` (`app.js`): Extended Cinema Keyboard Matrix. Full keyboard control (Space, K, J, L, ,, ., B, R, S, F, P, M, Arrows).
+- `PWA` (`sw.js`, `index.html`): Service Worker Cache Bump to `v65` (`APP_VERSION = 'v65'`) and `WEB-VERSION-65`. Precaches updated application shell assets for offline cold starts.
+- `Tests` (`test/test-video-player-pro.js`): Added comprehensive 19-test automated verification suite for Video Player 2.0 (172/172 assertions passed across all 9 suites, 100% pass rate).
+
 ## Version 8.13.0 (WEB-VERSION-64) — November 6, 2026
 
 - `New` & `UI` (`app.js`, `js/qr-engine.js`, `index.html`): Master Key QR 1-Scan Instant Vault Unlock. Turned the Optical QR Code into a true instant **Master Keycard**. When generating a Paper-Safe sheet, users can embed their password into the QR code (`#chk-paper-embed-password`, enabled by default) so scanning or pasting the QR code instantly unlocks the vault with zero typing!

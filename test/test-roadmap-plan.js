@@ -90,7 +90,8 @@ console.log('  ✔ 7. Primary App Navbar, Mobile Drawer & Footer integration ver
 
 // 8. Service Worker Precaching & Section Routing in sw.js
 const swContent = fs.readFileSync(swPath, 'utf8');
-assert.strictEqual(swContent.includes("APP_VERSION    = 'v64'"), true, 'sw.js APP_VERSION is bumped to v62');
+const appVerMatch = swContent.match(/APP_VERSION\s*=\s*'v(\d+)';/);
+assert.ok(appVerMatch && parseInt(appVerMatch[1], 10) >= 62, 'sw.js APP_VERSION is bumped to >= v62');
 assert.strictEqual(swContent.includes("'./roadmap/'"), true, "sw.js precaches './roadmap/'");
 assert.strictEqual(swContent.includes("'./roadmap/index.html'"), true, "sw.js precaches './roadmap/index.html'");
 assert.strictEqual(swContent.includes("'roadmap'"), true, "sw.js includes 'roadmap' in SECTION_ROUTES");

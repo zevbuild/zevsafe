@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.13.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.14.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -706,14 +706,124 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-                                                <!-- ── VERSION 8.13.0 (WEB-VERSION-64) ── -->
+            <!-- ── VERSION 8.14.0 (WEB-VERSION-65) ── -->
+            <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">🎬</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.14.0 (WEB-VERSION-65)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 7, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Video Player 2.0</span>
+                            <span class="cl-tag">Timeline Scrubber</span>
+                            <span class="cl-tag">Frame Stepper</span>
+                            <span class="cl-tag">Frame Snapshot</span>
+                            <span class="cl-tag">Audio Boost</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Unveiled <strong>Video Player 2.0 (Pro Cinema Upgrade)</strong>: a studio-grade forensic media player featuring a precision cybernetic scrubber timeline, single-frame stepping (30/60 fps), 1-click lossless frame snapshots, 90° hardware transforms, real-time video filters, and 200% WebAudio gain boosting.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Cybernetic Precision Timeline Scrubber:</strong> Precision timeline scrubber featuring a continuous buffer progress bar, smooth scrubbing drag tracking, hover timestamp tooltips, and elapsed/remaining time toggle (<code>#media-timeline-wrap</code>).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>Forensic Single-Frame Stepper:</strong> Millimeter-accurate forensic single-frame stepping backwards (<code>,</code> / <code>KeyJ</code>) and forwards (<code>.</code> / <code>KeyL</code>) based on real-time 30/60 fps framerate delta calculation.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>1-Click Full-Res Frame Snapshot:</strong> Instantly captures full-resolution frame to canvas with active rotation and filters applied (<code>📸 Snap Frame</code> / <code>KeyS</code>), saving directly to the vault overlay (<code>editedFiles</code>) and triggering direct PNG download.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-text">
+                                <strong>Hardware-Accelerated 90° Transforms:</strong> Lossless 90° rotation (<code>↺ 90°</code> / <code>↻ 90°</code> / <code>KeyR</code>) and horizontal/vertical flipping (<code>⇄ Flip H</code> / <code>⇅ Flip V</code>) powered by CSS3 3D transforms.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-text">
+                                <strong>Real-Time Forensic Video Filters:</strong> Live hardware-accelerated video shader filters: Brightness Boost (+35%), Contrast Boost (+50%), Negative Invert, and CCTV Security Monochrome.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-text">
+                                <strong>WebAudio API 200% Gain Booster:</strong> Overcomes quiet mobile or action-cam recordings with 2.0x volume gain boost (<code>⚡ Boost 200%</code> / <code>KeyB</code>) via Web Audio <code>AudioContext</code> and <code>GainNode</code>.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Stage Center Ripple &amp; Double-Tap Seeking Gestures:</strong> Smooth CSS scale-fade pulse ripples on stage click/play/pause and ±10s fast-forward / rewind gesture badges on left/right double tap.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Aspect Ratio &amp; Loop Controls:</strong> Dynamic aspect ratio cycling (Fit, Fill, 16:9, 4:3) and seamless loop playback toggle (<code>🔁 Loop: On/Off</code>).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-text">
+                                <strong>Extended Keyboard Control Matrix:</strong> Space (Play/Pause), J / L (±10s / Frame step), K (Play/Pause), , / . (Single frame step), B (Audio Boost), R (Rotate 90°), S (Snapshot), F (Fullscreen), P (Picture-in-Picture), M (Mute), Arrows (±5s seek / ±5% volume).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-text">
+                                <strong>Clean Player Tear-Down &amp; State Reset:</strong> Restores default video transforms, filters, WebAudio gain, and resets timeline scrubber upon closing or switching media files.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--perf">PWA</span>
+                            <div class="cl-item-text">
+                                <strong>Service Worker Shell Cache Bump (<code>v65</code>):</strong> Precaches updated app shell for instant offline execution.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-item-bullet cl-bullet--sec">Audit</span>
+                            <div class="cl-item-text">
+                                <strong>Automated Media Test Suite:</strong> Added <code>test/test-video-player-pro.js</code> with 19 comprehensive automated assertions (19/19 passing).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.13.0 (WEB-VERSION-64) ── -->
             <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🔑</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.13.0 (WEB-VERSION-64)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
                             <span class="cl-badge cl-badge--date">November 6, 2026</span>
                         </div>
                         <div class="cl-tags">

@@ -4205,14 +4205,178 @@ audio.media-player-element {
     border-radius: 30px;
 }
 
-/* Cinema Control Deck */
+/* Cinema Control Deck (Player 2.0 Pro Upgrade) */
+.cinema-video-stage {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.cinema-center-ripple {
+    position: absolute;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.85);
+    border: 2px solid #38bdf8;
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: #fff;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
+    z-index: 10;
+}
+
+.cinema-center-ripple.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.cinema-gesture-badge {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    z-index: 15;
+}
+
+.cinema-gesture-badge--left { left: 24px; }
+.cinema-gesture-badge--right { right: 24px; }
+.cinema-gesture-badge.show { opacity: 1; }
+
 .media-cinema-bar {
+    display: flex;
+    flex-direction: column;
+    padding: 0.65rem 1.4rem 0.85rem;
+    background: rgba(8, 9, 24, 0.92);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 0.6rem;
+}
+
+/* Precision Cyber Scrubber Timeline */
+.media-timeline-wrap {
+    width: 100%;
+    padding: 6px 0;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.media-timeline-track {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-pill);
+    transition: height 0.15s ease;
+}
+
+.media-timeline-wrap:hover .media-timeline-track,
+.media-timeline-wrap:focus-visible .media-timeline-track {
+    height: 10px;
+}
+
+.media-timeline-buffer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: var(--radius-pill);
+    width: 0%;
+    pointer-events: none;
+    transition: width 0.2s ease;
+}
+
+.media-timeline-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #38bdf8, #8b5cf6);
+    border-radius: var(--radius-pill);
+    width: 0%;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.media-timeline-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border: 2px solid #38bdf8;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+    pointer-events: none;
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.media-timeline-wrap:hover .media-timeline-thumb,
+.media-timeline-wrap:focus-visible .media-timeline-thumb {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.media-timeline-tooltip {
+    position: absolute;
+    top: -28px;
+    left: 0%;
+    transform: translateX(-50%);
+    background: rgba(8, 12, 24, 0.95);
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    color: #38bdf8;
+    font-size: 0.72rem;
+    font-family: var(--font-mono, monospace);
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.media-timeline-wrap:hover .media-timeline-tooltip {
+    opacity: 1;
+}
+
+.media-cinema-primary {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.65rem 1.4rem;
-    background: rgba(8, 9, 24, 0.85);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    width: 100%;
     gap: 0.6rem;
     flex-wrap: wrap;
 }
@@ -4228,6 +4392,7 @@ audio.media-player-element {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 0.5rem;
 }
 
 .media-ctrl-btn {
@@ -4252,6 +4417,18 @@ audio.media-player-element {
     transform: translateY(-1px);
 }
 
+.media-ctrl-btn--primary {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(139, 92, 246, 0.2));
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #fff;
+    font-weight: 700;
+}
+
+.media-ctrl-btn--primary:hover {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(139, 92, 246, 0.35));
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
 .media-ctrl-btn:disabled {
     opacity: 0.35;
     cursor: not-allowed;
@@ -4266,6 +4443,40 @@ audio.media-player-element {
     border-radius: var(--radius-pill);
     font-family: var(--font-mono, monospace);
     font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.media-time-badge:hover {
+    border-color: var(--teal);
+    box-shadow: 0 0 8px rgba(20, 184, 166, 0.3);
+}
+
+.media-boost-badge {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #fde68a;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    transition: all var(--transition);
+}
+
+.media-boost-badge:hover {
+    background: rgba(245, 158, 11, 0.25);
+    color: #fff;
+}
+
+.media-boost-badge.is-active {
+    background: rgba(245, 158, 11, 0.35);
+    border-color: #f59e0b;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
 }
 
 .media-speed-wrap {
@@ -4290,6 +4501,78 @@ audio.media-player-element {
 .media-speed-select option {
     background: #0d1028;
     color: #fff;
+}
+
+/* Secondary Tools Row: Rotation, Flip & Video Filters */
+.media-tools-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.28);
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.74rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.media-tools-group {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.media-tools-label {
+    color: var(--text-3);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: 2px;
+}
+
+.media-filter-btn.is-active {
+    background: rgba(16, 185, 129, 0.22);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #6ee7b7;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Light Theme Overrides for Cinema Player */
+.light-theme .media-cinema-bar {
+    background: rgba(248, 250, 252, 0.95);
+    border-top-color: rgba(0, 0, 0, 0.08);
+}
+.light-theme .media-timeline-track {
+    background: rgba(0, 0, 0, 0.12);
+}
+.light-theme .media-timeline-buffer {
+    background: rgba(0, 0, 0, 0.2);
+}
+.light-theme .media-tools-bar {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+.light-theme .media-boost-badge {
+    background: rgba(217, 119, 6, 0.15);
+    border-color: rgba(217, 119, 6, 0.4);
+    color: #b45309;
+}
+.light-theme .media-boost-badge.is-active {
+    background: #d97706;
+    color: #fff;
+}
+.light-theme .media-speed-select {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #1e293b;
+}
+.light-theme .media-speed-select option {
+    background: #fff;
+    color: #0f172a;
 }
 
 /* =====================================================
