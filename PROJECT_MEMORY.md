@@ -216,7 +216,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Responsive 1-Row Protection (769px–1240px):**
   - Solved desktop/laptop wrapping where 11 items previously broke onto two lines.
   - At $\le 1240\text{px}$: Non-essential badge pills (`.nav-badge-pill`) auto-hide to keep items compactly aligned.
-  - At $\le 1040\text{px}$: Action button labels collapse (`span { display: none; }`) to clean icon-only buttons with tooltips, guaranteeing 100% single-row layout across all intermediate displays without breaking mobile drawer functionality ($\le 768\text{px}$).
+  - At $\le 1040\text{px}$: Action button labels collapse (`span { display: none; }`) to clean icon-only buttons with tooltips, while explicitly preserving `#btn-theme-toggle` sun/moon icons (`.theme-icon-dark`, `.theme-icon-light`), guaranteeing 100% single-row layout across all intermediate displays without breaking mobile drawer functionality ($\le 768\text{px}$).
 - **Comprehensive WCAG AAA Light Theme Overrides:**
   - Added full light theme styling for `.light-theme .navbar` (`background: rgba(255, 255, 255, 0.88)`), brand gradient, status badge, navigation links, and action buttons.
   - Full light theme styling for Hero header: `.light-theme .hero-title-refined` (`#0f172a`), `.light-theme .hero-gradient-text`, `.light-theme .hero-sub-refined` (`#475569`), `.light-theme .hero-security-badge`, and `.light-theme .hero-trust-strip`.

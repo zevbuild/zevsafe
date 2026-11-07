@@ -1949,6 +1949,14 @@ body {
     .nav-actions-deck .nav-btn-secondary span {
         display: none; /* Secondary actions become icon-only buttons with tooltips on intermediate screens */
     }
+    .nav-actions-deck .btn-theme-toggle .theme-icon-dark,
+    .nav-actions-deck .btn-theme-toggle .theme-icon-light {
+        display: inline-block !important; /* Preserve sun/moon icons in theme toggle */
+    }
+    .nav-actions-deck .btn-theme-toggle .theme-icon-light[style*="display: none"],
+    .nav-actions-deck .btn-theme-toggle .theme-icon-dark[style*="display: none"] {
+        display: none !important;
+    }
     .nav-btn-secondary {
         padding: 0.35rem 0.52rem;
         min-width: 32px;
@@ -1967,6 +1975,14 @@ body {
     .nav-actions-deck .nav-btn-secondary span,
     .nav-actions-deck .nav-btn-primary span {
         display: none; /* Icon-only action buttons to guarantee strict 1-row layout */
+    }
+    .nav-actions-deck .btn-theme-toggle .theme-icon-dark,
+    .nav-actions-deck .btn-theme-toggle .theme-icon-light {
+        display: inline-block !important; /* Preserve sun/moon icons in theme toggle */
+    }
+    .nav-actions-deck .btn-theme-toggle .theme-icon-light[style*="display: none"],
+    .nav-actions-deck .btn-theme-toggle .theme-icon-dark[style*="display: none"] {
+        display: none !important;
     }
     .nav-actions-deck .nav-btn-secondary,
     .nav-actions-deck .nav-btn-primary {
