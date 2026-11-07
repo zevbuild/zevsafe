@@ -45,6 +45,51 @@
     <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
     <meta name="twitter:image:alt" content="ZevSafe Device Power Benchmark">
 
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://zevsafe.pages.dev/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Device Power Profiler",
+              "item": "https://zevsafe.pages.dev/device-power/"
+            }
+          ]
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://zevsafe.pages.dev/device-power/#app",
+          "name": "ZevSafe Device Power Cryptographic Profiler",
+          "url": "https://zevsafe.pages.dev/device-power/",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "Any (Windows, macOS, Linux, Android, iOS)",
+          "description": "100% offline client-side hardware profiler benchmarking raw WebCrypto AES-NI/NEON throughput and PBKDF2 stretching latency across iteration tiers.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "zevbuild",
+            "url": "https://github.com/zevbuild"
+          }
+        }
+      ]
+    }
+    </script>
+
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles.css">
 

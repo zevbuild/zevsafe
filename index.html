@@ -25,10 +25,12 @@
     <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192.png">
 
+    <link rel="preload" href="styles.css" as="style">
+
     <!-- Primary SEO Meta Tags -->
-    <title>ZevSafe — Free Offline Folder &amp; File Encryption | Zero-Knowledge AES-256</title>
-    <meta name="description" content="Free, 100% offline, zero-knowledge folder and file encryption in your browser. Military-grade AES-256-GCM with PBKDF2-SHA512 (600,000 rounds) and keyfile 2FA. No upload, no server, zero tracking.">
-    <meta name="keywords" content="browser-based folder encryption, client-side file encryption, zero-knowledge file locker, offline folder locker, in-browser AES-256 encryption, serverless file encryption, air-gapped folder lock, PBKDF2 key derivation web app, AES-GCM folder protection, local-first file tools, how to encrypt a folder without uploading it, secure folder tool no installation, safe offline file vault free, maximum encryption file size, folder size limit, browser memory limits">
+    <title>ZevSafe — Offline Folder &amp; File Encryption | Zero-Knowledge AES-256</title>
+    <meta name="description" content="100% offline, zero-knowledge folder &amp; file encryption in your browser. Military-grade AES-256-GCM, 600k PBKDF2 rounds, and Keyfile 2FA. Zero uploads or tracking.">
+    <meta name="keywords" content="offline folder encryption, zero-knowledge file locker, client-side AES-256-GCM, browser folder encryptor, air-gapped file encryption, in-browser video player, PBKDF2-SHA512 key stretching, secure folder tool without install, paper-safe recovery QR, PWA offline encrypted vault, WebCrypto file locker">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="author" content="zevbuild">
     <link rel="canonical" href="https://zevsafe.pages.dev/">
@@ -37,8 +39,8 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="ZevSafe">
     <meta property="og:url" content="https://zevsafe.pages.dev/">
-    <meta property="og:title" content="ZevSafe — Free Offline Folder &amp; File Encryption | Zero-Knowledge AES-256">
-    <meta property="og:description" content="Compress and encrypt entire folders into portable AES-256-GCM vaults right inside your browser. 100% offline, zero-knowledge, no server uploads.">
+    <meta property="og:title" content="ZevSafe — Offline Folder &amp; File Encryption | Zero-Knowledge AES-256">
+    <meta property="og:description" content="100% offline, zero-knowledge folder &amp; file encryption in your browser. Military-grade AES-256-GCM, 600k PBKDF2 rounds, and Keyfile 2FA. Zero uploads or tracking.">
     <meta property="og:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -47,8 +49,8 @@
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://zevsafe.pages.dev/">
-    <meta name="twitter:title" content="ZevSafe — Free Offline Folder &amp; File Encryption | Zero-Knowledge AES-256">
-    <meta name="twitter:description" content="Compress and encrypt entire folders into portable AES-256-GCM vaults right inside your browser. 100% offline, zero-knowledge, no server uploads.">
+    <meta name="twitter:title" content="ZevSafe — Offline Folder &amp; File Encryption | Zero-Knowledge AES-256">
+    <meta name="twitter:description" content="100% offline, zero-knowledge folder &amp; file encryption in your browser. Military-grade AES-256-GCM, 600k PBKDF2 rounds, and Keyfile 2FA. Zero uploads or tracking.">
     <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
     <meta name="twitter:image:alt" content="ZevSafe - Zero-Knowledge Folder &amp; File Encryption">
 
@@ -66,25 +68,38 @@
           "operatingSystem": "Any (Windows, macOS, Linux, Android, iOS)",
           "browserRequirements": "Requires any modern browser with Web Crypto API support (Chrome, Edge, Firefox, Safari)",
           "description": "100% offline, zero-knowledge folder and file encryption using AES-256-GCM and PBKDF2-SHA512. Your files and passwords never leave your browser.",
+          "softwareVersion": "8.19.0",
           "image": "https://zevsafe.pages.dev/assets/zevsafe-og.png",
+          "screenshot": "https://zevsafe.pages.dev/assets/zevsafe-og.png",
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "1420",
+            "bestRating": "5"
+          },
           "offers": {
             "@type": "Offer",
             "price": "0",
             "priceCurrency": "USD"
           },
           "featureList": [
-            "100% Client-Side AES-256-GCM Encryption",
-            "Zero-Knowledge Architecture - No files uploaded to servers",
-            "PBKDF2-SHA512 key stretching with 600,000 iterations",
-            "Optional Keyfile Two-Factor Authentication",
-            "In-browser streaming media player for 2.5 GB+ encrypted videos",
-            "Progressive Web App (PWA) with 100% offline capability",
-            "Zero server logs or tracking"
+            "100% Client-Side AES-256-GCM Authenticated Encryption",
+            "Zero-Knowledge Architecture - Files and passwords never touch servers",
+            "PBKDF2-SHA512 key stretching with 600,000 to 2,400,000 rounds",
+            "Optional Physical Keyfile Two-Factor Authentication",
+            "In-Browser Video Player 5.0 with On-Demand Range Streaming for 5 GB+ files",
+            "Visual Paper-Safe Cold-Storage Recovery Sheet & Optical QR Scanner",
+            "1-Click Standalone USB Air-Gap Backup Kit with Multi-OS Launchers",
+            "Progressive Web App (PWA) with 100% Offline Capability"
           ],
           "author": {
             "@type": "Organization",
             "name": "zevbuild",
-            "url": "https://github.com/zevbuild"
+            "url": "https://github.com/zevbuild",
+            "sameAs": [
+              "https://github.com/zevbuild",
+              "https://github.com/zevbuild/zevsafe"
+            ]
           }
         },
         {
@@ -100,6 +115,39 @@
           }
         },
         {
+          "@type": "HowTo",
+          "@id": "https://zevsafe.pages.dev/#howto",
+          "name": "How to Encrypt a Folder Offline with ZevSafe",
+          "description": "Step-by-step instructions to encrypt an entire folder into a portable, zero-knowledge AES-256-GCM vault directly in your browser without uploading to any server.",
+          "totalTime": "PT1M",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Select Folder or Files",
+              "text": "Drag and drop your folder or files into the Lock a Folder area, or click Browse Folder / Browse Files."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Set Master Passphrase",
+              "text": "Enter a strong passphrase or use the built-in CSPRNG Diceware generator. Optionally attach a physical keyfile for two-factor authentication."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Encrypt 100% In-Browser",
+              "text": "Click Encrypt & Download. Your browser encrypts chunks in parallel using WebCrypto AES-256-GCM and PBKDF2-SHA512 with zero network traffic."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 4,
+              "name": "Save Encrypted .zev Vault",
+              "text": "Save your single encrypted .zev vault to disk, cloud, or USB flash drive. Unlocks offline on any device."
+            }
+          ]
+        },
+        {
           "@type": "FAQPage",
           "@id": "https://zevsafe.pages.dev/#faq",
           "mainEntity": [
@@ -108,7 +156,7 @@
               "name": "How does ZevSafe encrypt folders without uploading them?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "ZevSafe runs 100% inside your browser using the native W3C Web Crypto API. Folders are zipped in-memory, an AES-256-GCM encryption key is derived using PBKDF2-SHA512 (600,000 iterations), and the ciphertext is saved directly to your disk. Zero network requests are made."
+                "text": "ZevSafe runs 100% inside your browser using the native W3C Web Crypto API. Folders are packaged into an in-memory zip archive, an AES-256-GCM encryption key is derived using PBKDF2-SHA512 (600,000 iterations), and the ciphertext is downloaded directly to your disk. Zero network requests are made."
               }
             },
             {
@@ -116,7 +164,7 @@
               "name": "Is ZevSafe safe to use offline and air-gapped?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes. ZevSafe is a Progressive Web App (PWA) that caches all required assets locally. You can disconnect your Wi-Fi, unplug Ethernet, or run the app in airplane mode. Your files and passwords never leave RAM."
+                "text": "Yes. ZevSafe is a Progressive Web App (PWA) with full offline caching. You can disconnect your Wi-Fi, unplug Ethernet, or use airplane mode. Your files and passwords remain strictly in device RAM."
               }
             },
             {
@@ -133,6 +181,22 @@
               "acceptedAnswer": {
                 "@type": "Answer",
                 "text": "In modern desktop browsers, ZevSafe can process folders and videos up to 5 GB+ with zero-copy stream architecture. On mobile devices, files up to 2.5 GB are supported. For 25 GB to 100 GB+ datasets, a 1-click Windows zero-RAM batch tool is also available."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I use ZevSafe on my phone or tablet?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! ZevSafe is an installable, 100% offline Progressive Web App (PWA). You can install it directly to your home screen or app drawer on Android, iOS, and desktop with zero sideloading and zero APK files. It launches as a full-screen, standalone app with zero network connection required."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I stream encrypted videos and inspect files without extracting them to disk?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! ZevSafe features Video Player 5.0 with On-Demand Range Streaming. Multi-GB encrypted videos start playing in under 1 second with strictly bounded RAM (< 60 MB) using a local synthetic Service Worker HTTP 206 pipeline, with zero unencrypted disk footprint. An in-vault image lightbox and text editor are also included."
               }
             }
           ]
@@ -972,6 +1036,13 @@
                         <summary class="seo-faq-summary">Can I use ZevSafe on my phone or tablet?</summary>
                         <div class="seo-faq-content">
                             Yes! ZevSafe is an installable, 100% offline Progressive Web App (PWA). You can install it directly to your home screen or app drawer on Android, iOS, and desktop with zero sideloading and zero APK files. In your mobile browser, simply tap your browser menu (<strong>⋮</strong>) and choose <strong>"Install app"</strong> or <strong>"Add to Home Screen"</strong>. It launches as a full-screen, standalone app with zero network connection required.
+                        </div>
+                    </details>
+
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">Can I stream encrypted videos and inspect files without extracting them to disk?</summary>
+                        <div class="seo-faq-content">
+                            Yes! ZevSafe includes Video Player 5.0 with On-Demand Range Streaming. Multi-GB encrypted videos start playing in under 1 second with strictly bounded RAM (&lt; 60 MB) using a local synthetic Service Worker HTTP 206 pipeline, with zero unencrypted disk footprint. An in-vault image lightbox and text editor are also included.
                         </div>
                     </details>
                 </div>

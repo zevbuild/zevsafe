@@ -5,103 +5,103 @@
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
     <url>
         <loc>https://zevsafe.pages.dev/</loc>
-        <lastmod>2026-11-03</lastmod>
-        <changefreq>weekly</changefreq>
+        <lastmod>2026-11-07</lastmod>
+        <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://zevsafe.pages.dev/how-to-use-zevsafe/</loc>
-        <lastmod>2026-10-20</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.8</priority>
-    </url>
-    <url>
-        <loc>https://zevsafe.pages.dev/roadmap/</loc>
-        <lastmod>2026-11-05</lastmod>
+        <loc>https://zevsafe.pages.dev/knowledge/</loc>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
+        <priority>0.9</priority>
     </url>
     <url>
-        <loc>https://zevsafe.pages.dev/device-power/</loc>
-        <lastmod>2026-11-03</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.8</priority>
+        <loc>https://zevsafe.pages.dev/how-to-use-zevsafe/</loc>
+        <lastmod>2026-11-07</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.85</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/security-audit/</loc>
-        <lastmod>2026-10-20</lastmod>
+        <lastmod>2026-11-07</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+    <url>
+        <loc>https://zevsafe.pages.dev/roadmap/</loc>
+        <lastmod>2026-11-07</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.85</priority>
+    </url>
+    <url>
+        <loc>https://zevsafe.pages.dev/device-power/</loc>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/change-log/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>weekly</changefreq>
-        <priority>0.7</priority>
-    </url>
-    <url>
-        <loc>https://zevsafe.pages.dev/knowledge/</loc>
-        <lastmod>2026-11-03</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.9</priority>
+        <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/core-vault/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/virtual-filesystem/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/duress-decoy/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/polyglot-camouflage/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/health-and-salvage/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/media-cinema/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/passwords-autolock/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/key-derivation-2fa/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/mobile-streaming/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://zevsafe.pages.dev/knowledge/airgap-usb-backup/</loc>
-        <lastmod>2026-11-03</lastmod>
+        <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>

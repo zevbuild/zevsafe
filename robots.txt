@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
 
+# Prevent web crawlers from indexing internal test runners and desktop scripts
+Disallow: /test/
+Disallow: /tools/
+
 # Sitemap location
 Sitemap: https://zevsafe.pages.dev/sitemap.xml
