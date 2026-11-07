@@ -286,8 +286,15 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - *Studio Tools Toggle (`#btn-toggle-tools`):* Enables one-click collapse/expansion of the forensic deck, letting users enjoy clean cinematic viewing or deep forensic analysis on demand.
 - **Mobile Browser Support & Zero-Clutter Phone Cinema Architecture:**
   - Mobile decluttering on screens $\le 600\text{px}$: automatically hides non-touch/desktop-only controls (`#btn-media-hotkeys`, `#btn-media-ambient`, `#btn-media-dock`, `#btn-media-theater`), prevents filename wrapping with clean text ellipsis truncation, hides the volume slider on phones to respect hardware rocker buttons, defaults the studio tools deck to collapsed on mobile startup, transforms the 17-button secondary tools deck into an elegant horizontal swipeable carousel with CSS scroll-snap (`scroll-snap-type: x mandatory`), and enables 1-finger touch drag panning for magnified video ($> 1.0\times$).
+- **Full-Stage Video Maximization & Intelligent 2.5s Inactivity Auto-Hide Engine:**
+  - Solved the root cause of cramped video viewing: instead of shrinking buttons into tiny unclickable targets, the player maximizes the video stage to 100% of the modal viewport (`width: 94vw; max-width: 1200px; height: 86vh; max-height: 88vh;` on desktop; `100vw × 100dvh` on mobile) with zero vertical flex column crowding.
+  - Converted the header and cinema control bar into translucent floating overlays (`position: absolute`) with subtle backdrop gradients.
+  - Controls automatically fade out via `.cinema-ui--hidden` after 2,500ms of user inactivity during active video playback, concealing the mouse cursor on the video stage and presenting an uncompromised full-screen viewing experience.
+  - Paused-state & drawer protection: Auto-hide is instantly suspended whenever the video is paused, or when the forensic tools drawer or hotkeys modal is open. Any cursor movement, touch, or keystroke immediately restores controls.
+- **Intermediate Desktop / Tablet Navbar Clearance Protection (`styles.css`):**
+  - Added `.brand-status-badge { display: none !important; }` on intermediate tablet viewports (769px–1040px) to guarantee generous horizontal breathing room, eliminating any possibility of navbar overflow or edge clipping.
 - **100% Backward Compatibility & Automated Regression Certification:**
-  - Preserved all 31 existing IDs and assertions while adding Section 6 assertions (10 new tests, total 41/41 passing in `test/test-video-player-pro.js` and 209/209 passing across all 10 suites).
+  - Preserved all 31 existing IDs and assertions while adding Section 6 assertions (11 new tests, total 42/42 passing in `test/test-video-player-pro.js` and 210/210 passing across all 10 suites).
 
 ---
 

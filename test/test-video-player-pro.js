@@ -361,6 +361,27 @@ runTest('6.10: Mobile browser support & zero-clutter phone cinema architecture',
     assert.ok(appJs.includes("toolsBar.classList.add('is-collapsed')"), 'app.js must default studio tools to collapsed on mobile');
 });
 
+runTest('6.11: Full-stage video maximization & intelligent 2.5s inactivity overlay auto-hide', () => {
+    // 1. Expansive modal sizing
+    assert.ok(stylesCss.includes('height: 86vh'), 'Modal container must have 86vh expansive viewport height');
+    assert.ok(stylesCss.includes('width: 94vw'), 'Modal container must have 94vw expansive width');
+    assert.ok(stylesCss.includes('max-width: 1200px'), 'Modal container must support max-width 1200px');
+    
+    // 2. Floating translucent overlays for header and controls
+    assert.ok(stylesCss.includes('.media-modal-header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    padding: 0.85rem 1.4rem;\n    position: absolute;\n    top: 0;'), 'Header must be a floating absolute overlay on top of video');
+    assert.ok(stylesCss.includes('.media-cinema-bar {\n    display: flex;\n    flex-direction: column;\n    padding: 1.4rem 1.4rem 0.85rem;\n    position: absolute;\n    bottom: 0;'), 'Controls bar must be a floating absolute overlay over bottom of video');
+    
+    // 3. Auto-hide CSS classes
+    assert.ok(stylesCss.includes('.cinema-ui--hidden .media-modal-header'), 'Must define auto-hide fade for header');
+    assert.ok(stylesCss.includes('.cinema-ui--hidden .media-cinema-bar'), 'Must define auto-hide fade for cinema bar');
+    assert.ok(stylesCss.includes('.cinema-ui--hidden .cinema-video-stage'), 'Must hide cursor when controls auto-hide');
+    
+    // 4. Inactivity auto-hide engine in app.js
+    assert.ok(appJs.includes('resetCinemaInactivityTimer'), 'app.js must define resetCinemaInactivityTimer');
+    assert.ok(appJs.includes('clearCinemaInactivityTimer'), 'app.js must define clearCinemaInactivityTimer');
+    assert.ok(appJs.includes("modal.classList.add('cinema-ui--hidden')"), 'app.js must trigger cinema-ui--hidden class after 2.5s');
+});
+
 async function runEndToEndRangeVerification() {
     const videoData = new Uint8Array(16384);
     for (let i = 0; i < videoData.length; i++) videoData[i] = (i * 7 + 13) & 0xff;

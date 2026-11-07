@@ -843,6 +843,7 @@ function initNavToolsDropdown() {
             toggleBtn.setAttribute('aria-expanded', 'false');
         });
     });
+
 }
 
 initUniversalAutoHideNavbar();
@@ -4643,6 +4644,47 @@ function toggleHotkeysModal() {
     modal.style.display = isVisible ? 'none' : 'flex';
 }
 
+// ============================================
+// CINEMA INACTIVITY AUTO-HIDE OVERLAY ENGINE (Player 5.1 YouTube / Netflix Style)
+// ============================================
+let cinemaInactivityTimeout = null;
+
+function resetCinemaInactivityTimer() {
+    const modal = document.getElementById('vault-media-modal');
+    if (!modal) return;
+    modal.classList.remove('cinema-ui--hidden');
+
+    if (cinemaInactivityTimeout) {
+        clearTimeout(cinemaInactivityTimeout);
+        cinemaInactivityTimeout = null;
+    }
+
+    const media = getActiveCinemaMedia();
+    // Only auto-hide if media is currently playing and is a video
+    if (media && !media.paused && media.tagName === 'VIDEO') {
+        cinemaInactivityTimeout = setTimeout(() => {
+            const toolsBar = document.getElementById('media-tools-bar');
+            const hotkeysModal = document.getElementById('media-hotkeys-modal');
+            const isToolsOpen = toolsBar && !toolsBar.classList.contains('is-collapsed');
+            const isHotkeysOpen = hotkeysModal && hotkeysModal.style.display !== 'none';
+            if (isToolsOpen || isHotkeysOpen) return;
+
+            if (media && !media.paused) {
+                modal.classList.add('cinema-ui--hidden');
+            }
+        }, 2500);
+    }
+}
+
+function clearCinemaInactivityTimer() {
+    if (cinemaInactivityTimeout) {
+        clearTimeout(cinemaInactivityTimeout);
+        cinemaInactivityTimeout = null;
+    }
+    const modal = document.getElementById('vault-media-modal');
+    if (modal) modal.classList.remove('cinema-ui--hidden');
+}
+
 function updateVideoForensicSpecs(video, isStream) {
     const specsEl = document.getElementById('media-forensic-specs');
     if (!specsEl || !video) return;
@@ -5096,6 +5138,7 @@ function showCinemaGestureBadge(side, text) {
 }
 
 function closeMediaPlayer() {
+    clearCinemaInactivityTimer();
     const modal = document.getElementById('vault-media-modal');
     const videoEl = document.getElementById('cinema-video');
     const audioEl = document.getElementById('cinema-audio');
@@ -7239,6 +7282,7 @@ function initPasswordGenerator() {
         });
     });
 
+
     separatorSelect?.addEventListener('change', generateSecret);
     optSymbols?.addEventListener('change', generateSecret);
     optNumbers?.addEventListener('change', generateSecret);
@@ -7540,6 +7584,7 @@ function initExplorerUI() {
         });
     });
 
+
     // Select All
     selectAllCb?.addEventListener('change', () => {
         const q = (searchInput?.value || '').trim().toLowerCase();
@@ -7840,10 +7885,15 @@ function initExplorerUI() {
         el.addEventListener('play', () => {
             updatePlayBtnUI(true);
             if (currentMediaAmbientGlow) updateAmbientGlow();
+            resetCinemaInactivityTimer();
         });
-        el.addEventListener('pause', () => updatePlayBtnUI(false));
+        el.addEventListener('pause', () => {
+            updatePlayBtnUI(false);
+            clearCinemaInactivityTimer();
+        });
         el.addEventListener('ended', () => {
             updatePlayBtnUI(false);
+            clearCinemaInactivityTimer();
             if (currentMediaIsLooping) {
                 el.currentTime = 0;
                 el.play().catch(() => {});
@@ -7877,6 +7927,15 @@ function initExplorerUI() {
             }
         });
     });
+
+
+    // Inactivity Auto-Hide User Activity Listeners (Player 5.1 YouTube / Netflix style)
+    const cinemaModalOverlay = document.getElementById('vault-media-modal');
+    if (cinemaModalOverlay) {
+        ['mousemove', 'pointerdown', 'touchstart', 'keydown'].forEach(ev => {
+            cinemaModalOverlay.addEventListener(ev, resetCinemaInactivityTimer, { passive: true });
+        });
+    }
 
     // Play / Pause Button
     const playBtn = document.getElementById('btn-media-play');

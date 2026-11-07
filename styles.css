@@ -1969,6 +1969,9 @@ body {
 }
 
 @media (max-width: 1040px) and (min-width: 769px) {
+    .brand-status-badge {
+        display: none !important; /* Conceal pulse badge on compact desktop/tablet to protect horizontal breathing room */
+    }
     .nav-link--desktop-only {
         display: none !important; /* Hide device power & github on compact tablets */
     }
@@ -4711,11 +4714,13 @@ body {
 }
 
 .media-modal-container {
-    background: rgba(12, 14, 34, 0.97);
+    background: #02030a;
     border: 1px solid rgba(139, 92, 246, 0.35);
     border-radius: var(--radius-xl);
-    width: 100%;
-    max-width: 900px;
+    width: 94vw;
+    max-width: 1200px;
+    height: 86vh;
+    max-height: 88vh;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(139, 92, 246, 0.25);
     display: flex;
     flex-direction: column;
@@ -4735,12 +4740,12 @@ body {
 }
 
 .media-modal-container.media-modal-container--theater .media-modal-body {
-    max-height: 75vh;
+    max-height: 100%;
     height: 100%;
 }
 
 .media-modal-container.media-modal-container--theater .media-player-element {
-    max-height: 72vh;
+    max-height: 100%;
 }
 
 .media-modal-container.media-modal-container--theater .cinema-video-stage {
@@ -4885,9 +4890,16 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.4rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.85rem 1.4rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
+    border-bottom: none;
+    pointer-events: auto;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .media-modal-info {
@@ -4961,22 +4973,29 @@ body {
 }
 
 .media-modal-body {
-    padding: 1rem;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #03040c;
-    min-height: 240px;
-    max-height: 65vh;
+    background: #000;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
 }
 
 .media-player-element {
     width: 100%;
-    max-height: 60vh;
-    border-radius: var(--radius-md);
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
     outline: none;
     background: #000;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    box-shadow: none;
+    object-fit: contain;
 }
 
 .media-player-element--cover {
@@ -5107,10 +5126,34 @@ audio.media-player-element {
 .media-cinema-bar {
     display: flex;
     flex-direction: column;
-    padding: 0.65rem 1.4rem 0.85rem;
-    background: rgba(8, 9, 24, 0.92);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    gap: 0.6rem;
+    padding: 1.4rem 1.4rem 0.85rem;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.94) 0%, rgba(0, 0, 0, 0.6) 65%, transparent 100%);
+    border-top: none;
+    gap: 0.55rem;
+    pointer-events: auto;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Intelligent Inactivity Auto-Hide Overlay (YouTube / Netflix style) */
+.cinema-ui--hidden .media-modal-header {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(-8px);
+}
+
+.cinema-ui--hidden .media-cinema-bar {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(8px);
+}
+
+.cinema-ui--hidden .cinema-video-stage {
+    cursor: none !important;
 }
 
 /* Precision Cyber Scrubber Timeline */
@@ -5502,8 +5545,12 @@ audio.media-player-element {
 
 /* Light Theme Overrides for Cinema Player */
 .light-theme .media-cinema-bar {
-    background: rgba(248, 250, 252, 0.95);
-    border-top-color: rgba(0, 0, 0, 0.08);
+    background: linear-gradient(to top, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.65) 65%, transparent 100%);
+    border-top: none;
+}
+.light-theme .media-modal-header {
+    background: linear-gradient(to bottom, rgba(248, 250, 252, 0.94) 0%, rgba(248, 250, 252, 0.5) 60%, transparent 100%);
+    border-bottom: none;
 }
 .light-theme .media-timeline-track {
     background: rgba(0, 0, 0, 0.12);
