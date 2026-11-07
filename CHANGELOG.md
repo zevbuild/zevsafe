@@ -2,6 +2,8 @@
 
 ## Version 8.18.0 (WEB-VERSION-69) — November 7, 2026
 
+- `Fix` & `UI` (`styles.css`): Eliminated Desktop Navbar Right Clipping & Overflow. Fixed horizontal overflow where action buttons (`Install App`, `Theme Toggle`, `PC Toolkit`) clipped past the right edge on desktop displays (1040px–1440px+). Elevated `.app-shell` container width from 1100px to 1260px, streamlined links/buttons padding and font metrics, and added automatic collapse of secondary button text on intermediate screens.
+- `Fix` & `UI` (`styles.css`): Fixed Master Plan Pill Line-Wrapping & Orb Distortion. Enforced `white-space: nowrap !important;` on `.plan-pill-nav` and `.plan-pill-nav .counter-badge` to prevent "Master Plan" from breaking onto two lines and "11 / 14" from stacking into an unsightly 3-line vertical orb. Added dedicated `.light-theme .plan-pill-nav` high-contrast styles.
 - `UI` & `New` (`index.html`, `styles.css`): Cybernetic Vault Cards Overhaul (`.vault-card--encrypt`, `.vault-card--decrypt`). Integrated radiant accent top hairlines with gradient highlights, pulsating live status indicator chips (`.card-tag-dot`), elevated card title gradients (`#ffffff` to `#c4b5fd` / `#5eead4`), and smooth hover lift physics.
 - `UI` (`styles.css`): Futuristic Radial Drop Zones (`.drop-zone`). Integrated glowing radial hover auras, dynamic drag-and-drop icon scaling with glowing filter drop-shadows, and polished file selection widgets.
 - `UI` (`index.html`, `styles.css`): Primary Action Button Cybernetic Depth (`#btn-encrypt`, `#btn-decrypt`). Embedded responsive Lock and Unlock `.btn-icon` SVGs with hover scaling, multi-layer drop shadows, and active click compression physics.

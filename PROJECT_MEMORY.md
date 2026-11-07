@@ -225,6 +225,10 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Interactive hover transitions (`transform: translateY(-1px)`) and glowing borders across badge and trust strip.
 
 ### 3.21 Main Landing Page UI, Bento Cards & Light Theme Overhaul (v8.18.0)
+- **Desktop Navbar Right Overflow & Edge Protection:**
+  - Resolved desktop layout clipping where `Install App`, `Theme Toggle`, and `PC Toolkit` were pushed off-screen.
+  - Elevated `.app-shell` container width from 1100px to 1260px, streamlined links/buttons padding and font metrics, and added automatic collapse of secondary button text on intermediate screens.
+  - Enforced `white-space: nowrap !important;` on `.plan-pill-nav` and `.plan-pill-nav .counter-badge` to prevent "Master Plan" from breaking onto 2 lines and "11 / 14" from stacking into an unsightly 3-line vertical orb. Added dedicated `.light-theme .plan-pill-nav` high-contrast styles.
 - **Cybernetic Card Elevation (`.vault-card--encrypt`, `.vault-card--decrypt`):**
   - Integrated glowing top accent hairlines (`border-top: 2px solid ...`) with purple (`#8b5cf6`) and teal (`#14b8a6`) gradients.
   - Added pulsing live status dot (`.card-tag-dot`) inside `.card-tag--purple` and `.card-tag--teal` with keyframe breathing animation.
