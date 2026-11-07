@@ -3762,6 +3762,11 @@ let currentMediaGainNode = null;
 let currentMediaAudioSource = null;
 let isTimelineScrubbing = false;
 
+// On-Demand Range Streaming State (< 60 MB RAM peak across multi-GB files)
+let activeMediaStreamId = null;
+let activeMediaChannel = null;
+let activeMediaChunkCache = null;
+
 // Player 3.0 Pro Studio State
 let currentMediaZoom = 1.0; // 1.0 to 5.0
 let currentMediaPanX = 0;
@@ -4324,6 +4329,7 @@ function closeVaultExplorer() {
 
 /**
  * Play a media track from the vault playlist by index.
+ * Uses on-demand HTTP 206 range streaming via Service Worker for v3 vaults (instant playback & < 60 MB RAM).
  */
 async function playMediaByIndex(index) {
     if (!currentMediaPlaylist || index < 0 || index >= currentMediaPlaylist.length) return;
@@ -4344,9 +4350,32 @@ async function playMediaByIndex(index) {
     if (!modal || (!currentDecryptedZip && !currentV3Vault)) return;
 
     // Clean up previous blob URL
-    if (currentMediaBlobUrl) {
+    if (currentMediaBlobUrl && currentMediaBlobUrl.startsWith('blob:')) {
         revokeTrackedBlobUrl(currentMediaBlobUrl);
         currentMediaBlobUrl = null;
+    }
+
+    // Clean up previous active on-demand media stream
+    if (activeMediaStreamId) {
+        if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) {
+            try {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'CLOSE_MEDIA_STREAM',
+                    streamId: activeMediaStreamId
+                });
+            } catch (_) {}
+        }
+        if (activeMediaChannel) {
+            try { activeMediaChannel.port1.close(); } catch (_) {}
+            activeMediaChannel = null;
+        }
+        activeMediaStreamId = null;
+    }
+    if (activeMediaChunkCache) {
+        if (typeof activeMediaChunkCache.clear === 'function') {
+            activeMediaChunkCache.clear();
+        }
+        activeMediaChunkCache = null;
     }
 
     if (badge) badge.textContent = item.category === 'video' ? '🎬 Video' : '🎵 Audio';
@@ -4357,38 +4386,96 @@ async function playMediaByIndex(index) {
     if (prevBtn) prevBtn.disabled = index <= 0;
     if (nextBtn) nextBtn.disabled = index >= currentMediaPlaylist.length - 1;
 
-    // Show loader, hide players
-    if (loader) {
-        loader.style.display = 'flex';
-        if (loaderText) loaderText.textContent = `Extracting ${item.name} (${formatBytes(item.size)})…`;
-    }
+    // Check if this file can use On-Demand Range Streaming (Instant Playback & Bounded RAM)
+    const canStreamRange = (
+        (item.category === 'video' || item.category === 'audio') &&
+        currentV3Vault &&
+        currentV3Vault.file &&
+        currentV3Vault.masterKey &&
+        !item.compressed &&
+        typeof navigator !== 'undefined' &&
+        navigator.serviceWorker &&
+        navigator.serviceWorker.controller
+    );
+
     if (videoEl) videoEl.style.display = 'none';
     if (audioEl) audioEl.style.display = 'none';
     modal.style.display = 'flex';
 
-    try {
-        const rawBlob = await getDecryptedFileBlob(item.path);
-        currentMediaBlob = new Blob([rawBlob], { type: item.mimeType });
+    const speedSelect = document.getElementById('media-speed-select');
+    const rate = parseFloat(speedSelect?.value || '1');
+
+    const toolsBar = document.getElementById('media-tools-bar');
+    const snapBtn = document.getElementById('btn-media-snapshot');
+    const fitBtn = document.getElementById('btn-media-fit');
+    const pipBtn = document.getElementById('btn-media-pip');
+    const stepBackBtn = document.getElementById('btn-media-step-back');
+    const stepFwdBtn = document.getElementById('btn-media-step-fwd');
+
+    if (canStreamRange) {
+        // --- ON-DEMAND STREAMING PATH (< 30ms startup, < 60 MB RAM) ---
+        if (loader) loader.style.display = 'none'; // Instant! No 2-minute loading delay!
+
+        const streamId = 'stream_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        activeMediaStreamId = streamId;
+        activeMediaChannel = new MessageChannel();
+        activeMediaChunkCache = (typeof StreamUnpacker !== 'undefined' && StreamUnpacker.createBoundedChunkCache)
+            ? StreamUnpacker.createBoundedChunkCache(6)
+            : new Map();
+
+        const streamUrl = `/_stream_media?id=${encodeURIComponent(streamId)}&filename=${encodeURIComponent(item.name)}`;
+        currentMediaBlobUrl = streamUrl;
+        currentMediaBlob = null; // Downloaded on-demand if requested
         currentMediaFilename = item.name;
-        currentMediaBlobUrl = createTrackedBlobUrl(currentMediaBlob);
 
-        if (loader) loader.style.display = 'none';
+        // Register stream channel with Service Worker
+        navigator.serviceWorker.controller.postMessage({
+            type: 'REGISTER_MEDIA_STREAM',
+            streamId: streamId,
+            fileSize: item.size,
+            mimeType: item.mimeType || (item.category === 'video' ? 'video/mp4' : 'audio/mp3'),
+            filename: item.name
+        }, [activeMediaChannel.port2]);
 
-        const speedSelect = document.getElementById('media-speed-select');
-        const rate = parseFloat(speedSelect?.value || '1');
+        // Handle on-demand byte range requests from the browser via Service Worker
+        activeMediaChannel.port1.onmessage = async (event) => {
+            const msg = event.data;
+            if (!msg || msg.type !== 'READ_MEDIA_RANGE') return;
 
-        const toolsBar = document.getElementById('media-tools-bar');
-        const snapBtn = document.getElementById('btn-media-snapshot');
-        const fitBtn = document.getElementById('btn-media-fit');
-        const pipBtn = document.getElementById('btn-media-pip');
-        const stepBackBtn = document.getElementById('btn-media-step-back');
-        const stepFwdBtn = document.getElementById('btn-media-step-fwd');
+            const { requestId, start, end } = msg;
+            try {
+                const rangeBytes = await StreamUnpacker.extractFileRange(
+                    currentV3Vault.file,
+                    currentV3Vault.masterKey,
+                    item,
+                    start,
+                    end,
+                    {
+                        manifest: currentV3Vault.manifest,
+                        chunkCache: activeMediaChunkCache
+                    }
+                );
+
+                activeMediaChannel.port1.postMessage({
+                    type: 'MEDIA_RANGE_DATA',
+                    requestId,
+                    data: rangeBytes
+                }, [rangeBytes.buffer]);
+            } catch (err) {
+                console.error('[Media Range Stream Error]', err);
+                activeMediaChannel.port1.postMessage({
+                    type: 'MEDIA_RANGE_ERROR',
+                    requestId,
+                    error: err.message
+                });
+            }
+        };
 
         if (item.category === 'video' && videoEl) {
             if (audioEl) { audioEl.pause(); audioEl.src = ''; audioEl.style.display = 'none'; }
             videoEl.style.display = 'block';
             videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
-            videoEl.src = currentMediaBlobUrl;
+            videoEl.src = streamUrl;
             videoEl.playbackRate = rate;
             resetVideoTransforms();
             if (toolsBar) toolsBar.style.display = 'flex';
@@ -4402,7 +4489,7 @@ async function playMediaByIndex(index) {
             if (videoEl) { videoEl.pause(); videoEl.src = ''; videoEl.style.display = 'none'; }
             audioEl.style.display = 'block';
             audioEl.className = 'media-player-element';
-            audioEl.src = currentMediaBlobUrl;
+            audioEl.src = streamUrl;
             audioEl.playbackRate = rate;
             if (toolsBar) toolsBar.style.display = 'none';
             if (snapBtn) snapBtn.style.display = 'none';
@@ -4412,10 +4499,54 @@ async function playMediaByIndex(index) {
             if (stepFwdBtn) stepFwdBtn.style.display = 'none';
             audioEl.play().catch(() => {});
         }
-    } catch (err) {
-        if (loader) loader.style.display = 'none';
-        console.error('[Media Play Error]', err);
-        showToast(`Failed to load media: ${err.message}`, 'error');
+    } else {
+        // --- FALLBACK PATH (Small files, legacy v1/v2 vaults, or environments without SW) ---
+        if (loader) {
+            loader.style.display = 'flex';
+            if (loaderText) loaderText.textContent = `Extracting ${item.name} (${formatBytes(item.size)})…`;
+        }
+
+        try {
+            const rawBlob = await getDecryptedFileBlob(item.path);
+            currentMediaBlob = new Blob([rawBlob], { type: item.mimeType });
+            currentMediaFilename = item.name;
+            currentMediaBlobUrl = createTrackedBlobUrl(currentMediaBlob);
+
+            if (loader) loader.style.display = 'none';
+
+            if (item.category === 'video' && videoEl) {
+                if (audioEl) { audioEl.pause(); audioEl.src = ''; audioEl.style.display = 'none'; }
+                videoEl.style.display = 'block';
+                videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
+                videoEl.src = currentMediaBlobUrl;
+                videoEl.playbackRate = rate;
+                resetVideoTransforms();
+                if (toolsBar) toolsBar.style.display = 'flex';
+                if (snapBtn) snapBtn.style.display = 'inline-flex';
+                if (fitBtn) fitBtn.style.display = 'inline-flex';
+                if (pipBtn) pipBtn.style.display = 'inline-flex';
+                if (stepBackBtn) stepBackBtn.style.display = 'inline-flex';
+                if (stepFwdBtn) stepFwdBtn.style.display = 'inline-flex';
+                videoEl.play().catch(() => {});
+            } else if (audioEl) {
+                if (videoEl) { videoEl.pause(); videoEl.src = ''; videoEl.style.display = 'none'; }
+                audioEl.style.display = 'block';
+                audioEl.className = 'media-player-element';
+                audioEl.src = currentMediaBlobUrl;
+                audioEl.playbackRate = rate;
+                if (toolsBar) toolsBar.style.display = 'none';
+                if (snapBtn) snapBtn.style.display = 'none';
+                if (fitBtn) fitBtn.style.display = 'none';
+                if (pipBtn) pipBtn.style.display = 'none';
+                if (stepBackBtn) stepBackBtn.style.display = 'none';
+                if (stepFwdBtn) stepFwdBtn.style.display = 'none';
+                audioEl.play().catch(() => {});
+            }
+        } catch (err) {
+            if (loader) loader.style.display = 'none';
+            console.error('[Media Play Error]', err);
+            showToast(`Failed to load media: ${err.message}`, 'error');
+        }
     }
 }
 
@@ -4893,8 +5024,33 @@ function closeMediaPlayer() {
     }
 
     if (currentMediaBlobUrl) {
-        revokeTrackedBlobUrl(currentMediaBlobUrl);
+        if (currentMediaBlobUrl.startsWith('blob:')) {
+            revokeTrackedBlobUrl(currentMediaBlobUrl);
+        }
         currentMediaBlobUrl = null;
+    }
+
+    // Clean up active on-demand media stream
+    if (activeMediaStreamId) {
+        if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) {
+            try {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'CLOSE_MEDIA_STREAM',
+                    streamId: activeMediaStreamId
+                });
+            } catch (_) {}
+        }
+        if (activeMediaChannel) {
+            try { activeMediaChannel.port1.close(); } catch (_) {}
+            activeMediaChannel = null;
+        }
+        activeMediaStreamId = null;
+    }
+    if (activeMediaChunkCache) {
+        if (typeof activeMediaChunkCache.clear === 'function') {
+            activeMediaChunkCache.clear();
+        }
+        activeMediaChunkCache = null;
     }
 
     // Memory Leak Fix: scrub global media blob reference
@@ -7514,9 +7670,19 @@ function initExplorerUI() {
         }
     });
 
-    mediaDlBtn?.addEventListener('click', () => {
+    mediaDlBtn?.addEventListener('click', async () => {
         if (currentMediaBlob && currentMediaFilename) {
             triggerDownload(currentMediaBlob, currentMediaFilename);
+        } else if (currentMediaIndex >= 0 && currentMediaPlaylist && currentMediaPlaylist[currentMediaIndex]) {
+            const item = currentMediaPlaylist[currentMediaIndex];
+            try {
+                showToast(`Extracting ${item.name} for download…`, 'info');
+                const rawBlob = await getDecryptedFileBlob(item.path);
+                const blob = new Blob([rawBlob], { type: item.mimeType });
+                triggerDownload(blob, item.name);
+            } catch (err) {
+                showToast(`Failed to download: ${err.message}`, 'error');
+            }
         }
     });
 

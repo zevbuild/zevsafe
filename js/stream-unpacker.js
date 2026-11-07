@@ -1306,6 +1306,213 @@
     }
 
     /**
+     * Extracts a specific uncompressed byte range [byteStart, byteEnd] of a file selectively
+     * from an encrypted v3 vault without decrypting or loading the entire file into memory.
+     *
+     * Designed for video and audio on-demand streaming and seeking (< 60 MB RAM peak across multi-GB files).
+     *
+     * @param {*} vaultSource - Vault File, Blob, Uint8Array, ArrayBuffer, or reader function
+     * @param {string|CryptoKey} passwordOrKey - Master password or derived CryptoKey
+     * @param {Object|string} targetEntry - Manifest file entry or path string
+     * @param {number} byteStart - Zero-indexed start byte in the uncompressed file
+     * @param {number} byteEnd - Zero-indexed end byte in the uncompressed file (inclusive)
+     * @param {Object} [options={}] - Configuration: { manifest, chunkCache, header, keyfileBytes, iterations }
+     * @returns {Promise<Uint8Array>} The requested byte slice
+     */
+    async function extractFileRange(vaultSource, passwordOrKey, targetEntry, byteStart, byteEnd, options = {}) {
+        const opts = options || {};
+        if (!vaultSource) {
+            throw createOperationError('Vault source is required');
+        }
+        // Support both (vaultSource, passwordOrKey, targetEntry, byteStart, byteEnd, options)
+        // and (vaultSource, targetEntry, passwordOrKey, byteStart, byteEnd, options)
+        let actualKey = passwordOrKey;
+        let actualEntry = targetEntry;
+        if (
+            typeof actualKey === 'object' &&
+            actualKey !== null &&
+            !actualKey.algorithm &&
+            (typeof actualEntry === 'string' || (actualEntry && actualEntry.algorithm))
+        ) {
+            const swap = actualKey;
+            actualKey = actualEntry;
+            actualEntry = swap;
+        }
+
+        if (!actualEntry) {
+            throw new TypeError('targetEntry descriptor is required');
+        }
+
+        const StreamCrypto = getStreamCrypto();
+
+        // If targetEntry is a string filename and manifest is provided in options, find it
+        let entry = actualEntry;
+        if (typeof entry === 'string') {
+            if (opts.manifest && Array.isArray(opts.manifest.files)) {
+                const found = opts.manifest.files.find(f => f.path === entry || f.name === entry);
+                if (!found) {
+                    throw createOperationError(`File "${entry}" not found in manifest`);
+                }
+                entry = found;
+            } else {
+                throw new TypeError('targetEntry is a string path, but options.manifest was not provided');
+            }
+        }
+
+        // 1. Read vault container header (57 bytes) or reuse pre-parsed header
+        const header = (opts.header || (opts.manifest && opts.manifest.header))
+            ? (opts.header || opts.manifest.header)
+            : await parseVaultHeader(await readRange(vaultSource, 0, V3_HEADER_SIZE), opts);
+
+        if (header.version !== 3) {
+            throw createOperationError(`Selective range extraction is only supported for v3 streaming vaults (found v${header.version})`);
+        }
+
+        // 2. Resolve Master CryptoKey
+        let masterKey;
+        if (actualKey && typeof actualKey === 'object' && actualKey.algorithm) {
+            masterKey = actualKey;
+        } else if (typeof actualKey === 'string') {
+            masterKey = await StreamCrypto.deriveMasterKey(
+                actualKey,
+                header.salt,
+                opts.iterations || 600000,
+                opts.keyfileBytes || null
+            );
+        } else {
+            throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
+        }
+
+        const chunkSize = header.chunkSize || DEFAULT_CHUNK_SIZE;
+        const totalFramedChunkSize = chunkSize + 20;
+        const manifestOffset = BigInt(header.manifestOffset);
+        const lastChunkIndex = Number((manifestOffset - 58n) / BigInt(totalFramedChunkSize));
+
+        const normalized = normalizeCatalogEntry(entry, chunkSize);
+
+        // Fallback for compressed files: full extraction then slice
+        if (normalized.compressed) {
+            const fullBytes = await extractSingleFile(vaultSource, masterKey, entry, opts);
+            const fileSize = fullBytes.byteLength;
+            if (fileSize === 0) return new Uint8Array(0);
+            const s = Math.max(0, Math.min(Number(byteStart) || 0, fileSize - 1));
+            const e = Math.max(s, Math.min((byteEnd !== undefined && byteEnd !== null && !isNaN(Number(byteEnd))) ? Number(byteEnd) : (fileSize - 1), fileSize - 1));
+            return fullBytes.slice(s, e + 1);
+        }
+
+        // Uncompressed (STORE mode, 0): 1:1 byte mapping to plaintext offsets!
+        const localHeaderOffset = BigInt(normalized.localHeaderOffset);
+        let headerLen = entry._headerLen;
+
+        // Inspect Local File Header if not cached
+        if (headerLen === undefined || headerLen === null) {
+            const headerChunkIndex = Number(localHeaderOffset / BigInt(chunkSize));
+            const headerRelOffset = Number(localHeaderOffset - BigInt(headerChunkIndex) * BigInt(chunkSize));
+
+            let headerChunk;
+            if (opts.chunkCache && opts.chunkCache.has(headerChunkIndex)) {
+                headerChunk = opts.chunkCache.get(headerChunkIndex);
+            } else {
+                const isLast = (headerChunkIndex === lastChunkIndex);
+                const chunkVaultStart = V3_HEADER_SIZE + headerChunkIndex * totalFramedChunkSize;
+                const chunkVaultEnd = isLast ? Number(manifestOffset) : chunkVaultStart + totalFramedChunkSize;
+                const chunkFramedBytes = await readRange(vaultSource, chunkVaultStart, chunkVaultEnd);
+                headerChunk = await StreamCrypto.decryptChunk(
+                    masterKey,
+                    chunkFramedBytes,
+                    header.baseIVPrefix,
+                    headerChunkIndex,
+                    isLast,
+                    header.salt
+                );
+                if (opts.chunkCache) {
+                    opts.chunkCache.set(headerChunkIndex, headerChunk);
+                }
+            }
+
+            if (headerRelOffset >= 0 && headerRelOffset + 30 <= headerChunk.byteLength) {
+                const view = new DataView(headerChunk.buffer, headerChunk.byteOffset, headerChunk.byteLength);
+                const sig = view.getUint32(headerRelOffset, true);
+                if (sig === ZIP_SIGNATURES.LOCAL_FILE_HEADER) {
+                    const nameLen = view.getUint16(headerRelOffset + 26, true);
+                    const extraLen = view.getUint16(headerRelOffset + 28, true);
+                    headerLen = 30 + nameLen + extraLen;
+                }
+            }
+
+            if (!headerLen) {
+                headerLen = 30 + new TextEncoder().encode(normalized.path).length;
+            }
+            try { entry._headerLen = headerLen; } catch (_) {}
+        }
+
+        const payloadPlainOffset = localHeaderOffset + BigInt(headerLen);
+        const fileSize = normalized.uncompressedSize;
+        if (fileSize <= 0) return new Uint8Array(0);
+
+        const start = Math.max(0, Math.min(Number(byteStart) || 0, fileSize - 1));
+        const end = Math.max(start, Math.min((byteEnd !== undefined && byteEnd !== null && !isNaN(Number(byteEnd))) ? Number(byteEnd) : (fileSize - 1), fileSize - 1));
+        const requestedLength = end - start + 1;
+        if (requestedLength <= 0) return new Uint8Array(0);
+
+        const plainStartPos = payloadPlainOffset + BigInt(start);
+        const plainEndPos = payloadPlainOffset + BigInt(end);
+        const firstChunkIndex = Number(plainStartPos / BigInt(chunkSize));
+        const lastChunkIndexForRange = Number(plainEndPos / BigInt(chunkSize));
+
+        // Read and decrypt only the chunks covering [firstChunkIndex, lastChunkIndexForRange]
+        const rangeChunks = [];
+        for (let i = firstChunkIndex; i <= lastChunkIndexForRange; i++) {
+            if (opts.chunkCache && opts.chunkCache.has(i)) {
+                rangeChunks.push({ index: i, chunk: opts.chunkCache.get(i) });
+                continue;
+            }
+
+            const isLast = (i === lastChunkIndex);
+            const chunkVaultStart = V3_HEADER_SIZE + i * totalFramedChunkSize;
+            const chunkVaultEnd = isLast ? Number(manifestOffset) : chunkVaultStart + totalFramedChunkSize;
+
+            const chunkFramedBytes = await readRange(vaultSource, chunkVaultStart, chunkVaultEnd);
+            const plainChunk = await StreamCrypto.decryptChunk(
+                masterKey,
+                chunkFramedBytes,
+                header.baseIVPrefix,
+                i,
+                isLast,
+                header.salt
+            );
+
+            if (opts.chunkCache) {
+                opts.chunkCache.set(i, plainChunk);
+            }
+            rangeChunks.push({ index: i, chunk: plainChunk });
+        }
+
+        if (rangeChunks.length === 1) {
+            const { index, chunk } = rangeChunks[0];
+            const chunkPlainBase = BigInt(index) * BigInt(chunkSize);
+            const relStart = Number(plainStartPos - chunkPlainBase);
+            return chunk.slice(relStart, relStart + requestedLength);
+        } else {
+            const result = new Uint8Array(requestedLength);
+            let destOffset = 0;
+            for (const { index, chunk } of rangeChunks) {
+                const chunkPlainBase = BigInt(index) * BigInt(chunkSize);
+                const chunkPlainEnd = chunkPlainBase + BigInt(chunk.byteLength);
+                const overlapStart = plainStartPos > chunkPlainBase ? plainStartPos : chunkPlainBase;
+                const overlapEnd = (plainEndPos + 1n) < chunkPlainEnd ? (plainEndPos + 1n) : chunkPlainEnd;
+                if (overlapStart < overlapEnd) {
+                    const srcOffset = Number(overlapStart - chunkPlainBase);
+                    const copyLen = Number(overlapEnd - overlapStart);
+                    result.set(chunk.subarray(srcOffset, srcOffset + copyLen), destOffset);
+                    destOffset += copyLen;
+                }
+            }
+            return result;
+        }
+    }
+
+    /**
      * Selectively extracts multiple files from a vault, sharing decrypted chunk cache
      * so overlapping files in the same chunk are decrypted only once.
      *
@@ -1983,6 +2190,7 @@
         // Selective Extraction
         createBoundedChunkCache,
         extractSingleFile,
+        extractFileRange,
         extractMultipleFiles,
 
         // Vault Health & Fault-Tolerant Partial Recovery

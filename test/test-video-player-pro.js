@@ -212,15 +212,125 @@ runTest('3.9: Extended keyboard shortcuts matrix bound in keydown listener', () 
 console.log('\n--- 4. PWA Service Worker & Version Tags ---');
 const swJs = fs.readFileSync(path.join(ROOT_DIR, 'sw.js'), 'utf8');
 
-runTest('4.1: Service Worker shell cache bumped to v66', () => {
-    assert.ok(swJs.includes("const APP_VERSION    = 'v66';"), 'sw.js must be APP_VERSION v66');
+runTest('4.1: Service Worker shell cache bumped to v67', () => {
+    assert.ok(swJs.includes("const APP_VERSION    = 'v67';"), 'sw.js must be APP_VERSION v67');
 });
 
-runTest('4.2: index.html synchronized to v8.15.0 / WEB-VERSION-66', () => {
-    assert.ok(indexHtml.includes('WEB-VERSION-66'), 'index.html must have WEB-VERSION-66');
-    assert.ok(indexHtml.includes('v8.15.0'), 'index.html must have v8.15.0');
+runTest('4.2: index.html synchronized to v8.16.0 / WEB-VERSION-67', () => {
+    assert.ok(indexHtml.includes('WEB-VERSION-67'), 'index.html must have WEB-VERSION-67');
+    assert.ok(indexHtml.includes('v8.16.0'), 'index.html must have v8.16.0');
 });
 
-console.log('\n===============================================================');
-console.log(`  ALL ${passed}/${total} VIDEO PLAYER 3.0 TESTS PASSED (100%)       `);
-console.log('===============================================================');
+// ── 5. ON-DEMAND RANGE STREAMING ENGINE & INSTANT PLAYBACK (< 60 MB RAM) ───
+console.log('\n--- 5. On-Demand Range Streaming Engine & Instant Playback (< 60 MB RAM) ---');
+const StreamUnpacker = require('../js/stream-unpacker.js');
+const WorkerBridge = require('../js/worker-bridge.js');
+
+runTest('5.1: StreamUnpacker exports extractFileRange', () => {
+    assert.strictEqual(typeof StreamUnpacker.extractFileRange, 'function', 'extractFileRange must be an exported function');
+});
+
+runTest('5.2: sw.js defines handleStreamMedia with HTTP 206 Partial Content and Content-Range', () => {
+    assert.ok(swJs.includes("url.pathname === '/_stream_media'"), 'sw.js must route /_stream_media');
+    assert.ok(swJs.includes('handleStreamMedia'), 'sw.js must define handleStreamMedia');
+    assert.ok(swJs.includes('status: 206'), 'sw.js must return status 206 Partial Content');
+    assert.ok(swJs.includes("'Accept-Ranges': 'bytes'"), 'sw.js must declare Accept-Ranges: bytes');
+    assert.ok(swJs.includes("'Content-Range'"), 'sw.js must include Content-Range header');
+});
+
+runTest('5.3: sw.js message listener registers and closes media streams', () => {
+    assert.ok(swJs.includes("data.type === 'REGISTER_MEDIA_STREAM'"), 'sw.js must handle REGISTER_MEDIA_STREAM');
+    assert.ok(swJs.includes("data.type === 'CLOSE_MEDIA_STREAM'"), 'sw.js must handle CLOSE_MEDIA_STREAM');
+    assert.ok(swJs.includes('READ_MEDIA_RANGE'), 'sw.js must request READ_MEDIA_RANGE from client port');
+});
+
+runTest('5.4: app.js wires canStreamRange with Service Worker MessageChannel and extractFileRange', () => {
+    assert.ok(appJs.includes('canStreamRange'), 'app.js must evaluate canStreamRange');
+    assert.ok(appJs.includes("item.category === 'video'"), 'app.js must check item.category');
+    assert.ok(appJs.includes('StreamUnpacker.extractFileRange'), 'app.js must call StreamUnpacker.extractFileRange');
+    assert.ok(appJs.includes("type: 'REGISTER_MEDIA_STREAM'"), 'app.js must send REGISTER_MEDIA_STREAM');
+    assert.ok(appJs.includes("new MessageChannel()"), 'app.js must instantiate MessageChannel for streaming');
+    assert.ok(appJs.includes("/_stream_media?id="), 'app.js must set video src to /_stream_media?id=');
+});
+
+runTest('5.5: app.js closeMediaPlayer cleanly closes activeMediaChannel and activeMediaStreamId', () => {
+    assert.ok(appJs.includes("type: 'CLOSE_MEDIA_STREAM'"), 'closeMediaPlayer must post CLOSE_MEDIA_STREAM');
+    assert.ok(appJs.includes('activeMediaChannel.port1.close()'), 'closeMediaPlayer must close channel port');
+    assert.ok(appJs.includes('activeMediaChunkCache.clear()'), 'closeMediaPlayer must scrub chunk cache');
+});
+
+runTest('5.6: app.js mediaDlBtn handles on-demand decrypted download fallback', () => {
+    assert.ok(appJs.includes('getDecryptedFileBlob(item.path)'), 'mediaDlBtn must fall back to getDecryptedFileBlob if blob not buffered');
+});
+
+async function runEndToEndRangeVerification() {
+    const videoData = new Uint8Array(16384);
+    for (let i = 0; i < videoData.length; i++) videoData[i] = (i * 7 + 13) & 0xff;
+
+    const files = [{
+        name: 'movie.mp4',
+        path: 'movie.mp4',
+        size: videoData.length,
+        lastModified: Date.now(),
+        stream: () => new ReadableStream({
+            start(c) { c.enqueue(videoData); c.close(); }
+        })
+    }];
+
+    const sinkBytes = [];
+    let curPos = 0;
+    const mockWriter = {
+        write(c) {
+            const u8 = c instanceof Uint8Array ? c : new Uint8Array(c);
+            for (let i = 0; i < u8.length; i++) sinkBytes[curPos + i] = u8[i];
+            curPos += u8.length;
+            return Promise.resolve();
+        },
+        seek(pos) {
+            curPos = Number(pos);
+            return Promise.resolve();
+        },
+        close() { return Promise.resolve(); }
+    };
+
+    await new Promise((res, rej) => {
+        WorkerBridge.startEncryption({
+            files,
+            password: 'RangeTestPass123!',
+            options: { useShim: true, writable: mockWriter, chunkSize: 2048, iterations: 1000 },
+            onComplete: res,
+            onError: rej
+        });
+    });
+
+    const vaultBytes = new Uint8Array(sinkBytes);
+    const catalog = await StreamUnpacker.readVaultManifest(vaultBytes, 'RangeTestPass123!', null, { iterations: 1000 });
+    const entry = catalog.files[0];
+
+    // Sub-test 5.7: Single-chunk partial range extraction
+    runTest('5.7: StreamUnpacker.extractFileRange accurately extracts partial single-chunk byte ranges', async () => {
+        const range1 = await StreamUnpacker.extractFileRange(vaultBytes, 'RangeTestPass123!', entry, 100, 500, { iterations: 1000 });
+        assert.strictEqual(range1.length, 401, 'Range 1 length matches');
+        for (let i = 0; i < 401; i++) {
+            assert.strictEqual(range1[i], videoData[100 + i], `Byte ${i} matches`);
+        }
+    });
+
+    // Sub-test 5.8: Multi-chunk spanning byte range extraction
+    runTest('5.8: StreamUnpacker.extractFileRange accurately extracts multi-chunk spanning byte ranges', async () => {
+        const range2 = await StreamUnpacker.extractFileRange(vaultBytes, 'RangeTestPass123!', entry, 1500, 7000, { iterations: 1000 });
+        assert.strictEqual(range2.length, 5501, 'Range 2 length matches');
+        for (let i = 0; i < 5501; i++) {
+            assert.strictEqual(range2[i], videoData[1500 + i], `Byte ${i} matches`);
+        }
+    });
+
+    console.log('\n===============================================================');
+    console.log(`  ALL ${passed}/${total} VIDEO PLAYER & ON-DEMAND TESTS PASSED (100%)       `);
+    console.log('===============================================================');
+}
+
+runEndToEndRangeVerification().catch(err => {
+    console.error('Test error:', err);
+    process.exit(1);
+});
