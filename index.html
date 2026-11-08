@@ -233,7 +233,7 @@
                 <div class="nav-links-group">
                     <a href="./knowledge/" class="nav-link-subtle" title="Comprehensive Knowledge Base & Complete Service Manual">Knowledge Hub <span class="nav-badge-pill nav-badge-pill--purple">Manual</span></a>
                     <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span class="nav-badge-pill nav-badge-pill--green">99.3/100</span></a>
-                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-72)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.21.0</span></a>
+                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-73)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.22.0</span></a>
                     <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
                 </div>
                 <div class="nav-actions-divider" aria-hidden="true"></div>
@@ -314,7 +314,7 @@
                             <span class="mn-title">Knowledge Hub &amp; Manual</span>
                             <span class="mn-desc">10 In-Depth Service Specifications</span>
                         </div>
-                        <span class="mn-badge">v8.21.0</span>
+                        <span class="mn-badge">v8.22.0</span>
                     </a>
                     <a href="./how-to-use-zevsafe/" class="mobile-nav-link">
                         <span class="mn-icon">📖</span>
@@ -345,7 +345,7 @@
                             <span class="mn-title">Changelog &amp; Releases</span>
                             <span class="mn-desc">Full release history</span>
                         </div>
-                        <span class="mn-badge">v8.21.0</span>
+                        <span class="mn-badge">v8.22.0</span>
                     </a>
                     <a href="./roadmap/" class="mobile-nav-link">
                         <span class="mn-icon">🧭</span>
@@ -1072,7 +1072,7 @@
                 <span>·</span>
                 <a href="./roadmap/" style="color: #38bdf8; font-weight: 600;">Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.21.0 / WEB-VERSION-72)</a>
+                <a href="./change-log/">Changelog (v8.22.0 / WEB-VERSION-73)</a>
                 <!-- Baseline regression assertion preservation: v8.19.0 / WEB-VERSION-70 -->
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
@@ -1210,13 +1210,13 @@
                     <span class="media-forensic-specs" id="media-forensic-specs" style="display:none;" title="Video Resolution, Framerate & Streaming Pipeline">1080p FHD · ⚡ Range Stream</span>
                 </div>
                 <div class="media-modal-actions">
-                    <button class="media-btn-action" id="btn-media-snapshot" title="Extract current video frame at full resolution as PNG (S)">📸 Snap Frame</button>
-                    <button class="media-btn-action" id="btn-media-loop" title="Toggle single-video loop / playlist auto-advance">🔁 Loop: Off</button>
-                    <button class="media-btn-action" id="btn-media-ambient" title="Toggle immersive ambient backlight glow">✨ Ambient: Off</button>
-                    <button class="media-btn-action" id="btn-media-hotkeys" title="View Keyboard Shortcuts Cheatsheet (?)">⌨️ Hotkeys</button>
-                    <button class="media-btn-action" id="btn-media-dock" title="Minimize player to bottom dock" style="display:none;background:rgba(45,212,191,0.18);color:#2dd4bf;border-color:rgba(45,212,191,0.4);">📥 Dock</button>
-                    <button class="media-btn-action" id="btn-media-open-tab" title="Open and play in new browser tab">↗️ New Tab</button>
-                    <button class="media-btn-action" id="btn-media-download" title="Save file to device">⬇️ Save</button>
+                    <button class="media-btn-action" id="btn-media-snapshot" aria-label="Snap full-resolution video frame" title="Extract current video frame at full resolution as PNG (S)">📸 Snap Frame</button>
+                    <button class="media-btn-action" id="btn-media-loop" aria-label="Toggle loop mode" title="Toggle single-video loop / playlist auto-advance">🔁 Loop: Off</button>
+                    <button class="media-btn-action" id="btn-media-ambient" aria-label="Toggle ambient backlight glow" title="Toggle immersive ambient backlight glow">✨ Ambient: Off</button>
+                    <button class="media-btn-action" id="btn-media-hotkeys" aria-label="View keyboard shortcuts" title="View Keyboard Shortcuts Cheatsheet (?)">⌨️ Hotkeys</button>
+                    <button class="media-btn-action" id="btn-media-dock" aria-label="Dock player" title="Minimize player to bottom dock" style="display:none;background:rgba(45,212,191,0.18);color:#2dd4bf;border-color:rgba(45,212,191,0.4);">📥 Dock</button>
+                    <button class="media-btn-action" id="btn-media-open-tab" aria-label="Open in new tab" title="Open and play in new browser tab">↗️ New Tab</button>
+                    <button class="media-btn-action" id="btn-media-download" aria-label="Save media file to device" title="Save file to device">⬇️ Save</button>
                     <button class="explorer-btn-close" id="btn-close-media-modal" title="Close Player (Esc)" aria-label="Close Player">✕</button>
                 </div>
             </header>
@@ -1226,7 +1226,7 @@
                 <div class="media-hotkeys-card">
                     <div class="media-hotkeys-header">
                         <h4>⌨️ Video Studio Keyboard Shortcuts</h4>
-                        <button class="media-hotkeys-close" id="btn-close-hotkeys" title="Close Cheatsheet (Esc / ?)">✕</button>
+                        <button class="media-hotkeys-close" id="btn-close-hotkeys" aria-label="Close keyboard shortcuts" title="Close Cheatsheet (Esc / ?)">✕</button>
                     </div>
                     <div class="media-hotkeys-grid">
                         <div class="media-hotkeys-col">
@@ -1304,14 +1304,14 @@
                 <div class="media-cinema-primary">
                     <!-- Left Section: Playback Transport, Volume & Time in unified logical flow -->
                     <div class="media-cinema-left">
-                        <button class="media-ctrl-btn media-ctrl-btn--primary" id="btn-media-play" title="Play/Pause (Space / K)">▶️ Play</button>
-                        <button class="media-ctrl-btn" id="btn-media-prev" title="Previous media track (Shift+Left)">⏮️</button>
-                        <button class="media-ctrl-btn" id="btn-media-rewind10" title="Rewind 10s (Left Arrow / J)">⏪ 10s</button>
-                        <button class="media-ctrl-btn" id="btn-media-forward10" title="Forward 10s (Right Arrow / L)">10s ⏩</button>
-                        <button class="media-ctrl-btn" id="btn-media-next" title="Next media track (Shift+Right)">⏭️</button>
+                        <button class="media-ctrl-btn media-ctrl-btn--primary" id="btn-media-play" aria-label="Play or pause video" title="Play/Pause (Space / K)">▶️ Play</button>
+                        <button class="media-ctrl-btn" id="btn-media-prev" aria-label="Previous track" title="Previous media track (Shift+Left)">⏮️</button>
+                        <button class="media-ctrl-btn" id="btn-media-rewind10" aria-label="Rewind 10 seconds" title="Rewind 10s (Left Arrow / J)">⏪ 10s</button>
+                        <button class="media-ctrl-btn" id="btn-media-forward10" aria-label="Forward 10 seconds" title="Forward 10s (Right Arrow / L)">10s ⏩</button>
+                        <button class="media-ctrl-btn" id="btn-media-next" aria-label="Next track" title="Next media track (Shift+Right)">⏭️</button>
                         
                         <div class="media-volume-wrap">
-                            <button class="media-ctrl-btn" id="btn-media-mute" title="Mute/Unmute (M)">🔊</button>
+                            <button class="media-ctrl-btn" id="btn-media-mute" aria-label="Mute or unmute audio" title="Mute/Unmute (M)">🔊</button>
                             <input type="range" id="media-volume-slider" min="0" max="1" step="0.05" value="1" class="media-volume-range" aria-label="Volume">
                         </div>
 
@@ -1320,9 +1320,9 @@
 
                     <!-- Center Section: Audio Enhancements & Timestamp Bookmark -->
                     <div class="media-cinema-center">
-                        <button class="media-boost-badge" id="btn-media-audio-boost" title="WebAudio GainNode: Boost quiet recordings up to 200% (B)">⚡ Boost 200%</button>
-                        <button class="media-boost-badge media-eq-badge" id="btn-media-vocal-clarity" title="Vocal Clarity Equalizer: Cuts low rumble and boosts speech frequencies (V)">🎙️ Vocal</button>
-                        <button class="media-ctrl-btn" id="btn-media-bookmark" title="Add timestamp bookmark pin (Shift+M)">📌 Mark</button>
+                        <button class="media-boost-badge" id="btn-media-audio-boost" aria-label="Boost audio gain" title="WebAudio GainNode: Boost quiet recordings up to 200% (B)">⚡ Boost 200%</button>
+                        <button class="media-boost-badge media-eq-badge" id="btn-media-vocal-clarity" aria-label="Toggle vocal clarity equalizer" title="Vocal Clarity Equalizer: Cuts low rumble and boosts speech frequencies (V)">🎙️ Vocal</button>
+                        <button class="media-ctrl-btn" id="btn-media-bookmark" aria-label="Add timestamp bookmark" title="Add timestamp bookmark pin (Shift+M)">📌 Mark</button>
                     </div>
 
                     <!-- Right Section: Speed, Viewport Modes & Tools Drawer Toggle -->
@@ -1343,11 +1343,11 @@
                             </select>
                         </div>
 
-                        <button class="media-ctrl-btn" id="btn-media-fit" title="Toggle aspect ratio (Fit / Fill / 16:9 / 4:3)">↔️ Fit</button>
-                        <button class="media-ctrl-btn" id="btn-media-pip" title="Picture-in-Picture (P)">📺 PiP</button>
-                        <button class="media-ctrl-btn" id="btn-media-theater" title="Toggle Expansive Theater Mode (T)">🔲 Theater</button>
-                        <button class="media-ctrl-btn" id="btn-media-fullscreen" title="Fullscreen (F)">⛶ Fullscreen</button>
-                        <button class="media-ctrl-btn media-ctrl-btn--tools" id="btn-toggle-tools" title="Toggle Forensic Studio Deck">🎛️ Studio ▾</button>
+                        <button class="media-ctrl-btn" id="btn-media-fit" aria-label="Toggle aspect ratio" title="Toggle aspect ratio (Fit / Fill / 16:9 / 4:3)">↔️ Fit</button>
+                        <button class="media-ctrl-btn" id="btn-media-pip" aria-label="Picture-in-picture mode" title="Picture-in-Picture (P)">📺 PiP</button>
+                        <button class="media-ctrl-btn" id="btn-media-theater" aria-label="Toggle theater mode" title="Toggle Expansive Theater Mode (T)">🔲 Theater</button>
+                        <button class="media-ctrl-btn" id="btn-media-fullscreen" aria-label="Toggle fullscreen mode" title="Fullscreen (F)">⛶ Fullscreen</button>
+                        <button class="media-ctrl-btn media-ctrl-btn--tools" id="btn-toggle-tools" aria-label="Toggle forensic studio deck" title="Toggle Forensic Studio Deck">🎛️ Studio ▾</button>
                     </div>
                 </div>
 
@@ -1357,49 +1357,49 @@
                     <div class="media-drawer-handle" aria-hidden="true"></div>
                     <div class="media-drawer-header">
                         <h4>🎛️ Forensic Studio Tools</h4>
-                        <button type="button" class="btn-drawer-close media-drawer-close" id="btn-close-tools-drawer" title="Close Forensic Studio (Done)">Done ✕</button>
+                        <button type="button" class="btn-drawer-close media-drawer-close" id="btn-close-tools-drawer" aria-label="Close forensic studio deck" title="Close Forensic Studio (Done)">Done ✕</button>
                     </div>
 
                     <div class="media-tools-group">
                         <span class="media-tools-step-badge">1</span>
                         <span class="media-tools-label">Frame:</span>
-                        <button class="media-ctrl-btn" id="btn-media-step-back" title="Step back 1 frame (,)">⯬ Step</button>
-                        <button class="media-ctrl-btn" id="btn-media-step-fwd" title="Step forward 1 frame (.)">Step ⯮</button>
+                        <button class="media-ctrl-btn" id="btn-media-step-back" aria-label="Step back one frame" title="Step back 1 frame (,)">⯬ Step</button>
+                        <button class="media-ctrl-btn" id="btn-media-step-fwd" aria-label="Step forward one frame" title="Step forward 1 frame (.)">Step ⯮</button>
                     </div>
 
                     <div class="media-tools-group">
                         <span class="media-tools-step-badge">2</span>
                         <span class="media-tools-label">Zoom:</span>
-                        <button class="media-ctrl-btn" id="btn-media-zoom-in" title="Zoom in video (Wheel Up / +)">🔍+ In</button>
-                        <button class="media-ctrl-btn" id="btn-media-zoom-out" title="Zoom out video (Wheel Down / -)">🔍- Out</button>
-                        <button class="media-ctrl-btn" id="btn-media-zoom-reset" title="Reset zoom (0)">1:1</button>
+                        <button class="media-ctrl-btn" id="btn-media-zoom-in" aria-label="Zoom in" title="Zoom in video (Wheel Up / +)">🔍+ In</button>
+                        <button class="media-ctrl-btn" id="btn-media-zoom-out" aria-label="Zoom out" title="Zoom out video (Wheel Down / -)">🔍- Out</button>
+                        <button class="media-ctrl-btn" id="btn-media-zoom-reset" aria-label="Reset zoom" title="Reset zoom (0)">1:1</button>
                     </div>
 
                     <div class="media-tools-group">
                         <span class="media-tools-step-badge">3</span>
                         <span class="media-tools-label">A-B Loop:</span>
-                        <button class="media-ctrl-btn" id="btn-media-ab-a" title="Set Point A at current time ([)">[ A</button>
-                        <button class="media-ctrl-btn" id="btn-media-ab-b" title="Set Point B at current time (])">B ]</button>
-                        <button class="media-ctrl-btn" id="btn-media-ab-clear" title="Clear A-B Loop (\)" style="color:var(--text-3);">✕ Clear</button>
+                        <button class="media-ctrl-btn" id="btn-media-ab-a" aria-label="Set A-B loop point A" title="Set Point A at current time ([)">[ A</button>
+                        <button class="media-ctrl-btn" id="btn-media-ab-b" aria-label="Set A-B loop point B" title="Set Point B at current time (])">B ]</button>
+                        <button class="media-ctrl-btn" id="btn-media-ab-clear" aria-label="Clear A-B loop" title="Clear A-B Loop (\)" style="color:var(--text-3);">✕ Clear</button>
                     </div>
 
                     <div class="media-tools-group">
                         <span class="media-tools-step-badge">4</span>
                         <span class="media-tools-label">Transform:</span>
-                        <button class="media-ctrl-btn" id="btn-media-rot-left" title="Rotate 90° counter-clockwise">↺ 90°</button>
-                        <button class="media-ctrl-btn" id="btn-media-rot-right" title="Rotate 90° clockwise (R)">↻ 90°</button>
-                        <button class="media-ctrl-btn" id="btn-media-flip-h" title="Flip horizontal">⇄ Flip H</button>
-                        <button class="media-ctrl-btn" id="btn-media-flip-v" title="Flip vertical">⇅ Flip V</button>
+                        <button class="media-ctrl-btn" id="btn-media-rot-left" aria-label="Rotate counter-clockwise 90 degrees" title="Rotate 90° counter-clockwise">↺ 90°</button>
+                        <button class="media-ctrl-btn" id="btn-media-rot-right" aria-label="Rotate clockwise 90 degrees" title="Rotate 90° clockwise (R)">↻ 90°</button>
+                        <button class="media-ctrl-btn" id="btn-media-flip-h" aria-label="Flip horizontal" title="Flip horizontal">⇄ Flip H</button>
+                        <button class="media-ctrl-btn" id="btn-media-flip-v" aria-label="Flip vertical" title="Flip vertical">⇅ Flip V</button>
                     </div>
 
                     <div class="media-tools-group">
                         <span class="media-tools-step-badge">5</span>
                         <span class="media-tools-label">Filters:</span>
-                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-bright" title="Boost brightness (+35%) for dark footage">☀️ Brightness</button>
-                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-contrast" title="High contrast (+50%) for text/document clarity">🌓 Contrast</button>
-                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-invert" title="Negative forensic inversion">🔄 Invert</button>
-                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-cctv" title="Security camera monochrome B&W">📹 CCTV B&W</button>
-                        <button class="media-ctrl-btn" id="btn-filter-reset" title="Reset all transforms and filters" style="color:var(--text-3);">Reset</button>
+                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-bright" aria-label="Brightness filter" title="Boost brightness (+35%) for dark footage">☀️ Brightness</button>
+                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-contrast" aria-label="Contrast filter" title="High contrast (+50%) for text/document clarity">🌓 Contrast</button>
+                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-invert" aria-label="Invert color filter" title="Negative forensic inversion">🔄 Invert</button>
+                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-cctv" aria-label="CCTV monochrome filter" title="Security camera monochrome B&W">📹 CCTV B&W</button>
+                        <button class="media-ctrl-btn" id="btn-filter-reset" aria-label="Reset video filters" title="Reset all transforms and filters" style="color:var(--text-3);">Reset</button>
                     </div>
                 </div>
             </div>
@@ -1417,8 +1417,8 @@
                     <span class="image-dim-badge" id="image-modal-dims">-- × --</span>
                 </div>
                 <div class="media-modal-actions">
-                    <button class="media-btn-action" id="btn-image-open-tab" title="Open image in separate browser tab">↗️ New Tab</button>
-                    <button class="media-btn-action" id="btn-image-download" title="Save image to device">⬇️ Save</button>
+                    <button class="media-btn-action" id="btn-image-open-tab" aria-label="Open image in new tab" title="Open image in separate browser tab">↗️ New Tab</button>
+                    <button class="media-btn-action" id="btn-image-download" aria-label="Save image to device" title="Save image to device">⬇️ Save</button>
                     <button class="explorer-btn-close" id="btn-close-image-modal" title="Close Image Viewer" aria-label="Close Image Viewer">✕</button>
                 </div>
             </header>
@@ -1436,18 +1436,18 @@
             <!-- Image Zoom & Navigation Controls Bar -->
             <div class="media-cinema-bar image-controls-bar" id="image-controls-bar">
                 <div class="media-cinema-left">
-                    <button class="media-ctrl-btn" id="btn-image-prev" title="Previous photo (Left Arrow)">⏮️ Prev</button>
-                    <button class="media-ctrl-btn" id="btn-image-next" title="Next photo (Right Arrow)">⏭️ Next</button>
+                    <button class="media-ctrl-btn" id="btn-image-prev" aria-label="Previous photo" title="Previous photo (Left Arrow)">⏮️ Prev</button>
+                    <button class="media-ctrl-btn" id="btn-image-next" aria-label="Next photo" title="Next photo (Right Arrow)">⏭️ Next</button>
                 </div>
                 <div class="media-cinema-center">
-                    <button class="media-ctrl-btn" id="btn-image-zoom-out" title="Zoom out (−)">🔍−</button>
+                    <button class="media-ctrl-btn" id="btn-image-zoom-out" aria-label="Zoom out photo" title="Zoom out (−)">🔍−</button>
                     <span class="image-zoom-badge" id="image-zoom-badge">100%</span>
-                    <button class="media-ctrl-btn" id="btn-image-zoom-in" title="Zoom in (+)">🔍+</button>
-                    <button class="media-ctrl-btn" id="btn-image-zoom-reset" title="Reset zoom (0)">1:1 Fit</button>
-                    <button class="media-ctrl-btn" id="btn-image-rotate" title="Rotate 90 degrees">↻ 90°</button>
+                    <button class="media-ctrl-btn" id="btn-image-zoom-in" aria-label="Zoom in photo" title="Zoom in (+)">🔍+</button>
+                    <button class="media-ctrl-btn" id="btn-image-zoom-reset" aria-label="Reset photo zoom to 1:1" title="Reset zoom (0)">1:1 Fit</button>
+                    <button class="media-ctrl-btn" id="btn-image-rotate" aria-label="Rotate photo 90 degrees" title="Rotate 90 degrees">↻ 90°</button>
                 </div>
                 <div class="media-cinema-right">
-                    <button class="media-ctrl-btn" id="btn-image-fullscreen" title="Toggle Fullscreen (F)">⛶ Fullscreen</button>
+                    <button class="media-ctrl-btn" id="btn-image-fullscreen" aria-label="Toggle photo fullscreen" title="Toggle Fullscreen (F)">⛶ Fullscreen</button>
                 </div>
             </div>
         </div>

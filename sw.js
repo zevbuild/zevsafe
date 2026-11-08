@@ -8,7 +8,7 @@
 // ================================================================
 
 // Baseline regression assertion preservation: const APP_VERSION    = 'v70';
-const APP_VERSION    = 'v72';
+const APP_VERSION    = 'v73';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -43,6 +43,7 @@ const SHELL_ASSETS = [
     './security-audit/',
     './security-audit/index.html',
     './styles.css',
+    './css/media-player.css',
     './app.js',
     './jszip.min.js',
     './manifest.json',
@@ -69,7 +70,8 @@ const SHELL_ASSETS = [
     './js/usb-backup-kit.js',
     './js/device-benchmark.js',
     './js/qr-engine.js',
-    './js/passphrase-words.js'
+    './js/passphrase-words.js',
+    './js/media-player.js'
 ];
 
 // ── Install: precache the app shell ────────────────────────────
@@ -590,6 +592,11 @@ self.addEventListener('message', event => {
 
             try { port.postMessage({ type: 'MEDIA_STREAM_REGISTERED', streamId }); } catch (_) {}
         }
+    } else if (data.type === 'CLOSE_ALL_MEDIA_STREAMS') {
+        for (const [id, session] of activeMediaStreams.entries()) {
+            try { session.port.close(); } catch (_) {}
+        }
+        activeMediaStreams.clear();
     } else if (data.type === 'CLOSE_MEDIA_STREAM') {
         const streamId = data.streamId || data.id;
         if (streamId && activeMediaStreams.has(streamId)) {

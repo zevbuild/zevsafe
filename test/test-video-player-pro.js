@@ -100,9 +100,10 @@ runTest('1.6: Extended speed options (0.25x to 4.0x) present', () => {
     assert.ok(indexHtml.includes('value="4"'), 'Must have 4.0x speed');
 });
 
-// ── 2. CSS STYLING IN styles.css ──────────────────────────────
-console.log('\n--- 2. CSS Rules & Visual Styling in styles.css ---');
-const stylesCss = fs.readFileSync(path.join(ROOT_DIR, 'styles.css'), 'utf8');
+// ── 2. CSS STYLING IN styles.css & css/media-player.css ──────────────────────────────
+console.log('\n--- 2. CSS Rules & Visual Styling in styles.css & css/media-player.css ---');
+const stylesCss = fs.readFileSync(path.join(ROOT_DIR, 'styles.css'), 'utf8') + '\n' +
+    (fs.existsSync(path.join(ROOT_DIR, 'css/media-player.css')) ? fs.readFileSync(path.join(ROOT_DIR, 'css/media-player.css'), 'utf8') : '');
 
 runTest('2.1: Scrubber timeline track, buffer, progress, thumb, A-B range and markers styled', () => {
     assert.ok(stylesCss.includes('.media-timeline-wrap'), 'Must define .media-timeline-wrap');
@@ -138,9 +139,10 @@ runTest('2.4: Light theme overrides for cinema player defined', () => {
     assert.ok(stylesCss.includes('.light-theme .media-eq-badge'), 'Must define light theme EQ badge');
 });
 
-// ── 3. JAVASCRIPT ENGINE IN app.js ────────────────────────────
-console.log('\n--- 3. JavaScript Engine Logic & Handlers in app.js ---');
-const appJs = fs.readFileSync(path.join(ROOT_DIR, 'app.js'), 'utf8');
+// ── 3. JAVASCRIPT ENGINE IN app.js & js/media-player.js ────────────────────────────
+console.log('\n--- 3. JavaScript Engine Logic & Handlers in app.js & js/media-player.js ---');
+const appJs = fs.readFileSync(path.join(ROOT_DIR, 'app.js'), 'utf8') + '\n' +
+    (fs.existsSync(path.join(ROOT_DIR, 'js/media-player.js')) ? fs.readFileSync(path.join(ROOT_DIR, 'js/media-player.js'), 'utf8') : '');
 
 runTest('3.1: Pro Cinema Player 3.0 state variables initialized', () => {
     assert.ok(appJs.includes('let currentMediaRotation = 0;'), 'Must have currentMediaRotation');

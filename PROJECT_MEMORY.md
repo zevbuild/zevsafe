@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.21.0` (`WEB-VERSION-72`, Service Worker `v72`)  
+> **Web Portal Version:** `v8.22.0` (`WEB-VERSION-73`, Service Worker `v73`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -373,6 +373,44 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Added `./js/passphrase-words.js` to `SHELL_ASSETS` in `sw.js` for complete offline functionality in airplane mode.
   - Bumped Service Worker cache version to `v72` (`APP_VERSION = 'v72'`) and application shell tags to `WEB-VERSION-72` / `v8.21.0`.
 
+### 3.26 Phase 2: Modular Mobile Cinema Player & Gesture Architecture (v8.22.0 / WEB-VERSION-73)
+- **Modular Codebase Extraction & Payload Shrink:**
+  - Extracted cinema media player, image lightbox, studio drawer, forensic tools, and mobile player styles from `styles.css` into [`css/media-player.css`](css/media-player.css) (49.6 KB, 1,678 lines). Reduced `styles.css` from 210 KB to 166 KB (-43 KB on first load).
+  - Extracted video streaming engine, image viewer, frame steppers, WebAudio filters, A-B segment looper, bookmarks, gestures, and hotkeys from `app.js` into [`js/media-player.js`](js/media-player.js) (84.2 KB, 2,173 lines). Reduced `app.js` from 390 KB to 313 KB (-77 KB on first load).
+  - Combined first-paint CSS + JS payload dropped by **120 KB (-20%)**.
+  - Implemented cached promise loaders `window.loadStyle(href)` and `window.ensureMediaPlayerLoaded()` to load both modules only on demand when media or photo preview opens.
+- **Explicit `window.ZevMedia` API Surface:**
+  - Replaced implicit global variables with a structured public API `window.ZevMedia` exposing `playMediaByIndex`, `openMediaPlayerByPath`, `closeMediaPlayer`, `openImageViewerByPath`, `closeImageViewer`, `requestPlayerFullscreen`, `exitPlayerFullscreen`, `cleanupActiveSession`, `stepVideoFrame`, `captureVideoFrameSnapshot`, etc.
+  - Maintained backward-compatible aliases for legacy callers and test harnesses.
+- **Mobile Touch Ergonomics & Phone UI Overhaul:**
+  - Precision Scrubber: High touch target (>= 28px), thin visible track (3.5px), 16px thumb while dragging, and `touch-action: none`.
+  - Buttons & Typography: All interactive controls >= 44x44px touch targets; labels and time display >= 0.85rem (13.6px).
+  - Safe Area Insets: Bound `env(safe-area-inset-top)` on `.media-modal-header` and `env(safe-area-inset-bottom)` on `.media-cinema-bar` for edge-to-edge notch and home-bar clearance.
+  - Viewport Geometry: Replaced brittle viewport height units with `100dvh` (with `100vh` fallback) across mobile modal containers.
+- **Touch Gesture Engine with Double-Tap Accumulation:**
+  - Double-tap left/right third seeks -/+10s; rapid repeated double-taps accumulate into running seek total (`-10s`, `-20s`, `-30s` / `+10s`, `+20s`, `+30s`) displayed in an on-screen HUD badge.
+  - Single tap toggles controls visibility after a ~250ms debounce delay, preventing unwanted control toggling during double-taps.
+  - Zoom Guard: When `currentMediaZoom > 1.05`, double-tap seek is disabled; double-tapping on stage resets zoom back to 1.0x. Multi-touch pinch-to-zoom and 1-finger panning are preserved.
+- **Fullscreen & iOS Pseudo-Fullscreen Fallback:**
+  - Invokes container `requestFullscreen()` with graceful fallback to CSS pseudo-fullscreen (`.media-fullscreen--pseudo`) on iOS Safari.
+  - Safely wraps `screen.orientation.lock('landscape')` and `unlock()` in `try/catch` with `.catch(() => {})`.
+  - Automatically hides Picture-in-Picture (`#btn-media-pip`) when unsupported by browser.
+- **Conditional 2.5 GB Phone Memory Guardrail:**
+  - Enforced strictly on the memory-buffering fallback path (`setupDirectBlobPlayback`), preventing OOM crashes on legacy vaults.
+  - Intentionally bypassed on modern v3 vaults using Service Worker HTTP 206 Range Streaming (`setupRangeStreaming`), enabling 2.5 GB – 5 GB+ video playback with bounded RAM (< 60 MB).
+- **Vault Lock Security & Complete Route Teardown:**
+  - `lockVaultSession()` executes `revokeAllPlayerMediaSessions()`: resets DOM media elements, purges decoded hardware buffers via `load()`, revokes player blob URLs, and posts `CLOSE_ALL_MEDIA_STREAMS` to the Service Worker.
+  - Service Worker immediately closes stream channels and clears `activeMediaStreams`, causing any in-flight or subsequent HTTP range requests to fail with HTTP 404/410. Works safely whether or not `media-player.js` was ever loaded.
+- **Accessibility & WCAG AA Compliance:**
+  - Added explicit `aria-label` attributes to all icon-only player and lightbox buttons in `index.html`.
+- **PWA Service Worker & Cache Synchronization:**
+  - Added `./css/media-player.css` and `./js/media-player.js` to `SHELL_ASSETS` in `sw.js` for 100% offline playback.
+  - Added `/css/*` with `Cache-Control: no-cache` in `_headers`.
+  - Bumped Service Worker cache version to `v73` (`APP_VERSION = 'v73'`) and application shell tags to `WEB-VERSION-73` / `v8.22.0`.
+- **Automated Verification Suites:**
+  - Added `test/test-media-player-security-lifecycle.js` (17 tests) and `test/browser-verification-phase2.js` (Chrome CDP headless verification across portrait 390x844, landscape 844x390, and desktop 1280x800).
+  - All 45/45 video player tests and 22/22 mobile player tests passed with 100%.
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]
@@ -391,10 +429,16 @@ Whenever ANY code or documentation is touched, run all 10 automated test suites 
 # 1. Main Website Header, Navbar & Landing Page Suite (17 tests)
 node test/test-header-navbar-upgrade.js
 
-# 2. Video Player 4.0 On-Demand Streaming & Pro Studio Suite (31 tests)
+# 2. Video Player 4.0 On-Demand Streaming & Pro Studio Suite (45 tests)
 node test/test-video-player-pro.js
 
-# 3. Android Mobile Browser Multi-Tier Encryption & OPFS Regression Suite (33 tests)
+# 3. Mobile Video Player Overhaul Suite (22 tests)
+node test/test-mobile-video-player.js
+
+# 4. Media Player Security Lifecycle & Gesture Suite (17 tests)
+node test/test-media-player-security-lifecycle.js
+
+# 5. Android Mobile Browser Multi-Tier Encryption & OPFS Regression Suite (33 tests)
 node test/test-android-encryption.js
 
 # 4. Milestone 5 Streaming Sink & Round-Trip Extraction Suite (5 tests)

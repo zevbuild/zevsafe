@@ -50,8 +50,10 @@ console.log('  ZevSafe Mobile Video Player Overhaul Automated Test Suite    ');
 console.log('===============================================================');
 
 const indexHtml = fs.readFileSync(path.join(ROOT_DIR, 'index.html'), 'utf8');
-const stylesCss = fs.readFileSync(path.join(ROOT_DIR, 'styles.css'), 'utf8');
-const appJs = fs.readFileSync(path.join(ROOT_DIR, 'app.js'), 'utf8');
+const stylesCss = fs.readFileSync(path.join(ROOT_DIR, 'styles.css'), 'utf8') + '\n' +
+    (fs.existsSync(path.join(ROOT_DIR, 'css/media-player.css')) ? fs.readFileSync(path.join(ROOT_DIR, 'css/media-player.css'), 'utf8') : '');
+const appJs = fs.readFileSync(path.join(ROOT_DIR, 'app.js'), 'utf8') + '\n' +
+    (fs.existsSync(path.join(ROOT_DIR, 'js/media-player.js')) ? fs.readFileSync(path.join(ROOT_DIR, 'js/media-player.js'), 'utf8') : '');
 
 // ── UTILITY: CSS MEDIA QUERY & DECLARATION EXTRACTION ENGINE ─────────
 

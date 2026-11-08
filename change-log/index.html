@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.21.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.22.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -706,14 +706,107 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 8.21.0 (WEB-VERSION-72) ── -->
+            <!-- ── VERSION 8.22.0 (WEB-VERSION-73) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">🎬</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.22.0 (WEB-VERSION-73)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 8, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Modular Cinema Player</span>
+                            <span class="cl-tag">Mobile Touch Ergonomics</span>
+                            <span class="cl-tag">Gesture Engine</span>
+                            <span class="cl-tag">Vault Lock Teardown</span>
+                            <span class="cl-tag">2.5 GB Guardrail</span>
+                            <span class="cl-tag">PWA v73</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Implemented <strong>Phase 2: Modular Mobile Cinema Player &amp; Gesture Architecture</strong>: extracted the entire cinema media player and image lightbox into standalone modular assets (<code>css/media-player.css</code> and <code>js/media-player.js</code>), slashing initial CSS + JS download size by <strong>120 KB (-20%)</strong>. Delivered phone touch ergonomics (two-row controls, &ge;28px scrubber, &ge;44&times;44px touch targets, safe area clearance), a touch gesture engine with double-tap accumulation (-10s, -20s, -30s) and 250ms single-tap delay, an explicit <code>window.ZevMedia</code> API surface, complete vault lock security teardown with Service Worker stream route destruction, iOS CSS pseudo-fullscreen fallback, and WCAG AA accessible button labeling.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-body">
+                                <strong>Modular Codebase Extraction &amp; -120 KB First-Paint Payload:</strong> Moved player and lightbox CSS from <code>styles.css</code> into <code>css/media-player.css</code> (-43 KB) and streaming JavaScript logic from <code>app.js</code> into <code>js/media-player.js</code> (-77 KB). Both load only on demand when media is opened via cached loaders <code>window.loadStyle()</code> and <code>window.ensureMediaPlayerLoaded()</code>.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Explicit <code>window.ZevMedia</code> Public API:</strong> Exposes a clean, structured interface for media playback, image lightbox, forensic tools, zoom/rotation transforms, and session cleanup without reliance on implicit globals.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Phone Touch Ergonomics &amp; Safe Area Insets:</strong> Enforced clean two-row mobile transport layout (scrubber timeline and time on Row 1; control buttons on Row 2), &ge;28px high scrubber touch area with <code>touch-action: none</code>, &ge;44&times;44px buttons, <code>100dvh</code> viewport sizing, and safe-area padding (<code>env(safe-area-inset-top/bottom)</code>).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Touch Gestures with Double-Tap Accumulation:</strong> Double-tap left/right third seeks &plusmn;10s; rapid repeated double-taps accumulate (-10s, -20s, -30s) and display an on-screen HUD badge. Single tap toggles controls after a 250ms delay, and double-tapping while zoomed in resets zoom back to 1.0&times;.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-body">
+                                <strong>Vault Lock Stream Route Teardown &amp; Buffer Scrubbing:</strong> On vault lock, auto-lock, duress and panic, <code>revokeAllPlayerMediaSessions()</code> purges DOM media elements, revokes player blob URLs, and sends <code>CLOSE_ALL_MEDIA_STREAMS</code> to the Service Worker, instantly terminating active HTTP 206 range streams (returning 404/410).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-body">
+                                <strong>Conditional 2.5 GB Phone Memory Guardrail:</strong> Prevents mobile browser crashes by enforcing a 2.5 GB memory limit strictly on memory-buffering fallbacks (<code>setupDirectBlobPlayback</code>), while allowing modern v3 HTTP 206 Range Streaming (<code>setupRangeStreaming</code>) to stream multi-gigabyte videos with &lt;60 MB RAM.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>iOS Pseudo-Fullscreen &amp; Orientation Safety:</strong> Implemented CSS pseudo-fullscreen fallback (<code>.media-fullscreen--pseudo</code>) for iOS Safari, wrapped <code>screen.orientation.lock('landscape')</code> in <code>try/catch</code>, and auto-hidden Picture-in-Picture when unsupported.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>WCAG AA Button Accessibility:</strong> Added explicit <code>aria-label</code> attributes to all icon-only player and lightbox buttons in <code>index.html</code>.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-body">
+                                <strong>Service Worker Cache v73 &amp; Offline Pre-Caching:</strong> Pre-caches <code>css/media-player.css</code> and <code>js/media-player.js</code> in <code>SHELL_ASSETS</code> for 100% offline playback; added <code>Cache-Control: no-cache</code> for <code>/css/*</code> in <code>_headers</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+
+
+            <!-- ── VERSION 8.21.0 (WEB-VERSION-72) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">⚡</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.21.0 (WEB-VERSION-72)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            
                             <span class="cl-badge cl-badge--date">November 7, 2026</span>
                         </div>
                         <div class="cl-tags">

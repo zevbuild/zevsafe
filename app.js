@@ -35,6 +35,86 @@ if (typeof window !== 'undefined') {
 }
 
 // ============================================
+// DYNAMIC STYLESHEET & MEDIA MODULE LOADER (Phase 2: Modular Cinema Player)
+// ============================================
+const _loadedStylePromises = new Map();
+
+function loadStyle(href) {
+    if (_loadedStylePromises.has(href)) {
+        return _loadedStylePromises.get(href);
+    }
+    const promise = new Promise((resolve, reject) => {
+        if (typeof document === 'undefined') {
+            resolve();
+            return;
+        }
+        const existing = document.querySelector(`link[href="${href}"]`);
+        if (existing) {
+            resolve();
+            return;
+        }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.onload = () => resolve();
+        link.onerror = (err) => {
+            _loadedStylePromises.delete(href);
+            reject(new Error(`Failed to load stylesheet: ${href}`));
+        };
+        document.head.appendChild(link);
+    });
+    _loadedStylePromises.set(href, promise);
+    return promise;
+}
+if (typeof window !== 'undefined') {
+    window.loadStyle = loadStyle;
+}
+
+let _mediaPlayerLoadingPromise = null;
+function ensureMediaPlayerLoaded() {
+    if (typeof window !== 'undefined' && window.ZevMedia && window.ZevMedia.isLoaded()) {
+        return Promise.resolve();
+    }
+    if (_mediaPlayerLoadingPromise) {
+        return _mediaPlayerLoadingPromise;
+    }
+    // Sync shared vault and playlist references to window before loading
+    if (typeof window !== 'undefined') {
+        window.currentMediaPlaylist = currentMediaPlaylist;
+        window.currentImagePlaylist = currentImagePlaylist;
+        window.currentV3Vault = currentV3Vault;
+        window.currentDecryptedFileList = currentDecryptedFileList;
+        window.currentDecryptedZip = currentDecryptedZip;
+        window.currentDecryptedBlob = currentDecryptedBlob;
+        window.getDecryptedFileBlob = getDecryptedFileBlob;
+        window.revokeTrackedBlobUrl = revokeTrackedBlobUrl;
+        window.triggerDownload = triggerDownload;
+        window.showToast = showToast;
+        window.getMediaCategory = getMediaCategory;
+        window.formatBytes = formatBytes;
+    }
+    _mediaPlayerLoadingPromise = Promise.all([
+        loadStyle('css/media-player.css'),
+        loadScript('js/media-player.js')
+    ]).then(() => {
+        if (typeof window !== 'undefined') {
+            window.__zevsafeMediaPlayerLoaded = true;
+            if (typeof window.initMediaPlayerUI === 'function') {
+                window.initMediaPlayerUI();
+            }
+        }
+    }).catch(err => {
+        _mediaPlayerLoadingPromise = null;
+        console.error('Failed to load media player modules:', err);
+        throw err;
+    });
+    return _mediaPlayerLoadingPromise;
+}
+if (typeof window !== 'undefined') {
+    window.ensureMediaPlayerLoaded = ensureMediaPlayerLoaded;
+}
+
+// ============================================
 // DOM ELEMENTS
 // ============================================
 const encryptDropZone     = document.getElementById('encrypt-drop-zone');
@@ -4378,7 +4458,68 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
  * zip instances, and all temporary object URLs from memory across both v3 streaming
  * and v1/v2 legacy JSZip vaults.
  */
+
+/**
+ * Directive 2: Revoke all player media sessions, stream routes, and buffers on vault lock.
+ * Operates safely whether or not js/media-player.js is loaded.
+ */
+function revokeAllPlayerMediaSessions() {
+    // 1. Pause and reset active media elements in DOM
+    const videoEl = document.getElementById('cinema-video');
+    const audioEl = document.getElementById('cinema-audio');
+    if (videoEl) {
+        try { videoEl.pause(); } catch (_) {}
+        videoEl.removeAttribute('src');
+        try { videoEl.load(); } catch (_) {}
+        videoEl.style.display = 'none';
+    }
+    if (audioEl) {
+        try { audioEl.pause(); } catch (_) {}
+        audioEl.removeAttribute('src');
+        try { audioEl.load(); } catch (_) {}
+        audioEl.style.display = 'none';
+    }
+    const imgEl = document.getElementById('lightbox-image');
+    if (imgEl) {
+        imgEl.src = '';
+        imgEl.style.display = 'none';
+    }
+
+    // 2. Revoke any tracked player blob URLs
+    if (typeof currentMediaBlobUrl === 'string' && currentMediaBlobUrl) {
+        revokeTrackedBlobUrl(currentMediaBlobUrl);
+        currentMediaBlobUrl = null;
+    }
+    if (typeof currentImageBlobUrl === 'string' && currentImageBlobUrl) {
+        revokeTrackedBlobUrl(currentImageBlobUrl);
+        currentImageBlobUrl = null;
+    }
+
+    // 3. Post to Service Worker to kill all active streaming sessions immediately
+    try {
+        if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'CLOSE_ALL_MEDIA_STREAMS' });
+        }
+    } catch (_) {}
+
+    // 4. Delegate to window.ZevMedia explicit API if loaded
+    if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.cleanupActiveSession === 'function') {
+        try { window.ZevMedia.cleanupActiveSession(); } catch (_) {}
+    }
+
+    // 5. Hide media & image modals
+    const mediaModal = document.getElementById('vault-media-modal');
+    if (mediaModal) mediaModal.style.display = 'none';
+    const imageModal = document.getElementById('vault-image-modal');
+    if (imageModal) imageModal.style.display = 'none';
+}
+if (typeof window !== 'undefined') {
+    window.revokeAllPlayerMediaSessions = revokeAllPlayerMediaSessions;
+}
+
 function lockVaultSession() {
+    // Revoke all player sessions & stream routes immediately on lock
+    revokeAllPlayerMediaSessions();
     stopExplorerIdleWatcher();
     closeAudioDock();
 
@@ -4444,1095 +4585,54 @@ function closeVaultExplorer() {
     lockVaultSession();
 }
 
-/**
- * Play a media track from the vault playlist by index.
- * Uses on-demand HTTP 206 range streaming via Service Worker for v3 vaults (instant playback & < 60 MB RAM).
- */
+// ============================================
+// IN-BROWSER CINEMA MEDIA PLAYER & IMAGE LIGHTBOX (LAZY-LOADED)
+// Implementation extracted to js/media-player.js and css/media-player.css
+// ============================================
+
 async function playMediaByIndex(index) {
-    if (!currentMediaPlaylist || index < 0 || index >= currentMediaPlaylist.length) return;
-    currentMediaIndex = index;
-    const item = currentMediaPlaylist[index];
-
-    // Resolve full catalog entry if available to ensure exact byte offset binding
-    const catalogEntry = (currentV3Vault && currentV3Vault.catalog && Array.isArray(currentV3Vault.catalog.files))
-        ? currentV3Vault.catalog.files.find(f => f.path === item.path || f.name === item.name)
-        : null;
-    const targetEntry = {
-        ...(catalogEntry || {}),
-        ...(item.entry || {}),
-        ...item
-    };
-    if (catalogEntry) {
-        if (item.offset === undefined) item.offset = catalogEntry.offset;
-        if (item.localHeaderOffset === undefined) item.localHeaderOffset = catalogEntry.localHeaderOffset;
-        if (item.chunkStart === undefined) item.chunkStart = catalogEntry.chunkStart;
-        if (item.chunkEnd === undefined) item.chunkEnd = catalogEntry.chunkEnd;
-        if (item.compressed === undefined) item.compressed = catalogEntry.compressed;
-    }
-
-    const modal = document.getElementById('vault-media-modal');
-    const badge = document.getElementById('media-modal-badge');
-    const title = document.getElementById('media-modal-title');
-    const counter = document.getElementById('media-modal-counter');
-    const prevBtn = document.getElementById('btn-media-prev');
-    const nextBtn = document.getElementById('btn-media-next');
-    const videoEl = document.getElementById('cinema-video');
-    const audioEl = document.getElementById('cinema-audio');
-    const loader = document.getElementById('media-loading-indicator');
-    const loaderText = document.getElementById('media-loading-text');
-
-    if (!modal || (!currentDecryptedZip && !currentV3Vault)) return;
-
-    // Reset video & audio elements to wipe any buffered media chunks from prior tracks
-    if (videoEl) {
-        try {
-            videoEl.pause();
-            videoEl.removeAttribute('src');
-            videoEl.load();
-        } catch (_) {}
-    }
-    if (audioEl) {
-        try {
-            audioEl.pause();
-            audioEl.removeAttribute('src');
-            audioEl.load();
-        } catch (_) {}
-    }
-
-    // Clean up previous blob URL
-    if (currentMediaBlobUrl && currentMediaBlobUrl.startsWith('blob:')) {
-        revokeTrackedBlobUrl(currentMediaBlobUrl);
-        currentMediaBlobUrl = null;
-    }
-
-    // Clean up previous active on-demand media stream
-    if (activeMediaStreamId) {
-        if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) {
-            try {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'CLOSE_MEDIA_STREAM',
-                    streamId: activeMediaStreamId
-                });
-            } catch (_) {}
-        }
-        if (activeMediaChannel) {
-            try { activeMediaChannel.port1.close(); } catch (_) {}
-            activeMediaChannel = null;
-        }
-        activeMediaStreamId = null;
-    }
-    if (activeMediaChunkCache) {
-        if (typeof activeMediaChunkCache.clear === 'function') {
-            activeMediaChunkCache.clear();
-        }
-        activeMediaChunkCache = null;
-    }
-
-    if (badge) badge.textContent = item.category === 'video' ? '🎬 Video' : '🎵 Audio';
-    const dockBtn = document.getElementById('btn-media-dock');
-    if (dockBtn) dockBtn.style.display = item.category === 'audio' ? 'inline-flex' : 'none';
-    if (title) title.textContent = item.name;
-    if (counter) counter.textContent = `${index + 1} of ${currentMediaPlaylist.length}`;
-    const specsBadge = document.getElementById('media-forensic-specs');
-    if (specsBadge) {
-        specsBadge.style.display = 'none';
-        specsBadge.textContent = '';
-    }
-    if (prevBtn) prevBtn.disabled = index <= 0;
-    if (nextBtn) nextBtn.disabled = index >= currentMediaPlaylist.length - 1;
-
-    // Check if this file can use On-Demand Range Streaming (Instant Playback & Bounded RAM)
-    const canStreamRange = (
-        (item.category === 'video' || item.category === 'audio') &&
-        currentV3Vault &&
-        currentV3Vault.file &&
-        currentV3Vault.masterKey &&
-        !targetEntry.compressed &&
-        typeof navigator !== 'undefined' &&
-        navigator.serviceWorker &&
-        navigator.serviceWorker.controller
-    );
-
-    if (videoEl) videoEl.style.display = 'none';
-    if (audioEl) audioEl.style.display = 'none';
-    modal.style.display = 'flex';
-
-    const speedSelect = document.getElementById('media-speed-select');
-    const rate = parseFloat(speedSelect?.value || '1');
-
-    const toolsBar = document.getElementById('media-tools-bar');
-    const snapBtn = document.getElementById('btn-media-snapshot');
-    const fitBtn = document.getElementById('btn-media-fit');
-    const pipBtn = document.getElementById('btn-media-pip');
-    const stepBackBtn = document.getElementById('btn-media-step-back');
-    const stepFwdBtn = document.getElementById('btn-media-step-fwd');
-    const btnToggleTools = document.getElementById('btn-toggle-tools');
-    if (btnToggleTools) {
-        btnToggleTools.style.display = item.category === 'video' ? 'inline-flex' : 'none';
-        btnToggleTools.classList.remove('is-active');
-        btnToggleTools.innerHTML = '🎛️ Studio ▾';
-    }
-    if (toolsBar) {
-        toolsBar.classList.remove('is-open');
-        if (window.innerWidth <= 768) {
-            toolsBar.classList.add('is-collapsed');
-        }
-    }
-
-    if (canStreamRange) {
-        // --- ON-DEMAND STREAMING PATH (< 30ms startup, < 60 MB RAM) ---
-        if (loader) loader.style.display = 'none'; // Instant! No 2-minute loading delay!
-
-        const streamId = 'stream_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-        activeMediaStreamId = streamId;
-        activeMediaChannel = new MessageChannel();
-        activeMediaChunkCache = (typeof StreamUnpacker !== 'undefined' && StreamUnpacker.createBoundedChunkCache)
-            ? StreamUnpacker.createBoundedChunkCache(6)
-            : new Map();
-
-        const streamUrl = `/_stream_media?id=${encodeURIComponent(streamId)}&filename=${encodeURIComponent(item.name)}`;
-        currentMediaBlobUrl = streamUrl;
-        currentMediaBlob = null; // Downloaded on-demand if requested
-        currentMediaFilename = item.name;
-
-        // Register stream channel with Service Worker
-        navigator.serviceWorker.controller.postMessage({
-            type: 'REGISTER_MEDIA_STREAM',
-            streamId: streamId,
-            fileSize: item.size,
-            mimeType: item.mimeType || (item.category === 'video' ? 'video/mp4' : 'audio/mp3'),
-            filename: item.name
-        }, [activeMediaChannel.port2]);
-
-        // Handle on-demand byte range requests from the browser via Service Worker
-        activeMediaChannel.port1.onmessage = async (event) => {
-            const msg = event.data;
-            if (!msg || msg.type !== 'READ_MEDIA_RANGE') return;
-
-            const { requestId, start, end } = msg;
-            try {
-                const rangeBytes = await StreamUnpacker.extractFileRange(
-                    currentV3Vault.file,
-                    currentV3Vault.masterKey,
-                    targetEntry,
-                    start,
-                    end,
-                    {
-                        manifest: currentV3Vault.catalog,
-                        header: currentV3Vault.catalog?.header,
-                        chunkCache: activeMediaChunkCache
-                    }
-                );
-
-                activeMediaChannel.port1.postMessage({
-                    type: 'MEDIA_RANGE_DATA',
-                    requestId,
-                    data: rangeBytes
-                }, [rangeBytes.buffer]);
-            } catch (err) {
-                console.error('[Media Range Stream Error]', err);
-                activeMediaChannel.port1.postMessage({
-                    type: 'MEDIA_RANGE_ERROR',
-                    requestId,
-                    error: err.message
-                });
-            }
-        };
-
-        if (item.category === 'video' && videoEl) {
-            if (audioEl) { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); audioEl.style.display = 'none'; }
-            videoEl.style.display = 'block';
-            videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
-            videoEl.src = streamUrl;
-            videoEl.playbackRate = rate;
-            resetVideoTransforms();
-            if (toolsBar) toolsBar.style.display = 'flex';
-            if (snapBtn) snapBtn.style.display = 'inline-flex';
-            if (fitBtn) fitBtn.style.display = 'inline-flex';
-            if (pipBtn) pipBtn.style.display = 'inline-flex';
-            if (stepBackBtn) stepBackBtn.style.display = 'inline-flex';
-            if (stepFwdBtn) stepFwdBtn.style.display = 'inline-flex';
-            videoEl.load();
-            videoEl.play().catch(() => {});
-        } else if (audioEl) {
-            if (videoEl) { videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load(); videoEl.style.display = 'none'; }
-            audioEl.style.display = 'block';
-            audioEl.className = 'media-player-element';
-            audioEl.src = streamUrl;
-            audioEl.playbackRate = rate;
-            if (toolsBar) toolsBar.style.display = 'none';
-            if (snapBtn) snapBtn.style.display = 'none';
-            if (fitBtn) fitBtn.style.display = 'none';
-            if (pipBtn) pipBtn.style.display = 'none';
-            if (stepBackBtn) stepBackBtn.style.display = 'none';
-            if (stepFwdBtn) stepFwdBtn.style.display = 'none';
-            audioEl.load();
-            audioEl.play().catch(() => {});
-        }
-    } else {
-        // --- FALLBACK PATH (Small files, legacy v1/v2 vaults, or environments without SW) ---
-        if (loader) {
-            loader.style.display = 'flex';
-            if (loaderText) loaderText.textContent = `Extracting ${item.name} (${formatBytes(item.size)})…`;
-        }
-
-        try {
-            const rawBlob = await getDecryptedFileBlob(item.path);
-            currentMediaBlob = new Blob([rawBlob], { type: item.mimeType });
-            currentMediaFilename = item.name;
-            currentMediaBlobUrl = createTrackedBlobUrl(currentMediaBlob);
-
-            if (loader) loader.style.display = 'none';
-
-            if (item.category === 'video' && videoEl) {
-                if (audioEl) { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); audioEl.style.display = 'none'; }
-                videoEl.style.display = 'block';
-                videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
-                videoEl.src = currentMediaBlobUrl;
-                videoEl.playbackRate = rate;
-                resetVideoTransforms();
-                if (toolsBar) toolsBar.style.display = 'flex';
-                if (snapBtn) snapBtn.style.display = 'inline-flex';
-                if (fitBtn) fitBtn.style.display = 'inline-flex';
-                if (pipBtn) pipBtn.style.display = 'inline-flex';
-                if (stepBackBtn) stepBackBtn.style.display = 'inline-flex';
-                if (stepFwdBtn) stepFwdBtn.style.display = 'inline-flex';
-                videoEl.load();
-                videoEl.play().catch(() => {});
-            } else if (audioEl) {
-                if (videoEl) { videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load(); videoEl.style.display = 'none'; }
-                audioEl.style.display = 'block';
-                audioEl.className = 'media-player-element';
-                audioEl.src = currentMediaBlobUrl;
-                audioEl.playbackRate = rate;
-                if (toolsBar) toolsBar.style.display = 'none';
-                if (snapBtn) snapBtn.style.display = 'none';
-                if (fitBtn) fitBtn.style.display = 'none';
-                if (pipBtn) pipBtn.style.display = 'none';
-                if (stepBackBtn) stepBackBtn.style.display = 'none';
-                if (stepFwdBtn) stepFwdBtn.style.display = 'none';
-                audioEl.load();
-                audioEl.play().catch(() => {});
-            }
-        } catch (err) {
-            if (loader) loader.style.display = 'none';
-            console.error('[Media Play Error]', err);
-            showToast(`Failed to load media: ${err.message}`, 'error');
-        }
+    await ensureMediaPlayerLoaded();
+    if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.playMediaByIndex === 'function') {
+        return window.ZevMedia.playMediaByIndex(index);
+    } else if (typeof window !== 'undefined' && typeof window.playMediaByIndex === 'function') {
+        return window.playMediaByIndex(index);
     }
 }
 
-function openMediaPlayerByPath(filePath) {
-    if (!currentMediaPlaylist || currentMediaPlaylist.length === 0) {
-        currentMediaPlaylist = [];
-        for (const fileItem of currentDecryptedFileList) {
-            const mediaCat = getMediaCategory(fileItem.name);
-            if (mediaCat) {
-                const catalogEntry = fileItem.entry || (currentV3Vault && currentV3Vault.catalog && Array.isArray(currentV3Vault.catalog.files)
-                    ? currentV3Vault.catalog.files.find(f => f.path === fileItem.path || f.name === fileItem.name)
-                    : null);
-                currentMediaPlaylist.push({
-                    ...(catalogEntry || {}),
-                    path: fileItem.path,
-                    name: fileItem.name,
-                    category: mediaCat,
-                    mimeType: getMediaMimeType(fileItem.name),
-                    size: fileItem.size,
-                    entry: catalogEntry || fileItem.entry
-                });
-            }
-        }
+async function openMediaPlayerByPath(filePath) {
+    await ensureMediaPlayerLoaded();
+    if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.openMediaPlayerByPath === 'function') {
+        return window.ZevMedia.openMediaPlayerByPath(filePath);
+    } else if (typeof window !== 'undefined' && typeof window.openMediaPlayerByPath === 'function') {
+        return window.openMediaPlayerByPath(filePath);
     }
-    const idx = currentMediaPlaylist.findIndex(item => item.path === filePath);
-    if (idx !== -1) {
-        playMediaByIndex(idx);
-    }
-}
-
-// ── Video Player 5.0 Pro Studio Cyber Cinema Helpers ──
-function toggleTheaterMode() {
-    const container = document.querySelector('.media-modal-container');
-    const theaterBtn = document.getElementById('btn-media-theater');
-    if (!container) return;
-    isTheaterMode = !isTheaterMode;
-    container.classList.toggle('media-modal-container--theater', isTheaterMode);
-    if (theaterBtn) {
-        theaterBtn.textContent = isTheaterMode ? '🗗 Standard' : '🔲 Theater';
-        theaterBtn.classList.toggle('is-active', isTheaterMode);
-    }
-    showToast(isTheaterMode ? '🔲 Theater Mode: Expansive Studio View' : '🗗 Standard View', 'info');
-}
-
-function toggleHotkeysModal() {
-    const modal = document.getElementById('media-hotkeys-modal');
-    if (!modal) return;
-    const isVisible = modal.style.display !== 'none';
-    modal.style.display = isVisible ? 'none' : 'flex';
-}
-
-// ============================================
-// CINEMA INACTIVITY AUTO-HIDE OVERLAY ENGINE (Player 5.1 YouTube / Netflix Style)
-// ============================================
-let cinemaInactivityTimeout = null;
-
-function resetCinemaInactivityTimer() {
-    const modal = document.getElementById('vault-media-modal');
-    if (!modal) return;
-    modal.classList.remove('cinema-ui--hidden');
-
-    if (cinemaInactivityTimeout) {
-        clearTimeout(cinemaInactivityTimeout);
-        cinemaInactivityTimeout = null;
-    }
-
-    // Suspend auto-hide if Forensic Studio Drawer is open on mobile
-    const toolsBar = document.getElementById('media-tools-bar');
-    if (toolsBar && toolsBar.classList.contains('is-open')) {
-        return;
-    }
-
-    const media = getActiveCinemaMedia();
-    // Only auto-hide if media is currently playing and is a video
-    if (media && !media.paused && media.tagName === 'VIDEO') {
-        cinemaInactivityTimeout = setTimeout(() => {
-            const bar = document.getElementById('media-tools-bar');
-            const hotkeysModal = document.getElementById('media-hotkeys-modal');
-            const isDrawerOpen = bar && bar.classList.contains('is-open');
-            const isToolsOpen = bar && (!bar.classList.contains('is-collapsed') || isDrawerOpen);
-            const isHotkeysOpen = hotkeysModal && hotkeysModal.style.display !== 'none';
-            if (isDrawerOpen || isToolsOpen || isHotkeysOpen) return;
-
-            if (media && !media.paused) {
-                modal.classList.add('cinema-ui--hidden');
-            }
-        }, 2500);
-    }
-}
-
-function clearCinemaInactivityTimer() {
-    if (cinemaInactivityTimeout) {
-        clearTimeout(cinemaInactivityTimeout);
-        cinemaInactivityTimeout = null;
-    }
-    const modal = document.getElementById('vault-media-modal');
-    if (modal) modal.classList.remove('cinema-ui--hidden');
-}
-
-function updateVideoForensicSpecs(video, isStream) {
-    const specsEl = document.getElementById('media-forensic-specs');
-    if (!specsEl || !video) return;
-    const w = video.videoWidth || 0;
-    const h = video.videoHeight || 0;
-    let tier = '';
-    if (h >= 2160 || w >= 3840) tier = '4K UHD';
-    else if (h >= 1440 || w >= 2560) tier = '2K QHD';
-    else if (h >= 1080 || w >= 1920) tier = '1080p FHD';
-    else if (h >= 720 || w >= 1280) tier = '720p HD';
-    else if (h >= 480) tier = '480p SD';
-    else if (w > 0 && h > 0) tier = `${w}×${h}`;
-    else tier = 'Video';
-
-    const streamMode = isStream ? '⚡ Range Stream' : '💾 Buffer';
-    const dimText = (w > 0 && h > 0) ? `${tier} (${w}×${h})` : tier;
-    specsEl.textContent = `${dimText} · ${streamMode}`;
-    specsEl.title = `Resolution: ${w}×${h} • Pipeline: ${streamMode} • Memory: Bounded`;
-    specsEl.style.display = 'inline-flex';
-}
-
-// ── Video Player 3.0 Pro Studio Helpers ──
-function applyVideoTransforms() {
-    const video = document.getElementById('cinema-video');
-    if (!video) return;
-    video.style.transform = `translate(${currentMediaPanX}px, ${currentMediaPanY}px) scale(${currentMediaZoom}) rotate(${currentMediaRotation}deg) scale(${currentMediaFlipH}, ${currentMediaFlipV})`;
-    let filterStr = '';
-    if (currentMediaFilters.bright) filterStr += 'brightness(1.35) ';
-    if (currentMediaFilters.contrast) filterStr += 'contrast(1.5) ';
-    if (currentMediaFilters.invert) filterStr += 'invert(1) ';
-    if (currentMediaFilters.cctv) filterStr += 'grayscale(1) contrast(1.2) ';
-    video.style.filter = filterStr.trim();
-
-    const stage = document.getElementById('cinema-video-stage');
-    if (stage) {
-        stage.classList.toggle('is-zoomed', currentMediaZoom > 1.0);
-        stage.classList.toggle('is-panning', isMediaPanning);
-    }
-}
-
-// ── Zoom & Pan (Forensic Loupe) ──
-let zoomBadgeTimeout = null;
-function showCinemaZoomBadge() {
-    const badge = document.getElementById('cinema-zoom-badge');
-    if (!badge) return;
-    badge.textContent = `🔍 ${Math.round(currentMediaZoom * 100)}%`;
-    badge.style.display = 'block';
-    badge.style.opacity = '1';
-    if (zoomBadgeTimeout) clearTimeout(zoomBadgeTimeout);
-    if (currentMediaZoom === 1.0) {
-        zoomBadgeTimeout = setTimeout(() => {
-            badge.style.opacity = '0';
-            setTimeout(() => { if (currentMediaZoom === 1.0) badge.style.display = 'none'; }, 200);
-        }, 1200);
-    }
-}
-
-function setVideoZoom(zoom) {
-    currentMediaZoom = Math.max(1.0, Math.min(5.0, +zoom.toFixed(2)));
-    if (currentMediaZoom === 1.0) {
-        currentMediaPanX = 0;
-        currentMediaPanY = 0;
-    }
-    applyVideoTransforms();
-    showCinemaZoomBadge();
-}
-
-function nudgeVideoZoom(delta) {
-    setVideoZoom(currentMediaZoom + delta);
-}
-
-function resetVideoZoom() {
-    currentMediaZoom = 1.0;
-    currentMediaPanX = 0;
-    currentMediaPanY = 0;
-    applyVideoTransforms();
-    showCinemaZoomBadge();
-}
-
-// ── A-B Segment Looper ──
-function setMediaLoopPointA() {
-    const media = getActiveCinemaMedia();
-    if (!media || !media.duration) return;
-    mediaLoopPointA = media.currentTime;
-    if (mediaLoopPointB !== null && mediaLoopPointB <= mediaLoopPointA) {
-        mediaLoopPointB = null;
-    }
-    updateABLoopUI(media);
-    showToast(`[ A-B Loop: Point A set at ${formatTime(mediaLoopPointA)}`, 'info');
-}
-
-function setMediaLoopPointB() {
-    const media = getActiveCinemaMedia();
-    if (!media || !media.duration) return;
-    if (mediaLoopPointA === null) {
-        mediaLoopPointA = 0;
-    }
-    mediaLoopPointB = Math.max(mediaLoopPointA + 0.3, media.currentTime);
-    updateABLoopUI(media);
-    showToast(`] A-B Loop: Point B set at ${formatTime(mediaLoopPointB)} (Active)`, 'info');
-}
-
-function clearMediaABLoop() {
-    mediaLoopPointA = null;
-    mediaLoopPointB = null;
-    updateABLoopUI();
-    showToast('✕ A-B Loop cleared', 'info');
-}
-
-function updateABLoopUI(media) {
-    const markerA = document.getElementById('media-timeline-marker-a');
-    const markerB = document.getElementById('media-timeline-marker-b');
-    const rangeEl = document.getElementById('media-timeline-ab-range');
-    const m = media || getActiveCinemaMedia();
-    if (!m || !m.duration) return;
-
-    if (mediaLoopPointA !== null) {
-        const pctA = (mediaLoopPointA / m.duration) * 100;
-        if (markerA) {
-            markerA.style.display = 'block';
-            markerA.style.left = `${pctA}%`;
-            markerA.title = `Loop Point A: ${formatTime(mediaLoopPointA)}`;
-        }
-    } else if (markerA) {
-        markerA.style.display = 'none';
-    }
-
-    if (mediaLoopPointB !== null) {
-        const pctB = (mediaLoopPointB / m.duration) * 100;
-        if (markerB) {
-            markerB.style.display = 'block';
-            markerB.style.left = `${pctB}%`;
-            markerB.title = `Loop Point B: ${formatTime(mediaLoopPointB)}`;
-        }
-    } else if (markerB) {
-        markerB.style.display = 'none';
-    }
-
-    if (mediaLoopPointA !== null && mediaLoopPointB !== null && rangeEl) {
-        const pctA = (mediaLoopPointA / m.duration) * 100;
-        const pctB = (mediaLoopPointB / m.duration) * 100;
-        rangeEl.style.display = 'block';
-        rangeEl.style.left = `${Math.min(pctA, pctB)}%`;
-        rangeEl.style.width = `${Math.abs(pctB - pctA)}%`;
-    } else if (rangeEl) {
-        rangeEl.style.display = 'none';
-    }
-}
-
-// ── Timestamp Bookmarks ──
-function addMediaBookmark() {
-    const media = getActiveCinemaMedia();
-    if (!media || !media.duration) return;
-    const t = media.currentTime;
-    if (currentMediaBookmarks.some(b => Math.abs(b.time - t) < 0.5)) {
-        showToast('📌 Marker already exists at this timestamp', 'info');
-        return;
-    }
-    currentMediaBookmarks.push({ time: t, label: formatTime(t) });
-    currentMediaBookmarks.sort((a, b) => a.time - b.time);
-    renderMediaBookmarks();
-    showToast(`📌 Bookmark added at ${formatTime(t)}`, 'success');
-}
-
-function renderMediaBookmarks() {
-    const wrap = document.getElementById('media-timeline-bookmarks-wrap');
-    const media = getActiveCinemaMedia();
-    if (!wrap || !media || !media.duration) {
-        if (wrap) wrap.innerHTML = '';
-        return;
-    }
-    wrap.innerHTML = '';
-    currentMediaBookmarks.forEach((bm) => {
-        const pct = (bm.time / media.duration) * 100;
-        const pin = document.createElement('div');
-        pin.className = 'media-timeline-bookmark-pin';
-        pin.style.left = `${pct}%`;
-        pin.title = `Bookmark: ${bm.label} (Click to jump)`;
-        pin.addEventListener('click', (e) => {
-            e.stopPropagation();
-            media.currentTime = bm.time;
-            updateTimelineScrubber(media);
-            showToast(`Jumped to bookmark: ${bm.label}`, 'info');
-        });
-        wrap.appendChild(pin);
-    });
-}
-
-// ── Ambient Cinema Glow (Ambilight) ──
-function toggleAmbientGlow() {
-    currentMediaAmbientGlow = !currentMediaAmbientGlow;
-    const btn = document.getElementById('btn-media-ambient');
-    const canvas = document.getElementById('cinema-ambient-canvas');
-    if (btn) {
-        btn.textContent = currentMediaAmbientGlow ? '✨ Ambient: On' : '✨ Ambient: Off';
-        btn.style.background = currentMediaAmbientGlow ? 'rgba(56, 189, 248, 0.25)' : '';
-        btn.style.color = currentMediaAmbientGlow ? '#38bdf8' : '';
-    }
-    if (canvas) {
-        canvas.classList.toggle('active', currentMediaAmbientGlow);
-    }
-    if (currentMediaAmbientGlow) {
-        updateAmbientGlow();
-        showToast('✨ Ambient backlight glow enabled', 'info');
-    } else {
-        if (ambientAnimFrameId) {
-            cancelAnimationFrame(ambientAnimFrameId);
-            ambientAnimFrameId = null;
-        }
-        showToast('✨ Ambient glow disabled', 'info');
-    }
-}
-
-function updateAmbientGlow() {
-    if (!currentMediaAmbientGlow) return;
-    const video = document.getElementById('cinema-video');
-    const canvas = document.getElementById('cinema-ambient-canvas');
-    if (!video || !canvas || video.paused || video.ended || video.videoWidth === 0) {
-        if (ambientAnimFrameId) cancelAnimationFrame(ambientAnimFrameId);
-        ambientAnimFrameId = null;
-        return;
-    }
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-        if (canvas.width !== 64 || canvas.height !== 36) {
-            canvas.width = 64;
-            canvas.height = 36;
-        }
-        try {
-            ctx.drawImage(video, 0, 0, 64, 36);
-        } catch (_) {}
-    }
-    ambientAnimFrameId = requestAnimationFrame(updateAmbientGlow);
-}
-
-function rotateVideo(deg) {
-    currentMediaRotation = (currentMediaRotation + deg + 360) % 360;
-    applyVideoTransforms();
-    showToast(`↻ Video rotated: ${currentMediaRotation}°`, 'info');
-}
-
-function flipVideo(axis) {
-    if (axis === 'h') currentMediaFlipH *= -1;
-    if (axis === 'v') currentMediaFlipV *= -1;
-    applyVideoTransforms();
-    showToast(`⇄ Flip ${axis.toUpperCase()}: ${ (axis === 'h' ? currentMediaFlipH : currentMediaFlipV) === -1 ? 'ON' : 'OFF' }`, 'info');
-}
-
-function toggleVideoFilter(name) {
-    if (currentMediaFilters.hasOwnProperty(name)) {
-        currentMediaFilters[name] = !currentMediaFilters[name];
-        const btn = document.getElementById(`btn-filter-${name}`);
-        if (btn) btn.classList.toggle('is-active', currentMediaFilters[name]);
-        applyVideoTransforms();
-        showToast(`🎨 Filter: ${name.toUpperCase()} ${currentMediaFilters[name] ? 'Enabled' : 'Disabled'}`, 'info');
-    }
-}
-
-function resetVideoTransforms() {
-    currentMediaRotation = 0;
-    currentMediaFlipH = 1;
-    currentMediaFlipV = 1;
-    currentMediaFilters = { bright: false, contrast: false, invert: false, cctv: false };
-    ['bright', 'contrast', 'invert', 'cctv'].forEach(f => {
-        const btn = document.getElementById(`btn-filter-${f}`);
-        if (btn) btn.classList.remove('is-active');
-    });
-    resetVideoZoom();
-    applyVideoTransforms();
-}
-
-function stepVideoFrame(frames) {
-    const video = document.getElementById('cinema-video');
-    if (!video || !video.duration) return;
-    video.pause();
-    updatePlayBtnUI(false);
-    const frameDelta = (1 / 30) * frames;
-    video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + frameDelta));
-    updateTimelineScrubber(video);
-    showToast(frames > 0 ? '⯮ Step forward 1 frame' : '⯬ Step back 1 frame', 'info');
-}
-
-function captureVideoFrameSnapshot() {
-    const video = document.getElementById('cinema-video');
-    if (!video || !video.videoWidth || !video.videoHeight) {
-        showToast('⚠️ No active video frame to capture.', 'warn');
-        return;
-    }
-    try {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) throw new Error('Canvas 2D context unavailable');
-
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate((currentMediaRotation * Math.PI) / 180);
-        ctx.scale(currentMediaFlipH, currentMediaFlipV);
-
-        let filterStr = '';
-        if (currentMediaFilters.bright) filterStr += 'brightness(1.35) ';
-        if (currentMediaFilters.contrast) filterStr += 'contrast(1.5) ';
-        if (currentMediaFilters.invert) filterStr += 'invert(1) ';
-        if (currentMediaFilters.cctv) filterStr += 'grayscale(1) contrast(1.2) ';
-        if (filterStr) ctx.filter = filterStr.trim();
-
-        ctx.drawImage(video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
-        ctx.restore();
-
-        canvas.toBlob((blob) => {
-            if (!blob) {
-                showToast('❌ Failed to encode snapshot frame.', 'error');
-                return;
-            }
-            const timeSec = Math.floor(video.currentTime || 0);
-            const baseName = (currentMediaFilename || 'video').replace(/\.[^/.]+$/, '');
-            const snapName = `${baseName}_frame_${timeSec}s.png`;
-
-            // Save to current decrypted vault overlay
-            const vfsPath = (explorerCurrentDir ? explorerCurrentDir + '/' : '') + snapName;
-            if (currentV3Vault && currentV3Vault.editedFiles) {
-                currentV3Vault.editedFiles.set(vfsPath, blob);
-            }
-
-            // Download directly to device
-            const blobUrl = createTrackedBlobUrl(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = snapName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => revokeTrackedBlobUrl(blobUrl), 3000);
-
-            showToast(`📸 Snapshot saved: ${snapName} (${canvas.width}×${canvas.height})`, 'success');
-        }, 'image/png');
-    } catch (err) {
-        console.error('[Snapshot Error]', err);
-        showToast('❌ Snapshot error: ' + err.message, 'error');
-    }
-}
-
-function initAudioBoostContext(videoEl) {
-    if (!currentMediaAudioCtx) {
-        try {
-            const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
-            if (!AudioCtxClass) return;
-            currentMediaAudioCtx = new AudioCtxClass();
-            currentMediaAudioSource = currentMediaAudioCtx.createMediaElementSource(videoEl);
-            currentMediaGainNode = currentMediaAudioCtx.createGain();
-
-            // WebAudio BiquadFilter for Vocal / Speech Clarity
-            currentMediaVocalFilter = currentMediaAudioCtx.createBiquadFilter();
-            currentMediaVocalFilter.type = 'peaking';
-            currentMediaVocalFilter.frequency.value = 2500;
-            currentMediaVocalFilter.Q.value = 1.2;
-            currentMediaVocalFilter.gain.value = currentMediaVocalClarity ? 8.0 : 0.0;
-
-            currentMediaAudioSource.connect(currentMediaGainNode);
-            currentMediaGainNode.connect(currentMediaVocalFilter);
-            currentMediaVocalFilter.connect(currentMediaAudioCtx.destination);
-        } catch (e) {
-            console.warn('[Audio Boost Init Warning]', e);
-        }
-    }
-    if (currentMediaAudioCtx && currentMediaAudioCtx.state === 'suspended') {
-        currentMediaAudioCtx.resume().catch(() => {});
-    }
-}
-
-function toggleAudioGainBoost() {
-    const video = document.getElementById('cinema-video');
-    const btn = document.getElementById('btn-media-audio-boost');
-    if (!video) return;
-
-    initAudioBoostContext(video);
-    currentMediaAudioBoost = !currentMediaAudioBoost;
-
-    if (currentMediaGainNode) {
-        currentMediaGainNode.gain.value = currentMediaAudioBoost ? 2.0 : 1.0;
-    }
-    if (btn) {
-        btn.classList.toggle('is-active', currentMediaAudioBoost);
-    }
-    showToast(currentMediaAudioBoost ? '⚡ Audio Boost: 200% Active (GainNode)' : '⚡ Audio Boost: Normal (100%)', 'info');
-}
-
-function toggleVocalClarity() {
-    const video = document.getElementById('cinema-video');
-    const btn = document.getElementById('btn-media-vocal-clarity');
-    if (!video) return;
-
-    initAudioBoostContext(video);
-    currentMediaVocalClarity = !currentMediaVocalClarity;
-
-    if (currentMediaVocalFilter) {
-        currentMediaVocalFilter.gain.value = currentMediaVocalClarity ? 8.0 : 0.0;
-    }
-    if (btn) {
-        btn.classList.toggle('is-active', currentMediaVocalClarity);
-    }
-    showToast(currentMediaVocalClarity ? '🎙️ Vocal Clarity: ON (+8dB at 2.5kHz)' : '🎙️ Vocal Clarity: OFF (Flat)', 'info');
-}
-
-function updateTimelineScrubber(media) {
-    if (!media || isTimelineScrubbing) return;
-    const progressEl = document.getElementById('media-timeline-progress');
-    const thumbEl = document.getElementById('media-timeline-thumb');
-    const bufferEl = document.getElementById('media-timeline-buffer');
-    const timeDisplay = document.getElementById('media-time-display');
-
-    if (media.duration && !isNaN(media.duration)) {
-        const pct = (media.currentTime / media.duration) * 100;
-        if (progressEl) progressEl.style.width = pct + '%';
-        if (thumbEl) thumbEl.style.left = pct + '%';
-
-        if (bufferEl && media.buffered && media.buffered.length > 0) {
-            try {
-                const bufferedEnd = media.buffered.end(media.buffered.length - 1);
-                const bufPct = Math.min(100, (bufferedEnd / media.duration) * 100);
-                bufferEl.style.width = bufPct + '%';
-            } catch (_) {}
-        }
-
-        if (timeDisplay) {
-            if (currentMediaShowRemaining) {
-                const rem = Math.max(0, media.duration - media.currentTime);
-                timeDisplay.textContent = `-${formatTime(rem)} / ${formatTime(media.duration)}`;
-            } else {
-                timeDisplay.textContent = `${formatTime(media.currentTime)} / ${formatTime(media.duration)}`;
-            }
-        }
-    }
-}
-
-function showCinemaCenterRipple(icon) {
-    const r = document.getElementById('cinema-center-ripple');
-    if (!r) return;
-    r.textContent = icon;
-    r.classList.add('active');
-    setTimeout(() => r.classList.remove('active'), 350);
-}
-
-function showCinemaGestureBadge(side, text) {
-    const badge = document.getElementById(`cinema-gesture-${side}`);
-    if (!badge) return;
-    badge.textContent = text;
-    badge.classList.add('show');
-    setTimeout(() => badge.classList.remove('show'), 400);
 }
 
 function closeMediaPlayer() {
-    clearCinemaInactivityTimer();
-    const modal = document.getElementById('vault-media-modal');
-    const videoEl = document.getElementById('cinema-video');
-    const audioEl = document.getElementById('cinema-audio');
-    const loader = document.getElementById('media-loading-indicator');
-
-    if (modal) modal.style.display = 'none';
-    if (loader) loader.style.display = 'none';
-
-    if (videoEl) {
-        if (typeof videoEl.pause === 'function') videoEl.pause();
-        if (typeof videoEl.removeAttribute === 'function') videoEl.removeAttribute('src');
-        if (typeof videoEl.load === 'function') videoEl.load();
-        videoEl.style.display = 'none';
-    }
-    if (audioEl) {
-        if (typeof audioEl.pause === 'function') audioEl.pause();
-        if (typeof audioEl.removeAttribute === 'function') audioEl.removeAttribute('src');
-        if (typeof audioEl.load === 'function') audioEl.load();
-        audioEl.style.display = 'none';
-    }
-
-    if (currentMediaBlobUrl) {
-        if (currentMediaBlobUrl.startsWith('blob:')) {
-            revokeTrackedBlobUrl(currentMediaBlobUrl);
-        }
-        currentMediaBlobUrl = null;
-    }
-
-    // Clean up active on-demand media stream
-    if (activeMediaStreamId) {
-        if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) {
-            try {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'CLOSE_MEDIA_STREAM',
-                    streamId: activeMediaStreamId
-                });
-            } catch (_) {}
-        }
-        if (activeMediaChannel) {
-            try { activeMediaChannel.port1.close(); } catch (_) {}
-            activeMediaChannel = null;
-        }
-        activeMediaStreamId = null;
-    }
-    if (activeMediaChunkCache) {
-        if (typeof activeMediaChunkCache.clear === 'function') {
-            activeMediaChunkCache.clear();
-        }
-        activeMediaChunkCache = null;
-    }
-
-    // Memory Leak Fix: scrub global media blob reference
-    currentMediaBlob = null;
-    currentMediaFilename = '';
-
-    // Reset Player 3.0 Pro Studio transforms, audio boost, EQ & scrubber
-    resetVideoTransforms();
-    resetVideoZoom();
-    clearMediaABLoop();
-    currentMediaBookmarks = [];
-    renderMediaBookmarks();
-
-    if (ambientAnimFrameId) {
-        cancelAnimationFrame(ambientAnimFrameId);
-        ambientAnimFrameId = null;
-    }
-    currentMediaAmbientGlow = false;
-    const ambientBtn = document.getElementById('btn-media-ambient');
-    if (ambientBtn) {
-        ambientBtn.textContent = '✨ Ambient: Off';
-        ambientBtn.style.background = '';
-        ambientBtn.style.color = '';
-    }
-    const ambientCanvas = document.getElementById('cinema-ambient-canvas');
-    if (ambientCanvas) ambientCanvas.classList.remove('active');
-
-    if (currentMediaGainNode) {
-        currentMediaGainNode.gain.value = 1.0;
-    }
-    currentMediaAudioBoost = false;
-    const boostBtn = document.getElementById('btn-media-audio-boost');
-    if (boostBtn) boostBtn.classList.remove('is-active');
-
-    if (currentMediaVocalFilter) {
-        currentMediaVocalFilter.gain.value = 0.0;
-    }
-    currentMediaVocalClarity = false;
-    const vocalBtn = document.getElementById('btn-media-vocal-clarity');
-    if (vocalBtn) vocalBtn.classList.remove('is-active');
-
-    const progressEl = document.getElementById('media-timeline-progress');
-    const thumbEl = document.getElementById('media-timeline-thumb');
-    const bufferEl = document.getElementById('media-timeline-buffer');
-    if (progressEl) progressEl.style.width = '0%';
-    if (thumbEl) thumbEl.style.left = '0%';
-    if (bufferEl) bufferEl.style.width = '0%';
-
-    const playBtn = document.getElementById('btn-media-play');
-    if (playBtn) {
-        playBtn.innerHTML = '▶️ Play';
-        playBtn.title = 'Play (Space)';
-    }
-
-    // Reset Video Player 5.0 Theater Mode, Hotkeys & Specs HUD
-    const hotkeysModal = document.getElementById('media-hotkeys-modal');
-    if (hotkeysModal) hotkeysModal.style.display = 'none';
-
-    const modalContainer = document.querySelector('.media-modal-container');
-    if (modalContainer) modalContainer.classList.remove('media-modal-container--theater');
-    isTheaterMode = false;
-    const theaterBtn = document.getElementById('btn-media-theater');
-    if (theaterBtn) {
-        theaterBtn.textContent = '🔲 Theater';
-        theaterBtn.classList.remove('is-active');
-    }
-
-    const specsBadge = document.getElementById('media-forensic-specs');
-    if (specsBadge) {
-        specsBadge.style.display = 'none';
-        specsBadge.textContent = '';
-    }
-
-    const bar = document.getElementById('media-tools-bar');
-    if (bar) {
-        bar.classList.remove('is-collapsed');
-        bar.classList.remove('is-open');
-    }
-    const btnToggleTools = document.getElementById('btn-toggle-tools');
-    if (btnToggleTools) {
-        btnToggleTools.classList.remove('is-active');
-        btnToggleTools.innerHTML = '🎛️ Studio ▾';
+    if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.closeMediaPlayer === 'function') {
+        window.ZevMedia.closeMediaPlayer();
     }
 }
 
-// ============================================
-// IN-VAULT IMAGE LIGHTBOX VIEWER
-// ============================================
-
-function applyImageTransform() {
-    const img = document.getElementById('lightbox-image');
-    const badge = document.getElementById('image-zoom-badge');
-    if (img) {
-        img.style.transform = `translate(${imagePanX}px, ${imagePanY}px) scale(${imageZoomLevel}) rotate(${imageRotationDeg}deg)`;
-    }
-    if (badge) {
-        badge.textContent = `${Math.round(imageZoomLevel * 100)}%`;
-    }
-}
-
-function zoomImage(delta) {
-    const newZoom = Math.max(0.25, Math.min(5.0, imageZoomLevel + delta));
-    imageZoomLevel = Math.round(newZoom * 100) / 100;
-    applyImageTransform();
-}
-
-function resetImageZoom() {
-    imageZoomLevel = 1.0;
-    imagePanX = 0;
-    imagePanY = 0;
-    applyImageTransform();
-}
-
-function rotateImage() {
-    imageRotationDeg = (imageRotationDeg + 90) % 360;
-    applyImageTransform();
-}
-
-async function showImageByIndex(index) {
-    if (!currentImagePlaylist || index < 0 || index >= currentImagePlaylist.length) return;
-    currentImageIndex = index;
-    const item = currentImagePlaylist[index];
-
-    const modal = document.getElementById('vault-image-modal');
-    const title = document.getElementById('image-modal-title');
-    const counter = document.getElementById('image-modal-counter');
-    const dims = document.getElementById('image-modal-dims');
-    const img = document.getElementById('lightbox-image');
-    const loader = document.getElementById('image-loading-indicator');
-
-    if (!modal) return;
-    modal.style.display = 'flex';
-
-    if (title) title.textContent = item.name;
-    if (counter) counter.textContent = `${index + 1} of ${currentImagePlaylist.length}`;
-    if (dims) dims.textContent = 'Loading...';
-
-    // Reset zoom and panning
-    imageZoomLevel = 1.0;
-    imageRotationDeg = 0;
-    imagePanX = 0;
-    imagePanY = 0;
-    applyImageTransform();
-
-    if (loader) loader.style.display = 'flex';
-    if (img) {
-        img.style.display = 'none';
-        img.src = '';
-    }
-
-    try {
-        const blob = await getDecryptedFileBlob(item.path);
-        currentImageBlob = blob;
-        currentImageFilename = item.name;
-
-        if (currentImageBlobUrl) {
-            revokeTrackedBlobUrl(currentImageBlobUrl);
-            currentImageBlobUrl = null;
-        }
-
-        currentImageBlobUrl = createTrackedBlobUrl(blob);
-
-        if (img) {
-            img.onload = () => {
-                if (dims) dims.textContent = `${img.naturalWidth} × ${img.naturalHeight} · ${formatBytes(blob.size)}`;
-                if (loader) loader.style.display = 'none';
-                img.style.display = 'block';
-            };
-            img.onerror = () => {
-                if (loader) loader.style.display = 'none';
-                if (dims) dims.textContent = `Error loading image · ${formatBytes(blob.size)}`;
-                showToast(`Could not render image: ${item.name}`, 'error');
-            };
-            img.src = currentImageBlobUrl;
-        }
-    } catch (err) {
-        console.error('[Image Viewer Error]', err);
-        if (loader) loader.style.display = 'none';
-        showToast(`Failed to extract image: ${err.message}`, 'error');
-    }
-}
-
-function openImageViewerByPath(filePath) {
-    const idx = currentImagePlaylist.findIndex(p => p.path === filePath);
-    if (idx !== -1) {
-        showImageByIndex(idx);
-    } else {
-        const fileItem = currentDecryptedFileList.find(f => f.path === filePath);
-        if (!fileItem) return;
-        currentImagePlaylist = [{ path: fileItem.path, name: fileItem.name, size: fileItem.size }];
-        showImageByIndex(0);
+async function openImageViewerByPath(filePath) {
+    await ensureMediaPlayerLoaded();
+    if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.openImageViewerByPath === 'function') {
+        return window.ZevMedia.openImageViewerByPath(filePath);
     }
 }
 
 function closeImageViewer() {
-    const modal = document.getElementById('vault-image-modal');
-    const img = document.getElementById('lightbox-image');
-    const loader = document.getElementById('image-loading-indicator');
-
-    if (modal) modal.style.display = 'none';
-    if (loader) loader.style.display = 'none';
-    if (img) {
-        img.src = '';
-        img.style.display = 'none';
+    if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.closeImageViewer === 'function') {
+        window.ZevMedia.closeImageViewer();
     }
+}
 
-    if (currentImageBlobUrl) {
-        revokeTrackedBlobUrl(currentImageBlobUrl);
-        currentImageBlobUrl = null;
-    }
-    currentImageBlob = null;
-    currentImageFilename = '';
+if (typeof window !== 'undefined') {
+    window.playMediaByIndex = playMediaByIndex;
+    window.openMediaPlayerByPath = openMediaPlayerByPath;
+    window.closeMediaPlayer = closeMediaPlayer;
+    window.openImageViewerByPath = openImageViewerByPath;
+    window.closeImageViewer = closeImageViewer;
 }
 
 // ============================================
@@ -7776,792 +6876,8 @@ function initExplorerUI() {
         if (e.target.id === 'vault-explorer-modal') closeVaultExplorer();
     });
 
-    // ── Cinema Media Modal Events ──
-    closeMediaBtn?.addEventListener('click', closeMediaPlayer);
-    mediaModal?.addEventListener('click', (e) => {
-        if (e.target.id === 'vault-media-modal') closeMediaPlayer();
-    });
-
-    mediaOpenTabBtn?.addEventListener('click', () => {
-        if (currentMediaBlobUrl) {
-            window.open(currentMediaBlobUrl, '_blank', 'noopener,noreferrer');
-        }
-    });
-
-    mediaDlBtn?.addEventListener('click', async () => {
-        if (currentMediaBlob && currentMediaFilename) {
-            triggerDownload(currentMediaBlob, currentMediaFilename);
-        } else if (currentMediaIndex >= 0 && currentMediaPlaylist && currentMediaPlaylist[currentMediaIndex]) {
-            const item = currentMediaPlaylist[currentMediaIndex];
-            try {
-                showToast(`Extracting ${item.name} for download…`, 'info');
-                const rawBlob = await getDecryptedFileBlob(item.path);
-                const blob = new Blob([rawBlob], { type: item.mimeType });
-                triggerDownload(blob, item.name);
-            } catch (err) {
-                showToast(`Failed to download: ${err.message}`, 'error');
-            }
-        }
-    });
-
-    function getActiveCinemaMedia() {
-        const v = document.getElementById('cinema-video');
-        const a = document.getElementById('cinema-audio');
-        if (v && v.style.display !== 'none') return v;
-        if (a && a.style.display !== 'none') return a;
-        return null;
-    }
-
-    function updatePlayBtnUI(isPlaying) {
-        const btn = document.getElementById('btn-media-play');
-        if (btn) {
-            btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
-            btn.title = isPlaying ? 'Pause (Space)' : 'Play (Space)';
-        }
-    }
-
-    function updateVolumeMuteUI(media) {
-        if (!media) return;
-        const muteBtn = document.getElementById('btn-media-mute');
-        const volSlider = document.getElementById('media-volume-slider');
-        if (volSlider) volSlider.value = media.muted ? '0' : String(media.volume);
-        if (muteBtn) {
-            const isMuted = media.muted || media.volume === 0;
-            muteBtn.textContent = isMuted ? '🔇' : (media.volume < 0.5 ? '🔉' : '🔊');
-            muteBtn.title = isMuted ? 'Unmute (M)' : 'Mute (M)';
-        }
-    }
-
-    // Bind video & audio sync events (Pro Cinema Player 3.0 Studio)
-    ['cinema-video', 'cinema-audio'].forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.addEventListener('play', () => {
-            updatePlayBtnUI(true);
-            if (currentMediaAmbientGlow) updateAmbientGlow();
-            resetCinemaInactivityTimer();
-        });
-        el.addEventListener('pause', () => {
-            updatePlayBtnUI(false);
-            clearCinemaInactivityTimer();
-        });
-        el.addEventListener('ended', () => {
-            updatePlayBtnUI(false);
-            clearCinemaInactivityTimer();
-            if (currentMediaIsLooping) {
-                el.currentTime = 0;
-                el.play().catch(() => {});
-                updatePlayBtnUI(true);
-            } else if (currentMediaIndex < currentMediaPlaylist.length - 1) {
-                playMediaByIndex(currentMediaIndex + 1);
-            }
-        });
-        el.addEventListener('timeupdate', () => {
-            // A-B Segment Loop Check
-            if (mediaLoopPointA !== null && mediaLoopPointB !== null && el.currentTime >= mediaLoopPointB) {
-                el.currentTime = mediaLoopPointA;
-                if (el.paused) el.play().catch(() => {});
-            }
-            updateTimelineScrubber(el);
-        });
-        el.addEventListener('progress', () => {
-            updateTimelineScrubber(el);
-        });
-        el.addEventListener('volumechange', () => updateVolumeMuteUI(el));
-        el.addEventListener('loadedmetadata', () => {
-            if (id === 'cinema-video') {
-                updateVideoForensicSpecs(el, !!activeMediaStreamId);
-            } else {
-                const specsEl = document.getElementById('media-forensic-specs');
-                if (specsEl) {
-                    specsEl.textContent = activeMediaStreamId ? 'Audio · ⚡ Range Stream' : 'Audio · 💾 Buffer';
-                    specsEl.title = 'Audio Track Pipeline: ' + (activeMediaStreamId ? 'Instant Range Stream' : 'Buffered Memory');
-                    specsEl.style.display = 'inline-flex';
-                }
-            }
-        });
-    });
-
-
-    // Inactivity Auto-Hide User Activity Listeners (Player 5.1 YouTube / Netflix style)
-    const cinemaModalOverlay = document.getElementById('vault-media-modal');
-    if (cinemaModalOverlay) {
-        ['mousemove', 'pointerdown', 'touchstart', 'keydown'].forEach(ev => {
-            cinemaModalOverlay.addEventListener(ev, resetCinemaInactivityTimer, { passive: true });
-        });
-    }
-
-    // Play / Pause Button
-    const playBtn = document.getElementById('btn-media-play');
-    playBtn?.addEventListener('click', () => {
-        const media = getActiveCinemaMedia();
-        if (!media) return;
-        if (media.paused) {
-            media.play();
-            showCinemaCenterRipple('▶');
-        } else {
-            media.pause();
-            showCinemaCenterRipple('⏸');
-        }
-    });
-
-    // Mute Button
-    const muteBtn = document.getElementById('btn-media-mute');
-    muteBtn?.addEventListener('click', () => {
-        const media = getActiveCinemaMedia();
-        if (!media) return;
-        media.muted = !media.muted;
-        updateVolumeMuteUI(media);
-    });
-
-    // Volume Slider
-    const volSlider = document.getElementById('media-volume-slider');
-    volSlider?.addEventListener('input', (e) => {
-        const media = getActiveCinemaMedia();
-        if (!media) return;
-        const val = parseFloat(e.target.value);
-        media.volume = val;
-        if (val > 0 && media.muted) media.muted = false;
-        else if (val === 0) media.muted = true;
-        updateVolumeMuteUI(media);
-    });
-
-    mediaPrevBtn?.addEventListener('click', () => {
-        if (currentMediaIndex > 0) playMediaByIndex(currentMediaIndex - 1);
-    });
-
-    mediaNextBtn?.addEventListener('click', () => {
-        if (currentMediaIndex < currentMediaPlaylist.length - 1) playMediaByIndex(currentMediaIndex + 1);
-    });
-
-    mediaRewind10Btn?.addEventListener('click', () => {
-        const media = getActiveCinemaMedia();
-        if (media) {
-            media.currentTime = Math.max(0, media.currentTime - 10);
-            showCinemaGestureBadge('left', '⏪ 10s');
-        }
-    });
-
-    mediaForward10Btn?.addEventListener('click', () => {
-        const media = getActiveCinemaMedia();
-        if (media) {
-            media.currentTime = Math.min(media.duration || 0, media.currentTime + 10);
-            showCinemaGestureBadge('right', '10s ⏩');
-        }
-    });
-
-    // Single-Frame Stepping Buttons
-    const mediaStepBackBtn = document.getElementById('btn-media-step-back');
-    const mediaStepFwdBtn = document.getElementById('btn-media-step-fwd');
-    mediaStepBackBtn?.addEventListener('click', () => stepVideoFrame(-1));
-    mediaStepFwdBtn?.addEventListener('click', () => stepVideoFrame(1));
-
-    // Video Player 5.0 Theater, Hotkeys & Studio Tools Toggle
-    const mediaTheaterBtn = document.getElementById('btn-media-theater');
-    const mediaHotkeysBtn = document.getElementById('btn-media-hotkeys');
-    const closeHotkeysBtn = document.getElementById('btn-close-hotkeys');
-    const btnToggleTools = document.getElementById('btn-toggle-tools');
-    mediaTheaterBtn?.addEventListener('click', toggleTheaterMode);
-    mediaHotkeysBtn?.addEventListener('click', toggleHotkeysModal);
-    closeHotkeysBtn?.addEventListener('click', () => {
-        const m = document.getElementById('media-hotkeys-modal');
-        if (m) m.style.display = 'none';
-    });
-    btnToggleTools?.addEventListener('click', (e) => {
-        if (e) e.stopPropagation();
-        const bar = document.getElementById('media-tools-bar');
-        if (!bar) return;
-        const isMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
-        if (isMobile) {
-            const isOpen = bar.classList.contains('is-open');
-            bar.classList.toggle('is-open', !isOpen);
-            bar.classList.remove('is-collapsed');
-            btnToggleTools.classList.toggle('is-active', !isOpen);
-            btnToggleTools.innerHTML = !isOpen ? '🎛️ Studio ▴' : '🎛️ Studio ▾';
-        } else {
-            const isCollapsed = bar.classList.contains('is-collapsed');
-            bar.classList.toggle('is-collapsed', !isCollapsed);
-            btnToggleTools.classList.toggle('is-active', isCollapsed);
-            btnToggleTools.innerHTML = isCollapsed ? '🎛️ Studio ▴' : '🎛️ Studio ▾';
-        }
-        resetCinemaInactivityTimer();
-    });
-
-    const btnCloseToolsDrawer = document.getElementById('btn-close-tools-drawer');
-    btnCloseToolsDrawer?.addEventListener('click', (e) => {
-        if (e) e.stopPropagation();
-        const bar = document.getElementById('media-tools-bar');
-        if (bar) bar.classList.remove('is-open');
-        if (btnToggleTools) {
-            btnToggleTools.classList.remove('is-active');
-            btnToggleTools.innerHTML = '🎛️ Studio ▾';
-        }
-        resetCinemaInactivityTimer();
-    });
-
-    const mediaSnapshotBtn = document.getElementById('btn-media-snapshot');
-    const mediaLoopBtn = document.getElementById('btn-media-loop');
-    const mediaAmbientBtn = document.getElementById('btn-media-ambient');
-    mediaSnapshotBtn?.addEventListener('click', captureVideoFrameSnapshot);
-    mediaAmbientBtn?.addEventListener('click', toggleAmbientGlow);
-    mediaLoopBtn?.addEventListener('click', () => {
-        currentMediaIsLooping = !currentMediaIsLooping;
-        if (mediaLoopBtn) {
-            mediaLoopBtn.textContent = currentMediaIsLooping ? '🔁 Loop: On' : '🔁 Loop: Off';
-            mediaLoopBtn.style.background = currentMediaIsLooping ? 'rgba(56, 189, 248, 0.25)' : '';
-            mediaLoopBtn.style.color = currentMediaIsLooping ? '#38bdf8' : '';
-        }
-        showToast(currentMediaIsLooping ? '🔁 Single-video loop enabled' : '🔁 Playlist auto-advance enabled', 'info');
-    });
-
-    // Audio Boost 200% & Vocal Clarity Buttons
-    const mediaAudioBoostBtn = document.getElementById('btn-media-audio-boost');
-    const mediaVocalClarityBtn = document.getElementById('btn-media-vocal-clarity');
-    const mediaBookmarkBtn = document.getElementById('btn-media-bookmark');
-    mediaAudioBoostBtn?.addEventListener('click', toggleAudioGainBoost);
-    mediaVocalClarityBtn?.addEventListener('click', toggleVocalClarity);
-    mediaBookmarkBtn?.addEventListener('click', addMediaBookmark);
-
-    // Zoom Controls (Forensic Loupe)
-    document.getElementById('btn-media-zoom-in')?.addEventListener('click', () => nudgeVideoZoom(0.25));
-    document.getElementById('btn-media-zoom-out')?.addEventListener('click', () => nudgeVideoZoom(-0.25));
-    document.getElementById('btn-media-zoom-reset')?.addEventListener('click', resetVideoZoom);
-
-    // A-B Segment Loop Controls
-    document.getElementById('btn-media-ab-a')?.addEventListener('click', setMediaLoopPointA);
-    document.getElementById('btn-media-ab-b')?.addEventListener('click', setMediaLoopPointB);
-    document.getElementById('btn-media-ab-clear')?.addEventListener('click', clearMediaABLoop);
-
-    // Transform Controls (Rotation & Flip)
-    const mediaRotLeftBtn = document.getElementById('btn-media-rot-left');
-    const mediaRotRightBtn = document.getElementById('btn-media-rot-right');
-    const mediaFlipHBtn = document.getElementById('btn-media-flip-h');
-    const mediaFlipVBtn = document.getElementById('btn-media-flip-v');
-    mediaRotLeftBtn?.addEventListener('click', () => rotateVideo(-90));
-    mediaRotRightBtn?.addEventListener('click', () => rotateVideo(90));
-    mediaFlipHBtn?.addEventListener('click', () => flipVideo('h'));
-    mediaFlipVBtn?.addEventListener('click', () => flipVideo('v'));
-
-    // Real-Time Video Filters
-    document.getElementById('btn-filter-bright')?.addEventListener('click', () => toggleVideoFilter('bright'));
-    document.getElementById('btn-filter-contrast')?.addEventListener('click', () => toggleVideoFilter('contrast'));
-    document.getElementById('btn-filter-invert')?.addEventListener('click', () => toggleVideoFilter('invert'));
-    document.getElementById('btn-filter-cctv')?.addEventListener('click', () => toggleVideoFilter('cctv'));
-    document.getElementById('btn-filter-reset')?.addEventListener('click', resetVideoTransforms);
-
-    // Elapsed / Remaining Time Toggle
-    document.getElementById('media-time-display')?.addEventListener('click', () => {
-        currentMediaShowRemaining = !currentMediaShowRemaining;
-        const media = getActiveCinemaMedia();
-        if (media) updateTimelineScrubber(media);
-    });
-
-    // Interactive Timeline Scrubber & Drag
-    const timelineWrap = document.getElementById('media-timeline-wrap');
-    if (timelineWrap) {
-        function seekFromPointer(clientX) {
-            const media = getActiveCinemaMedia();
-            if (!media || !media.duration) return;
-            const rect = timelineWrap.getBoundingClientRect();
-            const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-            media.currentTime = pct * media.duration;
-            updateTimelineScrubber(media);
-        }
-
-        timelineWrap.addEventListener('mousedown', (e) => {
-            isTimelineScrubbing = true;
-            seekFromPointer(e.clientX);
-            const onMouseMove = (ev) => {
-                if (isTimelineScrubbing) seekFromPointer(ev.clientX);
-            };
-            const onMouseUp = () => {
-                isTimelineScrubbing = false;
-                window.removeEventListener('mousemove', onMouseMove);
-                window.removeEventListener('mouseup', onMouseUp);
-            };
-            window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('mouseup', onMouseUp);
-        });
-
-        timelineWrap.addEventListener('mousemove', (e) => {
-            const media = getActiveCinemaMedia();
-            if (!media || !media.duration) return;
-            const rect = timelineWrap.getBoundingClientRect();
-            const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-            const tooltip = document.getElementById('media-timeline-tooltip');
-            if (tooltip) {
-                tooltip.style.left = (pct * 100) + '%';
-                tooltip.textContent = formatTime(pct * media.duration);
-            }
-        });
-
-        timelineWrap.addEventListener('touchstart', (e) => {
-            isTimelineScrubbing = true;
-            if (e.touches && e.touches[0]) seekFromPointer(e.touches[0].clientX);
-        }, { passive: true });
-
-        timelineWrap.addEventListener('touchmove', (e) => {
-            if (isTimelineScrubbing && e.touches && e.touches[0]) seekFromPointer(e.touches[0].clientX);
-        }, { passive: true });
-
-        timelineWrap.addEventListener('touchend', () => {
-            isTimelineScrubbing = false;
-        });
-    }
-
-    // Video Stage Click, Double-Tap, Wheel Zoom & Pan Drag (Player 3.0 Pro Studio)
-    const videoStage = document.getElementById('cinema-video-stage');
-    if (videoStage) {
-        let clickTimer = null;
-        let panMoved = false;
-
-        videoStage.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            if (e.deltaY < 0) nudgeVideoZoom(0.25);
-            else if (e.deltaY > 0) nudgeVideoZoom(-0.25);
-        }, { passive: false });
-
-        // Multi-Touch Pinch-to-Zoom & Touch Pan Engine (Player 5.0 Pro Studio)
-        let touchPinchDist = null;
-        let touchPinchStartZoom = 1.0;
-        let touchPanStartX = 0;
-        let touchPanStartY = 0;
-        let isTouchPanning = false;
-
-        videoStage.addEventListener('touchstart', (e) => {
-            if (e.touches && e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                touchPinchDist = Math.hypot(dx, dy);
-                touchPinchStartZoom = currentMediaZoom;
-            } else if (e.touches && e.touches.length === 1 && currentMediaZoom > 1.0) {
-                isTouchPanning = true;
-                panMoved = false;
-                touchPanStartX = e.touches[0].clientX - currentMediaPanX;
-                touchPanStartY = e.touches[0].clientY - currentMediaPanY;
-            }
-        }, { passive: true });
-
-        videoStage.addEventListener('touchmove', (e) => {
-            if (e.touches && e.touches.length === 2 && touchPinchDist) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const dist = Math.hypot(dx, dy);
-                if (touchPinchDist > 0) {
-                    const factor = dist / touchPinchDist;
-                    setVideoZoom(touchPinchStartZoom * factor);
-                }
-            } else if (e.touches && e.touches.length === 1 && isTouchPanning && currentMediaZoom > 1.0) {
-                panMoved = true;
-                currentMediaPanX = e.touches[0].clientX - touchPanStartX;
-                currentMediaPanY = e.touches[0].clientY - touchPanStartY;
-                applyVideoTransforms();
-            }
-        }, { passive: true });
-
-        videoStage.addEventListener('touchend', (e) => {
-            if (!e.touches || e.touches.length < 2) {
-                touchPinchDist = null;
-            }
-            if (!e.touches || e.touches.length === 0) {
-                if (isTouchPanning) {
-                    isTouchPanning = false;
-                    applyVideoTransforms();
-                }
-            }
-        });
-
-        videoStage.addEventListener('mousedown', (e) => {
-            if (currentMediaZoom > 1.0 && e.button === 0) {
-                isMediaPanning = true;
-                panMoved = false;
-                mediaPanStartX = e.clientX - currentMediaPanX;
-                mediaPanStartY = e.clientY - currentMediaPanY;
-                applyVideoTransforms();
-                const onMove = (ev) => {
-                    if (isMediaPanning) {
-                        if (Math.abs(ev.clientX - (mediaPanStartX + currentMediaPanX)) > 4 ||
-                            Math.abs(ev.clientY - (mediaPanStartY + currentMediaPanY)) > 4) {
-                            panMoved = true;
-                        }
-                        currentMediaPanX = ev.clientX - mediaPanStartX;
-                        currentMediaPanY = ev.clientY - mediaPanStartY;
-                        applyVideoTransforms();
-                    }
-                };
-                const onUp = () => {
-                    isMediaPanning = false;
-                    applyVideoTransforms();
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('mouseup', onUp);
-                };
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('mouseup', onUp);
-            }
-        });
-
-        videoStage.addEventListener('click', (e) => {
-            if (panMoved) {
-                panMoved = false;
-                return;
-            }
-            const modal = document.getElementById('vault-media-modal');
-            const bar = document.getElementById('media-tools-bar');
-            const btnToggleTools = document.getElementById('btn-toggle-tools');
-
-            // 1. Tap-outside dismissal on .cinema-video-stage when Forensic Studio Drawer is open
-            if (bar && bar.classList.contains('is-open')) {
-                const target = e.target;
-                if (!target || (!target.closest('#media-tools-bar') && !target.closest('#btn-toggle-tools'))) {
-                    bar.classList.remove('is-open');
-                    if (btnToggleTools) {
-                        btnToggleTools.classList.remove('is-active');
-                        btnToggleTools.innerHTML = '🎛️ Studio ▾';
-                    }
-                    resetCinemaInactivityTimer();
-                    return;
-                }
-            }
-
-            // 2. Tap to reveal controls if currently auto-hidden (without triggering play/pause)
-            if (modal && modal.classList.contains('cinema-ui--hidden')) {
-                modal.classList.remove('cinema-ui--hidden');
-                resetCinemaInactivityTimer();
-                return;
-            }
-
-            const media = getActiveCinemaMedia();
-            if (!media) return;
-
-            if (e.detail === 2) {
-                clearTimeout(clickTimer);
-                const rect = videoStage.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                if (clickX < rect.width * 0.35) {
-                    media.currentTime = Math.max(0, media.currentTime - 10);
-                    showCinemaGestureBadge('left', '⏪ 10s');
-                } else if (clickX > rect.width * 0.65) {
-                    media.currentTime = Math.min(media.duration || 0, media.currentTime + 10);
-                    showCinemaGestureBadge('right', '10s ⏩');
-                } else {
-                    document.getElementById('btn-media-fullscreen')?.click();
-                }
-            } else if (e.detail === 1) {
-                clickTimer = setTimeout(() => {
-                    if (media.paused) {
-                        media.play();
-                        showCinemaCenterRipple('▶');
-                    } else {
-                        media.pause();
-                        showCinemaCenterRipple('⏸');
-                    }
-                }, 220);
-            }
-        });
-    }
-
-    mediaSpeedSelect?.addEventListener('change', (e) => {
-        const media = getActiveCinemaMedia();
-        if (media) media.playbackRate = parseFloat(e.target.value || '1');
-    });
-
-    function nudgePlaybackSpeed(direction) {
-        const select = document.getElementById('media-speed-select');
-        if (!select) return;
-        const options = Array.from(select.options);
-        const currIdx = select.selectedIndex;
-        const nextIdx = Math.max(0, Math.min(options.length - 1, currIdx + direction));
-        if (nextIdx !== currIdx) {
-            select.selectedIndex = nextIdx;
-            select.dispatchEvent(new Event('change'));
-            showToast(`Playback speed: ${options[nextIdx].text}`, 'info');
-        }
-    }
-
-    // Aspect Ratio Modes Cycle: Fit -> Fill -> 16:9 -> 4:3
-    const aspectModes = ['fit', 'fill', '16:9', '4:3'];
-    let aspectIdx = 0;
-    mediaFitBtn?.addEventListener('click', () => {
-        aspectIdx = (aspectIdx + 1) % aspectModes.length;
-        currentMediaFitMode = aspectModes[aspectIdx];
-        const video = document.getElementById('cinema-video');
-        if (!video) return;
-
-        video.classList.remove('media-player-element--cover');
-        video.style.aspectRatio = '';
-        video.style.objectFit = '';
-
-        if (currentMediaFitMode === 'fill') {
-            video.classList.add('media-player-element--cover');
-            if (mediaFitBtn) mediaFitBtn.textContent = '↔️ Fill';
-        } else if (currentMediaFitMode === '16:9') {
-            video.style.aspectRatio = '16/9';
-            video.style.objectFit = 'contain';
-            if (mediaFitBtn) mediaFitBtn.textContent = '↔️ 16:9';
-        } else if (currentMediaFitMode === '4:3') {
-            video.style.aspectRatio = '4/3';
-            video.style.objectFit = 'contain';
-            if (mediaFitBtn) mediaFitBtn.textContent = '↔️ 4:3';
-        } else {
-            if (mediaFitBtn) mediaFitBtn.textContent = '↔️ Fit';
-        }
-        showToast(`↔️ Aspect Ratio: ${currentMediaFitMode.toUpperCase()}`, 'info');
-    });
-
-    mediaPipBtn?.addEventListener('click', async () => {
-        const video = document.getElementById('cinema-video');
-        if (!video) return;
-        try {
-            if (document.pictureInPictureElement) {
-                await document.exitPictureInPicture();
-            } else if (video.requestPictureInPicture) {
-                await video.requestPictureInPicture();
-            }
-        } catch (err) {
-            console.warn('[PiP Error]', err);
-        }
-    });
-
-    mediaFullscreenBtn?.addEventListener('click', () => {
-        const container = document.querySelector('.media-modal-container') || document.getElementById('cinema-video');
-        if (!container) return;
-        if (!document.fullscreenElement) {
-            container.requestFullscreen?.() || container.webkitRequestFullscreen?.();
-        } else {
-            document.exitFullscreen?.() || document.webkitExitFullscreen?.();
-        }
-    });
-
-    // Wire Cancel Operation Button
-    const btnCancelOp = document.getElementById('btn-cancel-op');
-    btnCancelOp?.addEventListener('click', async () => {
-        if (currentStreamingOp && typeof currentStreamingOp.cancel === 'function') {
-            log('⚠️ Cancelling operation on user request...', 'warn');
-            updateProgress('Cancelling operation…', 0);
-            btnCancelOp.disabled = true;
-            try {
-                await currentStreamingOp.cancel();
-            } catch (_) {}
-            btnCancelOp.disabled = false;
-            resetTelemetryHUD();
-            currentStreamingOp = null;
-            log('❌ Operation cancelled.', 'error');
-        }
-    });
-
-    // Keyboard Shortcuts for Media Player (Pro Cinema 3.0 Studio Extended Matrix)
-    window.addEventListener('keydown', (e) => {
-        const mediaModalEl = document.getElementById('vault-media-modal');
-        if (!mediaModalEl || mediaModalEl.style.display === 'none') return;
-
-        const media = getActiveCinemaMedia();
-        if (!media) return;
-
-        if (e.key === ' ' || e.code === 'Space' || e.key === 'k' || e.key === 'K') {
-            e.preventDefault();
-            if (media.paused) {
-                media.play();
-                showCinemaCenterRipple('▶');
-            } else {
-                media.pause();
-                showCinemaCenterRipple('⏸');
-            }
-        } else if (e.key === 'ArrowLeft' && e.shiftKey) {
-            e.preventDefault();
-            if (currentMediaIndex > 0) playMediaByIndex(currentMediaIndex - 1);
-        } else if (e.key === 'ArrowRight' && e.shiftKey) {
-            e.preventDefault();
-            if (currentMediaIndex < currentMediaPlaylist.length - 1) playMediaByIndex(currentMediaIndex + 1);
-        } else if (e.key === 'ArrowLeft' || e.key === 'j' || e.key === 'J') {
-            e.preventDefault();
-            media.currentTime = Math.max(0, media.currentTime - 10);
-            showCinemaGestureBadge('left', '⏪ 10s');
-        } else if (e.key === 'ArrowRight' || e.key === 'l' || e.key === 'L') {
-            e.preventDefault();
-            media.currentTime = Math.min(media.duration || 0, media.currentTime + 10);
-            showCinemaGestureBadge('right', '10s ⏩');
-        } else if (e.key === '<' || (e.shiftKey && e.key === ',')) {
-            e.preventDefault();
-            nudgePlaybackSpeed(-1);
-        } else if (e.key === '>' || (e.shiftKey && e.key === '.')) {
-            e.preventDefault();
-            nudgePlaybackSpeed(1);
-        } else if (e.key === ',') {
-            e.preventDefault();
-            stepVideoFrame(-1);
-        } else if (e.key === '.') {
-            e.preventDefault();
-            stepVideoFrame(1);
-        } else if (e.key === '[') {
-            e.preventDefault();
-            setMediaLoopPointA();
-        } else if (e.key === ']') {
-            e.preventDefault();
-            setMediaLoopPointB();
-        } else if (e.key === '\\') {
-            e.preventDefault();
-            clearMediaABLoop();
-        } else if (e.key === 'v' || e.key === 'V') {
-            e.preventDefault();
-            toggleVocalClarity();
-        } else if (e.key === '+' || e.key === '=') {
-            e.preventDefault();
-            nudgeVideoZoom(0.25);
-        } else if (e.key === '-' || e.key === '_') {
-            e.preventDefault();
-            nudgeVideoZoom(-0.25);
-        } else if (e.key === '0') {
-            e.preventDefault();
-            resetVideoZoom();
-        } else if (e.key === 'b' || e.key === 'B') {
-            e.preventDefault();
-            toggleAudioGainBoost();
-        } else if (e.key === 'r' || e.key === 'R') {
-            e.preventDefault();
-            rotateVideo(90);
-        } else if (e.key === 's' || e.key === 'S') {
-            e.preventDefault();
-            captureVideoFrameSnapshot();
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            media.volume = Math.min(1, +(media.volume + 0.05).toFixed(2));
-            if (media.muted) media.muted = false;
-            updateVolumeMuteUI(media);
-        } else if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            media.volume = Math.max(0, +(media.volume - 0.05).toFixed(2));
-            updateVolumeMuteUI(media);
-        } else if (e.key === 'f' || e.key === 'F') {
-            e.preventDefault();
-            mediaFullscreenBtn?.click();
-        } else if (e.key === 't' || e.key === 'T') {
-            e.preventDefault();
-            toggleTheaterMode();
-        } else if (e.key === '?' || (e.shiftKey && e.key === '/')) {
-            e.preventDefault();
-            toggleHotkeysModal();
-        } else if (e.key === 'p' || e.key === 'P') {
-            e.preventDefault();
-            mediaPipBtn?.click();
-        } else if (e.key === 'm' || e.key === 'M') {
-            e.preventDefault();
-            if (e.shiftKey) {
-                addMediaBookmark();
-            } else {
-                media.muted = !media.muted;
-                updateVolumeMuteUI(media);
-            }
-        } else if (e.key === 'Escape') {
-            const hotkeysModal = document.getElementById('media-hotkeys-modal');
-            if (hotkeysModal && hotkeysModal.style.display !== 'none') {
-                hotkeysModal.style.display = 'none';
-            } else {
-                closeMediaPlayer();
-            }
-        }
-    });
-
-    // ── Image Lightbox Modal Events ──
-    const imageModal = document.getElementById('vault-image-modal');
-    const closeImageBtn = document.getElementById('btn-close-image-modal');
-    const imageOpenTabBtn = document.getElementById('btn-image-open-tab');
-    const imageDlBtn = document.getElementById('btn-image-download');
-    const imagePrevBtn = document.getElementById('btn-image-prev');
-    const imageNextBtn = document.getElementById('btn-image-next');
-    const imageZoomInBtn = document.getElementById('btn-image-zoom-in');
-    const imageZoomOutBtn = document.getElementById('btn-image-zoom-out');
-    const imageZoomResetBtn = document.getElementById('btn-image-zoom-reset');
-    const imageRotateBtn = document.getElementById('btn-image-rotate');
-    const imageFullscreenBtn = document.getElementById('btn-image-fullscreen');
-    const imageViewport = document.getElementById('image-viewport');
-
-    closeImageBtn?.addEventListener('click', closeImageViewer);
-    imageModal?.addEventListener('click', (e) => {
-        if (e.target.id === 'vault-image-modal') closeImageViewer();
-    });
-
-    imageOpenTabBtn?.addEventListener('click', () => {
-        if (currentImageBlobUrl) {
-            const isSvg = (currentImageFilename || '').toLowerCase().endsWith('.svg');
-            if (isSvg) {
-                showToast('Opening SVG in a new tab is restricted for security. Please save to inspect.', 'info');
-                return;
-            }
-            window.open(currentImageBlobUrl, '_blank', 'noopener,noreferrer');
-        }
-    });
-
-    imageDlBtn?.addEventListener('click', () => {
-        if (currentImageBlob && currentImageFilename) {
-            triggerDownload(currentImageBlob, currentImageFilename);
-            showToast(`Saved "${currentImageFilename}"`, 'success');
-        }
-    });
-
-    imagePrevBtn?.addEventListener('click', () => {
-        if (currentImageIndex > 0) showImageByIndex(currentImageIndex - 1);
-    });
-
-    imageNextBtn?.addEventListener('click', () => {
-        if (currentImageIndex < currentImagePlaylist.length - 1) showImageByIndex(currentImageIndex + 1);
-    });
-
-    imageZoomInBtn?.addEventListener('click', () => zoomImage(0.25));
-    imageZoomOutBtn?.addEventListener('click', () => zoomImage(-0.25));
-    imageZoomResetBtn?.addEventListener('click', resetImageZoom);
-    imageRotateBtn?.addEventListener('click', rotateImage);
-
-    imageFullscreenBtn?.addEventListener('click', () => {
-        const container = document.querySelector('.image-modal-container') || imageViewport;
-        if (!container) return;
-        if (!document.fullscreenElement) {
-            container.requestFullscreen?.() || container.webkitRequestFullscreen?.();
-        } else {
-            document.exitFullscreen?.() || document.webkitExitFullscreen?.();
-        }
-    });
-
-    // Image Viewport Drag-to-Pan
-    imageViewport?.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
-        isPanningImage = true;
-        panStartX = e.clientX - imagePanX;
-        panStartY = e.clientY - imagePanY;
-        imageViewport.classList.add('is-dragging');
-    });
-
-    window.addEventListener('mousemove', (e) => {
-        if (!isPanningImage) return;
-        imagePanX = e.clientX - panStartX;
-        imagePanY = e.clientY - panStartY;
-        applyImageTransform();
-    });
-
-    window.addEventListener('mouseup', () => {
-        if (isPanningImage) {
-            isPanningImage = false;
-            imageViewport?.classList.remove('is-dragging');
-        }
-    });
-
-    // Image Viewport Mouse Wheel Zoom
-    imageViewport?.addEventListener('wheel', (e) => {
-        const modal = document.getElementById('vault-image-modal');
-        if (!modal || modal.style.display === 'none') return;
-        e.preventDefault();
-        if (e.deltaY < 0) zoomImage(0.15);
-        else zoomImage(-0.15);
-    }, { passive: false });
-
-    // Double-click to toggle 1x and 2.5x zoom
-    imageViewport?.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        if (imageZoomLevel > 1.2) resetImageZoom();
-        else {
-            imageZoomLevel = 2.5;
-            applyImageTransform();
-        }
-    });
+    // ── Cinema Media & Image Lightbox Modal Events ──
+    // Handled on demand inside js/media-player.js via initMediaPlayerUI()
 
     // ── Text / Code Viewer Modal Events ──
     const textModal = document.getElementById('vault-text-modal');
