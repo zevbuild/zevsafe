@@ -22,3 +22,7 @@ test_folder_restored/
 !.agents/rules/
 docs/ORIGINAL_REQUEST.md
 
+# Build output
+dist/
+
+

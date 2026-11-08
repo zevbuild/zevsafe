@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.22.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.23.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -706,14 +706,90 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-            <!-- ── VERSION 8.22.0 (WEB-VERSION-73) ── -->
+                        <!-- ── VERSION 8.23.0 (WEB-VERSION-74) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">🛡️</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.23.0 (WEB-VERSION-74)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 8, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Strict CSP Hardening</span>
+                            <span class="cl-tag">Zero Inline Scripts</span>
+                            <span class="cl-tag">Zero Inline Styles</span>
+                            <span class="cl-tag">Event Decoupling</span>
+                            <span class="cl-tag">Clean Dist Builder</span>
+                            <span class="cl-tag">PWA v74</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Implemented <strong>Phase 3: Security &amp; Cleanup</strong>: hardened Content Security Policy to zero <code>'unsafe-inline'</code> on root application, decoupled all inline scripts into <code>js/init.js</code>, converted all 284 inline <code>style</code> attributes to modular CSS classes, audited and verified 100% XSS sanitization across <code>innerHTML</code>, synchronized <code>.d-none</code> and display states to eliminate element locking, created a pure-Node clutter-free production builder (<code>tools/build-dist.js</code>) excluding internal notes and test runners, relocated root audit reports to <code>docs/audit-reports/</code>, and added branded zero-knowledge <code>404.html</code>.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-body">
+                                <strong>Strict Content Security Policy (No 'unsafe-inline'):</strong> Removed <code>'unsafe-inline'</code> from both <code>script-src</code> and <code>style-src</code> on root <code>/*</code> in <code>_headers</code>, maintaining all defense-in-depth headers and configuring <code>! Content-Security-Policy</code> detachment on docs subpages.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Inline Script Extraction (<code>js/init.js</code>):</strong> Extracted Service Worker lifecycle, updates, and PWA install prompt handler into standalone <code>js/init.js</code> loaded with <code>defer</code>.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-body">
+                                <strong>Event Listener Decoupling &amp; Credential Helper Safety:</strong> Replaced inline <code>onclick</code> handlers on mobile tabs and keyfile labels with <code>addEventListener</code>. Replaced <code>action="javascript:void(0);"</code> with standard <code>submit</code> listener calling <code>preventDefault()</code>, preserving full password manager compatibility without CSP violations.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>100% Elimination of 284 Inline Styles:</strong> Converted all 284 inline <code>style="..."</code> attributes in <code>index.html</code> into 91 semantic CSS classes in <code>styles.css</code>. Converted inline styles in JS string templates to CSS classes and decoupled print handler in <code>js/qr-engine.js</code>.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Visibility State &amp; Display Synchronization Guard:</strong> Synchronized <code>.classList</code> (<code>.d-none</code>) and <code>.style.display</code> across all modals, and updated all 15 reading locations in <code>app.js</code> and <code>js/media-player.js</code> so no element gets stuck.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-body">
+                                <strong>Zero-Clutter Production Builder &amp; Audit Relocation:</strong> Created <code>tools/build-dist.js</code> assembling a clean <code>dist/</code> folder excluding internal markdown notes, test runners, archives, and agent instructions. Relocated root audit reports to <code>docs/audit-reports/</code> and added branded <code>404.html</code>.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-body">
+                                <strong>Service Worker Cache v74:</strong> Removed obsolete baseline comment in <code>sw.js</code>, added <code>./js/init.js</code> and <code>./404.html</code> to <code>SHELL_ASSETS</code>, and bumped <code>APP_VERSION = 'v74'</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.22.0 (WEB-VERSION-73) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🎬</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.22.0 (WEB-VERSION-73)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
                             <span class="cl-badge cl-badge--date">November 8, 2026</span>
                         </div>
                         <div class="cl-tags">

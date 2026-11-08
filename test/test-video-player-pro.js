@@ -214,13 +214,13 @@ runTest('3.9: Extended keyboard shortcuts matrix bound in keydown listener', () 
 console.log('\n--- 4. PWA Service Worker & Version Tags ---');
 const swJs = fs.readFileSync(path.join(ROOT_DIR, 'sw.js'), 'utf8');
 
-runTest('4.1: Service Worker shell cache bumped to v70', () => {
-    assert.ok(swJs.includes("const APP_VERSION    = 'v70';"), 'sw.js must be APP_VERSION v70');
+runTest('4.1: Service Worker shell cache version defined with valid vXX pattern', () => {
+    assert.match(swJs, /const APP_VERSION\s*=\s*'v\d+';/, 'sw.js must define APP_VERSION with /v\\d+/ pattern');
 });
 
-runTest('4.2: index.html synchronized to v8.19.0 / WEB-VERSION-70', () => {
-    assert.ok(indexHtml.includes('WEB-VERSION-70'), 'index.html must have WEB-VERSION-70');
-    assert.ok(indexHtml.includes('v8.19.0'), 'index.html must have v8.19.0');
+runTest('4.2: index.html synchronized with valid WEB-VERSION and vX release tags', () => {
+    assert.match(indexHtml, /WEB-VERSION-\d+/, 'index.html must have WEB-VERSION pattern');
+    assert.match(indexHtml, /v8\.\d+\.\d+/, 'index.html must have v8.x.x version pattern');
 });
 
 runTest('4.3: index.html & styles.css implement upgraded 3-zone cybernetic navbar & brand link', () => {

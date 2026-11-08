@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.22.0` (`WEB-VERSION-73`, Service Worker `v73`)  
+> **Web Portal Version:** `v8.23.0` (`WEB-VERSION-74`, Service Worker `v74`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -57,7 +57,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Zero-Knowledge Session Teardown (`lockV3VaultSession`):** Explicitly wipes keyfile bytes via `.fill(0)`, nullifies all key/catalog references, revokes media/image blob URLs, and scrubs password fields on modal close, file clear, or window unload.
 
 ### 3.2 Defensive Security Hardening & Audit Attestation (v6.9)
-- **Security Audit Report ([`SECURITY_AUDIT_REPORT.md`](SECURITY_AUDIT_REPORT.md)):** Comprehensive evaluation of 20 vulnerability investigations; post-remediation composite score upgraded from 77/100 to **96/100 (Grade A+)**; production release approved.
+- **Security Audit Report ([`SECURITY_AUDIT_REPORT.md`](docs/audit-reports/SECURITY_AUDIT_REPORT.md)):** Comprehensive evaluation of 20 vulnerability investigations; post-remediation composite score upgraded from 77/100 to **96/100 (Grade A+)**; production release approved.
 - **Cryptographic Bounds & Memory Zeroization (`js/stream-crypto.js`):** Enforces minimum PBKDF2 iteration floor ($\ge 100,000$ in browser production); wraps `deriveMasterKey` in `try...finally` with explicit `.fill(0)` zeroization on precursor byte buffers (`passwordBytes`, `rawKeyBytes`, `mixedKey`, `keyfileHash`); strictly validates container header bounds in `parseContainerHeader` ($1\text{ KB} \le \text{chunkSize} \le 64\text{ MB}$, $manifestOffset \ge 77\text{ B}$).
 - **Zip-Slip & Path Traversal Mitigations:** Canonical path containment validation (`Path.GetFullPath`), Windows reserved device name validation (`CON`, `PRN`, `AUX`, `NUL`, etc.), NTFS Alternate Data Stream filtering (`:`), control character filtering, and directory/file reparse point (symlink) detection in `tools/decrypt.ps1`; RFC 1951 path normalization in `tools/encrypt.ps1`; catalog entry sanitization in `StreamPacker` and `StreamUnpacker` (`sanitizeEntryPath` aligned with `sanitizeZipPath`) filtering null bytes, control characters, colons (`:`), Windows reserved device names, and directory traversal segments (`..`); safe stack-based fallback path sanitization in `app.js` `batchDownloadSelected` with sanitized output container names (`sanitizeFilenamePart`).
 - **Client-Side Defense-in-Depth:** Strict Content-Security-Policy (CSP) meta tags and Cloudflare Pages HTTP response headers (`_headers`) across all portal pages (`connect-src 'self' blob: data:`, `frame-ancestors 'none'`); DOM XSS immunity in `showToast` via `document.createElement`/`textContent`; restriction of direct external SVG blob navigation with `rel="noopener noreferrer"`.
@@ -153,7 +153,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **1-Scan Zero-Typing Vault Unlock:** When the Master Key QR is scanned via camera, pasted via `Ctrl+V` screenshot, or uploaded as an image, ZevSafe instantly extracts the password, populates `#decrypt-password`, and immediately triggers decryption if the `.zev` vault file is selected.
 
 ### 3.16 280-Item Feature Checklist Master Audit & Remediations [v8.13.0]
-- **Exhaustive 280-Item Audit Certification (`CHECKLIST_AUDIT_REPORT.md`):** Conducted a deep technical audit covering all 280 items across Sections 1 to 12. Certified 100% PASS post-remediation.
+- **Exhaustive 280-Item Audit Certification ([`CHECKLIST_AUDIT_REPORT.md`](docs/audit-reports/CHECKLIST_AUDIT_REPORT.md)):** Conducted a deep technical audit covering all 280 items across Sections 1 to 12. Certified 100% PASS post-remediation.
 - **Decryption `OperationError` User Feedback:** `showToast('Decryption failed: Wrong password, wrong keyfile, or corrupted vault.', 'error')` and `shakeField('decrypt-password')` on WebCrypto authentication tag / decryption failure.
 - **Interactive Light/Dark Theme Switcher & Persistence:** Added `#btn-theme-toggle` in the desktop navbar and `#btn-theme-toggle-mobile` in the mobile drawer with sun/moon icons and state badges, persisted to `localStorage`.
 
@@ -410,6 +410,37 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Automated Verification Suites:**
   - Added `test/test-media-player-security-lifecycle.js` (17 tests) and `test/browser-verification-phase2.js` (Chrome CDP headless verification across portrait 390x844, landscape 844x390, and desktop 1280x800).
   - All 45/45 video player tests and 22/22 mobile player tests passed with 100%.
+
+### 3.27 Phase 3: Strict CSP Hardening, Zero Inline Script/Style Migration & Clutter-Free Production Distribution (v8.23.0 / WEB-VERSION-74)
+- **Strict Content Security Policy (Zero `'unsafe-inline'`):**
+  - Completely removed `'unsafe-inline'` from both `script-src` and `style-src` in root `/*` directive in `_headers`.
+  - Preserved all defensive CSP directives (`default-src 'self'`, `font-src 'self' data:`, `img-src 'self' data: blob:`, `media-src 'self' blob:`, `frame-src 'self' blob:`, `connect-src 'self' blob: data:`, `object-src 'none'`, `base-uri 'self'`, `frame-ancestors 'none'`).
+  - Sub-page documentation routes (`/change-log/*`, `/device-power/*`, `/how-to-use-zevsafe/*`, `/knowledge/*`, `/roadmap/*`, `/security-audit/*`) use `! Content-Security-Policy` detachment to isolate their styles without compromising root application security.
+- **Inline Script Extraction & Event Decoupling (`js/init.js`):**
+  - Moved trailing 92-line `<script>` block in `index.html` (Service Worker lifecycle, updates, PWA install prompt) into standalone external module [`js/init.js`](js/init.js) loaded with `defer`.
+  - Eliminated inline `onclick` event handlers on mobile tabs (`#tab-encrypt`, `#tab-decrypt`) and keyfile labels (`#v2-keyfile-label-encrypt`, `#v2-keyfile-label-decrypt`) in favor of decoupled `addEventListener` bindings.
+  - Eliminated `action="javascript:void(0);"` on hidden credential helper forms, replacing with standard `submit` listeners calling `e.preventDefault()`, preserving 100% compatibility with Chrome, Bitwarden, and 1Password password managers.
+- **Complete Elimination of 284 Inline `style="..."` Attributes:**
+  - Migrated all 284 inline `style` attributes in `index.html` into 91 semantic, modular CSS classes in `styles.css`.
+  - Replaced inline styles in JS-rendered HTML strings (`app.js`, `js/qr-engine.js`) with dedicated CSS classes (`.paper-qr-loading`, `.paper-key-box`, `.text-teal-bold`, `.explorer-empty-icon`, etc.).
+  - Added script-based event listener for print triggering in `generatePrintableSheetHTML()` to eliminate `onclick="window.print()"`.
+- **Visibility State & Display Synchronization Guard:**
+  - Synchronized `.classList` (`.d-none`) and `.style.display` across all modal dialogs and dynamic panels.
+  - Updated all 15 reading locations in `app.js` and `js/media-player.js` (`isVaultExplorerOpen`, `getActiveCinemaMedia`, keydown modal shortcuts, paste listeners) to check both `.classList.contains('d-none')` and `.style.display` so no element gets stuck hidden or shown.
+- **Zero-Clutter Production Distribution Builder (`tools/build-dist.js` & `404.html`):**
+  - Created pure-Node, zero-dependency builder `tools/build-dist.js` generating a clean `dist/` folder containing only production runtime assets.
+  - Excludes internal development notes (`*.md`), test runners (`test/`), archives (`archive/`), and internal agent instructions (`.agents/`).
+  - Added standalone branded zero-knowledge [`404.html`](404.html).
+  - Relocated root audit reports to [`docs/audit-reports/`](docs/audit-reports/) (`AUDIT_REPORT.md`, `CHECKLIST_AUDIT_REPORT.md`, `SECURITY_AUDIT_REPORT.md`).
+- **Service Worker Cleanup & Version Bump:**
+  - Removed obsolete `// Baseline regression assertion preservation: const APP_VERSION = 'v70';` in `sw.js`.
+  - Modernized assertion 4.1 in `test/test-video-player-pro.js` with regex `/const APP_VERSION\s*=\s*'v\d+';/`.
+  - Added `./js/init.js` and `./404.html` to `SHELL_ASSETS` in `sw.js`.
+  - Bumped `APP_VERSION = 'v74'` and updated `index.html` to `v8.23.0` / `WEB-VERSION-74`.
+- **Automated Verification Suites:**
+  - Created `test/test-security-csp-audit.js` (18 automated assertions verifying zero inline scripts, zero inline styles, zero inline on* handlers, real XSS sanitization across `escapeHtml` and `renderSafeMarkdown`, and `sw.js` pre-caching).
+  - Created `test/browser-verification-phase3.js` running headless Chrome CDP over local HTTP server with real `_headers` CSP, verifying 0 CSP violations, 0 console errors, mobile tabs, and modal lifecycles across portrait (390x844), landscape (844x390), and desktop (1280x800).
+
 
 ---
 

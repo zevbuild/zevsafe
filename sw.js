@@ -7,8 +7,7 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-// Baseline regression assertion preservation: const APP_VERSION    = 'v70';
-const APP_VERSION    = 'v73';
+const APP_VERSION    = 'v74';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -45,6 +44,8 @@ const SHELL_ASSETS = [
     './styles.css',
     './css/media-player.css',
     './app.js',
+    './js/init.js',
+    './404.html',
     './jszip.min.js',
     './manifest.json',
     './favicon.svg',

@@ -1032,6 +1032,19 @@
     font-size: 13px;
     margin-bottom: 4px;
   }
+  .badge-rfc { font-size: 9px; opacity: 0.8; }
+  .field-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field-val-13 { font-size: 13px; }
+  .text-danger { color: #dc2626; }
+  .text-success { color: #059669; }
+  .handwrite-header { display: flex; justify-content: space-between; align-items: center; }
+  .label-dark { color: var(--ink); margin: 0; }
+  .hint-note { font-size: 11px; color: #64748b; font-style: italic; }
+  .key-card-box { font-family: monospace; font-size: 15px; font-weight: 700; color: #0f172a; background: #fff; border: 1.5px solid #059669; border-radius: 4px; padding: 10px 14px; margin: 8px 0; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center; }
+  .key-card-badge { font-size: 10px; color: #059669; font-weight: 800; text-transform: uppercase; }
+  .hint-footer { font-size: 11px; color: #64748b; margin-top: 4px; }
+  .qr-card-title { font-size: 11px; font-weight: 700; color: var(--ink); }
+  .qr-card-desc { font-size: 10px; color: #64748b; line-height: 1.4; }
   @media print {
     body { background: #fff; padding: 0; }
     .sheet { box-shadow: none; border: none; max-width: 100%; width: 100%; padding: 24px; }
@@ -1041,7 +1054,7 @@
 </head>
 <body>
 <div class="print-controls">
-  <button class="btn" onclick="window.print()">🖨️ Print Sheet</button>
+  <button class="btn" id="btn-print-sheet">🖨️ Print Sheet</button>
 </div>
 
 <div class="sheet">
@@ -1052,7 +1065,7 @@
     </div>
     <div class="badge">
       <div>${data.password ? '⚡ ZV3 MASTER KEYCARD' : 'ZV3 STREAM AEAD'}</div>
-      <div style="font-size:9px; opacity:0.8;">RFC 8018 / NIST SP 800-38D</div>
+      <div class="badge-rfc">RFC 8018 / NIST SP 800-38D</div>
     </div>
   </div>
 
@@ -1068,26 +1081,26 @@
         <div class="fp-box">${saltFormatted || saltHexFull.slice(0, 32)}</div>
       </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+      <div class="field-grid-2col">
         <div class="field">
           <span class="field-label">Key Derivation</span>
-          <div class="field-val" style="font-size:13px;">${kdfRounds} Rounds (PBKDF2-SHA512)</div>
+          <div class="field-val field-val-13">${kdfRounds} Rounds (PBKDF2-SHA512)</div>
         </div>
         <div class="field">
           <span class="field-label">2FA Keyfile Status</span>
-          <div class="field-val" style="font-size:13px; color:${data.keyfileRequired ? '#dc2626' : '#059669'};">${keyfileText}</div>
+          <div class="field-val field-val-13 ${data.keyfileRequired ? 'text-danger' : 'text-success'}">${keyfileText}</div>
         </div>
       </div>
 
       <div class="handwrite-wrap">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span class="field-label" style="color:var(--ink); margin:0;">${data.password ? 'Master Key Passphrase (Embedded in QR Keycard)' : 'Handwritten Diceware Passphrase / Password (Physical Safe)'}</span>
-          <span style="font-size:11px; color:#64748b; font-style:italic;">${data.password ? '⚡ Instant Unlock Active' : 'Write with pen · Never photograph'}</span>
+        <div class="handwrite-header">
+          <span class="field-label label-dark">${data.password ? 'Master Key Passphrase (Embedded in QR Keycard)' : 'Handwritten Diceware Passphrase / Password (Physical Safe)'}</span>
+          <span class="hint-note">${data.password ? '⚡ Instant Unlock Active' : 'Write with pen · Never photograph'}</span>
         </div>
         ${data.password ? `
-        <div style="font-family:monospace; font-size:15px; font-weight:700; color:#0f172a; background:#fff; border:1.5px solid #059669; border-radius:4px; padding:10px 14px; margin:8px 0; letter-spacing:0.04em; display:flex; justify-content:space-between; align-items:center;">
+        <div class="key-card-box">
           <span>🔑 ${escapeHtml(data.password)}</span>
-          <span style="font-size:10px; color:#059669; font-weight:800; text-transform:uppercase;">Instant Unlock Key</span>
+          <span class="key-card-badge">Instant Unlock Key</span>
         </div>
         ` : `
         <div class="handwrite-grid">
@@ -1096,7 +1109,7 @@
           <div class="char-cell"></div><div class="char-cell"></div><div class="char-cell"></div><div class="char-cell"></div>
         </div>
         `}
-        <div style="font-size:11px; color:#64748b; margin-top:4px;">
+        <div class="hint-footer">
           <strong>Hint / Location:</strong> ${hintText} · <strong>Created:</strong> ${dateText}
         </div>
       </div>
@@ -1105,8 +1118,8 @@
     <div>
       <div class="qr-box">
         ${qrSVG}
-        <div style="font-size:11px; font-weight:700; color:var(--ink);">${data.password ? '⚡ Instant Unlock Master Keycard' : 'Optical Recovery QR'}</div>
-        <div style="font-size:10px; color:#64748b; line-height:1.4;">
+        <div class="qr-card-title">${data.password ? '⚡ Instant Unlock Master Keycard' : 'Optical Recovery QR'}</div>
+        <div class="qr-card-desc">
           ${data.password ? 'Scan with camera or paste image on ZevSafe to instantly decrypt & unlock without typing!' : 'Point camera or drop this sheet on ZevSafe to auto-fill vault parameters.'}
         </div>
       </div>
@@ -1124,6 +1137,9 @@
     </div>
   </div>
 </div>
+<script>
+  document.getElementById('btn-print-sheet')?.addEventListener('click', () => window.print());
+</script>
 </body>
 </html>`;
     }

@@ -489,18 +489,38 @@ console.log('\n--- 4. Global Paste Listener on Decrypt vs Other Screens ---');
 const pasteListenerMatch = appJsCode.match(/window\.addEventListener\('paste',\s*async\s*\(e\)\s*=>\s*\{([\s\S]*?)\n\}\);/);
 assert.ok(pasteListenerMatch, 'Global paste listener must be defined in app.js');
 
-function createPasteEnvironment({ decryptDisplay, innerWidth, activeElementId, qrModalDisplay = 'none' }) {
+function createPasteEnvironment({ decryptDisplay, innerWidth, activeElementId, qrModalDisplay = 'none', decryptClasses = [], qrModalClasses = [] }) {
     let prevented = false;
     let openedScannerModal = false;
     let appliedParams = null;
     let toastShown = null;
 
+    function createMockElement(id, props = {}) {
+        const classes = new Set(props.classes || []);
+        return {
+            id,
+            style: props.style || {},
+            value: props.value !== undefined ? props.value : '',
+            classList: {
+                contains: (cls) => classes.has(cls),
+                add: (cls) => classes.add(cls),
+                remove: (cls) => classes.delete(cls),
+                toggle: (cls, force) => {
+                    if (force === true) classes.add(cls);
+                    else if (force === false) classes.delete(cls);
+                    else if (classes.has(cls)) classes.delete(cls);
+                    else classes.add(cls);
+                }
+            }
+        };
+    }
+
     const elements = {
-        'qr-scanner-modal': { id: 'qr-scanner-modal', style: { display: qrModalDisplay } },
-        'decrypt-section': { id: 'decrypt-section', style: { display: decryptDisplay } },
-        'decrypt-password': { id: 'decrypt-password', value: 'existing_val' },
-        'encrypt-password': { id: 'encrypt-password', value: 'pass123' },
-        'qr-image-dropzone': { id: 'qr-image-dropzone' }
+        'qr-scanner-modal': createMockElement('qr-scanner-modal', { style: { display: qrModalDisplay }, classes: qrModalClasses }),
+        'decrypt-section': createMockElement('decrypt-section', { style: { display: decryptDisplay }, classes: decryptClasses }),
+        'decrypt-password': createMockElement('decrypt-password', { value: 'existing_val' }),
+        'encrypt-password': createMockElement('encrypt-password', { value: 'pass123' }),
+        'qr-image-dropzone': createMockElement('qr-image-dropzone')
     };
 
     const mockDocument = {
@@ -694,7 +714,10 @@ function createPasteEnvironment({ decryptDisplay, innerWidth, activeElementId, q
     console.log('\n--- 6. Security Headers Compliance (_headers) ---');
 
     const headersContent = fs.readFileSync(path.join(ROOT_DIR, '_headers'), 'utf8');
-    const checklistReportContent = fs.readFileSync(path.join(ROOT_DIR, 'CHECKLIST_AUDIT_REPORT.md'), 'utf8');
+    const checklistReportPath = fs.existsSync(path.join(ROOT_DIR, 'CHECKLIST_AUDIT_REPORT.md'))
+        ? path.join(ROOT_DIR, 'CHECKLIST_AUDIT_REPORT.md')
+        : path.join(ROOT_DIR, 'docs', 'audit-reports', 'CHECKLIST_AUDIT_REPORT.md');
+    const checklistReportContent = fs.readFileSync(checklistReportPath, 'utf8');
 
     runTest('6.1: CSP contains frame-src "self" blob: for secure PDF previews', () => {
         assert.ok(headersContent.includes("frame-src 'self' blob:;"), 'CSP must include frame-src \'self\' blob:;');

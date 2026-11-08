@@ -233,7 +233,7 @@
                 <div class="nav-links-group">
                     <a href="./knowledge/" class="nav-link-subtle" title="Comprehensive Knowledge Base & Complete Service Manual">Knowledge Hub <span class="nav-badge-pill nav-badge-pill--purple">Manual</span></a>
                     <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span class="nav-badge-pill nav-badge-pill--green">99.3/100</span></a>
-                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-73)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.22.0</span></a>
+                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-74)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.23.0</span></a>
                     <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
                 </div>
                 <div class="nav-actions-divider" aria-hidden="true"></div>
@@ -256,25 +256,25 @@
                             </button>
                             <div class="nav-dropdown-sep" role="separator"></div>
                             <a href="./device-power/" class="nav-dropdown-item" role="menuitem">
-                                <span style="margin-right: 2px;">⚡</span>
+                                <span class="u-mr-2px" >⚡</span>
                                 <span>Device Power Benchmark</span>
                             </a>
                             <a href="./how-to-use-zevsafe/" class="nav-dropdown-item" role="menuitem">
-                                <span style="margin-right: 2px;">📖</span>
+                                <span class="u-mr-2px" >📖</span>
                                 <span>User Documentation</span>
                             </a>
                             <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="nav-dropdown-item" role="menuitem">
-                                <span style="margin-right: 2px;">🐙</span>
+                                <span class="u-mr-2px" >🐙</span>
                                 <span>GitHub Repository ↗</span>
                             </a>
                         </div>
                     </div>
                     <button type="button" class="nav-btn-secondary" id="btn-install-pwa" title="Install ZevSafe as an offline app on Android, iOS, or PC">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #2dd4bf;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <svg class="u-style-y29sb3i6" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         <span>Install App</span>
                     </button>
                     <button type="button" class="nav-btn-secondary btn-theme-toggle" id="btn-theme-toggle" title="Toggle Light / Dark Theme" aria-label="Toggle theme">
-                        <span class="theme-icon-light" style="display: none;">☀️</span>
+                        <span class="theme-icon-light d-none" >☀️</span>
                         <span class="theme-icon-dark">🌙</span>
                     </button>
                 </div>
@@ -314,7 +314,7 @@
                             <span class="mn-title">Knowledge Hub &amp; Manual</span>
                             <span class="mn-desc">10 In-Depth Service Specifications</span>
                         </div>
-                        <span class="mn-badge">v8.22.0</span>
+                        <span class="mn-badge">v8.23.0</span>
                     </a>
                     <a href="./how-to-use-zevsafe/" class="mobile-nav-link">
                         <span class="mn-icon">📖</span>
@@ -345,7 +345,7 @@
                             <span class="mn-title">Changelog &amp; Releases</span>
                             <span class="mn-desc">Full release history</span>
                         </div>
-                        <span class="mn-badge">v8.22.0</span>
+                        <span class="mn-badge">v8.23.0</span>
                     </a>
                     <a href="./roadmap/" class="mobile-nav-link">
                         <span class="mn-icon">🧭</span>
@@ -353,7 +353,7 @@
                             <span class="mn-title">Master Plan &amp; Roadmap</span>
                             <span class="mn-desc">14-phase blueprint</span>
                         </div>
-                        <span class="mn-badge mn-badge--teal" style="background:rgba(56,189,248,0.15); color:#38bdf8;">11/14 Shipped</span>
+                        <span class="mn-badge mn-badge--teal u-style-ymfja2dy" >11/14 Shipped</span>
                     </a>
                     <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="mobile-nav-link">
                         <span class="mn-icon">↗</span>
@@ -425,14 +425,12 @@
         <!-- ── MOBILE TAB BAR (visible on phone only) ── -->
         <div class="mobile-tabs" id="mobile-tabs" role="tablist" aria-label="Encrypt or Decrypt">
             <button class="mobile-tab mobile-tab--active" id="tab-encrypt"
-                    role="tab" aria-selected="true" aria-controls="encrypt-section"
-                    onclick="switchTab('encrypt')">
+                    role="tab" aria-selected="true" aria-controls="encrypt-section">
                 <span class="mobile-tab-icon">🔐</span>
                 <span class="mobile-tab-label">Encrypt</span>
             </button>
             <button class="mobile-tab" id="tab-decrypt"
-                    role="tab" aria-selected="false" aria-controls="decrypt-section"
-                    onclick="switchTab('decrypt')">
+                    role="tab" aria-selected="false" aria-controls="decrypt-section">
                 <span class="mobile-tab-icon">🔓</span>
                 <span class="mobile-tab-label">Decrypt</span>
             </button>
@@ -465,12 +463,12 @@
                                 <button type="button" class="btn-browse btn-browse--ghost" id="btn-browse-files">📄 Browse Files</button>
                             </div>
                             <!-- Hidden File Inputs -->
-                            <input type="file" id="encrypt-folder-input-dz" webkitdirectory directory multiple style="display:none;" autocomplete="off">
-                            <input type="file" id="encrypt-files-input-dz" multiple style="display:none;" autocomplete="off">
-                            <input type="file" id="encrypt-folder-input" webkitdirectory directory multiple style="display:none;" autocomplete="off">
+                            <input class="d-none" type="file" id="encrypt-folder-input-dz" webkitdirectory directory multiple  autocomplete="off">
+                            <input class="d-none" type="file" id="encrypt-files-input-dz" multiple  autocomplete="off">
+                            <input class="d-none" type="file" id="encrypt-folder-input" webkitdirectory directory multiple  autocomplete="off">
                         </div>
                         <!-- Uploaded files summary widget -->
-                        <div class="selected-files-widget" id="encrypt-selected-widget" style="display: none;">
+                        <div class="selected-files-widget d-none" id="encrypt-selected-widget" >
                             <span class="sf-icon">📁</span>
                             <div class="sf-info">
                                 <span class="sf-name" id="encrypt-selected-name">folder_name</span>
@@ -497,7 +495,7 @@
                         </div>
                     </div>
 
-                    <div class="strength-wrap" id="encrypt-strength-wrap" style="display:none;" aria-live="polite">
+                    <div class="strength-wrap d-none" id="encrypt-strength-wrap"  aria-live="polite">
                         <div class="strength-track">
                             <div class="strength-fill" id="encrypt-strength-fill"></div>
                         </div>
@@ -515,7 +513,7 @@
                     </div>
 
                     <!-- ── STANDARDS-COMPLIANT CREDENTIAL FORM & AUTO-SAVE TOGGLE ── -->
-                    <form id="vault-credential-form" method="post" action="javascript:void(0);" autocomplete="on" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0; overflow: hidden;" aria-hidden="true">
+                    <form class="form-credential-hidden" id="vault-credential-form" method="post" autocomplete="on"  aria-hidden="true">
                         <input type="text" id="credential-vault-name" name="username" autocomplete="username" tabindex="-1" />
                         <input type="password" id="credential-vault-password" name="password" autocomplete="new-password" tabindex="-1" />
                         <button type="submit" id="btn-credential-submit" tabindex="-1"></button>
@@ -543,17 +541,17 @@
                     </div>
 
                     <!-- ── V2 OPTIONS (Keyfile second factor) ── -->
-                    <div id="v2-options-panel" class="v2-panel" style="display:block;">
+                    <div id="v2-options-panel" class="v2-panel d-block" >
                         <div class="v2-panel-header">Keyfile (Optional Second Factor)</div>
                         <p class="v2-panel-desc">Any file acts as a physical key. Without it, the vault cannot be unlocked.</p>
                         <div class="v2-keyfile-row">
-                            <label class="btn-keyfile" onclick="event.stopPropagation()">
+                            <label id="v2-keyfile-label-encrypt" class="btn-keyfile">
                                 Select Keyfile
-                                <input type="file" id="v2-keyfile-input-encrypt" style="display:none;">
+                                <input class="d-none" type="file" id="v2-keyfile-input-encrypt" >
                             </label>
-                            <button class="btn-keyfile-clear" id="v2-keyfile-clear-encrypt" title="Remove keyfile" style="display:none;">✕</button>
+                            <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-encrypt" title="Remove keyfile" >✕</button>
                         </div>
-                        <span class="v2-keyfile-badge" id="v2-keyfile-badge-encrypt" style="display:none;"></span>
+                        <span class="v2-keyfile-badge d-none" id="v2-keyfile-badge-encrypt" ></span>
                     </div>
 
                     <!-- Max Security Options Header & Pill Button (Design 2) -->
@@ -569,100 +567,100 @@
                     </div>
 
                     <!-- Collapsible Container for Max Security Features -->
-                    <div id="max-security-collapsible" class="max-security-collapsible" style="display: none;">
+                    <div id="max-security-collapsible" class="max-security-collapsible d-none" >
                     <!-- Key Derivation Hardening (PBKDF2 Iterations) -->
-                    <div class="field-group" style="margin-top: 0.6rem;">
+                    <div class="field-group u-style-bwfyz2lu" >
                         <label class="field-label" for="encrypt-kdf-select">Key Derivation Hardening</label>
                         <div class="field-wrap">
-                            <select class="field-input" id="encrypt-kdf-select" style="cursor: pointer; background: var(--bg-card); color: var(--text);">
+                            <select class="field-input style-encrypt-kdf-select" id="encrypt-kdf-select" >
                                 <option value="600000" selected>600,000 Rounds (PBKDF2-SHA512 - OWASP Standard)</option>
                                 <option value="1200000">1,200,000 Rounds (Hardened Anti-Brute-Force)</option>
                                 <option value="2400000">2,400,000 Rounds (Ultra Paranoid Hardware-Hard)</option>
                             </select>
                         </div>
-                        <div style="display: flex; justify-content: flex-end; margin-top: 0.35rem;">
-                            <a href="./device-power/" style="font-size: 0.74rem; color: #34d399; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600;">
+                        <div class="u-style-zglzcgxh" >
+                            <a class="u-style-zm9udc1z" href="./device-power/" >
                                 <span>⚡ Test your CPU encryption power &amp; get recommended rounds ↗</span>
                             </a>
                         </div>
                     </div>
 
                     <!-- Steganographic Forensic Camouflage (Polyglot Mode) -->
-                    <div class="v2-panel" id="polyglot-panel" style="margin-top: 0.6rem; border: 1px dashed rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.05); border-radius: 8px; padding: 0.75rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="v2-panel style-polyglot-panel" id="polyglot-panel" >
+                        <div class="u-flex-between" >
                             <div>
-                                <div style="font-weight: 600; font-size: 0.88rem; color: var(--text);">🎭 Forensic Media Camouflage (Polyglot)</div>
-                                <div style="font-size: 0.74rem; color: var(--text-muted);">Embeds vault into photo/video so it opens as an authentic image in photo viewers</div>
+                                <div class="u-style-zm9udc13" >🎭 Forensic Media Camouflage (Polyglot)</div>
+                                <div class="u-style-zm9udc1z" >Embeds vault into photo/video so it opens as an authentic image in photo viewers</div>
                             </div>
                             <label class="toggle-switch" aria-label="Toggle forensic camouflage mode">
                                 <input type="checkbox" id="polyglot-mode-toggle" role="switch">
                                 <span class="toggle-track"><span class="toggle-thumb"></span></span>
                             </label>
                         </div>
-                        <div id="polyglot-options" style="display: none; margin-top: 0.75rem; flex-direction: column; gap: 0.5rem;">
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <label class="btn-browse" style="padding: 0.45rem 0.75rem; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; background: var(--bg-card-hover, rgba(255,255,255,0.06)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px;">
+                        <div class="style-polyglot-options" id="polyglot-options" >
+                            <div class="u-style-zglzcgxh" >
+                                <label class="btn-browse u-style-cgfkzglu" >
                                     <span>🖼️ Pick Cover Photo</span>
-                                    <input type="file" id="polyglot-cover-input" accept="image/jpeg,image/png,image/webp,video/mp4,audio/mpeg" style="display: none;">
+                                    <input class="d-none" type="file" id="polyglot-cover-input" accept="image/jpeg,image/png,image/webp,video/mp4,audio/mpeg" >
                                 </label>
-                                <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-generate-cover" style="padding: 0.45rem 0.75rem; font-size: 0.8rem;">
+                                <button type="button" class="pw-modal-btn pw-modal-btn--secondary style-btn-generate-cover" id="btn-generate-cover" >
                                     🎨 Generate Minimal Cover
                                 </button>
                             </div>
-                            <div id="cover-preview-widget" style="display: none; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.25); border-radius: 6px; padding: 0.4rem 0.6rem;">
-                                <img id="cover-preview-thumb" alt="Cover thumbnail" width="32" height="32" loading="lazy" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; display: none;">
-                                <div style="flex: 1; min-width: 0;">
-                                    <div id="cover-preview-name" style="font-size: 0.78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">cover.jpg</div>
-                                    <div id="cover-preview-size" style="font-size: 0.72rem; color: var(--text-muted);">0 KB</div>
+                            <div class="style-cover-preview-widget" id="cover-preview-widget" >
+                                <img class="style-cover-preview-thumb" id="cover-preview-thumb" alt="Cover thumbnail" width="32" height="32" loading="lazy" >
+                                <div class="u-style-zmxledog" >
+                                    <div class="style-cover-preview-name" id="cover-preview-name" >cover.jpg</div>
+                                    <div class="style-cover-preview-size" id="cover-preview-size" >0 KB</div>
                                 </div>
-                                <button type="button" id="btn-clear-cover" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;">✕</button>
+                                <button class="btn-clear-subtle" type="button" id="btn-clear-cover" >✕</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- ── DURESS DECOY VAULT TOGGLE (Plausible Deniability) ── -->
-                    <div class="v2-panel" id="duress-panel" style="margin-top: 0.6rem; border: 1px dashed rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.05); border-radius: 8px; padding: 0.75rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="v2-panel style-duress-panel" id="duress-panel" >
+                        <div class="u-flex-between" >
                             <div>
-                                <div style="font-weight: 600; font-size: 0.88rem; color: var(--text);">🎭 Duress Decoy Vault (Plausible Deniability)</div>
-                                <div style="font-size: 0.74rem; color: var(--text-muted);">Secondary decoy password unlocks harmless decoy files under duress/coercion</div>
+                                <div class="u-style-zm9udc13" >🎭 Duress Decoy Vault (Plausible Deniability)</div>
+                                <div class="u-style-zm9udc1z" >Secondary decoy password unlocks harmless decoy files under duress/coercion</div>
                             </div>
                             <label class="toggle-switch" aria-label="Toggle duress decoy vault mode">
                                 <input type="checkbox" id="duress-mode-toggle" role="switch">
                                 <span class="toggle-track"><span class="toggle-thumb"></span></span>
                             </label>
                         </div>
-                        <div id="duress-options" style="display: none; margin-top: 0.75rem; flex-direction: column; gap: 0.6rem;">
-                            <div class="field-group" style="margin: 0;">
-                                <label class="field-label" for="duress-password" style="font-size: 0.78rem;">Decoy Password or PIN</label>
+                        <div class="style-duress-options" id="duress-options" >
+                            <div class="field-group u-m-0" >
+                                <label class="field-label u-style-zm9udc1z" for="duress-password" >Decoy Password or PIN</label>
                                 <div class="field-wrap">
                                     <input class="field-input" type="password" id="duress-password" placeholder="Enter secondary decoy password" autocomplete="new-password">
                                     <button class="toggle-pw" type="button" data-target="duress-password" aria-label="Show password">👁</button>
                                 </div>
                             </div>
-                            <div class="field-group" style="margin: 0;">
-                                <label class="field-label" for="duress-confirm" style="font-size: 0.78rem;">Confirm Decoy Password</label>
+                            <div class="field-group u-m-0" >
+                                <label class="field-label u-style-zm9udc1z" for="duress-confirm" >Confirm Decoy Password</label>
                                 <div class="field-wrap">
                                     <input class="field-input" type="password" id="duress-confirm" placeholder="Re-enter secondary decoy password" autocomplete="new-password">
                                     <button class="toggle-pw" type="button" data-target="duress-confirm" aria-label="Show password">👁</button>
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.2rem;">
-                                <label class="btn-browse" style="padding: 0.45rem 0.75rem; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; background: var(--bg-card-hover, rgba(255,255,255,0.06)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 6px;">
+                            <div class="u-style-zglzcgxh" >
+                                <label class="btn-browse u-style-cgfkzglu" >
                                     <span>📁 Pick Decoy Folder</span>
-                                    <input type="file" id="duress-folder-input" webkitdirectory directory multiple style="display: none;">
+                                    <input class="d-none" type="file" id="duress-folder-input" webkitdirectory directory multiple >
                                 </label>
-                                <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-generate-decoy" style="padding: 0.45rem 0.75rem; font-size: 0.8rem;">
+                                <button type="button" class="pw-modal-btn pw-modal-btn--secondary style-btn-generate-cover" id="btn-generate-decoy" >
                                     ⚡ Generate Realistic Decoy (Travel &amp; Recipes)
                                 </button>
                             </div>
-                            <div id="duress-selected-widget" style="display: none; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.25); border-radius: 6px; padding: 0.4rem 0.6rem;">
-                                <span style="font-size: 1.1rem;">📁</span>
-                                <div style="flex: 1; min-width: 0;">
-                                    <div id="duress-selected-name" style="font-size: 0.78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Decoy_Folder</div>
-                                    <div id="duress-selected-meta" style="font-size: 0.72rem; color: var(--text-muted);">4 files · 2.6 KB</div>
+                            <div class="style-cover-preview-widget" id="duress-selected-widget" >
+                                <span class="u-style-zm9udc1z" >📁</span>
+                                <div class="u-style-zmxledog" >
+                                    <div class="style-cover-preview-name" id="duress-selected-name" >Decoy_Folder</div>
+                                    <div class="style-cover-preview-size" id="duress-selected-meta" >4 files · 2.6 KB</div>
                                 </div>
-                                <button type="button" id="btn-clear-duress" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;">✕</button>
+                                <button class="btn-clear-subtle" type="button" id="btn-clear-duress" >✕</button>
                             </div>
                         </div>
                     </div>
@@ -704,11 +702,11 @@
                             <p class="drop-secondary">or</p>
                             <button type="button" class="btn-browse btn-browse--teal" id="btn-browse-decrypt">📦 Select .zev File</button>
                             <!-- Hidden File Inputs -->
-                            <input type="file" id="decrypt-file-input-dz" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" style="display:none;" autocomplete="off">
-                            <input type="file" id="decrypt-file-input" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" style="display:none;" autocomplete="off">
+                            <input class="d-none" type="file" id="decrypt-file-input-dz" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3"  autocomplete="off">
+                            <input class="d-none" type="file" id="decrypt-file-input" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3"  autocomplete="off">
                         </div>
                         <!-- Decrypt file summary widget -->
-                        <div class="selected-files-widget selected-files-widget--teal" id="decrypt-selected-widget" style="display: none;">
+                        <div class="selected-files-widget selected-files-widget--teal d-none" id="decrypt-selected-widget" >
                             <span class="sf-icon">📦</span>
                             <div class="sf-info">
                                 <span class="sf-name" id="decrypt-selected-name">vault_name.zev</span>
@@ -720,7 +718,7 @@
                     </div>
 
                     <!-- ── STANDARDS-COMPLIANT DECRYPT CREDENTIAL FORM ── -->
-                    <form id="vault-decrypt-credential-form" method="post" action="javascript:void(0);" autocomplete="on" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0; overflow: hidden;" aria-hidden="true">
+                    <form class="form-credential-hidden" id="vault-decrypt-credential-form" method="post" autocomplete="on"  aria-hidden="true">
                         <input type="text" id="decrypt-credential-vault-name" name="username" autocomplete="username" tabindex="-1" />
                         <input type="password" id="decrypt-credential-vault-password" name="password" autocomplete="current-password" tabindex="-1" />
                         <button type="submit" id="btn-decrypt-credential-submit" tabindex="-1"></button>
@@ -729,7 +727,7 @@
                     <div class="field-group">
                         <div class="field-label-row">
                             <label class="field-label" for="decrypt-password">Password or PIN</label>
-                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <div class="u-style-zglzcgxh" >
                                 <button class="btn-pw-mgr btn-pw-mgr--teal" id="btn-scan-paper-qr" type="button" title="Scan Paper-Safe Recovery QR code with camera, drop an image, or paste from clipboard (Ctrl+V)">📷 Scan Paper QR</button>
                                 <button class="btn-pw-mgr btn-pw-mgr--teal" id="btn-autofill-pwd" type="button" title="Autofill password from your browser or password manager (Chrome, Bitwarden, 1Password, Apple Keychain)">🔑 Autofill</button>
                             </div>
@@ -741,12 +739,12 @@
                             <button class="toggle-pw" type="button" data-target="decrypt-password" aria-label="Show password">👁</button>
                         </div>
                         <!-- Paper-Safe Scanned Metadata Banner -->
-                        <div id="paper-safe-scanned-banner" style="display: none; margin-top: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; color: #34d399;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-weight: 700;">✔ Paper-Safe Recovery Applied: <span id="scanned-banner-vault" style="color: #fff;"></span></span>
-                                <button type="button" id="btn-clear-scanned-qr" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.9rem;" title="Clear scanned metadata">✕</button>
+                        <div class="style-paper-safe-scanned-banner" id="paper-safe-scanned-banner" >
+                            <div class="u-flex-between" >
+                                <span class="u-style-zm9udc13" >✔ Paper-Safe Recovery Applied: <span class="style-scanned-banner-vault" id="scanned-banner-vault" ></span></span>
+                                <button class="style-btn-clear-scanned-qr" type="button" id="btn-clear-scanned-qr"  title="Clear scanned metadata">✕</button>
                             </div>
-                            <div id="scanned-banner-hint" style="color: #cbd5e1; font-size: 0.74rem; margin-top: 3px;"></div>
+                            <div class="style-scanned-banner-hint" id="scanned-banner-hint" ></div>
                         </div>
                     </div>
 
@@ -755,14 +753,14 @@
                         <div class="v2-panel-header">Keyfile (for v2 vaults only)</div>
                         <p class="v2-panel-desc">If this vault requires a keyfile, select it here. Standard vaults auto-detect.</p>
                         <div class="v2-keyfile-row">
-                            <label class="btn-keyfile btn-keyfile--teal" onclick="event.stopPropagation()">
+                            <label id="v2-keyfile-label-decrypt" class="btn-keyfile btn-keyfile--teal">
                                 Select Keyfile
-                                <input type="file" id="v2-keyfile-input-decrypt" style="display:none;">
+                                <input class="d-none" type="file" id="v2-keyfile-input-decrypt" >
                             </label>
-                            <button class="btn-keyfile-clear" id="v2-keyfile-clear-decrypt" title="Remove keyfile" style="display:none;">✕</button>
+                            <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-decrypt" title="Remove keyfile" >✕</button>
                         </div>
-                        <span class="v2-keyfile-badge v2-keyfile-badge--teal" id="v2-keyfile-badge-decrypt" style="display:none;"></span>
-                        <span class="v2-keyfile-badge v2-keyfile-badge--teal" id="decrypt-polyglot-badge" style="display:none; margin-top: 0.4rem; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">🎭 Camouflaged Media Vault Detected</span>
+                        <span class="v2-keyfile-badge v2-keyfile-badge--teal d-none" id="v2-keyfile-badge-decrypt" ></span>
+                        <span class="v2-keyfile-badge v2-keyfile-badge--teal style-decrypt-polyglot-badge" id="decrypt-polyglot-badge" >🎭 Camouflaged Media Vault Detected</span>
                     </div>
 
                     <div class="alert-box">
@@ -777,7 +775,7 @@
                             Decrypt &amp; Download Vault
                         </span>
                     </button>
-                    <button type="button" class="btn btn--outline-salvage" id="btn-decrypt-salvage" style="margin-top: 0.6rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.55rem; background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.4); color: #f59e0b; border-radius: var(--radius-sm, 8px); cursor: pointer; transition: all 0.2s ease;">
+                    <button type="button" class="btn btn--outline-salvage style-btn-decrypt-salvage" id="btn-decrypt-salvage" >
                         <span>🔧</span>
                         <span>Salvage Corrupted / Bit-Rot Vault (Rescue Mode)</span>
                     </button>
@@ -786,7 +784,7 @@
         </main>
 
         <!-- ── PROGRESS PANEL ── -->
-        <section class="progress-panel" id="progress-card" style="display:none;" aria-live="polite">
+        <section class="progress-panel d-none" id="progress-card"  aria-live="polite">
             <div class="progress-panel-inner">
 
                 <!-- ── Stage Pipeline Pills ── -->
@@ -823,7 +821,7 @@
                 </div>
 
                 <!-- ── 60 FPS Real-Time Telemetry HUD ── -->
-                <div class="telemetry-hud" id="telemetry-hud" style="display: none;">
+                <div class="telemetry-hud d-none" id="telemetry-hud" >
                     <div class="hud-item">
                         <span class="hud-label">Speed</span>
                         <span class="hud-val" id="telemetry-speed">0.0 MB/s</span>
@@ -847,17 +845,17 @@
                 </div>
 
                 <!-- ── Operation Actions (Cooperative Cancel) ── -->
-                <div class="progress-actions" id="progress-actions" style="display: none;">
+                <div class="progress-actions d-none" id="progress-actions" >
                     <button type="button" class="btn-cancel-op" id="btn-cancel-op" title="Cancel current operation">
                         <span class="cancel-icon">✕</span> Cancel Operation
                     </button>
                 </div>
 
                 <!-- ── Stage Detail Cards ── -->
-                <div class="stage-details" id="stage-details" style="display:none;">
+                <div class="stage-details d-none" id="stage-details" >
 
                     <!-- Compress detail -->
-                    <div class="stage-detail-card" id="detail-compress" style="display:none;">
+                    <div class="stage-detail-card d-none" id="detail-compress" >
                         <div class="sd-header">
                             <span class="sd-icon">📦</span>
                             <span class="sd-title">Compression</span>
@@ -887,7 +885,7 @@
                     </div>
 
                     <!-- Crypto detail -->
-                    <div class="stage-detail-card" id="detail-crypto" style="display:none;">
+                    <div class="stage-detail-card d-none" id="detail-crypto" >
                         <div class="sd-header">
                             <span class="sd-icon" id="sd-crypto-icon">🔐</span>
                             <span class="sd-title" id="sd-crypto-title">Encryption</span>
@@ -917,7 +915,7 @@
                     </div>
 
                     <!-- Save detail -->
-                    <div class="stage-detail-card" id="detail-save" style="display:none;">
+                    <div class="stage-detail-card d-none" id="detail-save" >
                         <div class="sd-header">
                             <span class="sd-icon">💾</span>
                             <span class="sd-title" id="sd-save-title">Output</span>
@@ -1060,20 +1058,19 @@
             </div>
             <p class="footer-tagline">Your files stay on your device. Always.</p>
             <div class="footer-links">
-                <a href="./knowledge/" style="color: #c084fc; font-weight: 600;">Knowledge Hub</a>
+                <a class="u-style-y29sb3i6" href="./knowledge/" >Knowledge Hub</a>
                 <span>·</span>
                 <a href="./how-to-use-zevsafe/">How To Use</a>
                 <span>·</span>
-                <a href="./security-audit/" style="color: #34d399; font-weight: 600;">Security Audit (Grade A+)</a>
+                <a class="u-style-y29sb3i6" href="./security-audit/" >Security Audit (Grade A+)</a>
                 <span>·</span>
-                <a href="./device-power/" style="color: #38bdf8; font-weight: 600;">Device Power</a>
+                <a class="u-style-y29sb3i6" href="./device-power/" >Device Power</a>
                 <span>·</span>
                 <a href="#install" id="footer-install-link">Install App (PWA)</a>
                 <span>·</span>
-                <a href="./roadmap/" style="color: #38bdf8; font-weight: 600;">Master Plan &amp; Roadmap</a>
+                <a class="u-style-y29sb3i6" href="./roadmap/" >Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.22.0 / WEB-VERSION-73)</a>
-                <!-- Baseline regression assertion preservation: v8.19.0 / WEB-VERSION-70 -->
+                <a href="./change-log/">Changelog (v8.23.0 / WEB-VERSION-74)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1085,7 +1082,7 @@
     </div>
 
     <!-- ── DECRYPTED VAULT FILE EXPLORER MODAL ── -->
-    <div class="explorer-modal-overlay" id="vault-explorer-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="explorer-modal-title">
+    <div class="explorer-modal-overlay d-none" id="vault-explorer-modal"  role="dialog" aria-modal="true" aria-labelledby="explorer-modal-title">
         <div class="explorer-modal">
             <header class="explorer-header">
                 <div class="explorer-title-wrap">
@@ -1112,7 +1109,7 @@
                 <div class="explorer-search-wrap">
                     <span class="explorer-search-icon">🔍</span>
                     <input type="text" id="explorer-search-input" class="explorer-search-input" placeholder="Search files in vault..." autocomplete="off" spellcheck="false">
-                    <button class="explorer-search-clear" id="btn-clear-explorer-search" title="Clear search" style="display: none;">✕</button>
+                    <button class="explorer-search-clear d-none" id="btn-clear-explorer-search" title="Clear search" >✕</button>
                 </div>
 
                 <div class="explorer-controls-wrap">
@@ -1149,7 +1146,7 @@
                     <!-- Create New Text File in Active Directory -->
                     <!-- Add External Files into Active Directory -->
                     <button class="explorer-btn-add-files" id="btn-explorer-add-files" title="Import files from device into current folder">➕ Add Files</button>
-                    <input type="file" id="explorer-add-files-input" multiple style="display:none;" autocomplete="off">
+                    <input class="d-none" type="file" id="explorer-add-files-input" multiple  autocomplete="off">
 
                     <!-- Create New Text File in Active Directory -->
                     <button class="explorer-btn-new-file" id="btn-explorer-new-file" title="Create new text file in current folder">➕ New Note</button>
@@ -1157,7 +1154,7 @@
             </div>
 
             <!-- Category Filter Tabs (shown when multiple categories exist) -->
-            <div class="explorer-filter-tabs" id="explorer-filter-tabs" role="tablist" aria-label="Filter by file type" style="display: none;">
+            <div class="explorer-filter-tabs d-none" id="explorer-filter-tabs" role="tablist" aria-label="Filter by file type" >
                 <button class="explorer-filter-tab explorer-filter-tab--active" data-filter="all" id="tab-filter-all" role="tab" aria-selected="true">All (<span id="filter-count-all">0</span>)</button>
                 <button class="explorer-filter-tab" data-filter="video" id="tab-filter-video" role="tab" aria-selected="false">🎬 Videos (<span id="filter-count-video">0</span>)</button>
                 <button class="explorer-filter-tab" data-filter="audio" id="tab-filter-audio" role="tab" aria-selected="false">🎵 Audio (<span id="filter-count-audio">0</span>)</button>
@@ -1168,12 +1165,12 @@
             </div>
 
             <!-- Explorer Breadcrumbs Navigation (vault root / active folder) -->
-            <nav class="explorer-breadcrumbs" id="explorer-breadcrumbs" aria-label="Vault file path" style="display: none;">
+            <nav class="explorer-breadcrumbs d-none" id="explorer-breadcrumbs" aria-label="Vault file path" >
                 <span class="breadcrumb-item breadcrumb-item--root" id="breadcrumb-root">📁 Vault Root</span>
             </nav>
 
             <!-- Batch Selection Action Bar (hidden until items selected) -->
-            <div class="explorer-batch-bar" id="explorer-batch-bar" style="display: none;">
+            <div class="explorer-batch-bar d-none" id="explorer-batch-bar" >
                 <div class="explorer-batch-info">
                     <label class="explorer-checkbox-wrap">
                         <input type="checkbox" id="explorer-select-all" aria-label="Select all visible files">
@@ -1200,21 +1197,21 @@
     </div>
 
     <!-- Dedicated In-Browser Media Player Modal (Pro Cinema Upgrade 5.0) -->
-    <div class="media-modal-overlay" id="vault-media-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="media-modal-title">
+    <div class="media-modal-overlay d-none" id="vault-media-modal"  role="dialog" aria-modal="true" aria-labelledby="media-modal-title">
         <div class="media-modal-container">
             <header class="media-modal-header">
                 <div class="media-modal-info">
                     <span class="media-type-badge" id="media-modal-badge">🎬 Video</span>
                     <h3 class="media-modal-title" id="media-modal-title">Media Preview</h3>
                     <span class="media-track-counter" id="media-modal-counter">1 of 1</span>
-                    <span class="media-forensic-specs" id="media-forensic-specs" style="display:none;" title="Video Resolution, Framerate & Streaming Pipeline">1080p FHD · ⚡ Range Stream</span>
+                    <span class="media-forensic-specs d-none" id="media-forensic-specs"  title="Video Resolution, Framerate & Streaming Pipeline">1080p FHD · ⚡ Range Stream</span>
                 </div>
                 <div class="media-modal-actions">
                     <button class="media-btn-action" id="btn-media-snapshot" aria-label="Snap full-resolution video frame" title="Extract current video frame at full resolution as PNG (S)">📸 Snap Frame</button>
                     <button class="media-btn-action" id="btn-media-loop" aria-label="Toggle loop mode" title="Toggle single-video loop / playlist auto-advance">🔁 Loop: Off</button>
                     <button class="media-btn-action" id="btn-media-ambient" aria-label="Toggle ambient backlight glow" title="Toggle immersive ambient backlight glow">✨ Ambient: Off</button>
                     <button class="media-btn-action" id="btn-media-hotkeys" aria-label="View keyboard shortcuts" title="View Keyboard Shortcuts Cheatsheet (?)">⌨️ Hotkeys</button>
-                    <button class="media-btn-action" id="btn-media-dock" aria-label="Dock player" title="Minimize player to bottom dock" style="display:none;background:rgba(45,212,191,0.18);color:#2dd4bf;border-color:rgba(45,212,191,0.4);">📥 Dock</button>
+                    <button class="media-btn-action style-btn-media-dock" id="btn-media-dock" aria-label="Dock player" title="Minimize player to bottom dock" >📥 Dock</button>
                     <button class="media-btn-action" id="btn-media-open-tab" aria-label="Open in new tab" title="Open and play in new browser tab">↗️ New Tab</button>
                     <button class="media-btn-action" id="btn-media-download" aria-label="Save media file to device" title="Save file to device">⬇️ Save</button>
                     <button class="explorer-btn-close" id="btn-close-media-modal" title="Close Player (Esc)" aria-label="Close Player">✕</button>
@@ -1222,7 +1219,7 @@
             </header>
 
             <!-- Interactive Hotkeys Cheatsheet Overlay -->
-            <div class="media-hotkeys-modal" id="media-hotkeys-modal" style="display: none;" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+            <div class="media-hotkeys-modal d-none" id="media-hotkeys-modal"  role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
                 <div class="media-hotkeys-card">
                     <div class="media-hotkeys-header">
                         <h4>⌨️ Video Studio Keyboard Shortcuts</h4>
@@ -1264,11 +1261,11 @@
             <div class="media-modal-body" id="media-modal-body">
                 <div class="cinema-video-stage" id="cinema-video-stage" title="Click to Play/Pause • Double-click left/right to seek 10s • Mouse wheel to zoom">
                     <canvas id="cinema-ambient-canvas" class="cinema-ambient-canvas" aria-hidden="true"></canvas>
-                    <video id="cinema-video" class="media-player-element" style="display:none;" playsinline webkit-playsinline preload="auto"></video>
-                    <audio id="cinema-audio" class="media-player-element" style="display:none;" controls preload="auto"></audio>
+                    <video id="cinema-video" class="media-player-element d-none"  playsinline webkit-playsinline preload="auto"></video>
+                    <audio id="cinema-audio" class="media-player-element d-none"  controls preload="auto"></audio>
                     
                     <!-- Zoom HUD indicator -->
-                    <div class="cinema-zoom-badge" id="cinema-zoom-badge" style="display:none;" title="Zoom level">🔍 100%</div>
+                    <div class="cinema-zoom-badge d-none" id="cinema-zoom-badge"  title="Zoom level">🔍 100%</div>
 
                     <!-- Center Ripple Animation Indicator -->
                     <div class="cinema-center-ripple" id="cinema-center-ripple" aria-hidden="true">▶</div>
@@ -1278,8 +1275,8 @@
                     <div class="cinema-gesture-badge cinema-gesture-badge--right" id="cinema-gesture-right" aria-hidden="true">10s ⏩</div>
                 </div>
 
-                <div id="media-loading-indicator" style="display:none;flex-direction:column;align-items:center;gap:12px;color:var(--text-2);">
-                    <div class="status-dot" style="width:16px;height:16px;background:var(--purple-light);"></div>
+                <div class="style-media-loading-indicator" id="media-loading-indicator" >
+                    <div class="status-dot u-style-d2lkdgg6" ></div>
                     <span id="media-loading-text">Extracting media chunks on demand…</span>
                 </div>
             </div>
@@ -1290,11 +1287,11 @@
                 <div class="media-timeline-wrap" id="media-timeline-wrap" role="slider" aria-label="Video scrubber" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0" title="Click or drag to seek">
                     <div class="media-timeline-track" id="media-timeline-track">
                         <div class="media-timeline-buffer" id="media-timeline-buffer"></div>
-                        <div class="media-timeline-ab-range" id="media-timeline-ab-range" style="display:none;"></div>
+                        <div class="media-timeline-ab-range d-none" id="media-timeline-ab-range" ></div>
                         <div class="media-timeline-progress" id="media-timeline-progress"></div>
                         <div class="media-timeline-thumb" id="media-timeline-thumb"></div>
-                        <div class="media-timeline-ab-marker media-timeline-ab-marker--a" id="media-timeline-marker-a" style="display:none;" title="Loop Point A">A</div>
-                        <div class="media-timeline-ab-marker media-timeline-ab-marker--b" id="media-timeline-marker-b" style="display:none;" title="Loop Point B">B</div>
+                        <div class="media-timeline-ab-marker media-timeline-ab-marker--a d-none" id="media-timeline-marker-a"  title="Loop Point A">A</div>
+                        <div class="media-timeline-ab-marker media-timeline-ab-marker--b d-none" id="media-timeline-marker-b"  title="Loop Point B">B</div>
                         <div class="media-timeline-bookmarks-wrap" id="media-timeline-bookmarks-wrap"></div>
                     </div>
                     <div class="media-timeline-tooltip" id="media-timeline-tooltip">00:00</div>
@@ -1380,7 +1377,7 @@
                         <span class="media-tools-label">A-B Loop:</span>
                         <button class="media-ctrl-btn" id="btn-media-ab-a" aria-label="Set A-B loop point A" title="Set Point A at current time ([)">[ A</button>
                         <button class="media-ctrl-btn" id="btn-media-ab-b" aria-label="Set A-B loop point B" title="Set Point B at current time (])">B ]</button>
-                        <button class="media-ctrl-btn" id="btn-media-ab-clear" aria-label="Clear A-B loop" title="Clear A-B Loop (\)" style="color:var(--text-3);">✕ Clear</button>
+                        <button class="media-ctrl-btn style-btn-media-ab-clear" id="btn-media-ab-clear" aria-label="Clear A-B loop" title="Clear A-B Loop (\)" >✕ Clear</button>
                     </div>
 
                     <div class="media-tools-group">
@@ -1399,7 +1396,7 @@
                         <button class="media-ctrl-btn media-filter-btn" id="btn-filter-contrast" aria-label="Contrast filter" title="High contrast (+50%) for text/document clarity">🌓 Contrast</button>
                         <button class="media-ctrl-btn media-filter-btn" id="btn-filter-invert" aria-label="Invert color filter" title="Negative forensic inversion">🔄 Invert</button>
                         <button class="media-ctrl-btn media-filter-btn" id="btn-filter-cctv" aria-label="CCTV monochrome filter" title="Security camera monochrome B&W">📹 CCTV B&W</button>
-                        <button class="media-ctrl-btn" id="btn-filter-reset" aria-label="Reset video filters" title="Reset all transforms and filters" style="color:var(--text-3);">Reset</button>
+                        <button class="media-ctrl-btn style-btn-media-ab-clear" id="btn-filter-reset" aria-label="Reset video filters" title="Reset all transforms and filters" >Reset</button>
                     </div>
                 </div>
             </div>
@@ -1407,7 +1404,7 @@
     </div>
 
     <!-- Dedicated In-Browser Image Lightbox Modal -->
-    <div class="media-modal-overlay image-modal-overlay" id="vault-image-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="image-modal-title">
+    <div class="media-modal-overlay image-modal-overlay d-none" id="vault-image-modal"  role="dialog" aria-modal="true" aria-labelledby="image-modal-title">
         <div class="media-modal-container image-modal-container">
             <header class="media-modal-header">
                 <div class="media-modal-info">
@@ -1427,8 +1424,8 @@
                 <div class="image-viewport" id="image-viewport">
                     <img id="lightbox-image" class="lightbox-img" alt="Decrypted Vault Image Preview" draggable="false">
                 </div>
-                <div id="image-loading-indicator" style="display:none;flex-direction:column;align-items:center;gap:12px;color:var(--text-2);padding:40px;">
-                    <div class="status-dot" style="width:16px;height:16px;background:var(--teal);"></div>
+                <div class="style-image-loading-indicator" id="image-loading-indicator" >
+                    <div class="status-dot u-style-d2lkdgg6" ></div>
                     <span id="image-loading-text">Extracting image on demand…</span>
                 </div>
             </div>
@@ -1454,7 +1451,7 @@
     </div>
 
     <!-- Dedicated In-Browser Text & Code Document Viewer Modal -->
-    <div class="media-modal-overlay text-modal-overlay" id="vault-text-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="text-modal-title">
+    <div class="media-modal-overlay text-modal-overlay d-none" id="vault-text-modal"  role="dialog" aria-modal="true" aria-labelledby="text-modal-title">
         <div class="media-modal-container text-modal-container">
             <header class="media-modal-header">
                 <div class="media-modal-info">
@@ -1463,10 +1460,10 @@
                     <span class="media-track-counter" id="text-modal-meta">0 lines · 0 KB</span>
                 </div>
                 <div class="media-modal-actions">
-                    <button class="media-btn-action" id="btn-text-open-tab" title="Open document in new browser tab" style="display:none;">↗️ New Tab</button>
-                    <button class="media-btn-action" id="btn-text-markdown" title="Toggle Markdown rendered preview" style="display:none;background:rgba(167,139,250,0.18);color:#c4b5fd;border-color:rgba(167,139,250,0.4);">📖 Markdown</button>
+                    <button class="media-btn-action d-none" id="btn-text-open-tab" title="Open document in new browser tab" >↗️ New Tab</button>
+                    <button class="media-btn-action style-btn-text-markdown" id="btn-text-markdown" title="Toggle Markdown rendered preview" >📖 Markdown</button>
                     <button class="media-btn-action" id="btn-text-edit" title="Edit document in browser">✏️ Edit</button>
-                    <button class="media-btn-action" id="btn-text-save-changes" title="Save changes to decrypted session" style="display:none;background:rgba(20,184,166,0.22);color:#2dd4bf;border-color:rgba(20,184,166,0.5);">💾 Save</button>
+                    <button class="media-btn-action style-btn-text-save-changes" id="btn-text-save-changes" title="Save changes to decrypted session" >💾 Save</button>
                     <button class="media-btn-action" id="btn-text-wrap" title="Toggle word wrap">↩️ Wrap</button>
                     <button class="media-btn-action" id="btn-text-copy" title="Copy entire document to clipboard">📋 Copy</button>
                     <button class="media-btn-action" id="btn-text-download" title="Save document to device">⬇️ Save</button>
@@ -1475,23 +1472,23 @@
             </header>
 
             <div class="text-modal-body" id="text-modal-body">
-                <div id="text-loading-indicator" style="display:none;flex-direction:column;align-items:center;gap:12px;color:var(--text-2);padding:40px;">
-                    <div class="status-dot" style="width:16px;height:16px;background:var(--purple-light);"></div>
+                <div class="style-image-loading-indicator" id="text-loading-indicator" >
+                    <div class="status-dot u-style-d2lkdgg6" ></div>
                     <span>Extracting document on demand…</span>
                 </div>
                 <div class="text-editor-view" id="text-editor-view">
                     <div class="text-line-numbers" id="text-line-numbers" aria-hidden="true"></div>
                     <pre class="text-code-content" id="text-code-content" tabindex="0"></pre>
-                    <textarea class="text-code-content text-code-textarea" id="text-code-textarea" style="display:none;" spellcheck="false" placeholder="Type or edit document text here..."></textarea>
+                    <textarea class="text-code-content text-code-textarea d-none" id="text-code-textarea"  spellcheck="false" placeholder="Type or edit document text here..."></textarea>
                 </div>
-                <iframe class="pdf-preview-frame" id="pdf-preview-frame" style="display: none;" title="PDF Document Preview"></iframe>
-                <div class="markdown-preview-body" id="markdown-preview-body" style="display: none;" tabindex="0"></div>
+                <iframe class="pdf-preview-frame d-none" id="pdf-preview-frame"  title="PDF Document Preview"></iframe>
+                <div class="markdown-preview-body d-none" id="markdown-preview-body"  tabindex="0"></div>
             </div>
         </div>
     </div>
 
     <!-- Password Save Prompt Modal -->
-    <div class="pw-modal-overlay" id="pw-save-modal" style="display: none;">
+    <div class="pw-modal-overlay d-none" id="pw-save-modal" >
         <div class="pw-modal">
             <div class="pw-modal-header">
                 <img class="modal-logo" src="assets/zevsafe-logo.png" alt="ZevSafe Logo" width="28" height="28" loading="lazy">
@@ -1516,7 +1513,7 @@
             <div class="pw-modal-footer">
                 <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-close-pw-modal">Dismiss</button>
                 <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-open-paper-safe" title="Generate printable Guilloche recovery certificate with QR code">🖨️ Paper-Safe Sheet</button>
-                <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-print-pw-sheet" style="display:none;">🖨️ Print Sheet</button>
+                <button class="pw-modal-btn pw-modal-btn--secondary d-none" id="btn-print-pw-sheet" >🖨️ Print Sheet</button>
                 <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-download-pw-sheet">⬇️ Download Sheet</button>
                 <button class="pw-modal-btn pw-modal-btn--primary" id="btn-modal-save-pw-manager">💾 Save Password</button>
             </div>
@@ -1526,90 +1523,90 @@
     <!-- PWA Install Guide Modal -->
     
     <!-- 1-Click USB Air-Gap Backup Kit Modal -->
-    <div class="pw-modal-overlay" id="usb-backup-modal" style="display: none;" aria-hidden="true" role="dialog" aria-labelledby="usb-backup-modal-title">
-        <div class="pw-modal" style="max-width: 580px;">
-            <div class="pw-modal-header" style="justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">💾</div>
+    <div class="pw-modal-overlay d-none" id="usb-backup-modal"  aria-hidden="true" role="dialog" aria-labelledby="usb-backup-modal-title">
+        <div class="pw-modal u-style-bwf4lxdp" >
+            <div class="pw-modal-header u-justify-between" >
+                <div class="u-flex-center-gap-md" >
+                    <div class="u-style-d2lkdgg6" >💾</div>
                     <div>
-                        <h3 id="usb-backup-modal-title" style="margin: 0; font-size: 1.15rem; color: #f1f5f9;">USB Air-Gap Backup Kit</h3>
-                        <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">● 100% Zero-Network Self-Contained Vault</span>
+                        <h3 class="modal-heading--light" id="usb-backup-modal-title" >USB Air-Gap Backup Kit</h3>
+                        <span class="u-style-zm9udc1z" >● 100% Zero-Network Self-Contained Vault</span>
                     </div>
                 </div>
-                <button type="button" class="media-btn-icon" id="btn-close-usb-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-usb-modal" title="Close" >✕</button>
             </div>
-            <div class="pw-modal-body" style="gap: 1rem; font-size: 0.88rem; line-height: 1.55;">
-                <p style="margin: 0; color: var(--text-secondary);">
+            <div class="pw-modal-body u-style-z2fwoiax" >
+                <p class="u-style-bwfyz2lu" >
                     Export a completely offline, standalone copy of ZevSafe to any USB flash drive, external SSD, or air-gapped storage. Includes all cryptographic engines, Knowledge Hub manuals, and 1-click zero-config launchers for Windows, macOS, and Linux.
                 </p>
 
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem;">
-                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: var(--radius-md); padding: 0.65rem 0.85rem;">
-                        <div style="font-weight: 600; color: #34d399; font-size: 0.82rem; margin-bottom: 0.2rem;">⚡ No Google Fonts / CDNs</div>
-                        <div style="color: var(--text-muted); font-size: 0.76rem;">True air-gap with native system typography. Zero outgoing requests.</div>
+                <div class="u-style-zglzcgxh" >
+                    <div class="modal-card-inset-subtle" >
+                        <div class="u-style-zm9udc13" >⚡ No Google Fonts / CDNs</div>
+                        <div class="u-style-y29sb3i6" >True air-gap with native system typography. Zero outgoing requests.</div>
                     </div>
-                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: var(--radius-md); padding: 0.65rem 0.85rem;">
-                        <div style="font-weight: 600; color: #38bdf8; font-size: 0.82rem; margin-bottom: 0.2rem;">🖥️ Multi-OS Launchers</div>
-                        <div style="color: var(--text-muted); font-size: 0.76rem;">Bundles .bat for Windows and .sh for Linux/macOS with localhost fallbacks.</div>
+                    <div class="modal-card-inset-subtle" >
+                        <div class="u-style-zm9udc13" >🖥️ Multi-OS Launchers</div>
+                        <div class="u-style-y29sb3i6" >Bundles .bat for Windows and .sh for Linux/macOS with localhost fallbacks.</div>
                     </div>
                 </div>
 
                 <!-- Export Progress Card -->
-                <div id="usb-backup-progress-card" style="display: none; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 0.85rem;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.4rem;">
-                        <span id="usb-backup-status-text" style="color: #34d399; font-weight: 500;">Packaging assets...</span>
-                        <span id="usb-backup-percent" style="color: var(--text-muted); font-family: var(--font-mono);">0%</span>
+                <div class="style-usb-backup-progress-card" id="usb-backup-progress-card" >
+                    <div class="u-style-zglzcgxh" >
+                        <span class="style-usb-backup-status-text" id="usb-backup-status-text" >Packaging assets...</span>
+                        <span class="style-usb-backup-percent" id="usb-backup-percent" >0%</span>
                     </div>
-                    <div style="height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden;">
-                        <div id="usb-backup-progress-fill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, #06b6d4); transition: width 0.15s ease;"></div>
+                    <div class="u-style-agvpz2h0" >
+                        <div class="style-usb-backup-progress-fill" id="usb-backup-progress-fill" ></div>
                     </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 0.65rem; margin-top: 0.25rem;">
-                    <button type="button" class="pw-modal-btn pw-modal-btn--primary" id="btn-usb-download-zip" style="width: 100%; justify-content: center; padding: 0.75rem 1rem; font-size: 0.92rem; font-weight: 600; background: linear-gradient(135deg, #059669, #0d9488); border: none; border-radius: var(--radius-md); color: #fff; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                <div class="u-style-zglzcgxh" >
+                    <button type="button" class="pw-modal-btn pw-modal-btn--primary style-btn-usb-download-zip" id="btn-usb-download-zip" >
                         <span>⬇️ Download Standalone ZIP Kit</span>
-                        <span style="font-size: 0.72rem; opacity: 0.85; padding: 2px 6px; background: rgba(0,0,0,0.25); border-radius: 4px;">.zip</span>
+                        <span class="u-style-zm9udc1z" >.zip</span>
                     </button>
 
-                    <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-usb-write-drive" style="width: 100%; justify-content: center; padding: 0.75rem 1rem; font-size: 0.88rem; font-weight: 500; display: none;">
+                    <button type="button" class="pw-modal-btn pw-modal-btn--secondary style-btn-usb-write-drive" id="btn-usb-write-drive" >
                         <span>⚡ Write Directly to USB Flash Drive</span>
-                        <span style="font-size: 0.72rem; color: #10b981; margin-left: 4px;">(Direct Drive)</span>
+                        <span class="u-style-zm9udc1z" >(Direct Drive)</span>
                     </button>
                 </div>
             </div>
-            <div class="pw-modal-footer" style="justify-content: space-between;">
-                <span style="font-size: 0.75rem; color: var(--text-muted);">AES-256-GCM · PBKDF2-SHA512 · Offline Safe</span>
+            <div class="pw-modal-footer u-justify-between" >
+                <span class="u-style-zm9udc1z" >AES-256-GCM · PBKDF2-SHA512 · Offline Safe</span>
                 <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-close-usb-modal-footer">Close</button>
             </div>
         </div>
     </div>
 
     <!-- 🖨️ PAPER-SAFE COLD-STORAGE CERTIFICATE MODAL -->
-    <div class="pw-modal-overlay" id="paper-safe-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="paper-safe-modal-title">
-        <div class="pw-modal" style="max-width: 900px; width: 95vw;">
-            <div class="pw-modal-header" style="justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🖨️</div>
+    <div class="pw-modal-overlay d-none" id="paper-safe-modal"  role="dialog" aria-modal="true" aria-labelledby="paper-safe-modal-title">
+        <div class="pw-modal u-style-bwf4lxdp" >
+            <div class="pw-modal-header u-justify-between" >
+                <div class="u-flex-center-gap-md" >
+                    <div class="u-style-d2lkdgg6" >🖨️</div>
                     <div>
-                        <h3 id="paper-safe-modal-title" style="margin: 0; font-size: 1.15rem; color: #f1f5f9;">Paper-Safe Cold-Storage Recovery Sheet</h3>
-                        <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">● Air-Gapped Printable Physical Vault Backup</span>
+                        <h3 class="modal-heading--light" id="paper-safe-modal-title" >Paper-Safe Cold-Storage Recovery Sheet</h3>
+                        <span class="u-style-zm9udc1z" >● Air-Gapped Printable Physical Vault Backup</span>
                     </div>
                 </div>
-                <button type="button" class="media-btn-icon" id="btn-close-paper-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-paper-modal" title="Close" >✕</button>
             </div>
             
-            <div class="pw-modal-body" style="padding: 1.25rem; max-height: 75vh; overflow-y: auto;">
+            <div class="pw-modal-body u-style-cgfkzglu" >
                 <!-- Sheet customization bar -->
                 <div class="paper-safe-custom-bar">
-                    <div style="flex: 1; min-width: 220px;">
-                        <label for="paper-hint-input" style="font-size: 0.75rem; color: var(--text-2); font-weight: 600; text-transform: uppercase;">Optional Passphrase Hint / Location</label>
-                        <input type="text" id="paper-hint-input" class="field-input" placeholder="e.g. 4 Diceware words in the blue safe ledger" style="margin-top: 4px; padding: 0.45rem 0.75rem; font-size: 0.85rem;" maxlength="80">
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #f1f5f9; cursor: pointer; user-select: none; margin-top: 8px;">
-                            <input type="checkbox" id="chk-paper-embed-password" checked style="accent-color: #10b981; width: 16px; height: 16px; cursor: pointer;">
-                            <span>⚡ <strong style="color: #34d399;">Master Key QR:</strong> Embed password into QR for 1-scan instant unlock</span>
+                    <div class="u-style-zmxledog" >
+                        <label class="u-style-zm9udc1z" for="paper-hint-input" >Optional Passphrase Hint / Location</label>
+                        <input type="text" id="paper-hint-input" class="field-input style-paper-hint-input" placeholder="e.g. 4 Diceware words in the blue safe ledger"  maxlength="80">
+                        <label class="u-style-zglzcgxh" >
+                            <input class="style-chk-paper-embed-password" type="checkbox" id="chk-paper-embed-password" checked >
+                            <span>⚡ <strong class="u-style-y29sb3i6" >Master Key QR:</strong> Embed password into QR for 1-scan instant unlock</span>
                         </label>
                     </div>
-                    <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                    <div class="u-style-zglzcgxh" >
                         <button class="pw-modal-btn pw-modal-btn--primary" id="btn-print-paper-safe">🖨️ Print Sheet</button>
                         <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-download-paper-html">💾 Save Offline (.html)</button>
                     </div>
@@ -1621,143 +1618,143 @@
                 </div>
             </div>
             
-            <div class="pw-modal-footer" style="justify-content: space-between;">
-                <span style="font-size: 0.75rem; color: var(--text-muted);">🔒 Store printed sheet in a fireproof safe. Contains salt fingerprint and metadata (never plaintext password).</span>
+            <div class="pw-modal-footer u-justify-between" >
+                <span class="u-style-zm9udc1z" >🔒 Store printed sheet in a fireproof safe. Contains salt fingerprint and metadata (never plaintext password).</span>
                 <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-dismiss-paper-modal">Close</button>
             </div>
         </div>
     </div>
 
     <!-- 📷 OPTICAL PAPER-SAFE QR SCANNER MODAL -->
-    <div class="pw-modal-overlay" id="qr-scanner-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="qr-scanner-modal-title">
-        <div class="pw-modal" style="max-width: 520px; width: 95vw;">
-            <div class="pw-modal-header" style="justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">📷</div>
+    <div class="pw-modal-overlay d-none" id="qr-scanner-modal"  role="dialog" aria-modal="true" aria-labelledby="qr-scanner-modal-title">
+        <div class="pw-modal u-style-bwf4lxdp" >
+            <div class="pw-modal-header u-justify-between" >
+                <div class="u-flex-center-gap-md" >
+                    <div class="u-style-d2lkdgg6" >📷</div>
                     <div>
-                        <h3 id="qr-scanner-modal-title" style="margin: 0; font-size: 1.15rem; color: #f1f5f9;">Scan Paper-Safe Recovery QR</h3>
-                        <span style="font-size: 0.75rem; color: #38bdf8; font-weight: 600;">● Optical Cold-Storage Restoration</span>
+                        <h3 class="modal-heading--light" id="qr-scanner-modal-title" >Scan Paper-Safe Recovery QR</h3>
+                        <span class="u-style-zm9udc1z" >● Optical Cold-Storage Restoration</span>
                     </div>
                 </div>
-                <button type="button" class="media-btn-icon" id="btn-close-scanner-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-scanner-modal" title="Close" >✕</button>
             </div>
             
-            <div class="pw-modal-body" style="gap: 1rem; padding: 1.25rem;">
+            <div class="pw-modal-body u-style-z2fwoiax" >
                 <!-- Camera Viewfinder -->
                 <div class="qr-scanner-viewfinder" id="qr-viewfinder-box">
                     <video id="qr-camera-feed" class="qr-camera-element" playsinline autoplay muted></video>
                     <div class="qr-laser-line"></div>
                     <div class="qr-target-corners">
                         <div class="qr-scan-placeholder" id="qr-camera-placeholder">
-                            <span style="font-size: 2.2rem; opacity: 0.4;">📷</span>
-                            <span style="font-size: 0.8rem; color: #94a3b8; text-align: center; max-width: 200px;">Camera inactive or permission required</span>
-                            <button type="button" class="btn-pw-mgr btn-pw-mgr--teal" id="btn-start-camera" style="margin-top: 6px;">Start Camera</button>
+                            <span class="style-qr-camera-placeholder" >📷</span>
+                            <span class="u-style-zm9udc1z" >Camera inactive or permission required</span>
+                            <button type="button" class="btn-pw-mgr btn-pw-mgr--teal style-btn-start-camera" id="btn-start-camera" >Start Camera</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Alternative: Image Drop Zone / File Picker / Clipboard Paste -->
                 <div class="qr-drop-zone" id="qr-image-dropzone" tabindex="0" role="button" aria-label="Drop QR image, click to browse, or paste from clipboard">
-                    <input type="file" id="qr-file-input" accept="image/*" style="display: none;">
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none;">
-                        <span style="font-size: 1.2rem;">📁</span>
-                        <span style="font-size: 0.82rem; color: var(--text-1); font-weight: 600;">Drop QR photo or click to browse</span>
-                        <span style="font-size: 0.74rem; color: var(--text-2);">JPG, PNG, WebP · Or press <strong style="color:var(--teal-light);">Ctrl+V</strong> to paste screenshot</span>
+                    <input class="d-none" type="file" id="qr-file-input" accept="image/*" >
+                    <div class="style-qr-file-input" >
+                        <span class="u-style-zm9udc1z" >📁</span>
+                        <span class="u-style-zm9udc1z" >Drop QR photo or click to browse</span>
+                        <span class="u-style-zm9udc1z" >JPG, PNG, WebP · Or press <strong class="u-style-y29sb3i6" >Ctrl+V</strong> to paste screenshot</span>
                     </div>
                 </div>
 
                 <!-- 1-Click Clipboard Paste Action -->
-                <div style="display: flex; gap: 8px; justify-content: center; width: 100%;">
-                    <button type="button" class="btn-pw-mgr btn-pw-mgr--teal" id="btn-paste-qr-clipboard" style="width: 100%; justify-content: center; padding: 0.55rem 1rem; font-size: 0.84rem;" title="Paste screenshot, image, or recovery code directly from your clipboard">
+                <div class="u-flex-center-gap-8" >
+                    <button type="button" class="btn-pw-mgr btn-pw-mgr--teal style-btn-paste-qr-clipboard" id="btn-paste-qr-clipboard"  title="Paste screenshot, image, or recovery code directly from your clipboard">
                         📋 Paste Image or Code from Clipboard (Ctrl+V)
                     </button>
                 </div>
 
                 <!-- Detected Parameters Card (Hidden until scan success) -->
-                <div class="qr-detected-card" id="qr-detected-card" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="color: #34d399; font-size: 0.88rem;">✔ Detected Paper-Safe Certificate</strong>
-                        <span style="color: var(--text-2); font-size: 0.74rem;" id="qr-detected-format">ZV3 STREAM</span>
+                <div class="qr-detected-card d-none" id="qr-detected-card" >
+                    <div class="u-flex-between" >
+                        <strong class="u-style-y29sb3i6" >✔ Detected Paper-Safe Certificate</strong>
+                        <span class="u-style-y29sb3i6"  id="qr-detected-format">ZV3 STREAM</span>
                     </div>
-                    <div style="font-size: 0.82rem; color: var(--text-2); line-height: 1.5; margin-top: 6px;" id="qr-detected-details">
+                    <div class="style-qr-detected-format"  id="qr-detected-details">
                         <!-- Populated dynamically -->
                     </div>
-                    <button type="button" class="pw-modal-btn pw-modal-btn--primary" id="btn-apply-scanned-qr" style="margin-top: 8px; width: 100%; justify-content: center;">
+                    <button type="button" class="pw-modal-btn pw-modal-btn--primary style-btn-apply-scanned-qr" id="btn-apply-scanned-qr" >
                         Apply Parameters & Unlock Vault ➔
                     </button>
                 </div>
             </div>
             
-            <div class="pw-modal-footer" style="justify-content: space-between;">
-                <span style="font-size: 0.74rem; color: var(--text-muted);">Decodes 100% locally on your device via W3C BarcodeDetector API.</span>
+            <div class="pw-modal-footer u-justify-between" >
+                <span class="u-style-zm9udc1z" >Decodes 100% locally on your device via W3C BarcodeDetector API.</span>
                 <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-cancel-scanner">Cancel</button>
             </div>
         </div>
     </div>
-    <div class="pw-modal-overlay" id="install-pwa-modal" style="display: none;">
-        <div class="pw-modal" style="max-width: 520px;">
-            <div class="pw-modal-header" style="justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
+    <div class="pw-modal-overlay d-none" id="install-pwa-modal" >
+        <div class="pw-modal style-install-pwa-modal" >
+            <div class="pw-modal-header u-justify-between" >
+                <div class="u-flex-center-gap-md" >
                     <img class="modal-logo" src="assets/zevsafe-logo.png" alt="ZevSafe Logo" width="28" height="28" loading="lazy">
-                    <h3 style="margin: 0; font-size: 1.15rem;">Install ZevSafe (Offline App)</h3>
+                    <h3 class="modal-heading" >Install ZevSafe (Offline App)</h3>
                 </div>
-                <button type="button" class="media-btn-icon" id="btn-close-install-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-install-modal" title="Close" >✕</button>
             </div>
-            <div class="pw-modal-body" style="gap: 1.25rem; font-size: 0.88rem; line-height: 1.55;">
-                <p style="margin: 0; color: var(--text-secondary);">
+            <div class="pw-modal-body u-style-z2fwoiax" >
+                <p class="u-style-bwfyz2lu" >
                     ZevSafe is a 100% offline, zero-knowledge Progressive Web App. Install it directly to your device for instant launch with no APK or store downloads required:
                 </p>
 
                 <!-- Trigger Direct Install if supported by browser -->
-                <div id="pwa-native-install-section" style="display: none; background: rgba(20, 184, 166, 0.12); border: 1px solid rgba(20, 184, 166, 0.35); border-radius: var(--radius-md); padding: 0.85rem 1rem; text-align: center;">
-                    <div style="font-weight: 600; color: #2dd4bf; margin-bottom: 0.4rem;">✨ Direct Install Ready</div>
-                    <button type="button" class="nav-btn-primary" id="btn-trigger-pwa-install" style="width: 100%; justify-content: center; padding: 0.55rem 1rem; font-size: 0.88rem; cursor: pointer;">📲 Install ZevSafe Now</button>
+                <div class="style-pwa-native-install-section" id="pwa-native-install-section" >
+                    <div class="u-style-zm9udc13" >✨ Direct Install Ready</div>
+                    <button type="button" class="nav-btn-primary style-btn-trigger-pwa-install" id="btn-trigger-pwa-install" >📲 Install ZevSafe Now</button>
                 </div>
 
-                <div class="pwa-install-platforms" style="display: flex; flex-direction: column; gap: 0.85rem;">
-                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
-                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.3rem;">🤖 Android (Chrome / Edge / Brave)</div>
-                        <div style="color: var(--text-secondary); font-size: 0.82rem;">
+                <div class="pwa-install-platforms u-flex-col-gap-lg" >
+                    <div class="modal-card-inset" >
+                        <div class="modal-section-title" >🤖 Android (Chrome / Edge / Brave)</div>
+                        <div class="modal-section-desc" >
                             1. Tap the browser menu (<strong>⋮</strong>) in the top-right.<br>
                             2. Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.<br>
                             3. Launches in fullscreen as a standalone app with full offline support.
                         </div>
                     </div>
 
-                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
-                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.3rem;">🍎 iPhone / iPad (Safari)</div>
-                        <div style="color: var(--text-secondary); font-size: 0.82rem;">
+                    <div class="modal-card-inset" >
+                        <div class="modal-section-title" >🍎 iPhone / iPad (Safari)</div>
+                        <div class="modal-section-desc" >
                             1. Tap the <strong>Share</strong> button (box with upward arrow).<br>
                             2. Scroll down and tap <strong>"Add to Home Screen"</strong>.<br>
                             3. Tap <strong>Add</strong> in the top-right corner.
                         </div>
                     </div>
 
-                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
-                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.3rem;">💻 Windows / macOS / Linux (Chrome / Edge)</div>
-                        <div style="color: var(--text-secondary); font-size: 0.82rem;">
+                    <div class="modal-card-inset" >
+                        <div class="modal-section-title" >💻 Windows / macOS / Linux (Chrome / Edge)</div>
+                        <div class="modal-section-desc" >
                             Click the <strong>Install</strong> icon (<strong>⊕</strong>) in the browser address bar, or open menu (<strong>⋮</strong>) &rarr; <strong>"Install ZevSafe..."</strong>.
                         </div>
                     </div>
                 </div>
             </div>
             <div class="pw-modal-footer">
-                <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-dismiss-install-modal" style="width: 100%;">Got It</button>
+                <button class="pw-modal-btn pw-modal-btn--secondary u-w-full" id="btn-dismiss-install-modal" >Got It</button>
             </div>
         </div>
     </div>
 
 <!-- Vault Cryptographic Health & Bit-Rot Verifier Modal -->
-    <div class="pw-modal-overlay" id="vault-health-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="health-modal-title">
-        <div class="pw-modal" style="max-width: 540px;">
-            <div class="pw-modal-header" style="justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <span style="font-size: 1.4rem;">🛡️</span>
-                    <h3 id="health-modal-title" style="margin: 0; font-size: 1.15rem;">Vault Cryptographic Health Check</h3>
+    <div class="pw-modal-overlay d-none" id="vault-health-modal"  role="dialog" aria-modal="true" aria-labelledby="health-modal-title">
+        <div class="pw-modal u-style-bwf4lxdp" >
+            <div class="pw-modal-header u-justify-between" >
+                <div class="u-flex-center-gap-md" >
+                    <span class="u-style-zm9udc1z" >🛡️</span>
+                    <h3 class="modal-heading" id="health-modal-title" >Vault Cryptographic Health Check</h3>
                 </div>
-                <button type="button" class="media-btn-icon" id="btn-close-health-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-health-modal" title="Close" >✕</button>
             </div>
-            <div class="pw-modal-body" style="gap: 1rem;">
+            <div class="pw-modal-body u-gap-1rem" >
                 <div class="health-scorecard">
                     <div class="health-header-status">
                         <span class="health-badge-pass" id="health-overall-status">PASSED · 100% BIT-ROT FREE</span>
@@ -1766,110 +1763,110 @@
                     <div class="health-checks-list" id="health-checks-list">
                         <!-- Populated dynamically by verifyVaultIntegrity() -->
                     </div>
-                    <div class="health-deep-scan-box" style="margin-top: 0.75rem; padding: 0.75rem; background: var(--bg-card-hover, rgba(255,255,255,0.03)); border: 1px solid var(--border-color, rgba(255,255,255,0.08)); border-radius: var(--radius-sm, 8px);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                    <div class="health-deep-scan-box u-style-bwfyz2lu" >
+                        <div class="u-style-zglzcgxh" >
                             <div>
-                                <div style="font-weight: 600; font-size: 0.88rem;">Deep Chunk AEAD Verification</div>
-                                <div style="font-size: 0.76rem; color: var(--text-muted);">Decrypts &amp; verifies 16-byte auth tags across all chunks with zero RAM buffering</div>
+                                <div class="u-style-zm9udc13" >Deep Chunk AEAD Verification</div>
+                                <div class="u-style-zm9udc1z" >Decrypts &amp; verifies 16-byte auth tags across all chunks with zero RAM buffering</div>
                             </div>
-                            <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-health-deep-scan" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; white-space: nowrap;">⚡ Deep Scan</button>
+                            <button type="button" class="pw-modal-btn pw-modal-btn--secondary style-btn-health-deep-scan" id="btn-health-deep-scan" >⚡ Deep Scan</button>
                         </div>
-                        <div id="health-scan-progress-wrap" style="display: none; margin-top: 0.6rem;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                        <div class="style-health-scan-progress-wrap" id="health-scan-progress-wrap" >
+                            <div class="style-health-scan-progress-wrap" >
                                 <span id="health-scan-label">Scanning chunks...</span>
                                 <span id="health-scan-pct">0%</span>
                             </div>
-                            <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                                <div id="health-scan-bar" style="width: 0%; height: 100%; background: #00d2b4; transition: width 0.15s ease;"></div>
+                            <div class="style-health-scan-pct" >
+                                <div class="style-health-scan-bar" id="health-scan-bar" ></div>
                             </div>
                         </div>
-                        <button type="button" class="btn-salvage-action" id="btn-health-salvage" style="display: none; margin-top: 0.75rem; width: 100%; padding: 0.5rem; background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #f59e0b; border-radius: 6px; font-size: 0.84rem; font-weight: 600; cursor: pointer;">
+                        <button type="button" class="btn-salvage-action style-btn-health-salvage" id="btn-health-salvage" >
                             🔧 Launch Fault-Tolerant Salvage Mode
                         </button>
                     </div>
                 </div>
             </div>
             <div class="pw-modal-footer">
-                <button type="button" class="pw-modal-btn pw-modal-btn--primary" id="btn-dismiss-health-modal" style="width: 100%;">Done</button>
+                <button type="button" class="pw-modal-btn pw-modal-btn--primary u-w-full" id="btn-dismiss-health-modal" >Done</button>
             </div>
         </div>
     </div>
 
     <!-- Fault-Tolerant Vault Salvage & Recovery Modal -->
-    <div class="pw-modal-overlay" id="vault-salvage-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="salvage-modal-title">
-        <div class="pw-modal" style="max-width: 580px;">
-            <div class="pw-modal-header" style="justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <span style="font-size: 1.4rem;">🔧</span>
+    <div class="pw-modal-overlay d-none" id="vault-salvage-modal"  role="dialog" aria-modal="true" aria-labelledby="salvage-modal-title">
+        <div class="pw-modal u-style-bwf4lxdp" >
+            <div class="pw-modal-header u-justify-between" >
+                <div class="u-flex-center-gap-md" >
+                    <span class="u-style-zm9udc1z" >🔧</span>
                     <div>
-                        <h3 id="salvage-modal-title" style="margin: 0; font-size: 1.15rem;">Fault-Tolerant Vault Salvage</h3>
-                        <div style="font-size: 0.76rem; color: var(--text-muted);">Rescues intact files from bit-rotted or damaged archives</div>
+                        <h3 class="modal-heading" id="salvage-modal-title" >Fault-Tolerant Vault Salvage</h3>
+                        <div class="u-style-zm9udc1z" >Rescues intact files from bit-rotted or damaged archives</div>
                     </div>
                 </div>
-                <button type="button" class="media-btn-icon" id="btn-close-salvage-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-salvage-modal" title="Close" >✕</button>
             </div>
-            <div class="pw-modal-body" style="gap: 1rem;">
-                <div class="salvage-stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-                    <div style="background: rgba(0, 210, 180, 0.08); border: 1px solid rgba(0, 210, 180, 0.25); border-radius: 8px; padding: 0.6rem; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Rescued</div>
-                        <div id="salvage-count-rescued" style="font-size: 1.35rem; font-weight: 700; color: #00d2b4;">0</div>
+            <div class="pw-modal-body u-gap-1rem" >
+                <div class="salvage-stats-grid u-style-zglzcgxh" >
+                    <div class="u-style-ymfja2dy" >
+                        <div class="u-style-zm9udc1z" >Rescued</div>
+                        <div class="style-salvage-count-rescued" id="salvage-count-rescued" >0</div>
                     </div>
-                    <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 0.6rem; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Quarantined</div>
-                        <div id="salvage-count-corrupted" style="font-size: 1.35rem; font-weight: 700; color: #ef4444;">0</div>
+                    <div class="u-style-ymfja2dy" >
+                        <div class="u-style-zm9udc1z" >Quarantined</div>
+                        <div class="style-salvage-count-corrupted" id="salvage-count-corrupted" >0</div>
                     </div>
-                    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 0.6rem; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Health Rate</div>
-                        <div id="salvage-rate" style="font-size: 1.35rem; font-weight: 700; color: #f59e0b;">—</div>
+                    <div class="u-style-ymfja2dy" >
+                        <div class="u-style-zm9udc1z" >Health Rate</div>
+                        <div class="style-salvage-rate" id="salvage-rate" >—</div>
                     </div>
                 </div>
 
                 <div id="salvage-progress-container">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                    <div class="style-health-scan-progress-wrap" >
                         <span id="salvage-progress-label">Preparing recovery pipeline...</span>
                         <span id="salvage-progress-pct">0%</span>
                     </div>
-                    <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                        <div id="salvage-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00d2b4, #3b82f6); transition: width 0.15s ease;"></div>
+                    <div class="style-health-scan-pct" >
+                        <div class="style-salvage-progress-bar" id="salvage-progress-bar" ></div>
                     </div>
                 </div>
 
-                <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Recovery Activity Log:</div>
-                <div id="salvage-log-list" style="max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color, rgba(255,255,255,0.08)); border-radius: 6px; padding: 0.5rem; font-family: monospace; font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.3rem;">
+                <div class="u-style-zm9udc1z" >Recovery Activity Log:</div>
+                <div class="style-salvage-log-list" id="salvage-log-list" >
                     <!-- Activity entries will appear here -->
                 </div>
 
-                <div id="salvage-actions-panel" style="display: none; flex-direction: column; gap: 0.5rem;">
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button type="button" class="pw-modal-btn pw-modal-btn--primary" id="btn-salvage-download-zip" style="flex: 1;">
+                <div class="style-salvage-actions-panel" id="salvage-actions-panel" >
+                    <div class="u-flex-gap-sm" >
+                        <button type="button" class="pw-modal-btn pw-modal-btn--primary u-flex-1" id="btn-salvage-download-zip" >
                             📦 Download Rescued ZIP
                         </button>
-                        <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-salvage-download-report" style="flex: 1;">
+                        <button type="button" class="pw-modal-btn pw-modal-btn--secondary u-flex-1" id="btn-salvage-download-report" >
                             📄 Download Report (.txt)
                         </button>
                     </div>
-                    <button type="button" class="pw-modal-btn" id="btn-salvage-open-explorer" style="width: 100%; background: rgba(0, 210, 180, 0.15); border: 1px solid #00d2b4; color: #00d2b4;">
+                    <button type="button" class="pw-modal-btn style-btn-salvage-open-explorer" id="btn-salvage-open-explorer" >
                         📂 Open Rescued Files in Vault Explorer
                     </button>
                 </div>
             </div>
             <div class="pw-modal-footer">
-                <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-dismiss-salvage-modal" style="width: 100%;">Close</button>
+                <button type="button" class="pw-modal-btn pw-modal-btn--secondary u-w-full" id="btn-dismiss-salvage-modal" >Close</button>
             </div>
         </div>
     </div>
 
     <!-- Dedicated Password / Passphrase Generator Modal -->
-    <div class="pw-modal-overlay" id="pw-generator-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="pw-gen-modal-title">
-        <div class="pw-modal" style="max-width: 480px;">
-            <div class="pw-modal-header" style="justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <span style="font-size: 1.35rem;">⚡</span>
-                    <h3 id="pw-gen-modal-title" style="margin: 0; font-size: 1.15rem;">Password &amp; Passphrase Generator</h3>
+    <div class="pw-modal-overlay d-none" id="pw-generator-modal"  role="dialog" aria-modal="true" aria-labelledby="pw-gen-modal-title">
+        <div class="pw-modal u-style-bwf4lxdp" >
+            <div class="pw-modal-header u-justify-between" >
+                <div class="u-flex-center-gap-md" >
+                    <span class="u-style-zm9udc1z" >⚡</span>
+                    <h3 class="modal-heading" id="pw-gen-modal-title" >Password &amp; Passphrase Generator</h3>
                 </div>
-                <button type="button" class="media-btn-icon" id="btn-close-gen-modal" title="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-gen-modal" title="Close" >✕</button>
             </div>
-            <div class="pw-modal-body" style="gap: 1rem;">
+            <div class="pw-modal-body u-gap-1rem" >
                 <div class="gen-type-tabs">
                     <button type="button" class="gen-tab gen-tab--active" id="gen-tab-diceware">Diceware Passphrase</button>
                     <button type="button" class="gen-tab" id="gen-tab-random">Random Key</button>
@@ -1877,13 +1874,13 @@
 
                 <!-- Preview field with live entropy badge -->
                 <div class="pw-display-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <label for="gen-output-display" style="font-size: 0.8rem; color: var(--text-muted);">Generated Secret</label>
-                        <span id="gen-entropy-badge" style="font-size: 0.75rem; font-weight: 700; color: #34d399; background: rgba(52, 211, 153, 0.12); padding: 2px 8px; border-radius: 12px;">~77 bits entropy</span>
+                    <div class="u-style-zglzcgxh" >
+                        <label class="u-style-zm9udc1z" for="gen-output-display" >Generated Secret</label>
+                        <span class="style-gen-entropy-badge" id="gen-entropy-badge" >~77 bits entropy</span>
                     </div>
                     <div class="pw-display-wrapper">
-                        <input type="text" id="gen-output-display" readonly autocomplete="off" spellcheck="false" style="font-family: monospace; font-size: 0.95rem; font-weight: 600;">
-                        <button type="button" id="btn-gen-refresh" title="Generate another secret" style="padding: 0 10px;">🔄</button>
+                        <input class="style-gen-output-display" type="text" id="gen-output-display" readonly autocomplete="off" spellcheck="false" >
+                        <button class="style-btn-gen-refresh" type="button" id="btn-gen-refresh" title="Generate another secret" >🔄</button>
                         <button type="button" id="btn-gen-copy" title="Copy to clipboard">📋 Copy</button>
                     </div>
                 </div>
@@ -1900,7 +1897,7 @@
                     </div>
                     <div class="gen-control-row">
                         <label for="gen-separator">Separator:</label>
-                        <select id="gen-separator" class="field-select" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: var(--radius-sm);">
+                        <select id="gen-separator" class="field-select style-gen-separator" >
                             <option value="-" selected>Hyphen (-)</option>
                             <option value="_">Underscore (_)</option>
                             <option value=".">Period (.)</option>
@@ -1910,16 +1907,16 @@
                 </div>
 
                 <!-- Random Key Options -->
-                <div id="gen-random-options" class="gen-options-panel" style="display: none;">
+                <div id="gen-random-options" class="gen-options-panel d-none" >
                     <div class="gen-control-row">
                         <label for="gen-length-slider">Length: <span id="gen-length-val">20</span> chars</label>
-                        <input type="range" id="gen-length-slider" min="12" max="36" value="20" style="flex:1; cursor: pointer;">
+                        <input class="style-gen-length-slider" type="range" id="gen-length-slider" min="12" max="36" value="20" >
                     </div>
-                    <div class="gen-control-row" style="gap: 12px; font-size: 0.85rem;">
-                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <div class="gen-control-row u-style-z2fwoiax" >
+                        <label class="u-flex-label-pointer" >
                             <input type="checkbox" id="gen-opt-symbols" checked> Symbols (!@#$)
                         </label>
-                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <label class="u-flex-label-pointer" >
                             <input type="checkbox" id="gen-opt-numbers" checked> Numbers (0-9)
                         </label>
                     </div>
@@ -1948,7 +1945,7 @@
     <script src="app.js" defer></script>
 
     <!-- Floating Docked Audio Mini-Player -->
-    <div class="audio-dock" id="vault-audio-dock" style="display: none;" role="region" aria-label="Audio player dock">
+    <div class="audio-dock d-none" id="vault-audio-dock"  role="region" aria-label="Audio player dock">
         <div class="audio-dock-inner">
             <div class="audio-dock-track">
                 <span class="audio-dock-icon">🎵</span>
@@ -1970,7 +1967,7 @@
     </div>
 
     <!-- ── PWA: Install Banner + Service Worker Registration ── -->
-    <div class="pwa-install-banner" id="pwa-install-banner" style="display:none;" role="region" aria-live="polite" aria-label="Install ZevSafe app">
+    <div class="pwa-install-banner d-none" id="pwa-install-banner"  role="region" aria-live="polite" aria-label="Install ZevSafe app">
         <div class="pwa-install-inner">
             <img src="./assets/zevsafe-logo.png" alt="ZevSafe icon" class="pwa-install-icon" width="40" height="40" loading="lazy">
             <div class="pwa-install-text">
@@ -1982,97 +1979,6 @@
         </div>
     </div>
 
-    <script>
-    (() => {
-        'use strict';
-
-        // ── Service Worker Registration ──────────────────────────────
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js', { scope: './' })
-                    .then(reg => {
-                        console.log('[ZevSafe PWA] SW registered. Scope:', reg.scope);
-
-                        // Poll for updates when user comes back online
-                        window.addEventListener('online', () => {
-                            reg.update().catch(() => {});
-                        });
-
-                        // Periodic background update check (every 10 mins)
-                        setInterval(() => reg.update().catch(() => {}), 10 * 60 * 1000);
-
-                        // When a new SW is waiting, send SKIP_WAITING and reload
-                        reg.addEventListener('updatefound', () => {
-                            const newWorker = reg.installing;
-                            if (!newWorker) return;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('[ZevSafe PWA] New SW installed. Sending SKIP_WAITING.');
-                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                }
-                            });
-                        });
-                    })
-                    .catch(err => console.warn('[ZevSafe PWA] SW registration failed:', err));
-
-                // Auto-reload when new SW takes control
-                let refreshing = false;
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    if (!refreshing) {
-                        refreshing = true;
-                        window.location.reload();
-                    }
-                });
-            });
-        }
-
-        // ── PWA Install Prompt ───────────────────────────────────────
-        let deferredInstallPrompt = null;
-        const installBanner   = document.getElementById('pwa-install-banner');
-        const btnInstall      = document.getElementById('pwa-btn-install');
-        const btnDismiss      = document.getElementById('pwa-btn-dismiss');
-
-        // Skip showing banner if already installed
-        const isInstalled = window.matchMedia('(display-mode: standalone)').matches
-                         || window.navigator.standalone === true;
-
-        if (!isInstalled) {
-            window.addEventListener('beforeinstallprompt', e => {
-                e.preventDefault();
-                deferredInstallPrompt = e;
-
-                // Don't show again if user dismissed recently (7 days)
-                const dismissedUntil = localStorage.getItem('pwa-install-dismissed');
-                if (!dismissedUntil || Date.now() > Number(dismissedUntil)) {
-                    installBanner.style.display = 'block';
-                    requestAnimationFrame(() => installBanner.classList.add('pwa-banner--visible'));
-                }
-            });
-        }
-
-        btnInstall?.addEventListener('click', async () => {
-            if (!deferredInstallPrompt) return;
-            installBanner.classList.remove('pwa-banner--visible');
-            setTimeout(() => { installBanner.style.display = 'none'; }, 350);
-            deferredInstallPrompt.prompt();
-            const { outcome } = await deferredInstallPrompt.userChoice;
-            console.log('[ZevSafe PWA] Install prompt outcome:', outcome);
-            deferredInstallPrompt = null;
-        });
-
-        btnDismiss?.addEventListener('click', () => {
-            installBanner.classList.remove('pwa-banner--visible');
-            setTimeout(() => { installBanner.style.display = 'none'; }, 350);
-            localStorage.setItem('pwa-install-dismissed', String(Date.now() + 7 * 24 * 60 * 60 * 1000));
-        });
-
-        // Clean up after successful install
-        window.addEventListener('appinstalled', () => {
-            console.log('[ZevSafe PWA] App installed successfully!');
-            installBanner.style.display = 'none';
-            deferredInstallPrompt = null;
-        });
-    })();
-    </script>
+    <script src="js/init.js" defer></script>
 </body>
 </html>

@@ -82,8 +82,8 @@
     function getActiveCinemaMedia() {
         const v = document.getElementById('cinema-video');
         const a = document.getElementById('cinema-audio');
-        if (v && v.style.display !== 'none') return v;
-        if (a && a.style.display !== 'none') return a;
+        if (v && !v.classList.contains('d-none') && v.style.display !== 'none' && v.style.display !== '') return v;
+        if (a && !a.classList.contains('d-none') && a.style.display !== 'none' && a.style.display !== '') return a;
         return null;
     }
 
@@ -271,9 +271,13 @@
         currentMediaBookmarks = [];
         renderMediaBookmarks();
 
+        modal.classList.remove('d-none');
         modal.style.display = 'flex';
         modal.classList.remove('cinema-ui--hidden');
-        if (loader) loader.style.display = 'flex';
+        if (loader) {
+            loader.classList.remove('d-none');
+            loader.style.display = 'flex';
+        }
         if (loaderText) loaderText.textContent = `Buffering ${item.name}…`;
 
         if (title) title.textContent = item.name;
@@ -367,6 +371,7 @@
             currentMediaBlobUrl = streamUrl;
 
             if (videoEl) {
+                videoEl.classList.remove('d-none');
                 videoEl.style.display = 'block';
                 videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
                 videoEl.src = streamUrl;
@@ -374,7 +379,10 @@
                 videoEl.play().catch(() => {});
             }
 
-            if (loader) loader.style.display = 'none';
+            if (loader) {
+                loader.classList.add('d-none');
+                loader.style.display = 'none';
+            }
             resetCinemaInactivityTimer();
         } catch (err) {
             console.warn('[ZevSafe Range Stream Fallback]', err);
@@ -415,12 +423,14 @@
             }
 
             if (item.category === 'video' && videoEl) {
+                videoEl.classList.remove('d-none');
                 videoEl.style.display = 'block';
                 videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
                 videoEl.src = currentMediaBlobUrl;
                 videoEl.load();
                 videoEl.play().catch(() => {});
             } else if (audioEl) {
+                audioEl.classList.remove('d-none');
                 audioEl.style.display = 'block';
                 audioEl.className = 'media-player-element';
                 audioEl.src = currentMediaBlobUrl;
@@ -428,7 +438,10 @@
                 audioEl.play().catch(() => {});
             }
 
-            if (loader) loader.style.display = 'none';
+            if (loader) {
+                loader.classList.add('d-none');
+                loader.style.display = 'none';
+            }
             resetCinemaInactivityTimer();
         } catch (err) {
             if (loader) loader.style.display = 'none';
@@ -455,19 +468,27 @@
         const audioEl = document.getElementById('cinema-audio');
         const loader = document.getElementById('media-loading-indicator');
 
-        if (modal) modal.style.display = 'none';
-        if (loader) loader.style.display = 'none';
+        if (modal) {
+            modal.classList.add('d-none');
+            modal.style.display = 'none';
+        }
+        if (loader) {
+            loader.classList.add('d-none');
+            loader.style.display = 'none';
+        }
 
         if (videoEl) {
             if (typeof videoEl.pause === 'function') videoEl.pause();
             if (typeof videoEl.removeAttribute === 'function') videoEl.removeAttribute('src');
             if (typeof videoEl.load === 'function') videoEl.load();
+            videoEl.classList.add('d-none');
             videoEl.style.display = 'none';
         }
         if (audioEl) {
             if (typeof audioEl.pause === 'function') audioEl.pause();
             if (typeof audioEl.removeAttribute === 'function') audioEl.removeAttribute('src');
             if (typeof audioEl.load === 'function') audioEl.load();
+            audioEl.classList.add('d-none');
             audioEl.style.display = 'none';
         }
 
@@ -1154,6 +1175,7 @@
                 }
             };
             img.src = currentImageBlobUrl;
+            modal.classList.remove('d-none');
             modal.style.display = 'flex';
         } catch (err) {
             showToast(`Failed to view image: ${err.message}`, 'error');
@@ -1180,7 +1202,10 @@
     function closeImageViewer() {
         const modal = document.getElementById('vault-image-modal');
         const img = document.getElementById('lightbox-image');
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+            modal.classList.add('d-none');
+            modal.style.display = 'none';
+        }
         if (img) {
             img.removeAttribute('src');
         }

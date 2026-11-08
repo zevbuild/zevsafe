@@ -1453,7 +1453,8 @@ function log(message, type = 'info') {
 }
 
 function showProgress(autoScroll = false) {
-    if (progressCard.style.display !== 'flex') {
+    if (progressCard.classList.contains('d-none') || progressCard.style.display !== 'flex') {
+        progressCard.classList.remove('d-none');
         progressCard.style.display = 'flex';
         progressCard.style.animation = 'detailFadeIn 0.3s ease';
         if (autoScroll && isMobile()) {
@@ -1515,7 +1516,8 @@ const EMA_ALPHA = 0.25; // Exponential Moving Average smoothing factor
 function updateTelemetryHUD(telemetry) {
     const hud = document.getElementById('telemetry-hud');
     if (!hud) return;
-    if (hud.style.display === 'none') {
+    if (hud.classList.contains('d-none') || hud.style.display === 'none' || hud.style.display === '') {
+        hud.classList.remove('d-none');
         hud.style.display = 'grid';
     }
 
@@ -2960,6 +2962,7 @@ function showPasswordSavePrompt(recordOrPassword) {
         btnSavePwManager.style.display = 'none';
     }
     
+    modal.classList.remove('d-none');
     modal.style.display = 'flex';
 }
 
@@ -3023,7 +3026,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
         const payload = typeof QREngine !== 'undefined' ? QREngine.buildPaperSafePayload(payloadData) : JSON.stringify(payloadData);
         const qrSVG = typeof QREngine !== 'undefined'
             ? QREngine.createSVG(payload, { size: 180, margin: 2, color: '#0f172a', bgColor: '#ffffff' })
-            : '<div style="padding:40px;border:1px solid #000;">QR Engine Loading...</div>';
+            : '<div class="paper-qr-loading">QR Engine Loading...</div>';
         const saltFormatted = typeof QREngine !== 'undefined' ? QREngine.formatSaltFingerprint(saltHex) : saltHex.slice(0, 32);
         const kdfFormatted = kdfIterations.toLocaleString('en-US');
 
@@ -3038,7 +3041,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                     </div>
                     <div class="paper-sheet-badge">
                         <div>${(isMasterKey && passwordVal) ? '⚡ ZV3 MASTER KEYCARD' : 'ZV3 STREAM AEAD'}</div>
-                        <div style="font-size: 0.65rem; opacity: 0.85;">RFC 8018 / NIST SP 800-38D</div>
+                        <div class="paper-badge-standard">RFC 8018 / NIST SP 800-38D</div>
                     </div>
                 </div>
 
@@ -3054,28 +3057,28 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                             <div class="paper-fp-box">${escapeHtml(saltFormatted || saltHex.slice(0, 32))}</div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.85rem;">
-                            <div class="paper-sheet-field" style="margin: 0;">
+                        <div class="paper-grid-two-col">
+                            <div class="paper-sheet-field u-m-0">
                                 <span class="paper-sheet-label">Key Derivation</span>
-                                <div class="paper-sheet-val" style="font-size: 0.95rem;">${kdfFormatted} Rounds (PBKDF2)</div>
+                                <div class="paper-sheet-val paper-val-md">${kdfFormatted} Rounds (PBKDF2)</div>
                             </div>
-                            <div class="paper-sheet-field" style="margin: 0;">
+                            <div class="paper-sheet-field u-m-0">
                                 <span class="paper-sheet-label">2FA Keyfile Status</span>
-                                <div class="paper-sheet-val" style="font-size: 0.95rem; color: ${keyfileRequired ? '#dc2626' : '#059669'};">
+                                <div class="paper-sheet-val paper-val-md ${keyfileRequired ? 'text-danger' : 'text-success'}">
                                     ${keyfileRequired ? 'REQUIRED' : 'Not Required'}
                                 </div>
                             </div>
                         </div>
 
                         <div class="paper-handwrite-wrap">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span class="paper-sheet-label" style="color: #0f172a; margin: 0;">${(isMasterKey && passwordVal) ? 'Master Key Passphrase (Embedded in QR Keycard)' : 'Handwritten Passphrase or Password Hint (Physical Safe)'}</span>
-                                <span style="font-size: 0.72rem; color: ${(isMasterKey && passwordVal) ? '#059669' : '#64748b'}; font-weight: 700;">${(isMasterKey && passwordVal) ? '⚡ Instant 1-Scan Unlock Active' : 'Write with pen · Never photograph'}</span>
+                            <div class="u-flex-between">
+                                <span class="paper-sheet-label paper-label-dark">${(isMasterKey && passwordVal) ? 'Master Key Passphrase (Embedded in QR Keycard)' : 'Handwritten Passphrase or Password Hint (Physical Safe)'}</span>
+                                <span class="paper-hint-badge ${(isMasterKey && passwordVal) ? 'text-success' : 'text-muted'}">${(isMasterKey && passwordVal) ? '⚡ Instant 1-Scan Unlock Active' : 'Write with pen · Never photograph'}</span>
                             </div>
                             ${(isMasterKey && passwordVal) ? `
-                            <div style="font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #0f172a; background: #fff; border: 1.5px solid #059669; border-radius: 6px; padding: 8px 12px; margin: 8px 0; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center;">
+                            <div class="paper-key-box">
                                 <span>🔑 ${escapeHtml(passwordVal)}</span>
-                                <span style="font-size: 0.7rem; color: #059669; font-weight: 800; text-transform: uppercase;">Ready to Scan</span>
+                                <span class="paper-ready-badge">Ready to Scan</span>
                             </div>
                             ` : `
                             <div class="paper-handwrite-grid">
@@ -3084,7 +3087,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                                 <div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div><div class="paper-char-cell"></div>
                             </div>
                             `}
-                            <div style="font-size: 0.75rem; color: #64748b;">
+                            <div class="paper-meta-sub">
                                 <strong>Hint / Safe Location:</strong> ${escapeHtml(currentHint || 'None provided')}
                             </div>
                         </div>
@@ -3093,8 +3096,8 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                     <div>
                         <div class="paper-qr-card">
                             ${qrSVG}
-                            <div style="font-size: 0.75rem; font-weight: 700; color: #0f172a;">${(isMasterKey && passwordVal) ? '⚡ Instant Unlock QR Keycard' : 'Optical Recovery QR'}</div>
-                            <div style="font-size: 0.68rem; color: #64748b; line-height: 1.35;">
+                            <div class="paper-qr-title">${(isMasterKey && passwordVal) ? '⚡ Instant Unlock QR Keycard' : 'Optical Recovery QR'}</div>
+                            <div class="paper-qr-desc">
                                 ${(isMasterKey && passwordVal) ? 'Scan on ZevSafe to decrypt & unlock instantly without typing!' : 'Scan with camera on ZevSafe to auto-fill vault configuration.'}
                             </div>
                         </div>
@@ -3154,12 +3157,16 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
         };
     }
 
+    modal.classList.remove('d-none');
     modal.style.display = 'flex';
 }
 
 function closePaperSafeModal() {
     const modal = document.getElementById('paper-safe-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.add('d-none');
+        modal.style.display = 'none';
+    }
 }
 
 function applyPaperSafeParameters(p) {
@@ -3172,7 +3179,7 @@ function applyPaperSafeParameters(p) {
         if (bannerVault) bannerVault.textContent = p.vaultName;
         if (bannerHint) {
             const saltGroup = typeof QREngine !== 'undefined' ? QREngine.formatSaltFingerprint(p.saltHex) : p.saltHex;
-            const pwStatus = p.password ? ' · <strong style="color:#34d399;">🔑 Password Auto-Filled</strong>' : '';
+            const pwStatus = p.password ? ' · <strong class="text-teal-bold">🔑 Password Auto-Filled</strong>' : '';
             bannerHint.innerHTML = `Salt: <code>${saltGroup}</code> · KDF: <code>${p.kdfIterations.toLocaleString('en-US')}</code>${pwStatus}${p.hint ? ` · <em>Hint: ${escapeHtml(p.hint)}</em>` : ''}`;
         }
         banner.style.display = 'block';
@@ -3219,6 +3226,7 @@ async function openQRScannerModal() {
     if (!modal) return;
     activeScannedPaperSafe = null;
     if (detectedCard) detectedCard.style.display = 'none';
+    modal.classList.remove('d-none');
     modal.style.display = 'flex';
 
     async function handleFoundPayload(rawText) {
@@ -3236,11 +3244,11 @@ async function openQRScannerModal() {
             const hasPassword = Boolean(parsed.password);
 
             detectedDetails.innerHTML = `
-                Vault: <strong style="color:#fff;">${escapeHtml(parsed.vaultName)}</strong><br>
-                ${hasPassword ? `<span style="color:#34d399; font-weight:800;">⚡ Master Key: Password Embedded (Instant Unlock Ready)</span><br>` : ''}
-                Salt: <span style="color:#a855f7; font-family:monospace;">${escapeHtml(saltGrouped || parsed.saltHex.slice(0, 24))}...</span><br>
-                KDF: <span style="color:#38bdf8;">${kdfFormatted} Rounds (PBKDF2)</span><br>
-                ${parsed.hint ? `Hint: <em style="color:#fbbf24;">${escapeHtml(parsed.hint)}</em>` : ''}
+                Vault: <strong class="text-white">${escapeHtml(parsed.vaultName)}</strong><br>
+                ${hasPassword ? `<span class="text-emerald-heavy">⚡ Master Key: Password Embedded (Instant Unlock Ready)</span><br>` : ''}
+                Salt: <span class="text-purple-mono">${escapeHtml(saltGrouped || parsed.saltHex.slice(0, 24))}...</span><br>
+                KDF: <span class="text-sky">${kdfFormatted} Rounds (PBKDF2)</span><br>
+                ${parsed.hint ? `Hint: <em class="text-amber">${escapeHtml(parsed.hint)}</em>` : ''}
             `;
             const btnApply = document.getElementById('btn-apply-scanned-qr');
             if (btnApply) {
@@ -3382,7 +3390,7 @@ async function openQRScannerModal() {
 
     // Modal Clipboard Paste Handler
     const handleModalPaste = async (e) => {
-        if (!modal || modal.style.display === 'none') return;
+        if (!modal || modal.classList.contains('d-none') || modal.style.display === 'none' || modal.style.display === '') return;
         const cd = e.clipboardData;
         if (!cd) return;
 
@@ -3474,7 +3482,10 @@ let activeModalPasteHandler = null;
 
 function closeQRScannerModal() {
     const modal = document.getElementById('qr-scanner-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.add('d-none');
+        modal.style.display = 'none';
+    }
     if (activeModalPasteHandler) {
         window.removeEventListener('paste', activeModalPasteHandler);
         activeModalPasteHandler = null;
@@ -3864,6 +3875,7 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
     updateCategoryFilterCounts();
     updateBatchBar();
     renderExplorerFileList('');
+    modal.classList.remove('d-none');
     modal.style.display = 'flex';
     startExplorerIdleWatcher();
 }
@@ -3964,8 +3976,8 @@ let currentMediaVocalClarity = false;
 function getActiveCinemaMedia() {
     const v = document.getElementById('cinema-video');
     const a = document.getElementById('cinema-audio');
-    if (v && v.style.display !== 'none') return v;
-    if (a && a.style.display !== 'none') return a;
+    if (v && !v.classList.contains('d-none') && v.style.display !== 'none' && v.style.display !== '') return v;
+    if (a && !a.classList.contains('d-none') && a.style.display !== 'none' && a.style.display !== '') return a;
     return null;
 }
 
@@ -4448,6 +4460,7 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
     updateCategoryFilterCounts();
     updateBatchBar();
     renderExplorerFileList('');
+    modal.classList.remove('d-none');
     modal.style.display = 'flex';
     startExplorerIdleWatcher();
 }
@@ -4581,7 +4594,10 @@ if (typeof window !== 'undefined') window.lockV3VaultSession = lockVaultSession;
 
 function closeVaultExplorer() {
     const modal = document.getElementById('vault-explorer-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.add('d-none');
+        modal.style.display = 'none';
+    }
     lockVaultSession();
 }
 
@@ -4660,6 +4676,7 @@ async function openTextViewerByPath(filePath) {
     const saveBtn = document.getElementById('btn-text-save-changes');
 
     if (!modal) return;
+    modal.classList.remove('d-none');
     modal.style.display = 'flex';
 
     currentEditingPath = filePath;
@@ -4778,6 +4795,7 @@ async function openPdfViewerByPath(filePath) {
     const saveBtn = document.getElementById('btn-text-save-changes');
 
     if (!modal) return;
+    modal.classList.remove('d-none');
     modal.style.display = 'flex';
 
     currentEditingPath = '';
@@ -5021,7 +5039,10 @@ function closeTextViewer() {
     const editBtn = document.getElementById('btn-text-edit');
     const saveBtn = document.getElementById('btn-text-save-changes');
 
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.add('d-none');
+        modal.style.display = 'none';
+    }
     if (loader) loader.style.display = 'none';
     if (codeEl) {
         codeEl.textContent = '';
@@ -5179,9 +5200,9 @@ function renderExplorerFileList(query = '') {
                 : '';
             const parentName = parentDir ? parentDir.split('/').pop() : 'Vault Root';
             empty.innerHTML = `
-                <div style="font-size: 2.4rem; margin-bottom: 0.5rem;">📁</div>
-                <div style="margin-bottom: 0.85rem; font-weight: 500;">This folder is empty.</div>
-                ${explorerCurrentDir ? `<button type="button" class="explorer-file-view-btn" id="btn-empty-up" style="padding: 0.45rem 1rem; font-size: 0.85rem; cursor: pointer;">⬆️ Back to ${escapeHtml(parentName)}</button>` : ''}
+                <div class="explorer-empty-icon">📁</div>
+                <div class="explorer-empty-title">This folder is empty.</div>
+                ${explorerCurrentDir ? `<button type="button" class="explorer-file-view-btn explorer-btn-empty-up" id="btn-empty-up">⬆️ Back to ${escapeHtml(parentName)}</button>` : ''}
             `;
         }
         listEl.appendChild(empty);
@@ -5748,6 +5769,7 @@ function verifyVaultIntegrity() {
     if (overallStatus) overallStatus.textContent = 'PASSED · 100% INTEGRITY';
     if (overallMeta) overallMeta.textContent = `Verified ${fileCount} file(s) across ${chunkCount} chunk(s) · Zero bit-rot`;
 
+    modal.classList.remove('d-none');
     modal.style.display = 'flex';
     log(`🛡️ Cryptographic Health Verified: 100% authentic, 0 bit-rot detected across ${chunkCount} chunks.`, 'success');
     showToast('✅ Vault integrity verified: 100% bit-rot free!', 'success');
@@ -5966,7 +5988,10 @@ async function openExplorerFromSalvage() {
     const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.zev$/i, '') : 'salvaged_vault';
 
     const modal = document.getElementById('vault-salvage-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.add('d-none');
+        modal.style.display = 'none';
+    }
 
     openVaultExplorer(vaultName, zip, blob);
     showToast(`Opened ${lastSalvageResult.results.rescuedFiles.length} rescued files in Vault Explorer!`, 'success');
@@ -6289,7 +6314,8 @@ function initPasswordGenerator() {
 
     async function openModal() {
         if (!modal) return;
-        modal.style.display = 'flex';
+        modal.classList.remove('d-none');
+    modal.style.display = 'flex';
         await generateSecret();
     }
 
@@ -6389,7 +6415,7 @@ let explorerActivityListenersAttached = false;
 
 function isVaultExplorerOpen() {
     const modal = document.getElementById('vault-explorer-modal');
-    return modal && modal.style.display !== 'none';
+    return Boolean(modal && !modal.classList.contains('d-none') && (modal.style.display === 'flex' || modal.style.display === 'block'));
 }
 
 function onExplorerUserActivity() {
@@ -6926,13 +6952,13 @@ function initExplorerUI() {
     // Keyboard Shortcuts for Viewer & Explorer Modals
     window.addEventListener('keydown', (e) => {
         const imgModalEl = document.getElementById('vault-image-modal');
-        const isImgActive = imgModalEl && imgModalEl.style.display !== 'none';
+        const isImgActive = Boolean(imgModalEl && !imgModalEl.classList.contains('d-none') && (imgModalEl.style.display === 'flex' || imgModalEl.style.display === 'block'));
         const txtModalEl = document.getElementById('vault-text-modal');
-        const isTxtActive = txtModalEl && txtModalEl.style.display !== 'none';
+        const isTxtActive = Boolean(txtModalEl && !txtModalEl.classList.contains('d-none') && (txtModalEl.style.display === 'flex' || txtModalEl.style.display === 'block'));
         const mediaModalEl = document.getElementById('vault-media-modal');
-        const isMediaActive = mediaModalEl && mediaModalEl.style.display !== 'none';
+        const isMediaActive = Boolean(mediaModalEl && !mediaModalEl.classList.contains('d-none') && (mediaModalEl.style.display === 'flex' || mediaModalEl.style.display === 'block'));
         const explorerModalEl = document.getElementById('vault-explorer-modal');
-        const isExplorerActive = explorerModalEl && explorerModalEl.style.display !== 'none';
+        const isExplorerActive = Boolean(explorerModalEl && !explorerModalEl.classList.contains('d-none') && (explorerModalEl.style.display === 'flex' || explorerModalEl.style.display === 'block'));
 
         if (isImgActive) {
             if (e.key === 'Escape') {
@@ -6992,7 +7018,10 @@ function initPwaInstall() {
             deferredPwaPrompt.prompt();
             deferredPwaPrompt.userChoice.then(choiceResult => {
                 if (choiceResult && choiceResult.outcome === 'accepted') {
-                    if (modal) modal.style.display = 'none';
+                    if (modal) {
+        modal.classList.add('d-none');
+        modal.style.display = 'none';
+    }
                 }
                 deferredPwaPrompt = null;
                 if (nativeSec) nativeSec.style.display = 'none';
@@ -7003,7 +7032,10 @@ function initPwaInstall() {
     }
 
     function closeModal() {
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+        modal.classList.add('d-none');
+        modal.style.display = 'none';
+    }
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -7015,7 +7047,10 @@ function initPwaInstall() {
     window.addEventListener('appinstalled', () => {
         deferredPwaPrompt = null;
         if (nativeSec) nativeSec.style.display = 'none';
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+        modal.classList.add('d-none');
+        modal.style.display = 'none';
+    }
         showToast('ZevSafe installed successfully! Works 100% offline.', 'success');
     });
 
@@ -7287,7 +7322,8 @@ function initUsbBackupKit() {
     const percentText = document.getElementById('usb-backup-percent');
 
     async function openModal() {
-        modal.style.display = 'flex';
+        modal.classList.remove('d-none');
+    modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
         if (typeof window !== 'undefined' && 'showDirectoryPicker' in window && btnDrive) {
             btnDrive.style.display = 'flex';
@@ -7489,10 +7525,10 @@ function initMaxSecurityCollapsible() {
 // Global Clipboard Paste Listener for Decrypt Screen & Paper-Safe Auto-Fill
 window.addEventListener('paste', async (e) => {
     const qrModal = document.getElementById('qr-scanner-modal');
-    if (qrModal && qrModal.style.display !== 'none') return; // Handled by modal listener
+    if (qrModal && !qrModal.classList.contains('d-none') && (qrModal.style.display === 'flex' || qrModal.style.display === 'block')) return; // Handled by modal listener
 
     const decryptSection = document.getElementById('decrypt-section');
-    if (!decryptSection || (window.innerWidth <= 820 && decryptSection.style.display === 'none')) {
+    if (!decryptSection || (window.innerWidth <= 820 && (decryptSection.classList.contains('d-none') || decryptSection.style.display === 'none'))) {
         return;
     }
 
