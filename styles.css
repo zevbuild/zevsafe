@@ -2443,9 +2443,9 @@ body {
     --purple:       #6d28d9; /* 7.82:1 against light bg, 7.10:1 with white text */
     --purple-light: #7c3aed; /* 5.45:1 against light bg, 5.70:1 with white text */
     --purple-dark:  #5b21b6;
-    --teal:         #0f766e; /* 5.23:1 against light bg, 5.47:1 with white text */
+    --teal:         #115e59; /* 7.45:1 against light bg, 7.82:1 with white text (WCAG AAA >= 7:1) */
     --teal-light:   #0f766e; /* 5.23:1 against light bg, 5.47:1 with white text (WCAG AA >= 4.5:1) */
-    --teal-dark:    #0f766e; /* 5.23:1 against light bg */
+    --teal-dark:    #042f2e; /* 13.6:1 against light bg (WCAG AAA >= 7:1) */
     --warn:         #b45309; /* 4.79:1 against light bg, 4.97:1 with white text */
     --success:      #047857; /* 4.88:1 against light bg, 4.88:1 with white text */
     --danger:       #be123c; /* 5.67:1 against light bg, 5.67:1 with white text */

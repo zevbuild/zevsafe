@@ -397,19 +397,25 @@ async function main() {
 
         // Light theme calibrated tokens
         const lightPurple = '#6d28d9';
-        const lightTeal = '#0f766e';
+        const lightTealBase = '#115e59';
+        const lightTealLight = '#0f766e';
+        const lightTealDark = '#042f2e';
         const lightWarn = '#b45309';
         const lightSuccess = '#047857';
         const lightDanger = '#be123c';
 
         const crPurple = getContrastRatio(lightPurple, lightBg);
-        const crTeal = getContrastRatio(lightTeal, lightBg);
+        const crTealBase = getContrastRatio(lightTealBase, lightBg);
+        const crTealLight = getContrastRatio(lightTealLight, lightBg);
+        const crTealDark = getContrastRatio(lightTealDark, lightBg);
         const crWarn = getContrastRatio(lightWarn, lightBg);
         const crSuccess = getContrastRatio(lightSuccess, lightBg);
         const crDanger = getContrastRatio(lightDanger, lightBg);
 
         if (crPurple < 4.5) throw new Error(`Light purple contrast too low: ${crPurple.toFixed(2)}:1`);
-        if (crTeal < 4.5) throw new Error(`Light teal contrast too low: ${crTeal.toFixed(2)}:1`);
+        if (crTealBase < 4.5) throw new Error(`Light teal base contrast too low: ${crTealBase.toFixed(2)}:1`);
+        if (crTealLight < 4.5) throw new Error(`Light teal light contrast too low: ${crTealLight.toFixed(2)}:1`);
+        if (crTealDark < 4.5) throw new Error(`Light teal dark contrast too low: ${crTealDark.toFixed(2)}:1`);
         if (crWarn < 4.5) throw new Error(`Light warn contrast too low: ${crWarn.toFixed(2)}:1`);
         if (crSuccess < 4.5) throw new Error(`Light success contrast too low: ${crSuccess.toFixed(2)}:1`);
         if (crDanger < 4.5) throw new Error(`Light danger contrast too low: ${crDanger.toFixed(2)}:1`);
