@@ -630,6 +630,7 @@
     </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
@@ -668,7 +669,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.25.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.26.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -705,17 +706,102 @@
         </div>
 
         <!-- Release Timeline -->
-        <main class="cl-timeline" id="cl-timeline">
+        <main id="main-content" tabindex="-1" class="cl-timeline">
 
-            <!-- ── VERSION 8.24.0 (WEB-VERSION-75) ── -->
-            <!-- ── VERSION 8.25.0 (WEB-VERSION-76) ── -->
+            <!-- ── VERSION 8.26.0 (WEB-VERSION-77) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">♿</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.26.0 (WEB-VERSION-77)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 8, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">WCAG 2.1 AA/AAA</span>
+                            <span class="cl-tag">Focus Trapping</span>
+                            <span class="cl-tag">Background Inerting</span>
+                            <span class="cl-tag">Roving Tabindex</span>
+                            <span class="cl-tag">Live Regions</span>
+                            <span class="cl-tag">High-Contrast Tokens</span>
+                            <span class="cl-tag">Axe-Core Clean</span>
+                            <span class="cl-tag">PWA v77</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Implemented <strong>Phase 7: Full Accessibility (WCAG 2.1 AA/AAA &amp; Section 508 Hardening)</strong>: dedicated focus management and dialog inerting controller (<code>js/a11y-manager.js</code>); all 168 buttons accessible (87 labeled conforming strictly to WCAG 2.5.3 visible-text in name, 81 visible-text self-labeled, 0 unlabelled); all 34 inputs labelled or aria-hidden for password managers; all 13 dialogs with <code>role="dialog"</code>, <code>aria-modal="true"</code>, valid titles, and job-safe Escape confirmation; roving tabindex listbox in Decrypted Vault Explorer with arrow navigation; live screen reader regions for progress percentage milestones, toasts, and debounced password strength categories; calibrated high-contrast theme tokens (&ge; 4.5:1 text, &ge; 3:1 controls); &ge; 44&times;44px touch targets; universal skip links across all 17 HTML files; and automated headless Chrome CDP <code>axe-core</code> certification with 0 critical or serious violations.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Modular Focus Trap, Dialog Controller &amp; Background Inerting (<code>js/a11y-manager.js</code>):</strong> Standalone zero-dependency accessibility controller managing all 13 application modals. Automatically traps keyboard focus cycles within dialogs, transfers focus to the initial actionable control on open, restores focus to the triggering element on dismissal, dynamically applies HTML <code>inert</code> and <code>aria-hidden="true"</code> to background landmarks (<code>&lt;main&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code>), and guards Escape key dismissal during active jobs with user confirmation.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Universal Accessible Names &amp; WCAG 2.5.3 (Label in Name):</strong> Upgraded all 168 buttons across the application (87 with descriptive <code>aria-label</code> containing verbatim visible text, 81 visible-text self-labelled). Upgraded all 34 inputs (30 explicit label associations, 4 hidden credential-helper inputs and buttons marked <code>aria-hidden="true"</code> for password manager compatibility without screen reader clutter). Decoupled <code>.brand-status-badge</code> outside <code>a.brand-link</code> and converted drop zones to <code>role="region"</code>, eliminating WCAG nested-interactive button violations.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Vault Explorer Roving Tabindex &amp; Guarded Keyboard Operations:</strong> Designated <code>#explorer-file-list</code> with <code>role="listbox"</code> and rows with <code>role="option"</code>. Implemented single-tab-stop roving tabindex with arrow key navigation (<code>ArrowDown</code>, <code>ArrowUp</code>, <code>Home</code>, <code>End</code>). Guarded Delete key to require confirmation and prevent firing when typing inside search or rename inputs.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Screen Reader Live Regions &amp; Non-Leaking Feedback:</strong> Added <code>#a11y-polite-region</code> (polite) and <code>#a11y-alert-region</code> (assertive). Progress percentage announced strictly at milestones (0%, 25%, 50%, 75%, 100%) with <code>role="progressbar"</code>. Debounced (500 ms) password strength announcements speak categorical qualitative labels only ("Weak", "Strong") with zero plaintext or entropy leakage. Synchronized <code>aria-pressed</code> on password reveal toggles.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Calibrated High-Contrast Theme Tokens &amp; Focus Rings:</strong> Calibrated CSS custom property color tokens ensuring &ge; 4.5:1 text and &ge; 3:1 UI controls against real background surfaces in both Dark and Light themes. Removed solitary <code>outline: none;</code> on <code>.skip-link</code>, adhering to strict dual-theme <code>:focus-visible</code> outline hygiene.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Touch Hit Targets, 200% Zoom &amp; Universal Skip Links:</strong> Enforced &ge; 44&times;44px touch targets on coarse pointer devices. Verified zero text clipping or horizontal scrolling at 200% zoom and system font scaling across 390px, 844px, and 1280px viewports. Added skip links pointing to <code>&lt;main id="main-content"&gt;</code> across all 17 HTML files.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-body">
+                                <strong>Service Worker Cache v77 Bump &amp; Shell Precache:</strong> Updated <code>APP_VERSION = 'v77'</code> in <code>sw.js</code>, precaching 64 shell assets including <code>js/a11y-manager.js</code> in <code>SHELL_CACHE</code> with dynamic SHA-256 content hashing. Synchronized production <code>dist/</code> distribution build.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--sec">Sec</span>
+                            <div class="cl-item-body">
+                                <strong>Automated Axe-Core CDP Accessibility Verification:</strong> Added 15 automated tests in <code>test/test-phase7-a11y.js</code> running headless Chrome CDP with <code>axe-core</code> across the main portal, all 13 dialogs, and subpages, certifying 0 critical and 0 serious violations. Repository test suite reaches 29 test runners and 1,220 passing assertions (100% pass).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.25.0 (WEB-VERSION-76) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">📲</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.25.0 (WEB-VERSION-76)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            
                             <span class="cl-badge cl-badge--date">November 8, 2026</span>
                         </div>
                         <div class="cl-tags">

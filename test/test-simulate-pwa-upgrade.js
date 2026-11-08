@@ -435,8 +435,11 @@ async function main() {
             assert.strictEqual(reloadCheck.result?.value?.hasController, true, 'New SW must control client');
         });
 
-        // Step 7: Verify stale v75 cache deleted and v76 cache active
-        await runAsyncTest('Step 7: Old v75 cache cleaned up and v76 shell cache active', async () => {
+        // Step 7: Verify stale v75 cache deleted and current shell cache active
+        const currentSw = fs.readFileSync(path.join(ROOT_DIR, 'sw.js'), 'utf8');
+        const activeAppVersion = currentSw.match(/const APP_VERSION\s*=\s*'([^']+)';/)[1];
+
+        await runAsyncTest(`Step 7: Old v75 cache cleaned up and ${activeAppVersion} shell cache active`, async () => {
             const cacheCheck = await cdp.send('Runtime.evaluate', {
                 expression: `caches.keys()`,
                 awaitPromise: true,
@@ -446,8 +449,8 @@ async function main() {
             const cacheKeys = cacheCheck.result?.value || [];
             console.log('    Active caches after upgrade:', cacheKeys);
             assert.ok(!cacheKeys.includes('zevsafe-shell-v75'), 'Stale zevsafe-shell-v75 MUST be deleted');
-            const v76Cache = cacheKeys.find(c => c.startsWith('zevsafe-shell-v76'));
-            assert.ok(v76Cache, `New v76 cache must be present, found: ${cacheKeys.join(', ')}`);
+            const currentCache = cacheKeys.find(c => c.startsWith(`zevsafe-shell-${activeAppVersion}`));
+            assert.ok(currentCache, `New ${activeAppVersion} cache must be present, found: ${cacheKeys.join(', ')}`);
         });
 
         // Step 8: OFFLINE mode verification - no mixed old/new lazy-loaded files

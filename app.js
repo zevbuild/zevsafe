@@ -295,6 +295,13 @@ initPwaShortcutRouting();
  * @param {number} duration 
  */
 function showToast(message, type = 'info', duration = 4000) {
+    if (typeof window !== 'undefined' && window.ZevA11y) {
+        if (type === 'error' || type === 'danger') {
+            window.ZevA11y.announceAlert(message);
+        } else {
+            window.ZevA11y.announcePolite(message);
+        }
+    }
     let container = document.getElementById('toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -1252,6 +1259,9 @@ encryptPassword?.addEventListener('input', () => {
         encryptStrengthFill.style.width = `${res.percent}%`;
         encryptStrengthFill.style.backgroundColor = res.color;
     }
+    if (window.ZevA11y && res.label) {
+        window.ZevA11y.announcePasswordStrength(res.label);
+    }
     if (encryptStrengthLabel) {
         encryptStrengthLabel.textContent = res.label;
         encryptStrengthLabel.style.color = res.color;
@@ -1666,6 +1676,13 @@ function updateProgress(title, percent) {
     progressTitle.textContent = title;
     progressPercentage.textContent = `${Math.round(percent)}%`;
     progressBarFill.style.width = `${percent}%`;
+    const progressTrackEl = document.querySelector('.progress-track');
+    if (progressTrackEl) {
+        progressTrackEl.setAttribute('aria-valuenow', Math.round(percent));
+    }
+    if (typeof window !== 'undefined' && window.ZevA11y) {
+        window.ZevA11y.announceProgressMilestone(percent, title);
+    }
     // Color the status dot based on state
     if (statusDot) {
         if (percent >= 100) {
@@ -4743,6 +4760,9 @@ if (typeof window !== 'undefined') {
 }
 
 function lockVaultSession() {
+    if (typeof window !== 'undefined' && window.ZevA11y) {
+        window.ZevA11y.announcePolite('Vault locked.');
+    }
     // Release active screen wake locks immediately
     releaseWakeLock(true);
     // Revoke all player sessions & stream routes immediately on lock
@@ -4813,7 +4833,10 @@ function lockVaultSession() {
 }
 
 // Retain alias for full backward compatibility
-function lockV3VaultSession() { return lockVaultSession(); }
+function lockV3VaultSession() {
+    if (typeof window !== 'undefined' && window.ZevA11y) {
+        window.ZevA11y.announcePolite('Vault locked.');
+    } return lockVaultSession(); }
 if (typeof window !== 'undefined') window.lockV3VaultSession = lockVaultSession;
 
 function closeVaultExplorer() {
@@ -5466,6 +5489,8 @@ function renderExplorerFileList(query = '') {
 
     listEl.innerHTML = '';
     listEl.className = `explorer-body ${explorerViewMode === 'grid' ? 'explorer-body--grid' : 'explorer-body--list'}`;
+    listEl.setAttribute('role', 'listbox');
+    listEl.setAttribute('aria-label', 'Decrypted vault files and directories');
 
     const q = query.trim().toLowerCase();
     const isSearching = !!q;
@@ -5602,6 +5627,8 @@ function renderExplorerFileList(query = '') {
                 const card = document.createElement('div');
                 card.className = 'explorer-grid-card explorer-grid-folder';
                 card.tabIndex = 0;
+                card.setAttribute('role', 'option');
+                card.setAttribute('aria-label', `Folder: ${folder.name}, ${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}`);
                 card.title = `Open folder: ${folder.name}`;
                 card.innerHTML = `
                     <div class="explorer-grid-icon">📁</div>
@@ -5618,6 +5645,8 @@ function renderExplorerFileList(query = '') {
                 const row = document.createElement('div');
                 row.className = 'explorer-item explorer-folder-item';
                 row.tabIndex = 0;
+                row.setAttribute('role', 'option');
+                row.setAttribute('aria-label', `Folder: ${folder.name}, ${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}`);
                 row.title = `Open folder: ${folder.name}`;
                 row.innerHTML = `
                     <div class="explorer-item-left">
@@ -5652,6 +5681,9 @@ function renderExplorerFileList(query = '') {
             // ── Grid Card Layout ──
             const card = document.createElement('div');
             card.className = 'explorer-grid-card';
+            card.setAttribute('role', 'option');
+            card.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+            card.setAttribute('aria-label', `File: ${file.name}, ${file.size > 0 ? formatBytes(file.size) : ''}`);
 
             const cb = document.createElement('input');
             cb.type = 'checkbox';
@@ -5702,6 +5734,7 @@ function renderExplorerFileList(query = '') {
                 const playBtn = document.createElement('button');
                 playBtn.className = 'explorer-file-play-btn';
                 playBtn.title = `Play ${file.name}`;
+                playBtn.setAttribute('aria-label', `Play ${file.name}`);
                 playBtn.innerHTML = '▶️';
                 playBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -5712,6 +5745,7 @@ function renderExplorerFileList(query = '') {
                 const viewBtn = document.createElement('button');
                 viewBtn.className = 'explorer-file-view-btn';
                 viewBtn.title = `View ${file.name}`;
+                viewBtn.setAttribute('aria-label', `View ${file.name}`);
                 viewBtn.innerHTML = '👁️';
                 viewBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -5722,6 +5756,7 @@ function renderExplorerFileList(query = '') {
                 const pdfBtn = document.createElement('button');
                 pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
                 pdfBtn.title = `View ${file.name} PDF document`;
+                pdfBtn.setAttribute('aria-label', `View ${file.name} PDF document`);
                 pdfBtn.innerHTML = '📄';
                 pdfBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -5732,6 +5767,7 @@ function renderExplorerFileList(query = '') {
                 const readBtn = document.createElement('button');
                 readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
                 readBtn.title = `Read ${file.name}`;
+                readBtn.setAttribute('aria-label', `Read ${file.name}`);
                 readBtn.innerHTML = '📄';
                 readBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -5743,6 +5779,7 @@ function renderExplorerFileList(query = '') {
             const dlBtn = document.createElement('button');
             dlBtn.className = 'explorer-file-dl-btn';
             dlBtn.title = `Download ${file.name}`;
+            dlBtn.setAttribute('aria-label', `Download ${file.name}`);
             dlBtn.innerHTML = '⬇️';
             dlBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -5761,6 +5798,7 @@ function renderExplorerFileList(query = '') {
             const renameBtn = document.createElement('button');
             renameBtn.className = 'explorer-file-rename-btn';
             renameBtn.title = `Rename ${file.name}`;
+            renameBtn.setAttribute('aria-label', `Rename ${file.name}`);
             renameBtn.innerHTML = '✏️';
             renameBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -5771,6 +5809,7 @@ function renderExplorerFileList(query = '') {
             const delBtn = document.createElement('button');
             delBtn.className = 'explorer-file-del-btn';
             delBtn.title = `Delete ${file.name} from vault`;
+            delBtn.setAttribute('aria-label', `Delete ${file.name} from vault`);
             delBtn.innerHTML = '🗑️';
             delBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -5799,6 +5838,9 @@ function renderExplorerFileList(query = '') {
             // ── List Row Layout ──
             const row = document.createElement('div');
             row.className = 'explorer-item';
+            row.setAttribute('role', 'option');
+            row.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+            row.setAttribute('aria-label', `File: ${file.name}, ${file.size > 0 ? formatBytes(file.size) : ''}`);
 
             const left = document.createElement('div');
             left.className = 'explorer-item-left';
@@ -5859,6 +5901,7 @@ function renderExplorerFileList(query = '') {
                 const playBtn = document.createElement('button');
                 playBtn.className = 'explorer-file-play-btn';
                 playBtn.title = `Play ${file.name} directly in browser`;
+                playBtn.setAttribute('aria-label', `Play ${file.name} directly in browser`);
                 playBtn.innerHTML = '▶️ Play';
                 playBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -5869,6 +5912,7 @@ function renderExplorerFileList(query = '') {
                 const viewBtn = document.createElement('button');
                 viewBtn.className = 'explorer-file-view-btn';
                 viewBtn.title = `View ${file.name} in high-res lightbox`;
+                viewBtn.setAttribute('aria-label', `View ${file.name} in high-res lightbox`);
                 viewBtn.innerHTML = '👁️ View';
                 viewBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -5879,6 +5923,7 @@ function renderExplorerFileList(query = '') {
                 const pdfBtn = document.createElement('button');
                 pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
                 pdfBtn.title = `View ${file.name} PDF document`;
+                pdfBtn.setAttribute('aria-label', `View ${file.name} PDF document`);
                 pdfBtn.innerHTML = '📄 View';
                 pdfBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -5889,6 +5934,7 @@ function renderExplorerFileList(query = '') {
                 const readBtn = document.createElement('button');
                 readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
                 readBtn.title = `Read ${file.name} document`;
+                readBtn.setAttribute('aria-label', `Read ${file.name} document`);
                 readBtn.innerHTML = '📄 Read';
                 readBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -5900,6 +5946,7 @@ function renderExplorerFileList(query = '') {
             const dlBtn = document.createElement('button');
             dlBtn.className = 'explorer-file-dl-btn';
             dlBtn.title = `Download ${file.name}`;
+            dlBtn.setAttribute('aria-label', `Save ${file.name}`);
             dlBtn.innerHTML = '⬇️ Save';
             dlBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -5918,6 +5965,7 @@ function renderExplorerFileList(query = '') {
             const renameBtn = document.createElement('button');
             renameBtn.className = 'explorer-file-rename-btn';
             renameBtn.title = `Rename ${file.name}`;
+            renameBtn.setAttribute('aria-label', `Rename ${file.name}`);
             renameBtn.innerHTML = '✏️ Rename';
             renameBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -5928,6 +5976,7 @@ function renderExplorerFileList(query = '') {
             const delBtn = document.createElement('button');
             delBtn.className = 'explorer-file-del-btn';
             delBtn.title = `Delete ${file.name} from vault`;
+            delBtn.setAttribute('aria-label', `Delete ${file.name} from vault`);
             delBtn.innerHTML = '🗑️ Delete';
             delBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -5955,6 +6004,18 @@ function renderExplorerFileList(query = '') {
             listEl.appendChild(row);
         }
     });
+
+    if (typeof window !== 'undefined' && window.ZevA11y) {
+        window.ZevA11y.updateExplorerRovingTabindex(listEl);
+    }
+    if (!listEl._a11yKeydownAttached) {
+        listEl._a11yKeydownAttached = true;
+        listEl.addEventListener('keydown', (e) => {
+            if (typeof window !== 'undefined' && window.ZevA11y) {
+                window.ZevA11y.handleExplorerKeydown(e, listEl);
+            }
+        });
+    }
 }
 
 // =====================================================

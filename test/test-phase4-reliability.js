@@ -1015,7 +1015,7 @@ async function runPhase4Tests() {
     server.close();
 
     console.log('\n===============================================================');
-    console.log('  ALL PHASE 4 TESTS PASSED WITH 100% SUCCESS                  ');
+    console.log('  ALL 16/16 PHASE 4 RELIABILITY TESTS PASSED (100% SUCCESS)   ');
     console.log('===============================================================\n');
 }
 

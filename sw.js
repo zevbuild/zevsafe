@@ -7,8 +7,8 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v76';
-const CONTENT_HASH   = 'bbc239f9';
+const APP_VERSION    = 'v77';
+const CONTENT_HASH   = '19369ca2';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -67,6 +67,7 @@ const SHELL_ASSETS = [
     './tools/decrypt.ps1',
     './tools/Encrypt-Vault.bat',
     './tools/Decrypt-Vault.bat',
+    './js/a11y-manager.js',
     './js/crypto-worker.js',
     './js/device-benchmark.js',
     './js/media-player.js',

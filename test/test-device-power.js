@@ -94,7 +94,7 @@ console.log('===============================================================\n')
     console.log('  ✔ 5. PWA offline caching, sitemap, USB backup kit, and app navigation links verified');
 
     console.log('\n===============================================================');
-    console.log('  ALL DEVICE POWER BENCHMARK TESTS PASSED (100%)               ');
+    console.log('  ALL 5/5 DEVICE POWER BENCHMARK TESTS PASSED (100%)          ');
     console.log('===============================================================');
 })().catch(err => {
     console.error('Test failure:', err);

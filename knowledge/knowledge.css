@@ -44,6 +44,42 @@
     --kb-transition:    all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ── ACCESSIBILITY UTILITIES (WCAG 2.1 AA) ────────── */
+.skip-link {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 10000;
+    padding: 10px 18px;
+    background: var(--kb-purple, #6d28d9);
+    color: #ffffff !important;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: var(--kb-radius-sm, 8px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    transform: translateY(-220%);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+    transform: translateY(0);
+    outline: 2px solid var(--kb-teal-light, #2dd4bf);
+    outline-offset: 3px;
+}
+
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
 /* ── BASE CONTAINER & BACKGROUND ──────────────────────── */
 .kb-page {
     background-color: var(--kb-bg);

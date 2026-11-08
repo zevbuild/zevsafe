@@ -208,6 +208,9 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="a11y-polite-region" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="a11y-alert-region" class="sr-only" role="alert" aria-live="assertive" aria-atomic="true"></div>
     <!-- Ambient background -->
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -221,20 +224,18 @@
         <nav class="navbar" role="navigation" aria-label="Main Navigation">
             <div class="navbar-brand">
                 <a href="./" class="brand-link" aria-label="ZevSafe Home - Zero-Knowledge File Encryption">
-                    <img class="brand-logo" src="assets/zevsafe-logo.png" alt="ZevSafe Logo - Zero-Knowledge File Encryption" width="32" height="32">
-                    <span class="brand-name">
-                        ZevSafe
-                        <span class="brand-status-badge">
-                            <span class="status-pulse-dot"></span> 100% Offline
-                        </span>
-                    </span>
+                    <img class="brand-logo" src="assets/zevsafe-logo.png" alt="" width="32" height="32">
+                    <span class="brand-name">ZevSafe</span>
                 </a>
+                <span class="brand-status-badge" aria-hidden="true">
+                    <span class="status-pulse-dot"></span> 100% Offline
+                </span>
             </div>
             <div class="navbar-links">
                 <div class="nav-links-group">
                     <a href="./knowledge/" class="nav-link-subtle" title="Comprehensive Knowledge Base & Complete Service Manual">Knowledge Hub <span class="nav-badge-pill nav-badge-pill--purple">Manual</span></a>
                     <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span class="nav-badge-pill nav-badge-pill--green">99.3/100</span></a>
-                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-76)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.24.0</span></a>
+                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-77)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.26.0</span></a>
                     <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
                 </div>
                 <div class="nav-actions-divider" aria-hidden="true"></div>
@@ -289,7 +290,7 @@
         </nav>
 
         <!-- Mobile Navigation Drawer Overlay (Phone only) -->
-        <div class="mobile-nav-drawer" id="mobile-nav-drawer" aria-hidden="true">
+        <div class="mobile-nav-drawer" id="mobile-nav-drawer" aria-hidden="true" inert>
             <div class="mobile-nav-backdrop" id="mobile-nav-backdrop"></div>
             <div class="mobile-nav-panel">
                 <div class="mobile-nav-header">
@@ -315,7 +316,7 @@
                             <span class="mn-title">Knowledge Hub &amp; Manual</span>
                             <span class="mn-desc">10 In-Depth Service Specifications</span>
                         </div>
-                        <span class="mn-badge">v8.24.0</span>
+                        <span class="mn-badge">v8.26.0</span>
                     </a>
                     <a href="./how-to-use-zevsafe/" class="mobile-nav-link">
                         <span class="mn-icon">📖</span>
@@ -346,7 +347,7 @@
                             <span class="mn-title">Changelog &amp; Releases</span>
                             <span class="mn-desc">Full release history</span>
                         </div>
-                        <span class="mn-badge">v8.24.0</span>
+                        <span class="mn-badge">v8.26.0</span>
                     </a>
                     <a href="./roadmap/" class="mobile-nav-link">
                         <span class="mn-icon">🧭</span>
@@ -438,7 +439,7 @@
         </div>
 
         <!-- ── MAIN CARDS ── -->
-        <main class="cards-grid" id="cards-grid">
+        <main class="cards-grid" id="main-content" tabindex="-1">
 
             <!-- ENCRYPT CARD -->
             <section class="vault-card vault-card--encrypt" id="encrypt-section"
@@ -450,8 +451,8 @@
                     <p class="card-desc">Compress &amp; encrypt an entire folder into a single portable vault file.</p>
 
                     <!-- Desktop / Mobile drop zone -->
-                    <div class="drop-zone" id="encrypt-drop-zone" role="button" tabindex="0"
-                         aria-label="Drop files or folder here or click to browse">
+                    <div class="drop-zone" id="encrypt-drop-zone" role="region"
+                         aria-label="Drop files or folder to encrypt">
                         <div class="drop-zone-inner" id="encrypt-dz-inner">
                             <div class="drop-icon-wrap">
                                 <span class="drop-icon">📁</span>
@@ -464,9 +465,9 @@
                                 <button type="button" class="btn-browse btn-browse--ghost" id="btn-browse-files">📄 Browse Files</button>
                             </div>
                             <!-- Hidden File Inputs -->
-                            <input class="d-none" type="file" id="encrypt-folder-input-dz" webkitdirectory directory multiple  autocomplete="off">
-                            <input class="d-none" type="file" id="encrypt-files-input-dz" multiple  autocomplete="off">
-                            <input class="d-none" type="file" id="encrypt-folder-input" webkitdirectory directory multiple  autocomplete="off">
+                            <input class="d-none" type="file" id="encrypt-folder-input-dz" webkitdirectory directory multiple autocomplete="off" aria-label="Select folder to encrypt">
+                            <input class="d-none" type="file" id="encrypt-files-input-dz" multiple autocomplete="off" aria-label="Select individual files to encrypt">
+                            <input class="d-none" type="file" id="encrypt-folder-input" webkitdirectory directory multiple autocomplete="off" aria-label="Choose folder to encrypt">
                         </div>
                         <!-- Uploaded files summary widget -->
                         <div class="selected-files-widget d-none" id="encrypt-selected-widget" >
@@ -492,7 +493,7 @@
                             <input class="field-input" type="password" id="encrypt-password"
                                    placeholder="Enter password or PIN (min. 4 chars)" autocomplete="new-password" spellcheck="false"
                                    inputmode="text">
-                            <button class="toggle-pw" type="button" data-target="encrypt-password" aria-label="Show password">👁</button>
+                            <button class="toggle-pw" type="button" aria-pressed="false" data-target="encrypt-password" aria-label="Show password">👁</button>
                         </div>
                     </div>
 
@@ -509,15 +510,15 @@
                             <input class="field-input" type="password" id="encrypt-confirm"
                                    placeholder="Re-enter password or PIN" autocomplete="new-password" spellcheck="false"
                                    inputmode="text">
-                            <button class="toggle-pw" type="button" data-target="encrypt-confirm" aria-label="Show password">👁</button>
+                            <button class="toggle-pw" type="button" aria-pressed="false" data-target="encrypt-confirm" aria-label="Show password">👁</button>
                         </div>
                     </div>
 
                     <!-- ── STANDARDS-COMPLIANT CREDENTIAL FORM & AUTO-SAVE TOGGLE ── -->
                     <form class="form-credential-hidden" id="vault-credential-form" method="post" autocomplete="on"  aria-hidden="true">
-                        <input type="text" id="credential-vault-name" name="username" autocomplete="username" tabindex="-1" />
-                        <input type="password" id="credential-vault-password" name="password" autocomplete="new-password" tabindex="-1" />
-                        <button type="submit" id="btn-credential-submit" tabindex="-1"></button>
+                        <input type="text" id="credential-vault-name" name="username" autocomplete="username" tabindex="-1" aria-hidden="true" />
+                        <input type="password" id="credential-vault-password" name="password" autocomplete="new-password" tabindex="-1" aria-hidden="true" />
+                        <button type="submit" id="btn-credential-submit" tabindex="-1" aria-hidden="true"></button>
                     </form>
 
                     <div class="pwd-auto-save-row">
@@ -548,9 +549,9 @@
                         <div class="v2-keyfile-row">
                             <label id="v2-keyfile-label-encrypt" class="btn-keyfile">
                                 Select Keyfile
-                                <input class="d-none" type="file" id="v2-keyfile-input-encrypt" >
+                                <input class="d-none" type="file" id="v2-keyfile-input-encrypt" aria-label="Select hardware or offline keyfile for encryption">
                             </label>
-                            <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-encrypt" title="Remove keyfile" >✕</button>
+                            <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-encrypt" title="Remove keyfile"  aria-label="Remove encryption keyfile">✕</button>
                         </div>
                         <span class="v2-keyfile-badge d-none" id="v2-keyfile-badge-encrypt" ></span>
                     </div>
@@ -594,7 +595,7 @@
                                 <div class="u-style-zm9udc1z" >Embeds vault into photo/video so it opens as an authentic image in photo viewers</div>
                             </div>
                             <label class="toggle-switch" aria-label="Toggle forensic camouflage mode">
-                                <input type="checkbox" id="polyglot-mode-toggle" role="switch">
+                                <input type="checkbox" id="polyglot-mode-toggle" role="switch" aria-label="Toggle polyglot steganography mode">
                                 <span class="toggle-track"><span class="toggle-thumb"></span></span>
                             </label>
                         </div>
@@ -602,7 +603,7 @@
                             <div class="u-style-zglzcgxh" >
                                 <label class="btn-browse u-style-cgfkzglu" >
                                     <span>🖼️ Pick Cover Photo</span>
-                                    <input class="d-none" type="file" id="polyglot-cover-input" accept="image/jpeg,image/png,image/webp,video/mp4,audio/mpeg" >
+                                    <input class="d-none" type="file" id="polyglot-cover-input" accept="image/jpeg,image/png,image/webp,video/mp4,audio/mpeg" aria-label="Select polyglot cover carrier file">
                                 </label>
                                 <button type="button" class="pw-modal-btn pw-modal-btn--secondary style-btn-generate-cover" id="btn-generate-cover" >
                                     🎨 Generate Minimal Cover
@@ -614,7 +615,7 @@
                                     <div class="style-cover-preview-name" id="cover-preview-name" >cover.jpg</div>
                                     <div class="style-cover-preview-size" id="cover-preview-size" >0 KB</div>
                                 </div>
-                                <button class="btn-clear-subtle" type="button" id="btn-clear-cover" >✕</button>
+                                <button class="btn-clear-subtle" type="button" id="btn-clear-cover"  aria-label="Remove selected cover carrier file">✕</button>
                             </div>
                         </div>
                     </div>
@@ -627,7 +628,7 @@
                                 <div class="u-style-zm9udc1z" >Secondary decoy password unlocks harmless decoy files under duress/coercion</div>
                             </div>
                             <label class="toggle-switch" aria-label="Toggle duress decoy vault mode">
-                                <input type="checkbox" id="duress-mode-toggle" role="switch">
+                                <input type="checkbox" id="duress-mode-toggle" role="switch" aria-label="Toggle duress decoy vault mode">
                                 <span class="toggle-track"><span class="toggle-thumb"></span></span>
                             </label>
                         </div>
@@ -636,20 +637,20 @@
                                 <label class="field-label u-style-zm9udc1z" for="duress-password" >Decoy Password or PIN</label>
                                 <div class="field-wrap">
                                     <input class="field-input" type="password" id="duress-password" placeholder="Enter secondary decoy password" autocomplete="new-password">
-                                    <button class="toggle-pw" type="button" data-target="duress-password" aria-label="Show password">👁</button>
+                                    <button class="toggle-pw" type="button" aria-pressed="false" data-target="duress-password" aria-label="Show password">👁</button>
                                 </div>
                             </div>
                             <div class="field-group u-m-0" >
                                 <label class="field-label u-style-zm9udc1z" for="duress-confirm" >Confirm Decoy Password</label>
                                 <div class="field-wrap">
                                     <input class="field-input" type="password" id="duress-confirm" placeholder="Re-enter secondary decoy password" autocomplete="new-password">
-                                    <button class="toggle-pw" type="button" data-target="duress-confirm" aria-label="Show password">👁</button>
+                                    <button class="toggle-pw" type="button" aria-pressed="false" data-target="duress-confirm" aria-label="Show password">👁</button>
                                 </div>
                             </div>
                             <div class="u-style-zglzcgxh" >
                                 <label class="btn-browse u-style-cgfkzglu" >
                                     <span>📁 Pick Decoy Folder</span>
-                                    <input class="d-none" type="file" id="duress-folder-input" webkitdirectory directory multiple >
+                                    <input class="d-none" type="file" id="duress-folder-input" webkitdirectory directory multiple aria-label="Select decoy files folder for duress vault">
                                 </label>
                                 <button type="button" class="pw-modal-btn pw-modal-btn--secondary style-btn-generate-cover" id="btn-generate-decoy" >
                                     ⚡ Generate Realistic Decoy (Travel &amp; Recipes)
@@ -661,7 +662,7 @@
                                     <div class="style-cover-preview-name" id="duress-selected-name" >Decoy_Folder</div>
                                     <div class="style-cover-preview-size" id="duress-selected-meta" >4 files · 2.6 KB</div>
                                 </div>
-                                <button class="btn-clear-subtle" type="button" id="btn-clear-duress" >✕</button>
+                                <button class="btn-clear-subtle" type="button" id="btn-clear-duress"  aria-label="Remove selected duress decoy files">✕</button>
                             </div>
                         </div>
                     </div>
@@ -692,8 +693,8 @@
                     <p class="card-desc">Restore your original folder from a <code>.zev</code> vault file with your password.</p>
 
                     <!-- Desktop / Mobile drop zone -->
-                    <div class="drop-zone" id="decrypt-drop-zone" role="button" tabindex="0"
-                         aria-label="Drop .zev file here or click to browse">
+                    <div class="drop-zone" id="decrypt-drop-zone" role="region"
+                         aria-label="Drop .zev vault file to decrypt">
                         <div class="drop-zone-inner" id="decrypt-dz-inner">
                             <div class="drop-icon-wrap">
                                 <span class="drop-icon">📦</span>
@@ -703,8 +704,8 @@
                             <p class="drop-secondary">or</p>
                             <button type="button" class="btn-browse btn-browse--teal" id="btn-browse-decrypt">📦 Select .zev File</button>
                             <!-- Hidden File Inputs -->
-                            <input class="d-none" type="file" id="decrypt-file-input-dz" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3"  autocomplete="off">
-                            <input class="d-none" type="file" id="decrypt-file-input" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3"  autocomplete="off">
+                            <input class="d-none" type="file" id="decrypt-file-input-dz" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Select .zev vault file to decrypt">
+                            <input class="d-none" type="file" id="decrypt-file-input" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Choose .zev vault file to decrypt">
                         </div>
                         <!-- Decrypt file summary widget -->
                         <div class="selected-files-widget selected-files-widget--teal d-none" id="decrypt-selected-widget" >
@@ -720,9 +721,9 @@
 
                     <!-- ── STANDARDS-COMPLIANT DECRYPT CREDENTIAL FORM ── -->
                     <form class="form-credential-hidden" id="vault-decrypt-credential-form" method="post" autocomplete="on"  aria-hidden="true">
-                        <input type="text" id="decrypt-credential-vault-name" name="username" autocomplete="username" tabindex="-1" />
-                        <input type="password" id="decrypt-credential-vault-password" name="password" autocomplete="current-password" tabindex="-1" />
-                        <button type="submit" id="btn-decrypt-credential-submit" tabindex="-1"></button>
+                        <input type="text" id="decrypt-credential-vault-name" name="username" autocomplete="username" tabindex="-1" aria-hidden="true" />
+                        <input type="password" id="decrypt-credential-vault-password" name="password" autocomplete="current-password" tabindex="-1" aria-hidden="true" />
+                        <button type="submit" id="btn-decrypt-credential-submit" tabindex="-1" aria-hidden="true"></button>
                     </form>
 
                     <div class="field-group">
@@ -737,13 +738,13 @@
                             <input class="field-input" type="password" id="decrypt-password" name="decrypt-password-input"
                                    placeholder="Enter password or PIN" autocomplete="current-password" spellcheck="false"
                                    inputmode="text">
-                            <button class="toggle-pw" type="button" data-target="decrypt-password" aria-label="Show password">👁</button>
+                            <button class="toggle-pw" type="button" aria-pressed="false" data-target="decrypt-password" aria-label="Show password">👁</button>
                         </div>
                         <!-- Paper-Safe Scanned Metadata Banner -->
                         <div class="style-paper-safe-scanned-banner" id="paper-safe-scanned-banner" >
                             <div class="u-flex-between" >
                                 <span class="u-style-zm9udc13" >✔ Paper-Safe Recovery Applied: <span class="style-scanned-banner-vault" id="scanned-banner-vault" ></span></span>
-                                <button class="style-btn-clear-scanned-qr" type="button" id="btn-clear-scanned-qr"  title="Clear scanned metadata">✕</button>
+                                <button class="style-btn-clear-scanned-qr" type="button" id="btn-clear-scanned-qr"  title="Clear scanned metadata" aria-label="Clear scanned metadata">✕</button>
                             </div>
                             <div class="style-scanned-banner-hint" id="scanned-banner-hint" ></div>
                         </div>
@@ -756,9 +757,9 @@
                         <div class="v2-keyfile-row">
                             <label id="v2-keyfile-label-decrypt" class="btn-keyfile btn-keyfile--teal">
                                 Select Keyfile
-                                <input class="d-none" type="file" id="v2-keyfile-input-decrypt" >
+                                <input class="d-none" type="file" id="v2-keyfile-input-decrypt" aria-label="Select hardware or offline keyfile for decryption">
                             </label>
-                            <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-decrypt" title="Remove keyfile" >✕</button>
+                            <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-decrypt" title="Remove keyfile"  aria-label="Remove decryption keyfile">✕</button>
                         </div>
                         <span class="v2-keyfile-badge v2-keyfile-badge--teal d-none" id="v2-keyfile-badge-decrypt" ></span>
                         <span class="v2-keyfile-badge v2-keyfile-badge--teal style-decrypt-polyglot-badge" id="decrypt-polyglot-badge" >🎭 Camouflaged Media Vault Detected</span>
@@ -818,7 +819,7 @@
                     </div>
                     <span class="progress-pct" id="progress-percentage">0%</span>
                 </div>
-                <div class="progress-track">
+                <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Job progress">
                     <div class="progress-fill" id="progress-bar-fill"></div>
                 </div>
                 <div class="progress-bg-notice d-none" id="progress-bg-notice" role="status" aria-live="polite"></div>
@@ -1073,7 +1074,7 @@
                 <span>·</span>
                 <a class="u-style-y29sb3i6" href="./roadmap/" >Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.24.0 / WEB-VERSION-76)</a>
+                <a href="./change-log/">Changelog (v8.26.0 / WEB-VERSION-77)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1111,8 +1112,8 @@
             <div class="explorer-toolbar" id="explorer-toolbar">
                 <div class="explorer-search-wrap">
                     <span class="explorer-search-icon">🔍</span>
-                    <input type="text" id="explorer-search-input" class="explorer-search-input" placeholder="Search files in vault..." autocomplete="off" spellcheck="false">
-                    <button class="explorer-search-clear d-none" id="btn-clear-explorer-search" title="Clear search" >✕</button>
+                    <input type="text" id="explorer-search-input" class="explorer-search-input" placeholder="Search files in vault..." autocomplete="off" spellcheck="false" aria-label="Search files in vault">
+                    <button class="explorer-search-clear d-none" id="btn-clear-explorer-search" title="Clear search"  aria-label="Clear file search">✕</button>
                 </div>
 
                 <div class="explorer-controls-wrap">
@@ -1130,8 +1131,8 @@
 
                     <!-- View Toggle: List / Grid -->
                     <div class="explorer-view-toggle" role="group" aria-label="View mode">
-                        <button class="explorer-view-btn explorer-view-btn--active" id="btn-view-list" title="List View" aria-pressed="true">☰</button>
-                        <button class="explorer-view-btn" id="btn-view-grid" title="Grid View" aria-pressed="false">⊞</button>
+                        <button class="explorer-view-btn explorer-view-btn--active" id="btn-view-list" title="List View" aria-pressed="true" aria-label="Switch to list view">☰</button>
+                        <button class="explorer-view-btn" id="btn-view-grid" title="Grid View" aria-pressed="false" aria-label="Switch to grid view">⊞</button>
                     </div>
 
                     <!-- Create New Text File in Active Directory -->
@@ -1149,7 +1150,7 @@
                     <!-- Create New Text File in Active Directory -->
                     <!-- Add External Files into Active Directory -->
                     <button class="explorer-btn-add-files" id="btn-explorer-add-files" title="Import files from device into current folder">➕ Add Files</button>
-                    <input class="d-none" type="file" id="explorer-add-files-input" multiple  autocomplete="off">
+                    <input class="d-none" type="file" id="explorer-add-files-input" multiple autocomplete="off" aria-label="Select files to add into current vault directory">
 
                     <!-- Create New Text File in Active Directory -->
                     <button class="explorer-btn-new-file" id="btn-explorer-new-file" title="Create new text file in current folder">➕ New Note</button>
@@ -1210,10 +1211,10 @@
                     <span class="media-forensic-specs d-none" id="media-forensic-specs"  title="Video Resolution, Framerate & Streaming Pipeline">1080p FHD · ⚡ Range Stream</span>
                 </div>
                 <div class="media-modal-actions">
-                    <button class="media-btn-action" id="btn-media-snapshot" aria-label="Snap full-resolution video frame" title="Extract current video frame at full resolution as PNG (S)">📸 Snap Frame</button>
-                    <button class="media-btn-action" id="btn-media-loop" aria-label="Toggle loop mode" title="Toggle single-video loop / playlist auto-advance">🔁 Loop: Off</button>
-                    <button class="media-btn-action" id="btn-media-ambient" aria-label="Toggle ambient backlight glow" title="Toggle immersive ambient backlight glow">✨ Ambient: Off</button>
-                    <button class="media-btn-action" id="btn-media-hotkeys" aria-label="View keyboard shortcuts" title="View Keyboard Shortcuts Cheatsheet (?)">⌨️ Hotkeys</button>
+                    <button class="media-btn-action" id="btn-media-snapshot" aria-label="Snap Frame - Extract current video frame at full resolution" title="Extract current video frame at full resolution as PNG (S)">📸 Snap Frame</button>
+                    <button class="media-btn-action" id="btn-media-loop" aria-label="Loop: Off - Toggle loop mode" title="Toggle single-video loop / playlist auto-advance">🔁 Loop: Off</button>
+                    <button class="media-btn-action" id="btn-media-ambient" aria-label="Ambient: Off - Toggle ambient glow" title="Toggle immersive ambient backlight glow">✨ Ambient: Off</button>
+                    <button class="media-btn-action" id="btn-media-hotkeys" aria-label="Hotkeys - View keyboard shortcuts" title="View Keyboard Shortcuts Cheatsheet (?)">⌨️ Hotkeys</button>
                     <button class="media-btn-action style-btn-media-dock" id="btn-media-dock" aria-label="Dock player" title="Minimize player to bottom dock" >📥 Dock</button>
                     <button class="media-btn-action" id="btn-media-open-tab" aria-label="Open in new tab" title="Open and play in new browser tab">↗️ New Tab</button>
                     <button class="media-btn-action" id="btn-media-download" aria-label="Save media file to device" title="Save file to device">⬇️ Save</button>
@@ -1222,10 +1223,10 @@
             </header>
 
             <!-- Interactive Hotkeys Cheatsheet Overlay -->
-            <div class="media-hotkeys-modal d-none" id="media-hotkeys-modal"  role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+            <div class="media-hotkeys-modal d-none" id="media-hotkeys-modal" role="dialog" aria-modal="true" aria-labelledby="media-hotkeys-title">
                 <div class="media-hotkeys-card">
                     <div class="media-hotkeys-header">
-                        <h4>⌨️ Video Studio Keyboard Shortcuts</h4>
+                        <h4 id="media-hotkeys-title">⌨️ Keyboard Shortcuts &amp; Accessibility</h4>
                         <button class="media-hotkeys-close" id="btn-close-hotkeys" aria-label="Close keyboard shortcuts" title="Close Cheatsheet (Esc / ?)">✕</button>
                     </div>
                     <div class="media-hotkeys-grid">
@@ -1256,6 +1257,17 @@
                             <div class="media-hotkey-row"><span class="media-hotkey-action">Clear A-B Loop</span><div><kbd>\</kbd></div></div>
                             <div class="media-hotkey-row"><span class="media-hotkey-action">Bookmark Timestamp</span><div><kbd>Shift + M</kbd></div></div>
                             <div class="media-hotkey-row"><span class="media-hotkey-action">Close Player</span><div><kbd>Esc</kbd></div></div>
+                        </div>
+                        <div class="media-hotkeys-col">
+                            <h5>Vault Explorer &amp; Files</h5>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Navigate Items</span><div><kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>←</kbd> / <kbd>→</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Open / Preview File</span><div><kbd>Enter</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Select / Deselect</span><div><kbd>Space</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Multi-Select Range</span><div><kbd>Shift + ↑/↓</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Select All</span><div><kbd>Ctrl + A</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Rename File</span><div><kbd>F2</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Save / Download</span><div><kbd>D</kbd></div></div>
+                            <div class="media-hotkey-row"><span class="media-hotkey-action">Delete File (Prompted)</span><div><kbd>Delete</kbd></div></div>
                         </div>
                     </div>
                 </div>
@@ -1306,8 +1318,8 @@
                     <div class="media-cinema-left">
                         <button class="media-ctrl-btn media-ctrl-btn--primary" id="btn-media-play" aria-label="Play or pause video" title="Play/Pause (Space / K)">▶️ Play</button>
                         <button class="media-ctrl-btn" id="btn-media-prev" aria-label="Previous track" title="Previous media track (Shift+Left)">⏮️</button>
-                        <button class="media-ctrl-btn" id="btn-media-rewind10" aria-label="Rewind 10 seconds" title="Rewind 10s (Left Arrow / J)">⏪ 10s</button>
-                        <button class="media-ctrl-btn" id="btn-media-forward10" aria-label="Forward 10 seconds" title="Forward 10s (Right Arrow / L)">10s ⏩</button>
+                        <button class="media-ctrl-btn" id="btn-media-rewind10" aria-label="10s - Rewind 10 seconds" title="Rewind 10s (Left Arrow / J)">⏪ 10s</button>
+                        <button class="media-ctrl-btn" id="btn-media-forward10" aria-label="10s - Forward 10 seconds" title="Forward 10s (Right Arrow / L)">10s ⏩</button>
                         <button class="media-ctrl-btn" id="btn-media-next" aria-label="Next track" title="Next media track (Shift+Right)">⏭️</button>
                         
                         <div class="media-volume-wrap">
@@ -1320,9 +1332,9 @@
 
                     <!-- Center Section: Audio Enhancements & Timestamp Bookmark -->
                     <div class="media-cinema-center">
-                        <button class="media-boost-badge" id="btn-media-audio-boost" aria-label="Boost audio gain" title="WebAudio GainNode: Boost quiet recordings up to 200% (B)">⚡ Boost 200%</button>
-                        <button class="media-boost-badge media-eq-badge" id="btn-media-vocal-clarity" aria-label="Toggle vocal clarity equalizer" title="Vocal Clarity Equalizer: Cuts low rumble and boosts speech frequencies (V)">🎙️ Vocal</button>
-                        <button class="media-ctrl-btn" id="btn-media-bookmark" aria-label="Add timestamp bookmark" title="Add timestamp bookmark pin (Shift+M)">📌 Mark</button>
+                        <button class="media-boost-badge" id="btn-media-audio-boost" aria-label="Boost 200% - Boost audio gain" title="WebAudio GainNode: Boost quiet recordings up to 200% (B)">⚡ Boost 200%</button>
+                        <button class="media-boost-badge media-eq-badge" id="btn-media-vocal-clarity" aria-label="Vocal - Toggle vocal clarity equalizer" title="Vocal Clarity Equalizer: Cuts low rumble and boosts speech frequencies (V)">🎙️ Vocal</button>
+                        <button class="media-ctrl-btn" id="btn-media-bookmark" aria-label="Mark - Add timestamp bookmark" title="Add timestamp bookmark pin (Shift+M)">📌 Mark</button>
                     </div>
 
                     <!-- Right Section: Speed, Viewport Modes & Tools Drawer Toggle -->
@@ -1343,11 +1355,11 @@
                             </select>
                         </div>
 
-                        <button class="media-ctrl-btn" id="btn-media-fit" aria-label="Toggle aspect ratio" title="Toggle aspect ratio (Fit / Fill / 16:9 / 4:3)">↔️ Fit</button>
-                        <button class="media-ctrl-btn" id="btn-media-pip" aria-label="Picture-in-picture mode" title="Picture-in-Picture (P)">📺 PiP</button>
-                        <button class="media-ctrl-btn" id="btn-media-theater" aria-label="Toggle theater mode" title="Toggle Expansive Theater Mode (T)">🔲 Theater</button>
-                        <button class="media-ctrl-btn" id="btn-media-fullscreen" aria-label="Toggle fullscreen mode" title="Fullscreen (F)">⛶ Fullscreen</button>
-                        <button class="media-ctrl-btn media-ctrl-btn--tools" id="btn-toggle-tools" aria-label="Toggle forensic studio deck" title="Toggle Forensic Studio Deck">🎛️ Studio ▾</button>
+                        <button class="media-ctrl-btn" id="btn-media-fit" aria-label="Fit - Toggle aspect ratio" title="Toggle aspect ratio (Fit / Fill / 16:9 / 4:3)">↔️ Fit</button>
+                        <button class="media-ctrl-btn" id="btn-media-pip" aria-label="PiP - Picture in picture mode" title="Picture-in-Picture (P)">📺 PiP</button>
+                        <button class="media-ctrl-btn" id="btn-media-theater" aria-label="Theater - Toggle theater mode" title="Toggle Expansive Theater Mode (T)">🔲 Theater</button>
+                        <button class="media-ctrl-btn" id="btn-media-fullscreen" aria-label="Fullscreen - Toggle fullscreen mode" title="Fullscreen (F)">⛶ Fullscreen</button>
+                        <button class="media-ctrl-btn media-ctrl-btn--tools" id="btn-toggle-tools" aria-label="Studio - Toggle forensic studio deck" title="Toggle Forensic Studio Deck">🎛️ Studio ▾</button>
                     </div>
                 </div>
 
@@ -1357,7 +1369,7 @@
                     <div class="media-drawer-handle" aria-hidden="true"></div>
                     <div class="media-drawer-header">
                         <h4>🎛️ Forensic Studio Tools</h4>
-                        <button type="button" class="btn-drawer-close media-drawer-close" id="btn-close-tools-drawer" aria-label="Close forensic studio deck" title="Close Forensic Studio (Done)">Done ✕</button>
+                        <button type="button" class="btn-drawer-close media-drawer-close" id="btn-close-tools-drawer" aria-label="Done - Close forensic studio deck" title="Close Forensic Studio (Done)">Done ✕</button>
                     </div>
 
                     <div class="media-tools-group">
@@ -1370,26 +1382,26 @@
                     <div class="media-tools-group">
                         <span class="media-tools-step-badge">2</span>
                         <span class="media-tools-label">Zoom:</span>
-                        <button class="media-ctrl-btn" id="btn-media-zoom-in" aria-label="Zoom in" title="Zoom in video (Wheel Up / +)">🔍+ In</button>
-                        <button class="media-ctrl-btn" id="btn-media-zoom-out" aria-label="Zoom out" title="Zoom out video (Wheel Down / -)">🔍- Out</button>
-                        <button class="media-ctrl-btn" id="btn-media-zoom-reset" aria-label="Reset zoom" title="Reset zoom (0)">1:1</button>
+                        <button class="media-ctrl-btn" id="btn-media-zoom-in" aria-label="In - Zoom in" title="Zoom in video (Wheel Up / +)">🔍+ In</button>
+                        <button class="media-ctrl-btn" id="btn-media-zoom-out" aria-label="Out - Zoom out" title="Zoom out video (Wheel Down / -)">🔍- Out</button>
+                        <button class="media-ctrl-btn" id="btn-media-zoom-reset" aria-label="1:1 - Reset zoom" title="Reset zoom (0)">1:1</button>
                     </div>
 
                     <div class="media-tools-group">
                         <span class="media-tools-step-badge">3</span>
                         <span class="media-tools-label">A-B Loop:</span>
-                        <button class="media-ctrl-btn" id="btn-media-ab-a" aria-label="Set A-B loop point A" title="Set Point A at current time ([)">[ A</button>
-                        <button class="media-ctrl-btn" id="btn-media-ab-b" aria-label="Set A-B loop point B" title="Set Point B at current time (])">B ]</button>
-                        <button class="media-ctrl-btn style-btn-media-ab-clear" id="btn-media-ab-clear" aria-label="Clear A-B loop" title="Clear A-B Loop (\)" >✕ Clear</button>
+                        <button class="media-ctrl-btn" id="btn-media-ab-a" aria-label="[ A - Set loop point A" title="Set Point A at current time ([)">[ A</button>
+                        <button class="media-ctrl-btn" id="btn-media-ab-b" aria-label="B ] - Set loop point B" title="Set Point B at current time (])">B ]</button>
+                        <button class="media-ctrl-btn style-btn-media-ab-clear" id="btn-media-ab-clear" aria-label="Clear - Clear loop points" title="Clear A-B Loop (\)" >✕ Clear</button>
                     </div>
 
                     <div class="media-tools-group">
                         <span class="media-tools-step-badge">4</span>
                         <span class="media-tools-label">Transform:</span>
-                        <button class="media-ctrl-btn" id="btn-media-rot-left" aria-label="Rotate counter-clockwise 90 degrees" title="Rotate 90° counter-clockwise">↺ 90°</button>
-                        <button class="media-ctrl-btn" id="btn-media-rot-right" aria-label="Rotate clockwise 90 degrees" title="Rotate 90° clockwise (R)">↻ 90°</button>
-                        <button class="media-ctrl-btn" id="btn-media-flip-h" aria-label="Flip horizontal" title="Flip horizontal">⇄ Flip H</button>
-                        <button class="media-ctrl-btn" id="btn-media-flip-v" aria-label="Flip vertical" title="Flip vertical">⇅ Flip V</button>
+                        <button class="media-ctrl-btn" id="btn-media-rot-left" aria-label="90° - Rotate counter-clockwise" title="Rotate 90° counter-clockwise">↺ 90°</button>
+                        <button class="media-ctrl-btn" id="btn-media-rot-right" aria-label="90° - Rotate clockwise" title="Rotate 90° clockwise (R)">↻ 90°</button>
+                        <button class="media-ctrl-btn" id="btn-media-flip-h" aria-label="Flip H - Flip horizontal" title="Flip horizontal">⇄ Flip H</button>
+                        <button class="media-ctrl-btn" id="btn-media-flip-v" aria-label="Flip V - Flip vertical" title="Flip vertical">⇅ Flip V</button>
                     </div>
 
                     <div class="media-tools-group">
@@ -1398,7 +1410,7 @@
                         <button class="media-ctrl-btn media-filter-btn" id="btn-filter-bright" aria-label="Brightness filter" title="Boost brightness (+35%) for dark footage">☀️ Brightness</button>
                         <button class="media-ctrl-btn media-filter-btn" id="btn-filter-contrast" aria-label="Contrast filter" title="High contrast (+50%) for text/document clarity">🌓 Contrast</button>
                         <button class="media-ctrl-btn media-filter-btn" id="btn-filter-invert" aria-label="Invert color filter" title="Negative forensic inversion">🔄 Invert</button>
-                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-cctv" aria-label="CCTV monochrome filter" title="Security camera monochrome B&W">📹 CCTV B&W</button>
+                        <button class="media-ctrl-btn media-filter-btn" id="btn-filter-cctv" aria-label="CCTV B&W - Monochrome filter" title="Security camera monochrome B&W">📹 CCTV B&W</button>
                         <button class="media-ctrl-btn style-btn-media-ab-clear" id="btn-filter-reset" aria-label="Reset video filters" title="Reset all transforms and filters" >Reset</button>
                     </div>
                 </div>
@@ -1436,14 +1448,14 @@
             <!-- Image Zoom & Navigation Controls Bar -->
             <div class="media-cinema-bar image-controls-bar" id="image-controls-bar">
                 <div class="media-cinema-left">
-                    <button class="media-ctrl-btn" id="btn-image-prev" aria-label="Previous photo" title="Previous photo (Left Arrow)">⏮️ Prev</button>
+                    <button class="media-ctrl-btn" id="btn-image-prev" aria-label="Prev - Previous photo" title="Previous photo (Left Arrow)">⏮️ Prev</button>
                     <button class="media-ctrl-btn" id="btn-image-next" aria-label="Next photo" title="Next photo (Right Arrow)">⏭️ Next</button>
                 </div>
                 <div class="media-cinema-center">
                     <button class="media-ctrl-btn" id="btn-image-zoom-out" aria-label="Zoom out photo" title="Zoom out (−)">🔍−</button>
                     <span class="image-zoom-badge" id="image-zoom-badge">100%</span>
                     <button class="media-ctrl-btn" id="btn-image-zoom-in" aria-label="Zoom in photo" title="Zoom in (+)">🔍+</button>
-                    <button class="media-ctrl-btn" id="btn-image-zoom-reset" aria-label="Reset photo zoom to 1:1" title="Reset zoom (0)">1:1 Fit</button>
+                    <button class="media-ctrl-btn" id="btn-image-zoom-reset" aria-label="1:1 Fit - Reset zoom" title="Reset zoom (0)">1:1 Fit</button>
                     <button class="media-ctrl-btn" id="btn-image-rotate" aria-label="Rotate photo 90 degrees" title="Rotate 90 degrees">↻ 90°</button>
                 </div>
                 <div class="media-cinema-right">
@@ -1491,11 +1503,11 @@
     </div>
 
     <!-- Password Save Prompt Modal -->
-    <div class="pw-modal-overlay d-none" id="pw-save-modal" >
+    <div class="pw-modal-overlay d-none" id="pw-save-modal" role="dialog" aria-modal="true" aria-labelledby="pw-save-modal-title">
         <div class="pw-modal">
             <div class="pw-modal-header">
                 <img class="modal-logo" src="assets/zevsafe-logo.png" alt="ZevSafe Logo" width="28" height="28" loading="lazy">
-                <h3>Save Vault Password</h3>
+                <h3 id="pw-save-modal-title">Save Vault Password</h3>
             </div>
             <div class="pw-modal-body">
                 <div class="pw-modal-warning">
@@ -1526,7 +1538,7 @@
     <!-- PWA Install Guide Modal -->
     
     <!-- 1-Click USB Air-Gap Backup Kit Modal -->
-    <div class="pw-modal-overlay d-none" id="usb-backup-modal"  aria-hidden="true" role="dialog" aria-labelledby="usb-backup-modal-title">
+    <div class="pw-modal-overlay d-none" id="usb-backup-modal" role="dialog" aria-modal="true" aria-labelledby="usb-backup-modal-title">
         <div class="pw-modal u-style-bwf4lxdp" >
             <div class="pw-modal-header u-justify-between" >
                 <div class="u-flex-center-gap-md" >
@@ -1536,7 +1548,7 @@
                         <span class="u-style-zm9udc1z" >● 100% Zero-Network Self-Contained Vault</span>
                     </div>
                 </div>
-                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-usb-modal" title="Close" >✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-usb-modal" title="Close"  aria-label="Close offline USB backup modal">✕</button>
             </div>
             <div class="pw-modal-body u-style-z2fwoiax" >
                 <p class="u-style-bwfyz2lu" >
@@ -1595,7 +1607,7 @@
                         <span class="u-style-zm9udc1z" >● Air-Gapped Printable Physical Vault Backup</span>
                     </div>
                 </div>
-                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-paper-modal" title="Close" >✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-paper-modal" title="Close"  aria-label="Close paper backup safe modal">✕</button>
             </div>
             
             <div class="pw-modal-body u-style-cgfkzglu" >
@@ -1605,7 +1617,7 @@
                         <label class="u-style-zm9udc1z" for="paper-hint-input" >Optional Passphrase Hint / Location</label>
                         <input type="text" id="paper-hint-input" class="field-input style-paper-hint-input" placeholder="e.g. 4 Diceware words in the blue safe ledger"  maxlength="80">
                         <label class="u-style-zglzcgxh" >
-                            <input class="style-chk-paper-embed-password" type="checkbox" id="chk-paper-embed-password" checked >
+                            <input class="style-chk-paper-embed-password" type="checkbox" id="chk-paper-embed-password" checked aria-label="Include password in paper backup">
                             <span>⚡ <strong class="u-style-y29sb3i6" >Master Key QR:</strong> Embed password into QR for 1-scan instant unlock</span>
                         </label>
                     </div>
@@ -1639,7 +1651,7 @@
                         <span class="u-style-zm9udc1z" >● Optical Cold-Storage Restoration</span>
                     </div>
                 </div>
-                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-scanner-modal" title="Close" >✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-scanner-modal" title="Close"  aria-label="Close QR scanner modal">✕</button>
             </div>
             
             <div class="pw-modal-body u-style-z2fwoiax" >
@@ -1658,7 +1670,7 @@
 
                 <!-- Alternative: Image Drop Zone / File Picker / Clipboard Paste -->
                 <div class="qr-drop-zone" id="qr-image-dropzone" tabindex="0" role="button" aria-label="Drop QR image, click to browse, or paste from clipboard">
-                    <input class="d-none" type="file" id="qr-file-input" accept="image/*" >
+                    <input class="d-none" type="file" id="qr-file-input" accept="image/*" aria-label="Select QR code image file to scan">
                     <div class="style-qr-file-input" >
                         <span class="u-style-zm9udc1z" >📁</span>
                         <span class="u-style-zm9udc1z" >Drop QR photo or click to browse</span>
@@ -1694,14 +1706,14 @@
             </div>
         </div>
     </div>
-    <div class="pw-modal-overlay d-none" id="install-pwa-modal" >
+    <div class="pw-modal-overlay d-none" id="install-pwa-modal" role="dialog" aria-modal="true" aria-labelledby="install-pwa-modal-title">
         <div class="pw-modal style-install-pwa-modal" >
             <div class="pw-modal-header u-justify-between" >
                 <div class="u-flex-center-gap-md" >
                     <img class="modal-logo" src="assets/zevsafe-logo.png" alt="ZevSafe Logo" width="28" height="28" loading="lazy">
-                    <h3 class="modal-heading" >Install ZevSafe (Offline App)</h3>
+                    <h3 class="modal-heading" id="install-pwa-modal-title">Install ZevSafe (Offline App)</h3>
                 </div>
-                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-install-modal" title="Close" >✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-install-modal" title="Close"  aria-label="Close install app modal">✕</button>
             </div>
             <div class="pw-modal-body u-style-z2fwoiax" >
                 <p class="u-style-bwfyz2lu" >
@@ -1755,7 +1767,7 @@
                     <span class="u-style-zm9udc1z" >🛡️</span>
                     <h3 class="modal-heading" id="health-modal-title" >Vault Cryptographic Health Check</h3>
                 </div>
-                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-health-modal" title="Close" >✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-health-modal" title="Close"  aria-label="Close vault health audit modal">✕</button>
             </div>
             <div class="pw-modal-body u-gap-1rem" >
                 <div class="health-scorecard">
@@ -1806,7 +1818,7 @@
                         <div class="u-style-zm9udc1z" >Rescues intact files from bit-rotted or damaged archives</div>
                     </div>
                 </div>
-                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-salvage-modal" title="Close" >✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-salvage-modal" title="Close"  aria-label="Close salvage recovery modal">✕</button>
             </div>
             <div class="pw-modal-body u-gap-1rem" >
                 <div class="salvage-stats-grid u-style-zglzcgxh" >
@@ -1867,7 +1879,7 @@
                     <span class="u-style-zm9udc1z" >⚡</span>
                     <h3 class="modal-heading" id="pw-gen-modal-title" >Password &amp; Passphrase Generator</h3>
                 </div>
-                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-gen-modal" title="Close" >✕</button>
+                <button type="button" class="media-btn-icon btn-modal-dismiss-subtle" id="btn-close-gen-modal" title="Close"  aria-label="Close password generator modal">✕</button>
             </div>
             <div class="pw-modal-body u-gap-1rem" >
                 <div class="gen-type-tabs">
@@ -1883,7 +1895,7 @@
                     </div>
                     <div class="pw-display-wrapper">
                         <input class="style-gen-output-display" type="text" id="gen-output-display" readonly autocomplete="off" spellcheck="false" >
-                        <button class="style-btn-gen-refresh" type="button" id="btn-gen-refresh" title="Generate another secret" >🔄</button>
+                        <button class="style-btn-gen-refresh" type="button" id="btn-gen-refresh" title="Generate another secret"  aria-label="Generate new random password">🔄</button>
                         <button type="button" id="btn-gen-copy" title="Copy to clipboard">📋 Copy</button>
                     </div>
                 </div>
@@ -1917,10 +1929,10 @@
                     </div>
                     <div class="gen-control-row u-style-z2fwoiax" >
                         <label class="u-flex-label-pointer" >
-                            <input type="checkbox" id="gen-opt-symbols" checked> Symbols (!@#$)
+                            <input type="checkbox" id="gen-opt-symbols" checked aria-label="Include special symbols in generated password"> Symbols (!@#$)
                         </label>
                         <label class="u-flex-label-pointer" >
-                            <input type="checkbox" id="gen-opt-numbers" checked> Numbers (0-9)
+                            <input type="checkbox" id="gen-opt-numbers" checked aria-label="Include numbers in generated password"> Numbers (0-9)
                         </label>
                     </div>
                 </div>
@@ -1945,6 +1957,7 @@
     <script src="js/crypto-worker.js" defer></script>
     <script src="js/stream-saver.js" defer></script>
     <script src="js/worker-bridge.js" defer></script>
+    <script src="js/a11y-manager.js" defer></script>
     <script src="app.js" defer></script>
 
     <!-- Floating Docked Audio Mini-Player -->
@@ -1958,13 +1971,13 @@
                 </div>
             </div>
             <div class="audio-dock-controls">
-                <button class="audio-dock-btn" id="btn-dock-prev" title="Previous Track">⏮️</button>
-                <button class="audio-dock-btn audio-dock-btn--play" id="btn-dock-play" title="Play/Pause">▶️</button>
-                <button class="audio-dock-btn" id="btn-dock-next" title="Next Track">⏭️</button>
+                <button class="audio-dock-btn" id="btn-dock-prev" title="Previous Track" aria-label="Previous track">⏮️</button>
+                <button class="audio-dock-btn audio-dock-btn--play" id="btn-dock-play" title="Play/Pause" aria-label="Play or pause media">▶️</button>
+                <button class="audio-dock-btn" id="btn-dock-next" title="Next Track" aria-label="Next track">⏭️</button>
             </div>
             <div class="audio-dock-actions">
-                <button class="audio-dock-btn" id="btn-dock-expand" title="Expand to Full Player">↗️</button>
-                <button class="audio-dock-btn audio-dock-btn--close" id="btn-dock-close" title="Stop &amp; Close Player">✕</button>
+                <button class="audio-dock-btn" id="btn-dock-expand" title="Expand to Full Player" aria-label="Expand to full player">↗️</button>
+                <button class="audio-dock-btn audio-dock-btn--close" id="btn-dock-close" title="Stop &amp; Close Player" aria-label="Stop and close player">✕</button>
             </div>
         </div>
     </div>

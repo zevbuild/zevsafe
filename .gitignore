@@ -25,5 +25,7 @@ docs/ORIGINAL_REQUEST.md
 
 # Build output
 dist/
+node_modules/
+scratch/
 
 
