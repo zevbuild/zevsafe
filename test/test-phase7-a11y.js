@@ -522,6 +522,9 @@ async function main() {
                         for (const id of modalIds) {
                             const el = document.getElementById(id);
                             if (!el) { results.push({ id, error: 'not found' }); continue; }
+                            if ((id === 'vault-media-modal' || id === 'media-hotkeys-modal') && typeof window.loadStyle === 'function') {
+                                await window.loadStyle('css/media-player.css');
+                            }
                             el.classList.remove('d-none');
                             const res = await new Promise(r => axe.run(el, (err, out) => r(out || {})));
                             el.classList.add('d-none');
