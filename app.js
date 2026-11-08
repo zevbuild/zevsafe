@@ -427,6 +427,13 @@ async function releaseWakeLock(forceAll = false) {
             } catch (_) {}
         }
         updateWakeLockUI(false);
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('zevsafe-jobs-finished'));
+            if (window.__zevPendingReload && typeof window.canSafelyReload === 'function' && window.canSafelyReload()) {
+                console.log('[ZevSafe PWA] All operations finished and safe to reload. Reloading now.');
+                window.location.reload();
+            }
+        }
     }
 }
 
@@ -4791,6 +4798,14 @@ function lockVaultSession() {
     if (decryptPassword) decryptPassword.value = '';
     const keyfileInput = document.getElementById('decrypt-keyfile');
     if (keyfileInput) keyfileInput.value = '';
+
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('zevsafe-vault-locked'));
+        if (window.__zevPendingReload && typeof window.canSafelyReload === 'function' && window.canSafelyReload()) {
+            console.log('[ZevSafe PWA] Vault locked and safe to reload. Reloading now.');
+            window.location.reload();
+        }
+    }
 }
 
 // Retain alias for full backward compatibility
@@ -4804,6 +4819,114 @@ function closeVaultExplorer() {
         modal.style.display = 'none';
     }
     lockVaultSession();
+}
+
+// ============================================
+// 🔒 PWA FILE HANDLING & SAFE RELOAD STATE (Phase 5)
+// ============================================
+
+/**
+ * Checks whether a vault is currently unlocked (V3 streaming vault or legacy zip).
+ * @returns {boolean}
+ */
+function isVaultUnlocked() {
+    return Boolean(currentV3Vault || currentDecryptedZip || currentDecryptedBlob);
+}
+
+/**
+ * Checks whether any asynchronous encryption, decryption, salvaging, or streaming job is active.
+ * @returns {boolean}
+ */
+function isJobActive() {
+    return (activeWakeLockCount > 0) || Boolean(activeWakeLockSentinel && !activeWakeLockSentinel.released);
+}
+
+/**
+ * Determines whether it is safe to reload the page for a Service Worker update.
+ * Reload is unsafe if a vault is decrypted in memory or if an active job is executing.
+ * @returns {boolean}
+ */
+function canSafelyReload() {
+    return !isVaultUnlocked() && !isJobActive();
+}
+
+/**
+ * W3C File Handling API consumer.
+ * Handles opening .zev vault files directly from operating system file managers
+ * (Desktop Chrome / Edge / Chromium browsers).
+ */
+function initLaunchQueueConsumer() {
+    if (typeof window === 'undefined' || !('launchQueue' in window) || typeof window.launchQueue.setConsumer !== 'function') {
+        return;
+    }
+    window.launchQueue.setConsumer(async (launchParams) => {
+        if (!launchParams || !launchParams.files || launchParams.files.length === 0) return;
+
+        const files = launchParams.files;
+        const firstHandle = files[0];
+        const fileObj = typeof firstHandle.getFile === 'function' ? await firstHandle.getFile() : firstHandle;
+
+        if (!fileObj || !fileObj.name) return;
+
+        // Check .zev extension case-insensitively
+        if (!/\.zev$/i.test(fileObj.name)) {
+            if (typeof showToast === 'function') {
+                showToast(`⚠️ Only .zev vault files can be opened (got "${fileObj.name}").`, 'warning');
+            }
+            return;
+        }
+
+        // Inform user if multiple files were selected
+        if (files.length > 1) {
+            if (typeof showToast === 'function') {
+                showToast(`Opening first vault: "${fileObj.name}" (1 of ${files.length} files selected).`, 'info');
+            }
+        }
+
+        // Ask before replacing an unlocked vault or running job
+        if (typeof canSafelyReload === 'function' && !canSafelyReload()) {
+            const confirmReplace = window.confirm(
+                'A vault is currently open or an operation is in progress. Opening a new vault will discard current operations. Continue?'
+            );
+            if (!confirmReplace) {
+                return;
+            }
+            if (typeof lockVaultSession === 'function') {
+                lockVaultSession();
+            }
+        }
+
+        // Switch to Decrypt tab
+        if (typeof switchTab === 'function') {
+            switchTab('decrypt', true);
+        }
+
+        // Select file for decryption (never auto-decrypt)
+        if (typeof onDecryptSelected === 'function') {
+            await onDecryptSelected([fileObj]);
+        }
+
+        // Focus password input
+        const pwdInput = document.getElementById('decrypt-password');
+        if (pwdInput) {
+            pwdInput.focus();
+        }
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLaunchQueueConsumer);
+} else {
+    initLaunchQueueConsumer();
+}
+
+if (typeof window !== 'undefined') {
+    window.switchMobileTab = switchTab;
+    window.handleDecryptionFileSelection = (f) => onDecryptSelected([f]);
+    window.isVaultUnlocked = isVaultUnlocked;
+    window.isJobActive = isJobActive;
+    window.canSafelyReload = canSafelyReload;
+    window.initLaunchQueueConsumer = initLaunchQueueConsumer;
 }
 
 // ============================================

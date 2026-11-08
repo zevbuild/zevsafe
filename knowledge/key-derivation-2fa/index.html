@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-knowledge-mode="combined">
 <head>
     <meta charset="UTF-8">
@@ -12,8 +12,10 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png">
 
-    <title>Key Derivation &amp; 2FA Keyfiles — ZevSafe Knowledge Hub</title>
+    <title>Key Derivation &amp; 2FA Keyfiles â€” ZevSafe Knowledge Hub</title>
     <link rel="canonical" href="https://zevsafe.pages.dev/knowledge/key-derivation-2fa/">
     <meta name="description" content="Technical specification of ZevSafe PBKDF2-SHA512 key derivation tiers (600k to 2.4M rounds), physical keyfile 2FA, and GPU brute-force defense.">
 
@@ -21,20 +23,20 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="ZevSafe">
     <meta property="og:url" content="https://zevsafe.pages.dev/knowledge/key-derivation-2fa/">
-    <meta property="og:title" content="Key Derivation &amp; 2FA Keyfiles — ZevSafe Knowledge Hub">
+    <meta property="og:title" content="Key Derivation &amp; 2FA Keyfiles â€” ZevSafe Knowledge Hub">
     <meta property="og:description" content="Technical specification of ZevSafe PBKDF2-SHA512 key derivation tiers (600k to 2.4M rounds), physical keyfile 2FA, and GPU brute-force defense.">
     <meta property="og:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Key Derivation &amp; 2FA Keyfiles — ZevSafe Knowledge Hub">
+    <meta property="og:image:alt" content="Key Derivation &amp; 2FA Keyfiles â€” ZevSafe Knowledge Hub">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://zevsafe.pages.dev/knowledge/key-derivation-2fa/">
-    <meta name="twitter:title" content="Key Derivation &amp; 2FA Keyfiles — ZevSafe Knowledge Hub">
+    <meta name="twitter:title" content="Key Derivation &amp; 2FA Keyfiles â€” ZevSafe Knowledge Hub">
     <meta name="twitter:description" content="Technical specification of ZevSafe PBKDF2-SHA512 key derivation tiers (600k to 2.4M rounds), physical keyfile 2FA, and GPU brute-force defense.">
     <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
-    <meta name="twitter:image:alt" content="Key Derivation &amp; 2FA Keyfiles — ZevSafe Knowledge Hub">
+    <meta name="twitter:image:alt" content="Key Derivation &amp; 2FA Keyfiles â€” ZevSafe Knowledge Hub">
 
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="../knowledge.css">
@@ -71,16 +73,16 @@
         </ul>
 
         <div class="kb-perspective-dock">
-            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
-            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
-            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+            <button class="kb-perspective-btn" data-mode="simple"><span>ðŸŸ¢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>ðŸ”µ</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>ðŸ‘ï¸</span> Both</button>
         </div>
     </div>
 
     <div class="kb-article-layout">
         <aside class="kb-sidebar">
             <div class="kb-toc-title">
-                <span>📑</span> Contents
+                <span>ðŸ“‘</span> Contents
             </div>
             <ul class="kb-toc-list">
                 <li><a href="#overview" class="kb-toc-link">Overview &amp; Purpose</a></li>
@@ -97,9 +99,9 @@
                 <span class="kb-hero-eyebrow">SERVICE #08 &bull; CRYPTOGRAPHIC HARDENING</span>
                 <h1 class="kb-article-title">Key Derivation &amp; 2FA Keyfiles</h1>
                 <div class="kb-article-meta">
-                    <span class="kb-article-meta-item"><span>⏱️</span> 7 min read</span>
-                    <span class="kb-article-meta-item"><span>🛡️</span> 600,000 – 2,400,000 Iterations</span>
-                    <span class="kb-article-meta-item"><span>🗝️</span> SHA-256 Keyfile Mixing</span>
+                    <span class="kb-article-meta-item"><span>â±ï¸</span> 7 min read</span>
+                    <span class="kb-article-meta-item"><span>ðŸ›¡ï¸</span> 600,000 â€“ 2,400,000 Iterations</span>
+                    <span class="kb-article-meta-item"><span>ðŸ—ï¸</span> SHA-256 Keyfile Mixing</span>
                 </div>
             </header>
 
@@ -111,7 +113,7 @@
 
             <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
             <section id="simple-guide" class="kb-perspective-simple">
-                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <div class="kb-perspective-badge kb-badge-simple">ðŸŸ¢ Simple User Guide</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Hardening Your Vault in Seconds</h2>
 
                 <div class="kb-step-card">
@@ -129,7 +131,7 @@
                     <div class="kb-step-badge">STEP 02</div>
                     <h3 class="kb-step-title">Attach a Physical Keyfile (2FA)</h3>
                     <p class="kb-step-desc">
-                        Drop any existing file—such as a specific photo on your USB flash drive, a music track, or a randomly generated binary key. That file becomes a physical second factor.
+                        Drop any existing fileâ€”such as a specific photo on your USB flash drive, a music track, or a randomly generated binary key. That file becomes a physical second factor.
                     </p>
                 </div>
 
@@ -142,7 +144,7 @@
                 </div>
 
                 <div class="kb-callout kb-callout-warning">
-                    <div class="kb-callout-icon">⚠️</div>
+                    <div class="kb-callout-icon">âš ï¸</div>
                     <div class="kb-callout-body">
                         <strong>Important:</strong> Do not modify or edit your keyfile! Changing even a single pixel or character will alter its cryptographic checksum and prevent vault decryption. Keep safe backups of your keyfile on an offline flash drive.
                     </div>
@@ -151,7 +153,7 @@
 
             <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
             <section id="pbkdf2-tiers" class="kb-perspective-technical">
-                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <div class="kb-perspective-badge kb-badge-technical">ðŸ”µ Technical Specification</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">PBKDF2-SHA512 Derivation Algorithm</h2>
                 <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
                     Key derivation is executed client-side using the native W3C Web Cryptography API (<code>SubtleCrypto</code>). The algorithm employs a 32-byte CSPRNG salt and 512-bit HMAC digest:
@@ -200,7 +202,7 @@ async function deriveVaultMasterKey(passwordBytes, saltBytes, iterations = 60000
                 </p>
 
                 <div class="kb-callout kb-callout-invariant">
-                    <div class="kb-callout-icon">📐</div>
+                    <div class="kb-callout-icon">ðŸ“</div>
                     <div class="kb-callout-body">
                         $$\text{Digest}_{\text{KF}} = \text{SHA-256}(\text{KeyfileBytes})$$
                         $$\text{Password}_{\text{eff}} = \text{UTF-8}(\text{Passphrase}) \,\|\, \text{Digest}_{\text{KF}}$$

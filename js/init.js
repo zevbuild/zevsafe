@@ -12,12 +12,60 @@
 (() => {
     'use strict';
 
-    // ── Service Worker Registration & Update Lifecycle ───────────────
+    // ── Service Worker Registration & Update Lifecycle (Phase 5: Safe Updates) ──
+    let waitingWorker = null;
+
+    function promptUpdate(worker) {
+        waitingWorker = worker;
+        const updateBanner = document.getElementById('pwa-update-banner');
+        if (updateBanner) {
+            updateBanner.classList.remove('d-none');
+            requestAnimationFrame(() => updateBanner.classList.add('pwa-banner--visible'));
+        }
+    }
+
+    function dismissUpdateBanner() {
+        const updateBanner = document.getElementById('pwa-update-banner');
+        if (updateBanner) {
+            updateBanner.classList.remove('pwa-banner--visible');
+            setTimeout(() => {
+                updateBanner.classList.add('d-none');
+            }, 350);
+        }
+    }
+
+    function applyUpdate() {
+        if (!waitingWorker) return;
+        dismissUpdateBanner();
+
+        // Check if vault is open or long-running crypto/streaming job is active
+        const isSafe = (typeof window.canSafelyReload === 'function') ? window.canSafelyReload() : true;
+        if (!isSafe) {
+            const confirmed = window.confirm(
+                'A vault is currently open or an operation is in progress. Updating now will reload the app and unsaved progress will be lost. Update anyway?'
+            );
+            if (!confirmed) {
+                return;
+            }
+        }
+        waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+    }
+
+    const btnUpdate = document.getElementById('pwa-btn-update');
+    const btnUpdateDismiss = document.getElementById('pwa-btn-update-dismiss');
+    btnUpdate?.addEventListener('click', applyUpdate);
+    btnUpdateDismiss?.addEventListener('click', dismissUpdateBanner);
+
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js', { scope: './' })
                 .then(reg => {
                     console.log('[ZevSafe PWA] SW registered. Scope:', reg.scope);
+
+                    // Check if a worker is already waiting from previous session
+                    if (reg.waiting && navigator.serviceWorker.controller) {
+                        promptUpdate(reg.waiting);
+                    }
 
                     // Poll for updates when user comes back online
                     window.addEventListener('online', () => {
@@ -27,26 +75,40 @@
                     // Periodic background update check (every 10 mins)
                     setInterval(() => reg.update().catch(() => {}), 10 * 60 * 1000);
 
-                    // When a new SW is waiting, send SKIP_WAITING and reload
+                    // When a new SW update is detected
                     reg.addEventListener('updatefound', () => {
                         const newWorker = reg.installing;
                         if (!newWorker) return;
                         newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                console.log('[ZevSafe PWA] New SW installed. Sending SKIP_WAITING.');
-                                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                            if (newWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    console.log('[ZevSafe PWA] New SW installed. Presenting update banner.');
+                                    promptUpdate(newWorker);
+                                } else {
+                                    // First install: safe to activate immediately
+                                    console.log('[ZevSafe PWA] Initial SW install. Activating cache.');
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                }
                             }
                         });
                     });
                 })
                 .catch(err => console.warn('[ZevSafe PWA] SW registration failed:', err));
 
-            // Auto-reload when new SW takes control
+            // Auto-reload when new SW takes control, strictly guarded by canSafelyReload()
             let refreshing = false;
             navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
+                if (refreshing) return;
+                const isSafe = (typeof window.canSafelyReload === 'function') ? window.canSafelyReload() : true;
+                if (isSafe) {
                     refreshing = true;
                     window.location.reload();
+                } else {
+                    console.log('[ZevSafe PWA] Controller changed but vault is open/job running. Deferring reload.');
+                    window.__zevPendingReload = true;
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('🚀 ZevSafe updated in background. Reload will occur once vault is locked.', 'info');
+                    }
                 }
             });
         });
@@ -71,7 +133,6 @@
             const dismissedUntil = localStorage.getItem('pwa-install-dismissed');
             if (!dismissedUntil || Date.now() > Number(dismissedUntil)) {
                 installBanner.classList.remove('d-none');
-                installBanner.style.display = 'block';
                 requestAnimationFrame(() => installBanner.classList.add('pwa-banner--visible'));
             }
         });
@@ -81,7 +142,6 @@
         if (!deferredInstallPrompt || !installBanner) return;
         installBanner.classList.remove('pwa-banner--visible');
         setTimeout(() => {
-            installBanner.style.display = 'none';
             installBanner.classList.add('d-none');
         }, 350);
         deferredInstallPrompt.prompt();
@@ -94,7 +154,6 @@
         if (!installBanner) return;
         installBanner.classList.remove('pwa-banner--visible');
         setTimeout(() => {
-            installBanner.style.display = 'none';
             installBanner.classList.add('d-none');
         }, 350);
         localStorage.setItem('pwa-install-dismissed', String(Date.now() + 7 * 24 * 60 * 60 * 1000));
@@ -104,7 +163,7 @@
     window.addEventListener('appinstalled', () => {
         console.log('[ZevSafe PWA] App installed successfully!');
         if (installBanner) {
-            installBanner.style.display = 'none';
+            installBanner.classList.remove('pwa-banner--visible');
             installBanner.classList.add('d-none');
         }
         deferredInstallPrompt = null;

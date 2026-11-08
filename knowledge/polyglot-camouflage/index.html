@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-knowledge-mode="combined">
 <head>
     <meta charset="UTF-8">
@@ -12,8 +12,10 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png">
 
-    <title>Polyglot Media Camouflage — ZevSafe Knowledge Hub</title>
+    <title>Polyglot Media Camouflage â€” ZevSafe Knowledge Hub</title>
     <link rel="canonical" href="https://zevsafe.pages.dev/knowledge/polyglot-camouflage/">
     <meta name="description" content="Technical specification and user guide for ZevSafe steganographic polyglot media camouflage: JPEG, PNG, and MP4 cover embedding and sliding-window offset detection.">
 
@@ -21,20 +23,20 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="ZevSafe">
     <meta property="og:url" content="https://zevsafe.pages.dev/knowledge/polyglot-camouflage/">
-    <meta property="og:title" content="Polyglot Media Camouflage — ZevSafe Knowledge Hub">
+    <meta property="og:title" content="Polyglot Media Camouflage â€” ZevSafe Knowledge Hub">
     <meta property="og:description" content="Technical specification and user guide for ZevSafe steganographic polyglot media camouflage: JPEG, PNG, and MP4 cover embedding and sliding-window offset detection.">
     <meta property="og:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Polyglot Media Camouflage — ZevSafe Knowledge Hub">
+    <meta property="og:image:alt" content="Polyglot Media Camouflage â€” ZevSafe Knowledge Hub">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://zevsafe.pages.dev/knowledge/polyglot-camouflage/">
-    <meta name="twitter:title" content="Polyglot Media Camouflage — ZevSafe Knowledge Hub">
+    <meta name="twitter:title" content="Polyglot Media Camouflage â€” ZevSafe Knowledge Hub">
     <meta name="twitter:description" content="Technical specification and user guide for ZevSafe steganographic polyglot media camouflage: JPEG, PNG, and MP4 cover embedding and sliding-window offset detection.">
     <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
-    <meta name="twitter:image:alt" content="Polyglot Media Camouflage — ZevSafe Knowledge Hub">
+    <meta name="twitter:image:alt" content="Polyglot Media Camouflage â€” ZevSafe Knowledge Hub">
 
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="../knowledge.css">
@@ -71,16 +73,16 @@
         </ul>
 
         <div class="kb-perspective-dock">
-            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
-            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
-            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+            <button class="kb-perspective-btn" data-mode="simple"><span>ðŸŸ¢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>ðŸ”µ</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>ðŸ‘ï¸</span> Both</button>
         </div>
     </div>
 
     <div class="kb-article-layout">
         <aside class="kb-sidebar">
             <div class="kb-toc-title">
-                <span>📑</span> Contents
+                <span>ðŸ“‘</span> Contents
             </div>
             <ul class="kb-toc-list">
                 <li><a href="#overview" class="kb-toc-link">Concept &amp; Philosophy</a></li>
@@ -97,9 +99,9 @@
                 <span class="kb-hero-eyebrow">SERVICE #04 &bull; FORENSIC CAMOUFLAGE</span>
                 <h1 class="kb-article-title">Polyglot Media Camouflage</h1>
                 <div class="kb-article-meta">
-                    <span class="kb-article-meta-item"><span>⏱️</span> 6 min read</span>
-                    <span class="kb-article-meta-item"><span>🖼️</span> JPEG &bull; PNG &bull; MP4 Embedding</span>
-                    <span class="kb-article-meta-item"><span>🔍</span> Zero-Allocation Scanner</span>
+                    <span class="kb-article-meta-item"><span>â±ï¸</span> 6 min read</span>
+                    <span class="kb-article-meta-item"><span>ðŸ–¼ï¸</span> JPEG &bull; PNG &bull; MP4 Embedding</span>
+                    <span class="kb-article-meta-item"><span>ðŸ”</span> Zero-Allocation Scanner</span>
                 </div>
             </header>
 
@@ -111,7 +113,7 @@
 
             <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
             <section id="simple-guide" class="kb-perspective-simple">
-                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <div class="kb-perspective-badge kb-badge-simple">ðŸŸ¢ Simple User Guide</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Disguising Your Vault as a Photo</h2>
 
                 <div class="kb-step-card">
@@ -139,7 +141,7 @@
                 </div>
 
                 <div class="kb-callout kb-callout-zk">
-                    <div class="kb-callout-icon">✨</div>
+                    <div class="kb-callout-icon">âœ¨</div>
                     <div class="kb-callout-body">
                         <strong>No Loss of Quality:</strong> Your cover image is 100% compliant and intact. No lossy image re-encoding or fragile LSB (least significant bit) pixel degradation is used!
                     </div>
@@ -148,7 +150,7 @@
 
             <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
             <section id="bicontextual" class="kb-perspective-technical">
-                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <div class="kb-perspective-badge kb-badge-technical">ðŸ”µ Technical Specification</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Bicontextual Container Format</h2>
                 <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
                     Media container formats are defined by strict file structure specifications that instruct image decoders where the bitstream ends:

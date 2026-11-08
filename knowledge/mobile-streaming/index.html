@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-knowledge-mode="combined">
 <head>
     <meta charset="UTF-8">
@@ -12,8 +12,10 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png">
 
-    <title>Multi-Tier Mobile Streaming Pipeline — ZevSafe Knowledge Hub</title>
+    <title>Multi-Tier Mobile Streaming Pipeline â€” ZevSafe Knowledge Hub</title>
     <link rel="canonical" href="https://zevsafe.pages.dev/knowledge/mobile-streaming/">
     <meta name="description" content="Technical guide to ZevSafe 4-tier mobile streaming storage (FSA, OPFS, Service Worker), backpressure credit control, and <150 MB memory bounding across 5 GB vaults.">
 
@@ -21,20 +23,20 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="ZevSafe">
     <meta property="og:url" content="https://zevsafe.pages.dev/knowledge/mobile-streaming/">
-    <meta property="og:title" content="Multi-Tier Mobile Streaming Pipeline — ZevSafe Knowledge Hub">
+    <meta property="og:title" content="Multi-Tier Mobile Streaming Pipeline â€” ZevSafe Knowledge Hub">
     <meta property="og:description" content="Technical guide to ZevSafe 4-tier mobile streaming storage (FSA, OPFS, Service Worker), backpressure credit control, and <150 MB memory bounding across 5 GB vaults.">
     <meta property="og:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Multi-Tier Mobile Streaming Pipeline — ZevSafe Knowledge Hub">
+    <meta property="og:image:alt" content="Multi-Tier Mobile Streaming Pipeline â€” ZevSafe Knowledge Hub">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://zevsafe.pages.dev/knowledge/mobile-streaming/">
-    <meta name="twitter:title" content="Multi-Tier Mobile Streaming Pipeline — ZevSafe Knowledge Hub">
+    <meta name="twitter:title" content="Multi-Tier Mobile Streaming Pipeline â€” ZevSafe Knowledge Hub">
     <meta name="twitter:description" content="Technical guide to ZevSafe 4-tier mobile streaming storage (FSA, OPFS, Service Worker), backpressure credit control, and <150 MB memory bounding across 5 GB vaults.">
     <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
-    <meta name="twitter:image:alt" content="Multi-Tier Mobile Streaming Pipeline — ZevSafe Knowledge Hub">
+    <meta name="twitter:image:alt" content="Multi-Tier Mobile Streaming Pipeline â€” ZevSafe Knowledge Hub">
 
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="../knowledge.css">
@@ -71,16 +73,16 @@
         </ul>
 
         <div class="kb-perspective-dock">
-            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
-            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
-            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+            <button class="kb-perspective-btn" data-mode="simple"><span>ðŸŸ¢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>ðŸ”µ</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>ðŸ‘ï¸</span> Both</button>
         </div>
     </div>
 
     <div class="kb-article-layout">
         <aside class="kb-sidebar">
             <div class="kb-toc-title">
-                <span>📑</span> Contents
+                <span>ðŸ“‘</span> Contents
             </div>
             <ul class="kb-toc-list">
                 <li><a href="#overview" class="kb-toc-link">Overview &amp; Problem</a></li>
@@ -97,9 +99,9 @@
                 <span class="kb-hero-eyebrow">SERVICE #09 &bull; HIGH-THROUGHPUT PIPELINE</span>
                 <h1 class="kb-article-title">Multi-Tier Mobile Streaming Storage</h1>
                 <div class="kb-article-meta">
-                    <span class="kb-article-meta-item"><span>⏱️</span> 7 min read</span>
-                    <span class="kb-article-meta-item"><span>📱</span> Android &bull; iOS &bull; Desktop</span>
-                    <span class="kb-article-meta-item"><span>📊</span> Bounded Peak Heap &lt; 150 MB</span>
+                    <span class="kb-article-meta-item"><span>â±ï¸</span> 7 min read</span>
+                    <span class="kb-article-meta-item"><span>ðŸ“±</span> Android &bull; iOS &bull; Desktop</span>
+                    <span class="kb-article-meta-item"><span>ðŸ“Š</span> Bounded Peak Heap &lt; 150 MB</span>
                 </div>
             </header>
 
@@ -111,7 +113,7 @@
 
             <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
             <section id="simple-guide" class="kb-perspective-simple">
-                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <div class="kb-perspective-badge kb-badge-simple">ðŸŸ¢ Simple User Guide</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">How Streaming Keeps Your Phone Fast</h2>
 
                 <div class="kb-step-card">
@@ -134,12 +136,12 @@
                     <div class="kb-step-badge">STEP 03</div>
                     <h3 class="kb-step-title">Direct Disk Writes</h3>
                     <p class="kb-step-desc">
-                        On supported browsers, the encrypted file streams directly into your device's filesystem byte-by-byte. When the progress bar hits 100%, the download is already complete—no final conversion delay!
+                        On supported browsers, the encrypted file streams directly into your device's filesystem byte-by-byte. When the progress bar hits 100%, the download is already completeâ€”no final conversion delay!
                     </p>
                 </div>
 
                 <div class="kb-callout kb-callout-zk">
-                    <div class="kb-callout-icon">🚀</div>
+                    <div class="kb-callout-icon">ðŸš€</div>
                     <div class="kb-callout-body">
                         <strong>Works Completely Offline:</strong> Even on airplanes or in remote areas with zero cell reception, the streaming pipeline executes 100% inside your device.
                     </div>
@@ -148,7 +150,7 @@
 
             <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
             <section id="four-tiers" class="kb-perspective-technical">
-                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <div class="kb-perspective-badge kb-badge-technical">ðŸ”µ Technical Specification</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">The 4-Tier Storage Architecture</h2>
                 <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
                     ZevSafe evaluates browser storage capabilities via graceful fallback cascade:
@@ -232,7 +234,7 @@ async function detectOptimalStorageTier() {
                 </p>
 
                 <div class="kb-callout kb-callout-invariant">
-                    <div class="kb-callout-icon">📐</div>
+                    <div class="kb-callout-icon">ðŸ“</div>
                     <div class="kb-callout-body">
                         $$\text{ActiveInFlightChunks} \le C_{\text{max}} = 2$$
                         $$\text{MaxBufferedBytes} = C_{\text{max}} \times 4\text{ MB} = 8\text{ MB}$$
@@ -249,7 +251,7 @@ async function detectOptimalStorageTier() {
                     <pre class="kb-code-body"><code>// Transfer ownership of buffer to worker thread without memory duplication:
 worker.postMessage(
     { type: 'PROCESS_CHUNK', chunkIndex, buffer: chunkArrayBuffer },
-    [chunkArrayBuffer] // Transferable list — original buffer instantly detached in main thread
+    [chunkArrayBuffer] // Transferable list â€” original buffer instantly detached in main thread
 );</code></pre>
                 </div>
             </section>

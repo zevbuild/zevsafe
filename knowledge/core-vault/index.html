@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-knowledge-mode="combined">
 <head>
     <meta charset="UTF-8">
@@ -13,8 +13,10 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png">
 
-    <title>Core Streaming Vault (ZV3) — ZevSafe Knowledge Hub</title>
+    <title>Core Streaming Vault (ZV3) â€” ZevSafe Knowledge Hub</title>
     <link rel="canonical" href="https://zevsafe.pages.dev/knowledge/core-vault/">
     <meta name="description" content="Detailed guide and cryptographic specification for ZevSafe Core Streaming Vault: 57-byte header, 4 MB STREAM AEAD frames, AES-256-GCM, and emergency recovery sheets.">
 
@@ -22,20 +24,20 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="ZevSafe">
     <meta property="og:url" content="https://zevsafe.pages.dev/knowledge/core-vault/">
-    <meta property="og:title" content="Core Streaming Vault (ZV3) — ZevSafe Knowledge Hub">
+    <meta property="og:title" content="Core Streaming Vault (ZV3) â€” ZevSafe Knowledge Hub">
     <meta property="og:description" content="Detailed guide and cryptographic specification for ZevSafe Core Streaming Vault: 57-byte header, 4 MB STREAM AEAD frames, AES-256-GCM, and emergency recovery sheets.">
     <meta property="og:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Core Streaming Vault (ZV3) — ZevSafe Knowledge Hub">
+    <meta property="og:image:alt" content="Core Streaming Vault (ZV3) â€” ZevSafe Knowledge Hub">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://zevsafe.pages.dev/knowledge/core-vault/">
-    <meta name="twitter:title" content="Core Streaming Vault (ZV3) — ZevSafe Knowledge Hub">
+    <meta name="twitter:title" content="Core Streaming Vault (ZV3) â€” ZevSafe Knowledge Hub">
     <meta name="twitter:description" content="Detailed guide and cryptographic specification for ZevSafe Core Streaming Vault: 57-byte header, 4 MB STREAM AEAD frames, AES-256-GCM, and emergency recovery sheets.">
     <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
-    <meta name="twitter:image:alt" content="Core Streaming Vault (ZV3) — ZevSafe Knowledge Hub">
+    <meta name="twitter:image:alt" content="Core Streaming Vault (ZV3) â€” ZevSafe Knowledge Hub">
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../../styles.css">
@@ -75,9 +77,9 @@
         </ul>
 
         <div class="kb-perspective-dock">
-            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
-            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
-            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+            <button class="kb-perspective-btn" data-mode="simple"><span>ðŸŸ¢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>ðŸ”µ</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>ðŸ‘ï¸</span> Both</button>
         </div>
     </div>
 
@@ -86,7 +88,7 @@
         <!-- Sidebar Navigation -->
         <aside class="kb-sidebar">
             <div class="kb-toc-title">
-                <span>📑</span> Contents
+                <span>ðŸ“‘</span> Contents
             </div>
             <ul class="kb-toc-list">
                 <li><a href="#overview" class="kb-toc-link">Overview &amp; Architecture</a></li>
@@ -104,22 +106,22 @@
                 <span class="kb-hero-eyebrow">SERVICE #01 &bull; CRYPTOGRAPHIC FOUNDATION</span>
                 <h1 class="kb-article-title">Core Streaming Vault (ZV3)</h1>
                 <div class="kb-article-meta">
-                    <span class="kb-article-meta-item"><span>⏱️</span> 6 min read</span>
-                    <span class="kb-article-meta-item"><span>🔒</span> Authenticated STREAM AEAD</span>
-                    <span class="kb-article-meta-item"><span>📦</span> Version 3.0 Standard</span>
+                    <span class="kb-article-meta-item"><span>â±ï¸</span> 6 min read</span>
+                    <span class="kb-article-meta-item"><span>ðŸ”’</span> Authenticated STREAM AEAD</span>
+                    <span class="kb-article-meta-item"><span>ðŸ“¦</span> Version 3.0 Standard</span>
                 </div>
             </header>
 
             <!-- Section: Overview -->
             <section id="overview" style="margin-bottom: 2.5rem;">
                 <p style="font-size: 1.05rem; color: var(--kb-text-muted);">
-                    The <strong>Core Streaming Vault</strong> is the fundamental cryptographic engine of ZevSafe. It allows users to pack gigabytes of sensitive files and complete folder hierarchies into a single authenticated, portable <code>.zev</code> container directly in the browser—with zero server uploads, zero disk leakage, and bounded peak memory under 150 MB.
+                    The <strong>Core Streaming Vault</strong> is the fundamental cryptographic engine of ZevSafe. It allows users to pack gigabytes of sensitive files and complete folder hierarchies into a single authenticated, portable <code>.zev</code> container directly in the browserâ€”with zero server uploads, zero disk leakage, and bounded peak memory under 150 MB.
                 </p>
             </section>
 
             <!-- PERSPECTIVE: SIMPLE GUIDE -->
             <section id="simple-guide" class="kb-perspective-simple">
-                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <div class="kb-perspective-badge kb-badge-simple">ðŸŸ¢ Simple User Guide</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">How to Lock and Unlock Vaults in 3 Steps</h2>
 
                 <div class="kb-step-card">
@@ -147,16 +149,16 @@
                 </div>
 
                 <div class="kb-callout kb-callout-zk">
-                    <div class="kb-callout-icon">💡</div>
+                    <div class="kb-callout-icon">ðŸ’¡</div>
                     <div class="kb-callout-body">
-                        <strong>Instant Unlock:</strong> To view or extract files later, drag your <code>.zev</code> vault into the <strong>Unlock Vault</strong> tab. You don't have to wait to unpack the entire file—ZevSafe loads the file catalog instantly in milliseconds!
+                        <strong>Instant Unlock:</strong> To view or extract files later, drag your <code>.zev</code> vault into the <strong>Unlock Vault</strong> tab. You don't have to wait to unpack the entire fileâ€”ZevSafe loads the file catalog instantly in milliseconds!
                     </div>
                 </div>
             </section>
 
             <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
             <section id="container-header" class="kb-perspective-technical">
-                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <div class="kb-perspective-badge kb-badge-technical">ðŸ”µ Technical Specification</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">The 57-Byte Container Header Layout</h2>
                 <p style="color: var(--kb-text-muted); margin-bottom: 1.5rem;">
                     Every v3 <code>.zev</code> vault begins with an unencrypted, 57-byte authenticated header. This header establishes the cipher configuration, master salt, base initialization vector, and tail manifest pointer.
@@ -308,7 +310,7 @@ Total AAD Size: Exactly 10 Bytes</code></pre>
                 </div>
 
                 <div class="kb-callout kb-callout-invariant">
-                    <div class="kb-callout-icon">🔒</div>
+                    <div class="kb-callout-icon">ðŸ”’</div>
                     <div class="kb-callout-body">
                         <strong>Cryptographic Truncation Proof:</strong> An adversary cannot delete the last chunk or truncate the archive, because the final chunk is authenticated with <code>IS_LAST = 0x01</code>. If any intermediate chunk is removed or reordered, the counter mismatch causes AES-256-GCM authentication to immediately fail with <code>OperationError</code>.
                     </div>

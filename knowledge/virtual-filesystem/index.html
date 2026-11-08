@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-knowledge-mode="combined">
 <head>
     <meta charset="UTF-8">
@@ -12,8 +12,10 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png">
 
-    <title>Virtual Filesystem &amp; Live Editing — ZevSafe Knowledge Hub</title>
+    <title>Virtual Filesystem &amp; Live Editing â€” ZevSafe Knowledge Hub</title>
     <link rel="canonical" href="https://zevsafe.pages.dev/knowledge/virtual-filesystem/">
     <meta name="description" content="Technical guide to ZevSafe decrypted virtual filesystem overlay: in-vault notes, live Markdown editing, renaming, deletion, and zero-export re-encryption.">
 
@@ -21,20 +23,20 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="ZevSafe">
     <meta property="og:url" content="https://zevsafe.pages.dev/knowledge/virtual-filesystem/">
-    <meta property="og:title" content="Virtual Filesystem &amp; Live Editing — ZevSafe Knowledge Hub">
+    <meta property="og:title" content="Virtual Filesystem &amp; Live Editing â€” ZevSafe Knowledge Hub">
     <meta property="og:description" content="Technical guide to ZevSafe decrypted virtual filesystem overlay: in-vault notes, live Markdown editing, renaming, deletion, and zero-export re-encryption.">
     <meta property="og:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Virtual Filesystem &amp; Live Editing — ZevSafe Knowledge Hub">
+    <meta property="og:image:alt" content="Virtual Filesystem &amp; Live Editing â€” ZevSafe Knowledge Hub">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://zevsafe.pages.dev/knowledge/virtual-filesystem/">
-    <meta name="twitter:title" content="Virtual Filesystem &amp; Live Editing — ZevSafe Knowledge Hub">
+    <meta name="twitter:title" content="Virtual Filesystem &amp; Live Editing â€” ZevSafe Knowledge Hub">
     <meta name="twitter:description" content="Technical guide to ZevSafe decrypted virtual filesystem overlay: in-vault notes, live Markdown editing, renaming, deletion, and zero-export re-encryption.">
     <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
-    <meta name="twitter:image:alt" content="Virtual Filesystem &amp; Live Editing — ZevSafe Knowledge Hub">
+    <meta name="twitter:image:alt" content="Virtual Filesystem &amp; Live Editing â€” ZevSafe Knowledge Hub">
 
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="../knowledge.css">
@@ -71,16 +73,16 @@
         </ul>
 
         <div class="kb-perspective-dock">
-            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
-            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
-            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+            <button class="kb-perspective-btn" data-mode="simple"><span>ðŸŸ¢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>ðŸ”µ</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>ðŸ‘ï¸</span> Both</button>
         </div>
     </div>
 
     <div class="kb-article-layout">
         <aside class="kb-sidebar">
             <div class="kb-toc-title">
-                <span>📑</span> Contents
+                <span>ðŸ“‘</span> Contents
             </div>
             <ul class="kb-toc-list">
                 <li><a href="#overview" class="kb-toc-link">Overview &amp; Concept</a></li>
@@ -97,21 +99,21 @@
                 <span class="kb-hero-eyebrow">SERVICE #02 &bull; IN-VAULT MANAGEMENT</span>
                 <h1 class="kb-article-title">Virtual Filesystem &amp; Live Editing</h1>
                 <div class="kb-article-meta">
-                    <span class="kb-article-meta-item"><span>⏱️</span> 5 min read</span>
-                    <span class="kb-article-meta-item"><span>🔒</span> Zero-Export In-Memory Overlay</span>
-                    <span class="kb-article-meta-item"><span>📝</span> Live Markdown / Text Editor</span>
+                    <span class="kb-article-meta-item"><span>â±ï¸</span> 5 min read</span>
+                    <span class="kb-article-meta-item"><span>ðŸ”’</span> Zero-Export In-Memory Overlay</span>
+                    <span class="kb-article-meta-item"><span>ðŸ“</span> Live Markdown / Text Editor</span>
                 </div>
             </header>
 
             <section id="overview" style="margin-bottom: 2.5rem;">
                 <p style="font-size: 1.05rem; color: var(--kb-text-muted);">
-                    Traditional file lockers force users into an insecure workflow: decrypt the entire vault to disk, edit files with local software, re-zip, and re-encrypt—leaving unencrypted data remnants across system caches and swap space. ZevSafe's <strong>Decrypted Virtual Filesystem (VFS)</strong> eliminates this risk by keeping modifications entirely inside an ephemeral browser memory overlay with <strong>Direct .zev Re-encryption</strong>.
+                    Traditional file lockers force users into an insecure workflow: decrypt the entire vault to disk, edit files with local software, re-zip, and re-encryptâ€”leaving unencrypted data remnants across system caches and swap space. ZevSafe's <strong>Decrypted Virtual Filesystem (VFS)</strong> eliminates this risk by keeping modifications entirely inside an ephemeral browser memory overlay with <strong>Direct .zev Re-encryption</strong>.
                 </p>
             </section>
 
             <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
             <section id="simple-guide" class="kb-perspective-simple">
-                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <div class="kb-perspective-badge kb-badge-simple">ðŸŸ¢ Simple User Guide</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Managing Files Inside an Open Vault</h2>
 
                 <div class="kb-step-card">
@@ -139,7 +141,7 @@
                 </div>
 
                 <div class="kb-callout kb-callout-zk">
-                    <div class="kb-callout-icon">🛡️</div>
+                    <div class="kb-callout-icon">ðŸ›¡ï¸</div>
                     <div class="kb-callout-body">
                         <strong>True Zero-Export Privacy:</strong> Unsaved changes exist exclusively in volatile browser RAM. If you close the browser tab or hit "Lock Vault", memory is instantly wiped clean.
                     </div>
@@ -171,7 +173,7 @@ function escapeHtml(str) {
 
             <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
             <section id="overlay-architecture" class="kb-perspective-technical">
-                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <div class="kb-perspective-badge kb-badge-technical">ðŸ”µ Technical Specification</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Decrypted Session Overlay Architecture</h2>
                 <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
                     When a vault is unlocked, ZevSafe constructs an ephemeral <code>activeSession</code> state. Rather than copying multi-gigabyte archives into memory, the engine maintains three lightweight overlay structures:

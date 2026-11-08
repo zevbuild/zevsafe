@@ -19,6 +19,7 @@
     <link rel="manifest" href="../manifest.json">
 
     <!-- Apple Touch Icon & Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
     <link rel="apple-touch-icon" href="../assets/icon-192.png">
     <link rel="apple-touch-icon" sizes="192x192" href="../assets/icon-192.png">
     <link rel="apple-touch-icon" sizes="512x512" href="../assets/icon-512.png">
@@ -667,7 +668,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.24.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.25.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -707,13 +708,85 @@
         <main class="cl-timeline" id="cl-timeline">
 
             <!-- ── VERSION 8.24.0 (WEB-VERSION-75) ── -->
+            <!-- ── VERSION 8.25.0 (WEB-VERSION-76) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">📲</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.25.0 (WEB-VERSION-76)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 8, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Maskable Icons</span>
+                            <span class="cl-tag">File Handling API</span>
+                            <span class="cl-tag">Real-UI Screenshots</span>
+                            <span class="cl-tag">Service Worker Generator</span>
+                            <span class="cl-tag">Safe PWA Updates</span>
+                            <span class="cl-tag">Content Hashing</span>
+                            <span class="cl-tag">PWA v76</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Implemented <strong>Phase 5: Progressive Web App (PWA) Upgrade &amp; File Handling</strong>: vector-rasterized maskable icons (192&times;192 &amp; 512&times;512 with 80% safe zone padding) and 180&times;180 Apple touch icons across all portal pages; W3C File Handling API registration for <code>.zev</code> vaults (desktop Chrome/Edge); real-UI install screenshots (1280&times;800 &amp; 780&times;1688) strictly excluded from precaching; centralized precache generator <code>tools/build-sw.js</code> with SHA-256 content hashing and <code>--check</code> synchronization gate; and zero-work-loss safe PWA update flow (<code>#pwa-update-banner</code>) with <code>canSafelyReload()</code> guard deferring reloads during active operations or unlocked vaults.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Vector-Rasterized Maskable &amp; Apple Touch Icons:</strong> Generated crisp, authentic PNG icons from source <code>assets/favicon.svg</code> with an exact 80% safe zone centered on <code>#08091a</code> (<code>assets/icon-maskable-192.png</code>, <code>assets/icon-maskable-512.png</code>) and 180&times;180 <code>assets/apple-touch-icon.png</code> across all pages. Cleanly separated <code>any</code> and <code>maskable</code> icon definitions in <code>manifest.json</code>, eliminating combined strings per W3C specification.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>W3C File Handling API (<code>file_handlers</code>):</strong> Registered operating system file association for <code>.zev</code> vaults (MIME <code>application/x-zevsafe-vault</code>, action <code>./index.html</code>) on desktop Chrome and Edge. Integrated <code>launchQueue.setConsumer</code> in <code>app.js</code>: validates <code>.zev</code> extension case-insensitively, notifies user when multiple files are opened, prompts confirmation before replacing an active vault or running job, switches to Decrypt tab, and focuses the password field with zero auto-decrypt risks.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Real-UI PWA Install Screenshots:</strong> Added authentic wide (1280&times;800) and narrow (780&times;1688) screenshot declarations in <code>manifest.json</code> showcasing the live encryption and decryption cards with zero mock data. Strictly excluded screenshots from Service Worker precache to minimize initial offline transfer.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-body">
+                                <strong>Centralized SW Generator &amp; Content Hashing:</strong> Created <code>tools/shared-whitelist.js</code> as single source of truth for distribution packaging and precache lists. Built <code>tools/build-sw.js</code> with SHA-256 content hashing (<code>SHELL_CACHE = zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}</code>), auto-derived <code>SECTION_ROUTES</code>, and <code>--check</code> synchronization gate running in CI and distribution builds.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-body">
+                                <strong>Safe PWA Update Flow with Zero Work Loss:</strong> Re-architected Service Worker update handling by capturing waiting workers and presenting an update banner (<code>#pwa-update-banner</code>). Implemented <code>canSafelyReload()</code> guard checking active jobs and unlocked vault states; defers <code>controllerchange</code> reloads until operations complete or vault locks, completely eliminating accidental work loss. Prevents version mixing across lazy-loaded modules.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Comprehensive 15-Test Automated Suite:</strong> Created <code>test/test-phase5-pwa.js</code> validating manifest schemas, icon geometries, <code>build-sw.js --check</code> exit code 0, safe reload states, headless Chrome CDP <code>Page.getInstallabilityErrors</code> (0 errors), and offline reload verification. Extended <code>test/test-dist-completeness.js</code> to 10/10 tests.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.24.0 (WEB-VERSION-75) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🔋</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.24.0 (WEB-VERSION-75)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--major">Phase 4</span>
                             <span class="cl-badge cl-badge--date">November 8, 2026</span>
                         </div>
                         <div class="cl-tags">

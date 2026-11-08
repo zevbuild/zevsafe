@@ -7,8 +7,9 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v75';
-const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}`;
+const APP_VERSION    = 'v76';
+const CONTENT_HASH   = '97166e32';
+const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
 
@@ -24,17 +25,17 @@ const SHELL_ASSETS = [
     './knowledge/index.html',
     './knowledge/knowledge.css',
     './knowledge/knowledge.js',
-    './knowledge/core-vault/index.html',
-    './knowledge/virtual-filesystem/index.html',
-    './knowledge/duress-decoy/index.html',
-    './knowledge/polyglot-camouflage/index.html',
-    './knowledge/health-and-salvage/index.html',
-    './knowledge/media-cinema/index.html',
-    './knowledge/passwords-autolock/index.html',
-    './knowledge/key-derivation-2fa/index.html',
-    './knowledge/mobile-streaming/index.html',
     './knowledge/airgap-usb-backup/',
     './knowledge/airgap-usb-backup/index.html',
+    './knowledge/core-vault/index.html',
+    './knowledge/duress-decoy/index.html',
+    './knowledge/health-and-salvage/index.html',
+    './knowledge/key-derivation-2fa/index.html',
+    './knowledge/media-cinema/index.html',
+    './knowledge/mobile-streaming/index.html',
+    './knowledge/passwords-autolock/index.html',
+    './knowledge/polyglot-camouflage/index.html',
+    './knowledge/virtual-filesystem/index.html',
     './how-to-use-zevsafe/',
     './how-to-use-zevsafe/index.html',
     './change-log/',
@@ -49,30 +50,34 @@ const SHELL_ASSETS = [
     './jszip.min.js',
     './manifest.json',
     './favicon.svg',
+    './assets/apple-touch-icon.png',
     './assets/favicon.svg',
-    './assets/zevsafe-logo.png',
-    './assets/zevsafe-logo.webp',
     './assets/icon-192.png',
     './assets/icon-192.webp',
     './assets/icon-512.png',
     './assets/icon-512.webp',
+    './assets/icon-maskable-192.png',
+    './assets/icon-maskable-512.png',
+    './assets/zevsafe-logo.png',
+    './assets/zevsafe-logo.svg',
+    './assets/zevsafe-logo.webp',
     './assets/zevsafe-og.png',
     './assets/zevsafe-og.webp',
     './tools/encrypt.ps1',
     './tools/decrypt.ps1',
     './tools/Encrypt-Vault.bat',
     './tools/Decrypt-Vault.bat',
+    './js/crypto-worker.js',
+    './js/device-benchmark.js',
+    './js/media-player.js',
+    './js/passphrase-words.js',
+    './js/qr-engine.js',
     './js/stream-crypto.js',
     './js/stream-packer.js',
-    './js/stream-unpacker.js',
-    './js/crypto-worker.js',
-    './js/worker-bridge.js',
     './js/stream-saver.js',
+    './js/stream-unpacker.js',
     './js/usb-backup-kit.js',
-    './js/device-benchmark.js',
-    './js/qr-engine.js',
-    './js/passphrase-words.js',
-    './js/media-player.js'
+    './js/worker-bridge.js'
 ];
 
 // ── Install: precache the app shell ────────────────────────────
@@ -105,9 +110,14 @@ self.addEventListener('install', event => {
                 });
                 await Promise.all(precachePromises);
             })
-            .then(() => {
-                console.log(`[ZevSafe SW] Install complete. Activating immediately.`);
-                return self.skipWaiting();
+            .then(async () => {
+                console.log(`[ZevSafe SW ${APP_VERSION}] Install complete.`);
+                // Activate immediately only on first install when no clients are controlled
+                const clientsList = await self.clients.matchAll({ includeUncontrolled: true });
+                if (!clientsList || clientsList.length === 0) {
+                    return self.skipWaiting();
+                }
+                // On updates, stay in waiting until user triggers SKIP_WAITING
             })
             .catch(err => {
                 console.error('[ZevSafe SW] Install failed:', err);
@@ -204,16 +214,16 @@ const SECTION_ROUTES = [
     'change-log',
     'security-audit',
     'knowledge',
+    'knowledge/airgap-usb-backup',
     'knowledge/core-vault',
-    'knowledge/virtual-filesystem',
     'knowledge/duress-decoy',
-    'knowledge/polyglot-camouflage',
     'knowledge/health-and-salvage',
-    'knowledge/media-cinema',
-    'knowledge/passwords-autolock',
     'knowledge/key-derivation-2fa',
+    'knowledge/media-cinema',
     'knowledge/mobile-streaming',
-    'knowledge/airgap-usb-backup'
+    'knowledge/passwords-autolock',
+    'knowledge/polyglot-camouflage',
+    'knowledge/virtual-filesystem'
 ];
 
 async function matchSectionRoute(pathname, cacheName) {

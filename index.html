@@ -19,6 +19,7 @@
     <link rel="manifest" href="./manifest.json">
 
     <!-- Apple Touch Icon (iOS home screen) & Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
     <link rel="apple-touch-icon" href="./assets/icon-192.png">
     <link rel="apple-touch-icon" sizes="192x192" href="./assets/icon-192.png">
     <link rel="apple-touch-icon" sizes="512x512" href="./assets/icon-512.png">
@@ -233,7 +234,7 @@
                 <div class="nav-links-group">
                     <a href="./knowledge/" class="nav-link-subtle" title="Comprehensive Knowledge Base & Complete Service Manual">Knowledge Hub <span class="nav-badge-pill nav-badge-pill--purple">Manual</span></a>
                     <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span class="nav-badge-pill nav-badge-pill--green">99.3/100</span></a>
-                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-75)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.24.0</span></a>
+                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-76)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.24.0</span></a>
                     <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
                 </div>
                 <div class="nav-actions-divider" aria-hidden="true"></div>
@@ -1072,7 +1073,7 @@
                 <span>·</span>
                 <a class="u-style-y29sb3i6" href="./roadmap/" >Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.24.0 / WEB-VERSION-75)</a>
+                <a href="./change-log/">Changelog (v8.24.0 / WEB-VERSION-76)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1969,7 +1970,7 @@
     </div>
 
     <!-- ── PWA: Install Banner + Service Worker Registration ── -->
-    <div class="pwa-install-banner d-none" id="pwa-install-banner"  role="region" aria-live="polite" aria-label="Install ZevSafe app">
+    <div class="pwa-install-banner d-none" id="pwa-install-banner" role="region" aria-live="polite" aria-label="Install ZevSafe app">
         <div class="pwa-install-inner">
             <img src="./assets/zevsafe-logo.png" alt="ZevSafe icon" class="pwa-install-icon" width="40" height="40" loading="lazy">
             <div class="pwa-install-text">
@@ -1978,6 +1979,19 @@
             </div>
             <button class="pwa-btn pwa-btn-install" id="pwa-btn-install">Install</button>
             <button class="pwa-btn pwa-btn-dismiss" id="pwa-btn-dismiss" aria-label="Dismiss">✕</button>
+        </div>
+    </div>
+
+    <!-- ── PWA: Safe Update Available Banner ── -->
+    <div class="pwa-install-banner pwa-update-banner d-none" id="pwa-update-banner" role="region" aria-live="polite" aria-label="ZevSafe Update Available">
+        <div class="pwa-install-inner">
+            <div class="pwa-update-icon" aria-hidden="true">🚀</div>
+            <div class="pwa-install-text">
+                <strong>New Version Available</strong>
+                <span>Tap to update ZevSafe safely</span>
+            </div>
+            <button class="pwa-btn pwa-btn-install pwa-btn-update" id="pwa-btn-update">Update Now</button>
+            <button class="pwa-btn pwa-btn-dismiss" id="pwa-btn-update-dismiss" aria-label="Dismiss">✕</button>
         </div>
     </div>
 

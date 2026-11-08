@@ -69,6 +69,33 @@ runTest('2.1: All SHELL_ASSETS exist in dist/', () => {
     assert.strictEqual(missing.length, 0, `Missing SHELL_ASSETS in dist/: ${JSON.stringify(missing)}`);
 });
 
+runTest('2.2: All local assets referenced by index.html exist in SHELL_ASSETS', () => {
+    const html = fs.readFileSync(path.join(ROOT_DIR, 'index.html'), 'utf8');
+    const assetRegex = /(?:src|href)=["']([^"':#?]+)["']/g;
+    const normalizedShellAssets = new Set(rawShellAssets.map(a => a.replace(/^\.\//, '')));
+    const missingInShell = [];
+    let match;
+    while ((match = assetRegex.exec(html)) !== null) {
+        const ref = match[1];
+        if (ref.startsWith('http://') || ref.startsWith('https://') || ref.startsWith('data:') || ref.startsWith('blob:') || ref.startsWith('mailto:')) {
+            continue;
+        }
+        let cleanRef = ref.replace(/^\.\//, '').replace(/^\//, '');
+        if (!path.extname(cleanRef) && !cleanRef.endsWith('/')) {
+            cleanRef = cleanRef === '' ? '' : `${cleanRef}/`;
+        }
+        // Normalize comparison
+        const inShell = normalizedShellAssets.has(cleanRef) ||
+                        normalizedShellAssets.has(`./${cleanRef}`) ||
+                        normalizedShellAssets.has(`${cleanRef}index.html`) ||
+                        (cleanRef === '' && normalizedShellAssets.has(''));
+        if (!inShell && !cleanRef.includes('canonical') && !cleanRef.endsWith('.xml') && !cleanRef.endsWith('.txt')) {
+            missingInShell.push(cleanRef);
+        }
+    }
+    assert.strictEqual(missingInShell.length, 0, `Assets referenced in index.html missing from SHELL_ASSETS: ${JSON.stringify(missingInShell)}`);
+});
+
 // 3. Verify index.html referenced assets
 console.log('\n--- 3. Verifying index.html Referenced Assets ---');
 runTest('3.1: All local scripts, stylesheets, and images in index.html exist in dist/', () => {
@@ -119,6 +146,27 @@ runTest('4.1: All icons and shortcuts in manifest.json exist in dist/', () => {
         }
     }
     assert.strictEqual(missing.length, 0, `Missing manifest assets in dist/: ${JSON.stringify(missing)}`);
+});
+
+runTest('4.2: All icons in manifest.json exist in SHELL_ASSETS and screenshots are strictly excluded', () => {
+    const manifest = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'manifest.json'), 'utf8'));
+    const normalizedShellAssets = new Set(rawShellAssets.map(a => a.replace(/^\.\//, '')));
+
+    // Icons must be in SHELL_ASSETS
+    if (manifest.icons) {
+        for (const icon of manifest.icons) {
+            const clean = icon.src.replace(/^\.\//, '').replace(/^\//, '');
+            assert.ok(normalizedShellAssets.has(clean), `Manifest icon ${icon.src} must be precached in SHELL_ASSETS`);
+        }
+    }
+
+    // Screenshots must NOT be in SHELL_ASSETS
+    if (manifest.screenshots) {
+        for (const ss of manifest.screenshots) {
+            const clean = ss.src.replace(/^\.\//, '').replace(/^\//, '');
+            assert.ok(!normalizedShellAssets.has(clean), `Screenshot ${ss.src} must NOT be precached in SHELL_ASSETS`);
+        }
+    }
 });
 
 // 5. Verify sitemap.xml URLs

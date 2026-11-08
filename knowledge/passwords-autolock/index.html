@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-knowledge-mode="combined">
 <head>
     <meta charset="UTF-8">
@@ -12,8 +12,10 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="../../assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="../../assets/icon-192.png">
 
-    <title>Passwords &amp; Auto-Lock Protocol — ZevSafe Knowledge Hub</title>
+    <title>Passwords &amp; Auto-Lock Protocol â€” ZevSafe Knowledge Hub</title>
     <link rel="canonical" href="https://zevsafe.pages.dev/knowledge/passwords-autolock/">
     <meta name="description" content="Technical guide to ZevSafe CSPRNG Diceware generator, Shannon entropy calculation, inactivity timers, and cryptographic RAM zeroization.">
 
@@ -21,20 +23,20 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="ZevSafe">
     <meta property="og:url" content="https://zevsafe.pages.dev/knowledge/passwords-autolock/">
-    <meta property="og:title" content="Passwords &amp; Auto-Lock Protocol — ZevSafe Knowledge Hub">
+    <meta property="og:title" content="Passwords &amp; Auto-Lock Protocol â€” ZevSafe Knowledge Hub">
     <meta property="og:description" content="Technical guide to ZevSafe CSPRNG Diceware generator, Shannon entropy calculation, inactivity timers, and cryptographic RAM zeroization.">
     <meta property="og:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Passwords &amp; Auto-Lock Protocol — ZevSafe Knowledge Hub">
+    <meta property="og:image:alt" content="Passwords &amp; Auto-Lock Protocol â€” ZevSafe Knowledge Hub">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://zevsafe.pages.dev/knowledge/passwords-autolock/">
-    <meta name="twitter:title" content="Passwords &amp; Auto-Lock Protocol — ZevSafe Knowledge Hub">
+    <meta name="twitter:title" content="Passwords &amp; Auto-Lock Protocol â€” ZevSafe Knowledge Hub">
     <meta name="twitter:description" content="Technical guide to ZevSafe CSPRNG Diceware generator, Shannon entropy calculation, inactivity timers, and cryptographic RAM zeroization.">
     <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
-    <meta name="twitter:image:alt" content="Passwords &amp; Auto-Lock Protocol — ZevSafe Knowledge Hub">
+    <meta name="twitter:image:alt" content="Passwords &amp; Auto-Lock Protocol â€” ZevSafe Knowledge Hub">
 
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="../knowledge.css">
@@ -71,16 +73,16 @@
         </ul>
 
         <div class="kb-perspective-dock">
-            <button class="kb-perspective-btn" data-mode="simple"><span>🟢</span> Simple</button>
-            <button class="kb-perspective-btn" data-mode="technical"><span>🔵</span> Technical</button>
-            <button class="kb-perspective-btn active" data-mode="combined"><span>👁️</span> Both</button>
+            <button class="kb-perspective-btn" data-mode="simple"><span>ðŸŸ¢</span> Simple</button>
+            <button class="kb-perspective-btn" data-mode="technical"><span>ðŸ”µ</span> Technical</button>
+            <button class="kb-perspective-btn active" data-mode="combined"><span>ðŸ‘ï¸</span> Both</button>
         </div>
     </div>
 
     <div class="kb-article-layout">
         <aside class="kb-sidebar">
             <div class="kb-toc-title">
-                <span>📑</span> Contents
+                <span>ðŸ“‘</span> Contents
             </div>
             <ul class="kb-toc-list">
                 <li><a href="#overview" class="kb-toc-link">Overview &amp; Philosophy</a></li>
@@ -98,9 +100,9 @@
                 <span class="kb-hero-eyebrow">SERVICE #07 &bull; CREDENTIALS &amp; HYGIENE</span>
                 <h1 class="kb-article-title">Passwords &amp; Auto-Lock Protocol</h1>
                 <div class="kb-article-meta">
-                    <span class="kb-article-meta-item"><span>⏱️</span> 6 min read</span>
-                    <span class="kb-article-meta-item"><span>🎲</span> CSPRNG Diceware (77+ bits)</span>
-                    <span class="kb-article-meta-item"><span>🧹</span> Ephemeral Memory Zeroization</span>
+                    <span class="kb-article-meta-item"><span>â±ï¸</span> 6 min read</span>
+                    <span class="kb-article-meta-item"><span>ðŸŽ²</span> CSPRNG Diceware (77+ bits)</span>
+                    <span class="kb-article-meta-item"><span>ðŸ§¹</span> Ephemeral Memory Zeroization</span>
                 </div>
             </header>
 
@@ -112,14 +114,14 @@
 
             <!-- PERSPECTIVE: SIMPLE USER GUIDE -->
             <section id="simple-guide" class="kb-perspective-simple">
-                <div class="kb-perspective-badge kb-badge-simple">🟢 Simple User Guide</div>
+                <div class="kb-perspective-badge kb-badge-simple">ðŸŸ¢ Simple User Guide</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">Creating Passphrases and Session Protection</h2>
 
                 <div class="kb-step-card">
                     <div class="kb-step-badge">STEP 01</div>
                     <h3 class="kb-step-title">Generate High-Entropy Diceware Passphrases</h3>
                     <p class="kb-step-desc">
-                        Click the <strong>Dice icon (🎲)</strong> next to the password box. ZevSafe generates a memorable, high-entropy 5 or 6-word phrase (e.g. <code>correct-horse-battery-staple-galaxy</code>). These phrases are easy for humans to remember but mathematically impossible for supercomputers to brute-force.
+                        Click the <strong>Dice icon (ðŸŽ²)</strong> next to the password box. ZevSafe generates a memorable, high-entropy 5 or 6-word phrase (e.g. <code>correct-horse-battery-staple-galaxy</code>). These phrases are easy for humans to remember but mathematically impossible for supercomputers to brute-force.
                     </p>
                 </div>
 
@@ -148,7 +150,7 @@
                 </div>
 
                 <div class="kb-callout kb-callout-zk">
-                    <div class="kb-callout-icon">💡</div>
+                    <div class="kb-callout-icon">ðŸ’¡</div>
                     <div class="kb-callout-body">
                         <strong>Instant Lock Hotkey:</strong> You can also lock your active vault instantly at any time by pressing <strong>Esc</strong> twice or clicking the lock icon in the top header.
                     </div>
@@ -157,7 +159,7 @@
 
             <!-- PERSPECTIVE: TECHNICAL SPECIFICATION -->
             <section id="diceware" class="kb-perspective-technical">
-                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <div class="kb-perspective-badge kb-badge-technical">ðŸ”µ Technical Specification</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">CSPRNG Diceware Generator Engine</h2>
                 <p style="color: var(--kb-text-muted); margin-bottom: 1.25rem;">
                     ZevSafe strictly prohibits insecure pseudo-random generators like <code>Math.random()</code>. Word selection relies entirely on the operating system's cryptographic entropy source via <code>crypto.getRandomValues()</code>:
@@ -195,7 +197,7 @@ function generateDicewarePassphrase(wordCount = 5, separator = '-') {
                 </p>
 
                 <div class="kb-callout kb-callout-invariant">
-                    <div class="kb-callout-icon">📐</div>
+                    <div class="kb-callout-icon">ðŸ“</div>
                     <div class="kb-callout-body">
                         $$H(X) = - \sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$$
                         <br>
@@ -246,7 +248,7 @@ function generateDicewarePassphrase(wordCount = 5, separator = '-') {
             
             <!-- PERSPECTIVE: TECHNICAL SPECIFICATION: PASSWORD MANAGER API -->
             <section id="password-manager-api" class="kb-perspective-technical">
-                <div class="kb-perspective-badge kb-badge-technical">🔵 Technical Specification</div>
+                <div class="kb-perspective-badge kb-badge-technical">ðŸ”µ Technical Specification</div>
                 <h2 style="font-size: 1.6rem; margin-bottom: 1rem; color: #ffffff;">W3C Credential Management API &amp; Autofill Integration</h2>
                 <p style="color: var(--kb-text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">
                     To bridge zero-knowledge vaults with modern credential managers without compromising air-gap boundaries, ZevSafe implements the <strong>W3C Credential Management API</strong> alongside standards-compliant semantic autofill forms:

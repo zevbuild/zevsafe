@@ -12,6 +12,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
+const {
+    ROOT_FILES,
+    DIRS_TO_COPY,
+    isDistFileAllowed
+} = require('./shared-whitelist.js');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DIST_DIR = path.resolve(ROOT_DIR, 'dist');
@@ -19,44 +25,22 @@ const DIST_DIR = path.resolve(ROOT_DIR, 'dist');
 console.log('🛡️  ZevSafe Production Distribution Builder');
 console.log(`Target: ${DIST_DIR}`);
 
+// 0. Pre-build check: Verify sw.js is fully synchronized
+console.log('🔍 Checking Service Worker precache manifest synchronization...');
+try {
+    execSync('node tools/build-sw.js --check', { cwd: ROOT_DIR, stdio: 'inherit' });
+} catch (err) {
+    console.error('❌ Service Worker check failed. Please run `node tools/build-sw.js` and try again.');
+    process.exit(1);
+}
+
 // 1. Clean or create dist directory
 if (fs.existsSync(DIST_DIR)) {
     fs.rmSync(DIST_DIR, { recursive: true, force: true });
 }
 fs.mkdirSync(DIST_DIR, { recursive: true });
 
-// 2. Production file whitelist (individual root files)
-const ROOT_FILES = [
-    'index.html',
-    'app.js',
-    'styles.css',
-    'sw.js',
-    'manifest.json',
-    '_headers',
-    '404.html',
-    'robots.txt',
-    'sitemap.xml',
-    'favicon.svg',
-    'jszip.min.js',
-    'google89c1668234bdd7ae.html'
-];
-
-// 3. Production directory whitelist
-const DIRS_TO_COPY = [
-    'js',
-    'css',
-    'assets',
-    'change-log',
-    'device-power',
-    'future-plans',
-    'how-to-use-zevsafe',
-    'knowledge',
-    'roadmap',
-    'security-audit',
-    'tools'
-];
-
-// Helper: recursive copy excluding internal *.md, test files, and dotfiles
+// Helper: recursive copy using shared whitelist filter
 function copyDirFiltered(srcDir, destDir) {
     if (!fs.existsSync(srcDir)) return;
     fs.mkdirSync(destDir, { recursive: true });
@@ -65,11 +49,9 @@ function copyDirFiltered(srcDir, destDir) {
     for (const item of items) {
         const srcPath = path.join(srcDir, item.name);
         const destPath = path.join(destDir, item.name);
+        const relPath = path.relative(ROOT_DIR, srcPath);
 
-        // Skip internal markdown (except future-plans which is a published roadmap doc), tests, hidden files
-        if (item.name.endsWith('.md') && !srcPath.includes('future-plans')) continue;
-        if (item.name.startsWith('.')) continue;
-        if (item.name.includes('.test.') || item.name.includes('.spec.')) continue;
+        if (!isDistFileAllowed(relPath)) continue;
 
         if (item.isDirectory()) {
             copyDirFiltered(srcPath, destPath);
@@ -98,4 +80,3 @@ for (const dir of DIRS_TO_COPY) {
 }
 
 console.log(`✅ Production build complete in dist/ (${copiedFileCount} root files + whitelisted directories).`);
-console.log('🚫 Excluded: *.md, test/, archive/, docs/, .agents/');

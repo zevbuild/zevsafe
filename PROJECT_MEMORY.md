@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.24.0` (`WEB-VERSION-75`, Service Worker `v75`)  
+> **Web Portal Version:** `v8.25.0` (`WEB-VERSION-76`, Service Worker `v76`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -486,6 +486,34 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
     - Phone Landscape (844x390): `screen-landscape-dark-cards.png`, `screen-landscape-dark-modal.png`, `screen-landscape-dark-player.png` / `screen-landscape-light-cards.png`, `screen-landscape-light-modal.png`, `screen-landscape-light-player.png`
     - Desktop (1280x800): `screen-desktop-dark-cards.png`, `screen-desktop-dark-modal.png`, `screen-desktop-dark-player.png` / `screen-desktop-light-cards.png`, `screen-desktop-light-modal.png`, `screen-desktop-light-player.png`
 
+### 3.29 Phase 5: Progressive Web App (PWA) Upgrade, File Handling Engine & Safe Update Lifecycle (v8.25.0 / WEB-VERSION-76)
+- **High-Resolution Vector-Rasterized Maskable & Apple Touch Icons:**
+  - Rasterized crisp, authentic PNG icons from source `assets/favicon.svg` with an exact 80% safe zone centered on `#08091a` (`assets/icon-maskable-192.png`, `assets/icon-maskable-512.png`).
+  - Added dedicated `180x180` `assets/apple-touch-icon.png` across `index.html` and all subpages (`change-log/`, `device-power/`, `how-to-use-zevsafe/`, `knowledge/`, and all 10 knowledge sub-pages).
+  - Updated `manifest.json` with cleanly separated `any` and `maskable` icon definitions, strictly eliminating combined `"any maskable"` strings per W3C and Google Play Store criteria.
+- **W3C File Handling API for `.zev` Vaults:**
+  - Registered operating system file association in `manifest.json` strictly for MIME `application/x-zevsafe-vault` and `.zev` extension with action `"./index.html"`.
+  - Built `launchQueue.setConsumer` in `app.js` handling double-clicked vault files from desktop OS file managers:
+    1. Case-insensitive extension validation (`/\.zev$/i`).
+    2. Multi-file guard: opens first file with informative toast (`Opening first vault: "name" (1 of N files)`).
+    3. Safety guard: prompts confirmation before replacing an active vault or running operation.
+    4. Automatically switches to Decrypt tab and focuses `#decrypt-password` with zero auto-decrypt risks.
+  - Exposed `window.switchMobileTab` and `window.handleDecryptionFileSelection`.
+  - Documented desktop Chromium exclusivity (desktop Chrome/Edge on Windows, macOS, Linux, ChromeOS).
+- **Real-UI Install Screenshots:**
+  - Added authentic wide (`1280x800`) and narrow (`780x1688`) screenshot declarations in `manifest.json` showcasing the live encryption and decryption cards with zero mock data.
+  - Strictly excluded screenshots from Service Worker precaching (`SHELL_ASSETS`) to minimize initial offline transfer.
+- **Centralized Service Worker Precache Builder & Content Hashing:**
+  - Created `tools/shared-whitelist.js` as single source of truth for distribution packaging and precache lists.
+  - Built `tools/build-sw.js` with SHA-256 content hashing (`SHELL_CACHE = zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`), auto-derived 18 `SECTION_ROUTES`, and `--check` synchronization gate running in CI and distribution builds (`tools/build-dist.js`).
+- **Safe PWA Update Flow with Zero Work Loss:**
+  - Re-architected Service Worker update lifecycle: removed unconditional `self.skipWaiting()` on updates in `sw.js`, capturing waiting workers and presenting `#pwa-update-banner` with "Update Now" and dismiss buttons.
+  - Implemented `canSafelyReload()` guard checking active jobs and unlocked vault states; defers `controllerchange` reloads until operations complete or vault locks (`zevsafe-jobs-finished` / `zevsafe-vault-locked`), completely eliminating accidental work loss.
+  - Prevents version mixing across lazy-loaded JS/CSS modules.
+- **Automated Verification Suites:**
+  - Created `test/test-phase5-pwa.js` (15 automated assertions validating manifest schemas, icon geometries, `build-sw.js --check` exit code 0, safe reload states, headless Chrome CDP `Page.getInstallabilityErrors` [0 errors], and offline reload verification).
+  - Extended `test/test-dist-completeness.js` to 10/10 tests verifying `dist/` and `SHELL_ASSETS` synchronization.
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]
@@ -540,11 +568,14 @@ node test/test-checklist-remediations.js
 # 13. Security CSP & Sanitization Audit Suite (18 tests)
 node test/test-security-csp-audit.js
 
-# 14. Production Dist Completeness Suite (8 tests)
+# 14. Production Dist Completeness Suite (10 tests)
 node test/test-dist-completeness.js
 
-# 15. Phone Reliability, Screen Wake Lock & Contrast Suite
+# 15. Phone Reliability, Screen Wake Lock & Contrast Suite (18 tests)
 node test/test-phase4-reliability.js
+
+# 16. PWA Upgrade, File Handling & Installability Suite (15 tests)
+node test/test-phase5-pwa.js
 ```
 
 Ensure 100% of tests pass before committing any changes.
