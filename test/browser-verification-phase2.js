@@ -224,15 +224,18 @@ async function runHeadlessVerification() {
             deviceScaleFactor: 1,
             mobile: false
         });
+        await cdp.eval(`window.dispatchEvent(new Event('resize'))`);
         await new Promise(r => setTimeout(r, 600));
 
         const desktopMetrics = await cdp.eval(`
             (() => {
+                window.dispatchEvent(new Event('resize'));
                 const container = document.querySelector('.media-modal-container');
                 const rect = container ? container.getBoundingClientRect() : { width: 0, height: 0 };
                 return {
                     containerWidth: rect.width,
-                    containerHeight: rect.height
+                    containerHeight: rect.height,
+                    innerWidth: window.innerWidth
                 };
             })()
         `);

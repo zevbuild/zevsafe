@@ -510,8 +510,11 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Re-architected Service Worker update lifecycle: removed unconditional `self.skipWaiting()` on updates in `sw.js`, capturing waiting workers and presenting `#pwa-update-banner` with "Update Now" and dismiss buttons.
   - Implemented `canSafelyReload()` guard checking active jobs and unlocked vault states; defers `controllerchange` reloads until operations complete or vault locks (`zevsafe-jobs-finished` / `zevsafe-vault-locked`), completely eliminating accidental work loss.
   - Prevents version mixing across lazy-loaded JS/CSS modules.
+- **Node Sandbox & Event Decoupling Guards:**
+  - Guarded `new CustomEvent(...)` dispatching in `releaseWakeLock()` and `lockVaultSession()` with `typeof CustomEvent !== 'undefined'`, ensuring flawless compatibility across both browser environments and headless Node.js sandboxes.
 - **Automated Verification Suites:**
   - Created `test/test-phase5-pwa.js` (15 automated assertions validating manifest schemas, icon geometries, `build-sw.js --check` exit code 0, safe reload states, headless Chrome CDP `Page.getInstallabilityErrors` [0 errors], and offline reload verification).
+  - Created `test/test-simulate-pwa-upgrade.js` (8 automated tests simulating full upgrade lifecycle from v75 to v76 in headless Chrome: update banner appearance, mid-job reload suppression, user-triggered reload, cache cleanup, and 100% offline lazy-loaded playback).
   - Extended `test/test-dist-completeness.js` to 10/10 tests verifying `dist/` and `SHELL_ASSETS` synchronization.
 
 ---
@@ -526,56 +529,50 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ## 5. Mandatory Verification & Automated Test Battery
 
+The ZevSafe test suite comprises **27 test runners** and **1,205 passing automated assertions** across low-level cryptographic streaming, adversarial challengers, browser reliability, CSP security, distribution completeness, and PWA upgrade automation.
+
 Whenever ANY code or documentation is touched, run the automated test suites and ensure **100% pass rate**:
 
 ```bash
-# 1. Main Website Header, Navbar & Landing Page Suite (17 tests)
-node test/test-header-navbar-upgrade.js
+# === Cryptographic Streaming & Core Pipeline Suites ===
+node test/e2e-tests.js                             # 250 tests: End-to-End Opaque-Box Streaming
+node test/test-stream-crypto.js                    #  95 tests: STREAM AEAD Primitives & Wire Framing
+node test/test-stream-packer.js                    # 142 tests: ZIP64 Streaming Packer
+node test/test-stream-unpacker.js                  #  99 tests: Range Demuxer & Streaming Unpacker
+node test/test-worker-bridge.js                    #  74 tests: Multi-Thread Worker Bridge
+node test/test-integration-m5.js                   #   5 tests: M5 Streaming Sink & Round-Trip
 
-# 2. Video Player 4.0 On-Demand Streaming & Pro Studio Suite (45 tests)
-node test/test-video-player-pro.js
+# === Adversarial Security & Remediation Suites ===
+node test/test-adversarial-challenger.js           #  30 tests: Adversarial Challenger Chunk Wiping
+node test/test-adversarial-challenger1.js          #  53 tests: Adversarial Flow & Chunk LRU Caching
+node test/test-adversarial-challenger2.js          #  23 tests: Adversarial Path Traversal & DOM XSS
+node test/test-challenger-remediation.js           # 132 tests: Comprehensive Challenger Remediations
+node test/test-checklist-remediations.js           #   8 tests: Checklist Defense-in-Depth Remediations
+node test/test-security-csp-audit.js               #  18 tests: Strict CSP Directives & XSS Sanitization
 
-# 3. Mobile Video Player Overhaul Suite (22 tests)
-node test/test-mobile-video-player.js
+# === Mobile, Platform & Storage Engines ===
+node test/test-android-encryption.js               #  33 tests: Android OPFS & Multi-Tier StreamSaver
+node test/test-paper-safe-qr.js                    #  20 tests: Paper-Safe Optical QR & Master Keycard
+node test/test-device-power.js                     #   5 tests: Device Hardware Power Profiler
+node test/test-explorer-folder-nav.js              #  41 tests: Decrypted Vault Explorer & Folder Tree
+node test/test-roadmap-plan.js                     #  11 tests: Strategic Roadmap & Master Plan
 
-# 4. Media Player Security Lifecycle & Gesture Suite (17 tests)
-node test/test-media-player-security-lifecycle.js
+# === Video Player 5.0 Studio & Media Security Lifecycle ===
+node test/test-video-player-pro.js                 #  45 tests: Video Player Pro Studio & Hotkeys
+node test/test-mobile-video-player.js              #  22 tests: Mobile Video Player & Slide-Up Drawer
+node test/test-media-player-security-lifecycle.js  #  17 tests: Security Lifecycle, Stream Revocation & Gestures
 
-# 5. Android Mobile Browser Multi-Tier Encryption & OPFS Regression Suite (33 tests)
-node test/test-android-encryption.js
+# === Landing Page & Production Distribution Integrity ===
+node test/test-header-navbar-upgrade.js            #  17 tests: Main Website Header & Cybernetic Navbar
+node test/test-dist-completeness.js                #  10 tests: Production Dist Completeness & Whitelist
 
-# 6. Milestone 5 Streaming Sink & Round-Trip Extraction Suite (5 tests)
-node test/test-integration-m5.js
-
-# 7. Adversarial Challenger Chunk Wiping & Security Suite (30 tests)
-node test/test-adversarial-challenger.js
-
-# 8. Paper-Safe Optical QR Engine & Master Keycard Suite (36 tests)
-node test/test-paper-safe-qr.js
-
-# 9. Strategic Roadmap & Ecosystem Master Plan Suite (12 tests)
-node test/test-roadmap-plan.js
-
-# 10. Decrypted Vault Explorer & Hierarchical Navigation Suite (21 tests)
-node test/test-explorer-folder-nav.js
-
-# 11. Cryptographic Hardware Power Profiler Suite (5 tests)
-node test/test-device-power.js
-
-# 12. Checklist Remediation & Defensive Security Suite (8 tests)
-node test/test-checklist-remediations.js
-
-# 13. Security CSP & Sanitization Audit Suite (18 tests)
-node test/test-security-csp-audit.js
-
-# 14. Production Dist Completeness Suite (10 tests)
-node test/test-dist-completeness.js
-
-# 15. Phone Reliability, Screen Wake Lock & Contrast Suite (18 tests)
-node test/test-phase4-reliability.js
-
-# 16. PWA Upgrade, File Handling & Installability Suite (15 tests)
-node test/test-phase5-pwa.js
+# === Phase 4 & Phase 5 Reliability, PWA & Upgrade Automation ===
+node test/test-phase4-reliability.js               #  16 tests: Phone Reliability, Wake Lock & WCAG Contrast
+node test/test-phase5-pwa.js                       #  15 tests: PWA Upgrade, Manifest & Installability
+node test/test-simulate-pwa-upgrade.js             #   8 tests: Headless Chrome PWA Upgrade Simulation
+node test/browser-verification-phase2.js           #   6 tests: Headless Chrome Phase 2 Media Player CDP
+node test/browser-verification-phase3.js           #  10 tests: Headless Chrome Phase 3 Strict CSP & 13 Modals
+# Total: 27 Test Suites | 1,205 Passing Tests (100% Pass)
 ```
 
 Ensure 100% of tests pass before committing any changes.

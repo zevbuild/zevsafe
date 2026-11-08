@@ -428,7 +428,9 @@ async function releaseWakeLock(forceAll = false) {
         }
         updateWakeLockUI(false);
         if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('zevsafe-jobs-finished'));
+            if (typeof CustomEvent !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('zevsafe-jobs-finished'));
+            }
             if (window.__zevPendingReload && typeof window.canSafelyReload === 'function' && window.canSafelyReload()) {
                 console.log('[ZevSafe PWA] All operations finished and safe to reload. Reloading now.');
                 window.location.reload();
@@ -4800,7 +4802,9 @@ function lockVaultSession() {
     if (keyfileInput) keyfileInput.value = '';
 
     if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('zevsafe-vault-locked'));
+        if (typeof CustomEvent !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('zevsafe-vault-locked'));
+        }
         if (window.__zevPendingReload && typeof window.canSafelyReload === 'function' && window.canSafelyReload()) {
             console.log('[ZevSafe PWA] Vault locked and safe to reload. Reloading now.');
             window.location.reload();
