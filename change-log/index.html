@@ -667,7 +667,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.23.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.24.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -706,14 +706,91 @@
         <!-- Release Timeline -->
         <main class="cl-timeline" id="cl-timeline">
 
-                        <!-- ── VERSION 8.23.0 (WEB-VERSION-74) ── -->
+            <!-- ── VERSION 8.24.0 (WEB-VERSION-75) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">🔋</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.24.0 (WEB-VERSION-75)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 8, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Screen Wake Lock</span>
+                            <span class="cl-tag">Storage Quota Advisory</span>
+                            <span class="cl-tag">Tab Throttling Notice</span>
+                            <span class="cl-tag">Reduced Motion</span>
+                            <span class="cl-tag">WCAG AA Focus Rings</span>
+                            <span class="cl-tag">GPU Blur Removal</span>
+                            <span class="cl-tag">PWA v75</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Implemented <strong>Phase 4: Phone Reliability &amp; Performance</strong>: introduced an integrated Screen Wake Lock engine with auto-release lifecycle across encryption, decryption, in-vault re-encryption, salvaging, batch downloads, and USB air-gap kits; non-blocking origin storage quota pre-flight advisories with exact "browser storage" phrasing; tab backgrounding throttling notices with pause states for decorative animations while safeguarding loading spinners under reduced motion; WCAG AA focus rings with 4.7:1 contrast; complete elimination of GPU-heavy backdrop-filter blur on mobile devices; and full automated CDP regression tests.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Screen Wake Lock Engine (<code>withWakeLock</code>):</strong> Prevents mobile screen timeout and CPU sleep during long crypto operations (encrypt, decrypt, re-encrypt, salvage, batch zip, USB backup). Exposes a pulsing <code>.wake-lock-pill</code> ("Keep this screen open") status badge and automatically releases on completion, error, cancellation, session lock, auto-lock, and emergency panic.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-body">
+                                <strong>Non-Blocking Browser Storage Quota Advisory:</strong> Proactively checks origin quota via <code>navigator.storage.estimate()</code> for buffering paths (OPFS Tier 3, Blob fallback, batch download, legacy zip). Warns when available space is under 2x job size with exact "browser storage" phrasing (never "device storage") without blocking execution.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Tab Backgrounding Warning &amp; Animation Pause:</strong> Listens for <code>visibilitychange</code> to apply <code>.tab-hidden</code>, pausing infinite decorative GPU animations (orbs, drop rings, lasers) while maintaining worker processing. Displays on-screen advice if a job is running and automatically re-acquires the wake lock when returning to the tab.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Universal Reduced Motion with Spinner Exemption:</strong> <code>@media (prefers-reduced-motion: reduce)</code> collapses non-essential CSS transitions and decorative animations while explicitly exempting active spinners, loading buttons, progress fills, and the telemetry HUD so jobs never appear frozen.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-body">
+                                <strong>WCAG AA Focus Rings &amp; Outline Pairs:</strong> Configured <code>--focus-ring-color</code> (teal <code>#2dd4bf</code> for dark theme; deep teal <code>#0f766e</code> for light theme providing 4.7:1 contrast against light backgrounds). Replaced all 16 <code>outline: none</code> rules with <code>:focus:not(:focus-visible)</code> and <code>:focus-visible</code> pairs.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-body">
+                                <strong>Mobile GPU Blur Removal:</strong> Eliminated all <code>backdrop-filter</code> and <code>-webkit-backdrop-filter</code> blur on touchscreen viewports (<code>@media (hover: none) and (pointer: coarse)</code>) across cards, modals, navigation, and cinema player, switching to opaque solid theme surface tokens (<code>--card-solid</code>, <code>--surface-solid</code>, <code>--modal-solid</code>).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-body">
+                                <strong>PWA Cache Bump to v75:</strong> Updated Service Worker <code>APP_VERSION = 'v75'</code>, synchronized precache shell assets, and bumped version tags to <code>v8.24.0 / WEB-VERSION-75</code>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+                        <!-- ── VERSION 8.23.0 (WEB-VERSION-74) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🛡️</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.23.0 (WEB-VERSION-74)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
                             <span class="cl-badge cl-badge--date">November 8, 2026</span>
                         </div>
                         <div class="cl-tags">

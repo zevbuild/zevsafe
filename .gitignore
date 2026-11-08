@@ -12,6 +12,7 @@ test_folder/
 test_folder_restored/
 *.tmp
 *.log
+.tmp-chrome*
 
 # PowerShell compiled temp files
 *.dll

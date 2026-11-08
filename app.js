@@ -355,6 +355,188 @@ function showToast(message, type = 'info', duration = 4000) {
     }
 }
 
+// ============================================
+// 📱 SCREEN WAKE LOCK & BROWSER STORAGE ADVISOR (Phase 4)
+// ============================================
+
+let activeWakeLockSentinel = null;
+let activeWakeLockCount = 0;
+
+/**
+ * Updates the UI status pill showing whether screen wake lock is active.
+ * Uses CSS classes only to strictly conform to CSP.
+ * @param {boolean} isActive
+ */
+function updateWakeLockUI(isActive) {
+    const pill = document.getElementById('wake-lock-status-pill');
+    if (pill) {
+        if (isActive) {
+            pill.classList.remove('d-none');
+        } else {
+            pill.classList.add('d-none');
+        }
+    }
+}
+
+/**
+ * Requests the Screen Wake Lock sentinel.
+ * Silently catches rejections (e.g. low battery mode, background tab, permission denied).
+ * @returns {Promise<WakeLockSentinel|null>}
+ */
+async function requestWakeLock() {
+    if (typeof navigator === 'undefined' || !('wakeLock' in navigator) || typeof navigator.wakeLock.request !== 'function') {
+        return null;
+    }
+    try {
+        if (!activeWakeLockSentinel || activeWakeLockSentinel.released) {
+            const sentinel = await navigator.wakeLock.request('screen');
+            activeWakeLockSentinel = sentinel;
+            updateWakeLockUI(true);
+            sentinel.addEventListener('release', () => {
+                if (activeWakeLockSentinel === sentinel) {
+                    activeWakeLockSentinel = null;
+                }
+                updateWakeLockUI(false);
+            });
+        }
+        return activeWakeLockSentinel;
+    } catch (_) {
+        // Silently catch rejection
+        return null;
+    }
+}
+
+/**
+ * Releases the active Screen Wake Lock.
+ * @param {boolean} [forceAll=false] - If true, resets count to 0 and releases immediately.
+ */
+async function releaseWakeLock(forceAll = false) {
+    if (forceAll) {
+        activeWakeLockCount = 0;
+    } else if (activeWakeLockCount > 0) {
+        activeWakeLockCount--;
+    }
+    if (activeWakeLockCount <= 0) {
+        activeWakeLockCount = 0;
+        if (activeWakeLockSentinel) {
+            const sentinel = activeWakeLockSentinel;
+            activeWakeLockSentinel = null;
+            try {
+                await sentinel.release();
+            } catch (_) {}
+        }
+        updateWakeLockUI(false);
+    }
+}
+
+/**
+ * Shared executor wrapper that holds a Screen Wake Lock across any long async job.
+ * Wraps encryption, decryption, re-encryption, salvaging, batch downloading, and USB operations.
+ * @param {() => Promise<any>} fn
+ */
+async function withWakeLock(fn) {
+    activeWakeLockCount++;
+    try {
+        await requestWakeLock();
+    } catch (_) {}
+    try {
+        return await fn();
+    } finally {
+        await releaseWakeLock(false);
+    }
+}
+
+/**
+ * Non-blocking advisory check for browser storage quota.
+ * Note: navigator.storage.estimate() reports origin quota, NOT device free disk.
+ * Only invoked for paths that stage or buffer in browser storage.
+ * @param {number} estimatedBytes
+ * @returns {Promise<boolean>}
+ */
+async function checkBrowserStorageQuota(estimatedBytes) {
+    if (!estimatedBytes || estimatedBytes <= 0) return true;
+    if (typeof navigator === 'undefined' || !navigator.storage || typeof navigator.storage.estimate !== 'function') {
+        return true;
+    }
+    try {
+        const est = await navigator.storage.estimate();
+        if (est && typeof est.quota === 'number' && typeof est.usage === 'number') {
+            const available = Math.max(0, est.quota - est.usage);
+            // Recommended headroom: at least 2x job size for temp buffering & conversion
+            const recommended = estimatedBytes * 2;
+            if (available < recommended) {
+                const availMB = (available / (1024 * 1024)).toFixed(1);
+                const reqMB = (recommended / (1024 * 1024)).toFixed(1);
+                const warnMsg = `⚠️ Low browser storage: ~${availMB} MB available in browser storage quota. Recommended: at least ~${reqMB} MB (2x job size).`;
+                console.warn('[ZevSafe Storage]', warnMsg);
+                if (typeof showToast === 'function') {
+                    showToast(warnMsg, 'warning');
+                }
+                return false;
+            }
+        }
+    } catch (e) {
+        console.warn('[ZevSafe Storage] estimate failed:', e);
+    }
+    return true;
+}
+
+/**
+ * Engagement and tab backgrounding listener.
+ * Pauses decorative animations when tab is hidden, warns user of background throttle,
+ * and restores wake lock when tab returns to foreground during active jobs.
+ */
+document.addEventListener('visibilitychange', async () => {
+    const isHidden = document.visibilityState === 'hidden';
+    const bgNotice = document.getElementById('progress-bg-notice');
+    const isJobActive = (activeWakeLockCount > 0) || Boolean(activeWakeLockSentinel && !activeWakeLockSentinel.released);
+    if (isHidden) {
+        document.body.classList.add('tab-hidden');
+        if (isJobActive) {
+            if (bgNotice) {
+                bgNotice.textContent = '⚠️ Browser may slow down in background. Return to tab for maximum throughput.';
+                bgNotice.classList.remove('d-none');
+            }
+        }
+    } else {
+        document.body.classList.remove('tab-hidden');
+        if (bgNotice) {
+            bgNotice.classList.add('d-none');
+            bgNotice.textContent = '';
+        }
+        if (isJobActive) {
+            try { await requestWakeLock(); } catch (_) {}
+        }
+    }
+});
+
+/**
+ * Panic & Duress lockdown: immediately releases all wake locks, zeroizes in-memory keys,
+ * terminates worker jobs, revokes all media sessions and blob URLs.
+ */
+function triggerPanic() {
+    releaseWakeLock(true);
+    if (typeof activeWorkerBridge !== 'undefined' && activeWorkerBridge && typeof activeWorkerBridge.cancel === 'function') {
+        try { activeWorkerBridge.cancel(); } catch (_) {}
+    }
+    if (typeof currentStreamingOp !== 'undefined' && currentStreamingOp && typeof currentStreamingOp.cancel === 'function') {
+        try { currentStreamingOp.cancel(); } catch (_) {}
+    }
+    lockVaultSession();
+    if (typeof showToast === 'function') {
+        showToast('🔒 Emergency lockdown engaged. All sessions wiped.', 'info');
+    }
+}
+
+// Global exposure for headless verification & component interoperability
+if (typeof window !== 'undefined') {
+    window.withWakeLock = withWakeLock;
+    window.requestWakeLock = requestWakeLock;
+    window.releaseWakeLock = releaseWakeLock;
+    window.checkBrowserStorageQuota = checkBrowserStorageQuota;
+    window.triggerPanic = triggerPanic;
+}
+
 /**
  * Shake an input element or drop zone to indicate validation failure
  * @param {HTMLElement|string} el 
@@ -2221,6 +2403,7 @@ function isPreCompressedExtension(filename) {
 // ============================================
 
 btnEncrypt.addEventListener('click', async () => {
+    return await withWakeLock(async () => {
     if (selectedEncryptFiles.length === 0) {
         shakeField('encrypt-drop-zone');
         showToast('Please select or drop files or a folder to encrypt.', 'warning');
@@ -2341,6 +2524,9 @@ btnEncrypt.addEventListener('click', async () => {
                 try {
                     streamWriter = await StreamSaverAdapter.createStreamWriter(filename, _origTotalBytes);
                     log(`💾 Streaming destination connected via ${streamWriter.tier}`, 'info');
+                    if (streamWriter.tier === 'tier3') {
+                        await checkBrowserStorageQuota(_origTotalBytes);
+                    }
                 } catch (sErr) {
                     if (sErr.name === 'AbortError') {
                         log('File save cancelled by user.', 'warn');
@@ -2348,6 +2534,9 @@ btnEncrypt.addEventListener('click', async () => {
                     }
                     console.warn('[StreamSaver] Fallback to buffered sink:', sErr);
                 }
+            }
+            if (!streamWriter) {
+                await checkBrowserStorageQuota(_origTotalBytes);
             }
 
             let keyfileBytes = null;
@@ -2451,6 +2640,7 @@ btnEncrypt.addEventListener('click', async () => {
         }
 
         // Step 1: Package folder using Granular Per-File Adaptive Compression
+        await checkBrowserStorageQuota(_origTotalBytes);
         if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
         const zip = new JSZip();
         let storeCount = 0;
@@ -2621,6 +2811,7 @@ btnEncrypt.addEventListener('click', async () => {
         btnEncrypt.classList.remove('btn--loading');
         if (encBtnContent) encBtnContent.textContent = encOrigText;
     }
+    });
 });
 
 // ============================================
@@ -2628,6 +2819,7 @@ btnEncrypt.addEventListener('click', async () => {
 // ============================================
 
 btnDecrypt.addEventListener('click', async () => {
+    return await withWakeLock(async () => {
     if (!selectedDecryptFile) {
         shakeField('decrypt-drop-zone');
         showToast('Please select or drop a .zev vault file to decrypt.', 'warning');
@@ -2790,6 +2982,7 @@ btnDecrypt.addEventListener('click', async () => {
         updateProgress('Extracting ZIP...', 80);
 
         // Validate ZIP structure
+        await checkBrowserStorageQuota(selectedDecryptFile.size);
         if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
         const unzipped = await JSZip.loadAsync(decryptedBuffer);
 
@@ -2829,6 +3022,7 @@ btnDecrypt.addEventListener('click', async () => {
         btnDecrypt.classList.remove('btn--loading');
         if (decBtnContent) decBtnContent.textContent = decOrigText;
     }
+    });
 });
 
 // ============================================
@@ -4312,6 +4506,7 @@ function updateBatchBar() {
 }
 
 async function batchDownloadSelected() {
+    return await withWakeLock(async () => {
     if (explorerSelectedFiles.size === 0 || (!currentDecryptedZip && !currentV3Vault)) return;
     const btn = document.getElementById('btn-batch-download');
     const origText = btn ? btn.textContent : '⬇️ Download Selected';
@@ -4325,6 +4520,11 @@ async function batchDownloadSelected() {
                 triggerDownload(blob, fileItem.name);
             }
         } else {
+            const totalBatchBytes = Array.from(explorerSelectedFiles).reduce((sum, p) => {
+                const f = currentDecryptedFileList.find(x => x.path === p);
+                return sum + (f ? (f.size || 0) : 0);
+            }, 0);
+            await checkBrowserStorageQuota(totalBatchBytes);
             if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
             const batchZip = new JSZip();
             for (const path of explorerSelectedFiles) {
@@ -4363,6 +4563,7 @@ async function batchDownloadSelected() {
         showToast(`Failed to download selected: ${err.message}`, 'error');
         if (btn) btn.textContent = origText;
     }
+    });
 }
 
 function sortFileList(files, mode) {
@@ -4532,6 +4733,8 @@ if (typeof window !== 'undefined') {
 }
 
 function lockVaultSession() {
+    // Release active screen wake locks immediately
+    releaseWakeLock(true);
     // Revoke all player sessions & stream routes immediately on lock
     revokeAllPlayerMediaSessions();
     stopExplorerIdleWatcher();
@@ -5848,6 +6051,7 @@ async function runVaultDeepScan() {
 }
 
 async function launchVaultSalvage(explicitFile = null, explicitPw = null) {
+    return await withWakeLock(async () => {
     const file = explicitFile || (selectedDecryptFile) || (currentV3Vault ? currentV3Vault.file : null);
     if (!file) {
         showToast('Please select a .zev vault file to salvage.', 'warning');
@@ -5949,13 +6153,17 @@ async function launchVaultSalvage(explicitFile = null, explicitPw = null) {
         if (progressLabel) progressLabel.textContent = `Salvage error: ${err.message}`;
         showToast(`Salvage failed: ${err.message}`, 'error');
     }
+    });
 }
 
 async function downloadSalvageZip() {
+    return await withWakeLock(async () => {
     if (!lastSalvageResult || !lastSalvageResult.results || lastSalvageResult.results.rescuedFiles.length === 0) {
         showToast('No rescued files to download.', 'warning');
         return;
     }
+    const totalRescuedBytes = lastSalvageResult.results.rescuedFiles.reduce((acc, f) => acc + (f.size || 0), 0);
+    await checkBrowserStorageQuota(totalRescuedBytes);
     if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
     const zip = new JSZip();
     for (const f of lastSalvageResult.results.rescuedFiles) {
@@ -5965,6 +6173,12 @@ async function downloadSalvageZip() {
     const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.zev$/i, '') : 'salvaged_vault';
     triggerDownload(blob, `${vaultName}_rescued.zip`);
     showToast('Downloaded rescued ZIP archive!', 'success');
+    });
+}
+const exportSalvagedZip = downloadSalvageZip;
+if (typeof window !== 'undefined') {
+    window.downloadSalvageZip = downloadSalvageZip;
+    window.exportSalvagedZip = exportSalvagedZip;
 }
 
 function downloadSalvageReport() {
@@ -6483,6 +6697,7 @@ function stopExplorerIdleWatcher() {
  * an updated .zev container using the active master password/key.
  */
 async function reEncryptVaultToZev() {
+    return await withWakeLock(async () => {
     if (!currentDecryptedFolderName) return;
     const reencryptBtn = document.getElementById('btn-explorer-reencrypt');
     const origBtnText = reencryptBtn ? reencryptBtn.textContent : '🔒 Re-Encrypt (.zev)';
@@ -6528,6 +6743,12 @@ async function reEncryptVaultToZev() {
         let streamWriter = null;
         if (typeof StreamSaverAdapter !== 'undefined') {
             streamWriter = await StreamSaverAdapter.createStreamWriter(outZevName, totalPlainBytes);
+            if (streamWriter && streamWriter.tier === 'tier3') {
+                await checkBrowserStorageQuota(totalPlainBytes);
+            }
+        }
+        if (!streamWriter) {
+            await checkBrowserStorageQuota(totalPlainBytes);
         }
 
         log(`🔒 Re-encrypting updated vault "${outZevName}" (${filesToEncrypt.length} files, ${formatBytes(totalPlainBytes)})...`, 'info');
@@ -6584,6 +6805,12 @@ async function reEncryptVaultToZev() {
             reencryptBtn.textContent = origBtnText;
         }
     }
+    });
+}
+const reencryptCurrentVault = reEncryptVaultToZev;
+if (typeof window !== 'undefined') {
+    window.reEncryptVaultToZev = reEncryptVaultToZev;
+    window.reencryptCurrentVault = reencryptCurrentVault;
 }
 
 // Wire up Explorer & Cinema Media Player UI event listeners
@@ -6823,6 +7050,7 @@ function initExplorerUI() {
     });
 
     dlAllBtn?.addEventListener('click', async () => {
+        return await withWakeLock(async () => {
         if (!currentDecryptedFolderName) return;
         const outName = `${currentDecryptedFolderName}_decrypted.zip`;
         const hasEditedFiles = (currentV3Vault && currentV3Vault.editedFiles && currentV3Vault.editedFiles.size > 0);
@@ -6830,6 +7058,8 @@ function initExplorerUI() {
         if (hasEditedFiles || (currentDecryptedZip && !currentDecryptedBlob)) {
             dlAllBtn.textContent = '⏳ Packaging edited vault...';
             try {
+                const totalEditedBytes = currentDecryptedFileList.reduce((sum, f) => sum + (f.size || 0), 0);
+                await checkBrowserStorageQuota(totalEditedBytes);
                 if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
                 const outZip = currentDecryptedZip || new JSZip();
                 if (hasEditedFiles) {
@@ -6861,6 +7091,12 @@ function initExplorerUI() {
                 let streamWriter = null;
                 if (typeof StreamSaverAdapter !== 'undefined') {
                     streamWriter = await StreamSaverAdapter.createStreamWriter(outName, currentV3Vault.catalog.totalSize);
+                    if (streamWriter && streamWriter.tier === 'tier3') {
+                        await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
+                    }
+                }
+                if (!streamWriter) {
+                    await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
                 }
                 await new Promise((resolve, reject) => {
                     WorkerBridge.startDecryption({
@@ -6901,6 +7137,7 @@ function initExplorerUI() {
                 dlAllBtn.textContent = '⬇️ Download All (ZIP)';
             }
         }
+        });
     });
 
     modal?.addEventListener('click', (e) => {
@@ -7380,6 +7617,7 @@ function initUsbBackupKit() {
 
     if (btnZip) {
         btnZip.addEventListener('click', async () => {
+            return await withWakeLock(async () => {
             if (!window.ZevSafeUSBBackup) {
                 try {
                     await loadScript('js/usb-backup-kit.js');
@@ -7420,11 +7658,13 @@ function initUsbBackupKit() {
                 btnZip.disabled = false;
                 btnZip.style.opacity = '1';
             }
+            });
         });
     }
 
     if (btnDrive) {
         btnDrive.addEventListener('click', async () => {
+            return await withWakeLock(async () => {
             if (!window.ZevSafeUSBBackup) {
                 try {
                     await loadScript('js/usb-backup-kit.js');
@@ -7465,6 +7705,7 @@ function initUsbBackupKit() {
                 btnDrive.disabled = false;
                 btnDrive.style.opacity = '1';
             }
+            });
         });
     }
 }

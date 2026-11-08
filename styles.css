@@ -43,6 +43,15 @@
     --shadow-card: 0 24px 64px -12px rgba(0,0,0,0.7);
     --shadow-btn:  0 8px 24px -4px;
     --transition:  0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Solid surface tokens for mobile GPU blur elimination (Phase 4) */
+    --surface-solid:   #0d111c;
+    --surface-solid-2: #151928;
+    --card-solid:      #0e1024;
+    --modal-solid:     #08091a;
+
+    /* Focus ring token for WCAG AA >= 3:1 contrast (Phase 4) */
+    --focus-ring-color: #2dd4bf;
 }
 
 /* ── RESET ─────────────────────────────────────────── */
@@ -174,11 +183,14 @@ body {
     text-decoration: none;
     color: inherit;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brand-link:focus:not(:focus-visible) {
     outline: none;
 }
 
 .brand-link:focus-visible {
-    outline: 2px solid var(--purple-light);
+    outline: 2px solid var(--focus-ring-color);
     outline-offset: 4px;
     border-radius: 8px;
 }
@@ -536,7 +548,15 @@ body {
 .nav-dropdown-item:focus {
     background: rgba(139, 92, 246, 0.18);
     color: #ffffff;
+}
+
+.nav-dropdown-item:focus:not(:focus-visible) {
     outline: none;
+}
+
+.nav-dropdown-item:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: -2px;
 }
 
 .nav-dropdown-sep {
@@ -965,7 +985,15 @@ body {
     border-color: rgba(168, 85, 247, 0.55);
     background: radial-gradient(circle at center, rgba(139, 92, 246, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
     box-shadow: 0 0 25px rgba(139, 92, 246, 0.12);
+}
+
+.drop-zone:focus:not(:focus-visible) {
     outline: none;
+}
+
+.drop-zone:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
 }
 
 .drop-zone.drag-over {
@@ -1250,8 +1278,16 @@ body {
 .field-input::placeholder { color: var(--text-3); }
 
 .field-input:focus {
-    outline: none;
     background: rgba(14,16,36,0.9);
+}
+
+.field-input:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.field-input:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 1px;
 }
 
 .vault-card--encrypt .field-input:focus {
@@ -1538,6 +1574,60 @@ body {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+}
+
+/* ── Screen Wake Lock & Tab Backgrounding Notice (Phase 4) ── */
+.wake-lock-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    background: rgba(20, 184, 166, 0.12);
+    color: var(--teal-light);
+    border: 1px solid rgba(20, 184, 166, 0.28);
+    letter-spacing: 0.02em;
+    user-select: none;
+}
+
+.wake-lock-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 6px rgba(20, 184, 166, 0.6);
+}
+
+.light-theme .wake-lock-pill {
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--teal-dark);
+    border-color: rgba(15, 118, 110, 0.25);
+}
+
+.light-theme .wake-lock-dot {
+    background: var(--teal-dark);
+    box-shadow: none;
+}
+
+.progress-bg-notice {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    margin-top: 10px;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.light-theme .progress-bg-notice {
+    background: rgba(217, 119, 6, 0.12);
+    border-color: rgba(217, 119, 6, 0.3);
+    color: #b45309;
 }
 
 .log-console {
@@ -2192,6 +2282,41 @@ body {
 }
 
 @media (hover: none) and (pointer: coarse) {
+    /* Directive 5: Complete elimination of GPU-heavy backdrop-filter blur on touchscreens */
+    .card,
+    .vault-card,
+    .nav,
+    .navbar,
+    .app-header,
+    .modal-card,
+    .modal-backdrop,
+    .mobile-nav-drawer,
+    .progress-panel,
+    .progress-card {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    .card,
+    .vault-card,
+    .progress-panel {
+        background: var(--card-solid);
+    }
+
+    .nav,
+    .navbar,
+    .app-header {
+        background: var(--surface-solid);
+    }
+
+    .modal-card {
+        background: var(--modal-solid);
+    }
+
+    .mobile-nav-drawer {
+        background: var(--surface-solid-2);
+    }
+
     /* Remove hover effects that don't work on touch */
     .vault-card:hover { transform: none; }
     .btn:hover:not(:disabled) { transform: none; filter: none; }
@@ -2213,6 +2338,29 @@ body {
     .mobile-tab:active { opacity: 0.7; }
 }
 
+/* ── Tab Hidden: Pause background decorative animations when tab is hidden (Directive 3 & 4.5) ── */
+.tab-hidden .orb,
+.tab-hidden .card-tag-dot,
+.tab-hidden .drop-ring,
+.tab-hidden .pulse-dot,
+.tab-hidden .live-dot,
+.tab-hidden .rec-dot,
+.tab-hidden .qr-scan-laser,
+.tab-hidden .progress-glow,
+.tab-hidden .btn--cyber::after {
+    animation-play-state: paused !important;
+}
+
+/* ── Universal Reduced Motion: Respect system preference while preserving loading spinners (Directive 3 & 4.5) ── */
+@media (prefers-reduced-motion: reduce) {
+    *:not(.spinner):not(.btn--loading):not(.btn--loading *):not(.loading-ring):not(.loading-spinner):not(.progress-fill):not(.progress-bar-fill):not(.progress-pct):not(.stage-pill-pct):not(#telemetry-hud):not(#telemetry-hud *) {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 /* =====================================================
    LIGHT THEME VARIABLES
    ===================================================== */
@@ -2228,6 +2376,15 @@ body {
     --shadow-card: 0 12px 32px -4px rgba(15, 23, 42, 0.08);
     --purple-light: #7c3aed;
     --teal-light:   #0d9488;
+
+    /* Light Theme Solid surface tokens (Phase 4) */
+    --surface-solid:   #ffffff;
+    --surface-solid-2: #f1f5f9;
+    --card-solid:      #ffffff;
+    --modal-solid:     #ffffff;
+
+    /* Light Theme Focus ring token: deep teal for >= 4.5:1 contrast against #f8fafc (Phase 4) */
+    --focus-ring-color: #0f766e;
 }
 
 /* ── Light Theme Global Typography & Core Controls ── */
@@ -3017,8 +3174,16 @@ body {
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
     font-family: var(--font-mono);
-    outline: none;
     letter-spacing: 0.05em;
+}
+
+#pw-save-display:focus:not(:focus-visible) {
+    outline: none;
+}
+
+#pw-save-display:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 1px;
 }
 
 .light-theme #pw-save-display {
@@ -4065,10 +4230,17 @@ body {
 .explorer-search-input {
     background: transparent;
     border: none;
-    outline: none;
     color: #f8fafc;
     font-size: 0.88rem;
     width: 100%;
+}
+
+.explorer-search-input:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.explorer-search-input:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
 }
 
 .explorer-search-input::placeholder {
@@ -4108,9 +4280,17 @@ body {
     color: #f8fafc;
     padding: 0.38rem 0.65rem;
     font-size: 0.8rem;
-    outline: none;
     cursor: pointer;
     transition: border-color 0.2s ease;
+}
+
+.explorer-sort-select:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.explorer-sort-select:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 1px;
 }
 
 .explorer-sort-select:hover,
@@ -4757,8 +4937,16 @@ body {
     background: transparent;
     overflow-x: auto;
     white-space: pre;
-    outline: none;
     tab-size: 4;
+}
+
+.text-code-content:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.text-code-content:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: -2px;
 }
 
 .text-code-content.is-wrapped {
@@ -4774,7 +4962,6 @@ body {
     color: #e2e8f0;
     background: transparent;
     border: none;
-    outline: none;
     resize: none;
     tab-size: 4;
     font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
@@ -4786,6 +4973,15 @@ body {
     width: 100%;
     min-height: 100%;
     box-sizing: border-box;
+}
+
+.text-code-textarea:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.text-code-textarea:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: -2px;
 }
 
 .text-code-textarea.is-wrapped {
@@ -5504,7 +5700,15 @@ body {
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
+}
+
+.explorer-autolock-select:focus:not(:focus-visible) {
     outline: none;
+}
+
+.explorer-autolock-select:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 1px;
 }
 
 .explorer-autolock-select option {
@@ -6017,14 +6221,19 @@ body {
         cursor: pointer;
         transition: var(--transition);
         z-index: 101;
-        outline: none;
         flex-shrink: 0;
+    }
+
+    .mobile-nav-toggle:focus:not(:focus-visible) {
+        outline: none;
     }
 
     .mobile-nav-toggle:hover,
     .mobile-nav-toggle:focus-visible {
         background: rgba(139, 92, 246, 0.2);
         border-color: rgba(139, 92, 246, 0.45);
+        outline: 2px solid var(--focus-ring-color);
+        outline-offset: 2px;
         box-shadow: 0 0 14px var(--purple-glow);
     }
 
@@ -6346,9 +6555,17 @@ body {
     background: rgba(15, 23, 42, 0.6);
     cursor: pointer;
     position: relative;
-    outline: none;
     transition: all 0.2s ease;
     flex-shrink: 0;
+}
+
+.pwd-auto-save-checkbox:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.pwd-auto-save-checkbox:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
 }
 
 .pwd-auto-save-checkbox:checked {
@@ -6774,11 +6991,21 @@ body {
 }
 
 .qr-drop-zone:hover,
-.qr-drop-zone:focus-visible,
 .qr-drop-zone.dragover {
     border-color: #38bdf8;
     background: rgba(56, 189, 248, 0.08);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+.qr-drop-zone:focus:not(:focus-visible) {
     outline: none;
+}
+
+.qr-drop-zone:focus-visible {
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.08);
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
     box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
 }
 

@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.23.0` (`WEB-VERSION-74`, Service Worker `v74`)  
+> **Web Portal Version:** `v8.24.0` (`WEB-VERSION-75`, Service Worker `v75`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -442,6 +442,49 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Created `test/test-dist-completeness.js` (8 automated assertions verifying that 100% of files in `SHELL_ASSETS`, `index.html` assets, manifest icons, sitemap URLs, and subpage assets exist in `dist/`, with 0 internal notes/tests leaking into distribution).
   - Extended `test/browser-verification-phase3.js` running headless Chrome CDP over local HTTP server with real `_headers` CSP, verifying 0 CSP violations, 0 worker/blob errors, 0 console errors, real in-browser folder encryption & decryption round-trip via Web Workers under strict CSP, real video playback and image lightbox with `blob:` URLs, and complete open/close cycles across ALL 13 modals on portrait (390x844), landscape (844x390), and desktop (1280x800).
 
+### 3.28 Phase 4: Phone Reliability, Screen Wake Lock Engine, Battery Guard & Accessible High-Contrast UI (v8.24.0 / WEB-VERSION-75)
+- **Screen Wake Lock Engine (`withWakeLock`):**
+  - Integrated W3C Screen Wake Lock API (`navigator.wakeLock.request('screen')`) to prevent mobile OS screen timeouts and CPU sleep states during long-running cryptographic operations.
+  - Implemented shared wrapper `window.withWakeLock(fn)` with reference counting (`activeWakeLockCount`), wrapped across:
+    1. Vault encryption (`btnEncrypt`)
+    2. Vault decryption (`btnDecrypt`)
+    3. In-vault re-encryption (`reEncryptVaultToZev`)
+    4. Emergency vault salvage / extraction (`launchVaultSalvage`, `downloadSalvageZip`)
+    5. Batch zip download (`batchDownloadSelected`)
+    6. Edited in-vault files download (`dlAllBtn`)
+    7. Offline USB backup kit generation (`btnZip`, `btnDrive`)
+  - Auto-release triggers: Complete resolution, error rejection, cancellation (`cancelStreamOperation()`), vault lock session (`lockVaultSession()`), auto-lock timeout, duress decoy activation, and emergency panic button (`triggerPanic()`).
+  - Added visual `#wake-lock-status-pill` inside `.progress-status` ("Keep this screen open") with animated `.wake-lock-dot`, strictly driven by CSS classes (CSP compliant).
+  - Listens to sentinel `'release'` event to automatically clear UI if the OS or user cancels wake lock.
+- **Non-Blocking Browser Storage Quota Pre-Flight Check:**
+  - Implemented `checkBrowserStorageQuota(estimatedBytes)` utilizing `navigator.storage.estimate()`.
+  - Strictly targets buffering pipelines where browser origin storage is consumed: Tier 3 OPFS staging fallback, in-memory Blob fallbacks, batch zip generation, salvage zip export, and legacy v1/v2 zip assembly.
+  - Skips streaming paths that save directly to disk via File System Access API without buffering.
+  - Adheres strictly to Zero-Knowledge terminology: always warns as "browser storage", never "device storage" or "disk storage", informing the user if browser origin quota is low without blocking operations.
+- **Background Tab Throttling Mitigation & Paused Animations:**
+  - Added `visibilitychange` listener detecting when the tab becomes hidden during active jobs.
+  - Pauses GPU-intensive infinite decorative animations via `.tab-hidden` class applied to `document.documentElement` (`.orb`, `.card-tag-dot`, `.drop-ring`, `.pulse-dot`, etc.).
+  - Explicitly exempts active operational spinners (`.spinner`, `.btn--loading`, `.progress-fill`, `#telemetry-hud`) so users returning to the tab never see frozen indicators.
+  - Displays non-blocking `#progress-bg-notice` banner: *"⚠️ Browser may slow down in background. Return to tab for maximum throughput."*
+- **Universal Reduced Motion Engine:**
+  - Added comprehensive `@media (prefers-reduced-motion: reduce)` block in `styles.css`.
+  - Sets animation/transition duration to `0.01ms !important` across decorative elements while explicitly preserving operational progress indicators (`.spinner:not(.no-spin)`, `.btn--loading`, `.progress-fill`).
+- **WCAG AA Focus Ring Contrast System:**
+  - Replaced all 16 `outline: none` occurrences in `styles.css` and `css/media-player.css` with accessible `:focus:not(:focus-visible)` and `:focus-visible` rules.
+  - Defined dual-theme focus ring tokens:
+    - Dark Theme: Bright teal `#2dd4bf` (> 10:1 contrast on dark surfaces).
+    - Light Theme: Dark teal `#0f766e` (4.7:1 contrast on `#f8fafc` background, exceeding the WCAG AA 3:1 non-text requirement).
+  - Avoided double outlines and blanket `!important` declarations.
+- **Mobile Touchscreen GPU Blur Removal:**
+  - Implemented `@media (hover: none) and (pointer: coarse)` in `styles.css` and `css/media-player.css`.
+  - Eliminates costly GPU rasterization on mobile chips by setting `-webkit-backdrop-filter: none !important;` and `backdrop-filter: none !important;`.
+  - Replaces semi-transparent blurs with high-performance solid theme tokens (`--surface-solid`, `--surface-solid-2`, `--card-solid`, `--modal-solid`).
+- **Automated Verification Suites & Visual Artifacts:**
+  - Created `test/test-phase4-reliability.js` (headless Chrome CDP automated suite verifying wake lock lifecycle, storage quota advisory, `.tab-hidden` decorative pause, reduced motion spinner exemption, focus ring contrast calculation, and mobile blur removal).
+  - Captured 6 mobile phone (390x844) screenshots stored in artifact directory:
+    - `screen-dark-cards.png` & `screen-light-cards.png`
+    - `screen-dark-modal.png` & `screen-light-modal.png`
+    - `screen-dark-player.png` & `screen-light-player.png`
 
 ---
 
@@ -455,7 +498,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ## 5. Mandatory Verification & Automated Test Battery
 
-Whenever ANY code or documentation is touched, run all 10 automated test suites and ensure **100% pass rate (199/199 assertions)**:
+Whenever ANY code or documentation is touched, run the automated test suites and ensure **100% pass rate**:
 
 ```bash
 # 1. Main Website Header, Navbar & Landing Page Suite (17 tests)
@@ -473,26 +516,35 @@ node test/test-media-player-security-lifecycle.js
 # 5. Android Mobile Browser Multi-Tier Encryption & OPFS Regression Suite (33 tests)
 node test/test-android-encryption.js
 
-# 4. Milestone 5 Streaming Sink & Round-Trip Extraction Suite (5 tests)
+# 6. Milestone 5 Streaming Sink & Round-Trip Extraction Suite (5 tests)
 node test/test-integration-m5.js
 
-# 5. Adversarial Challenger Chunk Wiping & Security Suite (30 tests)
+# 7. Adversarial Challenger Chunk Wiping & Security Suite (30 tests)
 node test/test-adversarial-challenger.js
 
-# 6. Paper-Safe Optical QR Engine & Master Keycard Suite (36 tests)
+# 8. Paper-Safe Optical QR Engine & Master Keycard Suite (36 tests)
 node test/test-paper-safe-qr.js
 
-# 7. Strategic Roadmap & Ecosystem Master Plan Suite (12 tests)
+# 9. Strategic Roadmap & Ecosystem Master Plan Suite (12 tests)
 node test/test-roadmap-plan.js
 
-# 8. Decrypted Vault Explorer & Hierarchical Navigation Suite (21 tests)
+# 10. Decrypted Vault Explorer & Hierarchical Navigation Suite (21 tests)
 node test/test-explorer-folder-nav.js
 
-# 9. Cryptographic Hardware Power Profiler Suite (5 tests)
+# 11. Cryptographic Hardware Power Profiler Suite (5 tests)
 node test/test-device-power.js
 
-# 10. Checklist Remediation & Defensive Security Suite (8 tests)
+# 12. Checklist Remediation & Defensive Security Suite (8 tests)
 node test/test-checklist-remediations.js
+
+# 13. Security CSP & Sanitization Audit Suite (18 tests)
+node test/test-security-csp-audit.js
+
+# 14. Production Dist Completeness Suite (8 tests)
+node test/test-dist-completeness.js
+
+# 15. Phone Reliability, Screen Wake Lock & Contrast Suite
+node test/test-phase4-reliability.js
 ```
 
 Ensure 100% of tests pass before committing any changes.
