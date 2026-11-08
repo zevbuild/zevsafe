@@ -387,6 +387,7 @@ async function requestWakeLock() {
     if (typeof navigator === 'undefined' || !('wakeLock' in navigator) || typeof navigator.wakeLock.request !== 'function') {
         return null;
     }
+    activeWakeLockCount = Math.max(activeWakeLockCount, 1);
     try {
         if (!activeWakeLockSentinel || activeWakeLockSentinel.released) {
             const sentinel = await navigator.wakeLock.request('screen');

@@ -481,10 +481,10 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Replaces semi-transparent blurs with high-performance solid theme tokens (`--surface-solid`, `--surface-solid-2`, `--card-solid`, `--modal-solid`).
 - **Automated Verification Suites & Visual Artifacts:**
   - Created `test/test-phase4-reliability.js` (headless Chrome CDP automated suite verifying wake lock lifecycle, storage quota advisory, `.tab-hidden` decorative pause, reduced motion spinner exemption, focus ring contrast calculation, and mobile blur removal).
-  - Captured 6 mobile phone (390x844) screenshots stored in artifact directory:
-    - `screen-dark-cards.png` & `screen-light-cards.png`
-    - `screen-dark-modal.png` & `screen-light-modal.png`
-    - `screen-dark-player.png` & `screen-light-player.png`
+  - Captured 18 multi-viewport screenshots stored in artifact directory:
+    - Phone Portrait (390x844): `screen-dark-cards.png`, `screen-dark-modal.png`, `screen-dark-player.png` / `screen-light-cards.png`, `screen-light-modal.png`, `screen-light-player.png`
+    - Phone Landscape (844x390): `screen-landscape-dark-cards.png`, `screen-landscape-dark-modal.png`, `screen-landscape-dark-player.png` / `screen-landscape-light-cards.png`, `screen-landscape-light-modal.png`, `screen-landscape-light-player.png`
+    - Desktop (1280x800): `screen-desktop-dark-cards.png`, `screen-desktop-dark-modal.png`, `screen-desktop-dark-player.png` / `screen-desktop-light-cards.png`, `screen-desktop-light-modal.png`, `screen-desktop-light-player.png`
 
 ---
 

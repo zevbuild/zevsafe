@@ -295,6 +295,8 @@ async function runPhase4Tests() {
     await cdp.send('DOM.enable');
     await cdp.send('CSS.enable');
 
+    await new Promise(r => setTimeout(r, 1500));
+
     // Ensure document is loaded and deferred scripts (app.js) have evaluated
     await cdp.evaluate(`new Promise(res => {
         const check = () => {
@@ -459,6 +461,68 @@ async function runPhase4Tests() {
     assert.strictEqual(t6Res.result, 'success_despite_rejection', 'Job must complete despite wake lock rejection');
     assert.strictEqual(t6Res.pillVisible, false, 'Pill must stay hidden on rejected lock');
     console.log('  ✓ Rejection path: silently catches battery saver / power restriction rejection without breaking jobs');
+
+    // Test 1.7: Re-request wake lock on visibilitychange when job is still active
+    const t7Res = await cdp.evaluate(`(async () => {
+        const pill = document.getElementById('wake-lock-status-pill');
+        window.__wakeLockMock.requestCount = 0;
+        let resolveJob;
+        const jobPromise = new Promise(r => { resolveJob = r; });
+
+        // Launch long-running job with wake lock
+        const executionPromise = window.withWakeLock(async () => {
+            return await jobPromise;
+        });
+
+        // Initial acquisition
+        await new Promise(r => setTimeout(r, 50));
+        const initialRequests = window.__wakeLockMock.requestCount;
+        const pillDuringJob = Boolean(pill && !pill.classList.contains('d-none'));
+
+        // Emulate browser automatically releasing lock when tab is backgrounded
+        if (window.__wakeLockMock.activeSentinel) {
+            await window.__wakeLockMock.activeSentinel.release();
+        }
+        Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+        document.dispatchEvent(new Event('visibilitychange'));
+        await new Promise(r => setTimeout(r, 50));
+        const pillHiddenDuringBg = Boolean(pill && !pill.classList.contains('d-none'));
+
+        // Emulate tab foregrounding (returning to visible) while job is still in flight
+        Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+        document.dispatchEvent(new Event('visibilitychange'));
+        await new Promise(r => setTimeout(r, 50));
+
+        const requestsAfterForeground = window.__wakeLockMock.requestCount;
+        const pillRestored = Boolean(pill && !pill.classList.contains('d-none'));
+        const restoredSentinelActive = Boolean(window.__wakeLockMock.activeSentinel && !window.__wakeLockMock.activeSentinel.released);
+
+        // Complete job
+        resolveJob('job_done');
+        const finalResult = await executionPromise;
+        const pillAfterFinal = Boolean(pill && !pill.classList.contains('d-none'));
+
+        return {
+            initialRequests,
+            pillDuringJob,
+            pillHiddenDuringBg,
+            requestsAfterForeground,
+            pillRestored,
+            restoredSentinelActive,
+            finalResult,
+            pillAfterFinal
+        };
+    })()`);
+
+    assert.strictEqual(t7Res.initialRequests, 1, 'Initial request count must be 1');
+    assert.strictEqual(t7Res.pillDuringJob, true, 'Pill must be shown initially');
+    assert.strictEqual(t7Res.pillHiddenDuringBg, false, 'Pill must hide when lock is released during background');
+    assert.strictEqual(t7Res.requestsAfterForeground, 2, 'Wake lock MUST be re-requested on visibilitychange foregrounding');
+    assert.strictEqual(t7Res.pillRestored, true, 'Pill must be restored on tab foregrounding');
+    assert.strictEqual(t7Res.restoredSentinelActive, true, 'Sentinel must be active again');
+    assert.strictEqual(t7Res.finalResult, 'job_done', 'Job must complete successfully');
+    assert.strictEqual(t7Res.pillAfterFinal, false, 'Pill must be hidden after job final completion');
+    console.log('  ✓ Re-request on visibilitychange: wake lock is automatically re-requested when tab returns to foreground during active job');
 
     console.log('\n--- 2. Testing Non-Blocking Browser Storage Quota Advisory (Directive 2 & 4.2) ---');
 
@@ -786,6 +850,157 @@ async function runPhase4Tests() {
             v.removeAttribute('src');
             v.style.display = 'none';
         }
+        document.documentElement.classList.remove('light-theme');
+    })()`);
+
+    console.log('\n--- 6.2 Capturing Landscape Viewport Screenshots (844x390) ---');
+    await cdp.send('Emulation.setDeviceMetricsOverride', {
+        width: 844,
+        height: 390,
+        deviceScaleFactor: 1,
+        mobile: true
+    });
+    await new Promise(r => setTimeout(r, 200));
+
+    // Landscape Dark Cards
+    await cdp.evaluate(`document.documentElement.classList.remove('light-theme')`);
+    await takeScreenshot('screen-landscape-dark-cards.png');
+
+    // Landscape Dark Modal
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('usb-backup-modal');
+        if (m) { m.classList.remove('d-none'); m.style.display = 'flex'; }
+    })()`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-landscape-dark-modal.png');
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('usb-backup-modal');
+        if (m) { m.classList.add('d-none'); m.style.display = 'none'; }
+    })()`);
+
+    // Landscape Dark Player
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('vault-media-modal');
+        if (m) { m.classList.remove('d-none'); m.style.display = 'flex'; }
+        const v = document.getElementById('cinema-video');
+        if (v) { v.style.display = 'block'; }
+    })()`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-landscape-dark-player.png');
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('vault-media-modal');
+        if (m) { m.classList.add('d-none'); m.style.display = 'none'; }
+        const v = document.getElementById('cinema-video');
+        if (v) { v.style.display = 'none'; }
+    })()`);
+
+    // Landscape Light Cards
+    await cdp.evaluate(`document.documentElement.classList.add('light-theme')`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-landscape-light-cards.png');
+
+    // Landscape Light Modal
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('usb-backup-modal');
+        if (m) { m.classList.remove('d-none'); m.style.display = 'flex'; }
+    })()`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-landscape-light-modal.png');
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('usb-backup-modal');
+        if (m) { m.classList.add('d-none'); m.style.display = 'none'; }
+    })()`);
+
+    // Landscape Light Player
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('vault-media-modal');
+        if (m) { m.classList.remove('d-none'); m.style.display = 'flex'; }
+        const v = document.getElementById('cinema-video');
+        if (v) { v.style.display = 'block'; }
+    })()`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-landscape-light-player.png');
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('vault-media-modal');
+        if (m) { m.classList.add('d-none'); m.style.display = 'none'; }
+        const v = document.getElementById('cinema-video');
+        if (v) { v.style.display = 'none'; }
+        document.documentElement.classList.remove('light-theme');
+    })()`);
+
+    console.log('\n--- 6.3 Capturing Desktop Viewport Screenshots (1280x800) ---');
+    await cdp.send('Emulation.clearDeviceMetricsOverride');
+    await cdp.send('Emulation.setDeviceMetricsOverride', {
+        width: 1280,
+        height: 800,
+        deviceScaleFactor: 1,
+        mobile: false
+    });
+    await new Promise(r => setTimeout(r, 200));
+
+    // Desktop Dark Cards
+    await cdp.evaluate(`document.documentElement.classList.remove('light-theme')`);
+    await takeScreenshot('screen-desktop-dark-cards.png');
+
+    // Desktop Dark Modal
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('usb-backup-modal');
+        if (m) { m.classList.remove('d-none'); m.style.display = 'flex'; }
+    })()`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-desktop-dark-modal.png');
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('usb-backup-modal');
+        if (m) { m.classList.add('d-none'); m.style.display = 'none'; }
+    })()`);
+
+    // Desktop Dark Player
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('vault-media-modal');
+        if (m) { m.classList.remove('d-none'); m.style.display = 'flex'; }
+        const v = document.getElementById('cinema-video');
+        if (v) { v.style.display = 'block'; }
+    })()`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-desktop-dark-player.png');
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('vault-media-modal');
+        if (m) { m.classList.add('d-none'); m.style.display = 'none'; }
+        const v = document.getElementById('cinema-video');
+        if (v) { v.style.display = 'none'; }
+    })()`);
+
+    // Desktop Light Cards
+    await cdp.evaluate(`document.documentElement.classList.add('light-theme')`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-desktop-light-cards.png');
+
+    // Desktop Light Modal
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('usb-backup-modal');
+        if (m) { m.classList.remove('d-none'); m.style.display = 'flex'; }
+    })()`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-desktop-light-modal.png');
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('usb-backup-modal');
+        if (m) { m.classList.add('d-none'); m.style.display = 'none'; }
+    })()`);
+
+    // Desktop Light Player
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('vault-media-modal');
+        if (m) { m.classList.remove('d-none'); m.style.display = 'flex'; }
+        const v = document.getElementById('cinema-video');
+        if (v) { v.style.display = 'block'; }
+    })()`);
+    await new Promise(r => setTimeout(r, 150));
+    await takeScreenshot('screen-desktop-light-player.png');
+    await cdp.evaluate(`(() => {
+        const m = document.getElementById('vault-media-modal');
+        if (m) { m.classList.add('d-none'); m.style.display = 'none'; }
+        const v = document.getElementById('cinema-video');
+        if (v) { v.style.display = 'none'; }
         document.documentElement.classList.remove('light-theme');
     })()`);
 
