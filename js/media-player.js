@@ -142,7 +142,7 @@
     function resetCinemaInactivityTimer() {
         clearCinemaInactivityTimer();
         const modal = document.getElementById('vault-media-modal');
-        if (!modal || modal.style.display === 'none') return;
+        if (!modal || modal.classList.contains('d-none') || modal.style.display === 'none') return;
 
         modal.classList.remove('cinema-ui--hidden');
 
@@ -153,7 +153,7 @@
         const media = getActiveCinemaMedia();
         if (media && !media.paused && media.tagName === 'VIDEO') {
             cinemaInactivityTimer = setTimeout(() => {
-                if (modal.style.display !== 'none' && !media.paused && (!toolsBar || !toolsBar.classList.contains('is-open'))) {
+                if (!modal.classList.contains('d-none') && modal.style.display !== 'none' && !media.paused && (!toolsBar || !toolsBar.classList.contains('is-open'))) {
                     modal.classList.add('cinema-ui--hidden');
                 }
             }, 2500);
@@ -562,7 +562,10 @@
         updatePlayBtnUI(false);
 
         const hotkeysModal = document.getElementById('media-hotkeys-modal');
-        if (hotkeysModal) hotkeysModal.style.display = 'none';
+        if (hotkeysModal) {
+            hotkeysModal.classList.add('d-none');
+            hotkeysModal.style.display = 'none';
+        }
 
         const modalContainer = document.querySelector('.media-modal-container');
         if (modalContainer) modalContainer.classList.remove('media-modal-container--theater');
@@ -1029,8 +1032,14 @@
     function toggleHotkeysModal() {
         const modal = document.getElementById('media-hotkeys-modal');
         if (!modal) return;
-        const isHidden = modal.style.display === 'none' || !modal.style.display;
-        modal.style.display = isHidden ? 'flex' : 'none';
+        const isHidden = modal.classList.contains('d-none') || modal.style.display === 'none' || !modal.style.display;
+        if (isHidden) {
+            modal.classList.remove('d-none');
+            modal.style.display = 'flex';
+        } else {
+            modal.classList.add('d-none');
+            modal.style.display = 'none';
+        }
     }
 
     // Fullscreen with Automatic Landscape Orientation Lock & iOS CSS Fallback (Directive 4)
@@ -1376,7 +1385,10 @@
         document.getElementById('btn-media-hotkeys')?.addEventListener('click', toggleHotkeysModal);
         document.getElementById('btn-close-hotkeys')?.addEventListener('click', () => {
             const m = document.getElementById('media-hotkeys-modal');
-            if (m) m.style.display = 'none';
+            if (m) {
+                m.classList.add('d-none');
+                m.style.display = 'none';
+            }
         });
 
         // Studio Drawer Toggle
@@ -1830,7 +1842,7 @@
         // Keyboard Shortcuts
         window.addEventListener('keydown', (e) => {
             const mediaModalEl = document.getElementById('vault-media-modal');
-            if (!mediaModalEl || mediaModalEl.style.display === 'none') return;
+            if (!mediaModalEl || mediaModalEl.classList.contains('d-none') || mediaModalEl.style.display === 'none') return;
 
             const media = getActiveCinemaMedia();
             if (!media) return;
@@ -1927,7 +1939,8 @@
                 }
             } else if (e.key === 'Escape') {
                 const hotkeysModal = document.getElementById('media-hotkeys-modal');
-                if (hotkeysModal && hotkeysModal.style.display !== 'none') {
+                if (hotkeysModal && (!hotkeysModal.classList.contains('d-none') || (hotkeysModal.style.display && hotkeysModal.style.display !== 'none'))) {
+                    hotkeysModal.classList.add('d-none');
                     hotkeysModal.style.display = 'none';
                 } else {
                     closeMediaPlayer();
@@ -2019,7 +2032,7 @@
 
         imageViewport?.addEventListener('wheel', (e) => {
             const modal = document.getElementById('vault-image-modal');
-            if (!modal || modal.style.display === 'none') return;
+            if (!modal || modal.classList.contains('d-none') || modal.style.display === 'none') return;
             e.preventDefault();
             if (e.deltaY < 0) zoomImage(0.15);
             else if (e.deltaY > 0) zoomImage(-0.15);
@@ -2109,9 +2122,15 @@
 
         // 7. Hide modals
         const mediaModal = document.getElementById('vault-media-modal');
-        if (mediaModal) mediaModal.style.display = 'none';
+        if (mediaModal) {
+            mediaModal.classList.add('d-none');
+            mediaModal.style.display = 'none';
+        }
         const imageModal = document.getElementById('vault-image-modal');
-        if (imageModal) imageModal.style.display = 'none';
+        if (imageModal) {
+            imageModal.classList.add('d-none');
+            imageModal.style.display = 'none';
+        }
     }
 
     // Export to global scope

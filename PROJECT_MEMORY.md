@@ -439,7 +439,8 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Bumped `APP_VERSION = 'v74'` and updated `index.html` to `v8.23.0` / `WEB-VERSION-74`.
 - **Automated Verification Suites:**
   - Created `test/test-security-csp-audit.js` (18 automated assertions verifying zero inline scripts, zero inline styles, zero inline on* handlers, real XSS sanitization across `escapeHtml` and `renderSafeMarkdown`, and `sw.js` pre-caching).
-  - Created `test/browser-verification-phase3.js` running headless Chrome CDP over local HTTP server with real `_headers` CSP, verifying 0 CSP violations, 0 console errors, mobile tabs, and modal lifecycles across portrait (390x844), landscape (844x390), and desktop (1280x800).
+  - Created `test/test-dist-completeness.js` (8 automated assertions verifying that 100% of files in `SHELL_ASSETS`, `index.html` assets, manifest icons, sitemap URLs, and subpage assets exist in `dist/`, with 0 internal notes/tests leaking into distribution).
+  - Extended `test/browser-verification-phase3.js` running headless Chrome CDP over local HTTP server with real `_headers` CSP, verifying 0 CSP violations, 0 worker/blob errors, 0 console errors, real in-browser folder encryption & decryption round-trip via Web Workers under strict CSP, real video playback and image lightbox with `blob:` URLs, and complete open/close cycles across ALL 13 modals on portrait (390x844), landscape (844x390), and desktop (1280x800).
 
 
 ---

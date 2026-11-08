@@ -48,6 +48,7 @@ const DIRS_TO_COPY = [
     'assets',
     'change-log',
     'device-power',
+    'future-plans',
     'how-to-use-zevsafe',
     'knowledge',
     'roadmap',
@@ -55,7 +56,7 @@ const DIRS_TO_COPY = [
     'tools'
 ];
 
-// Helper: recursive copy excluding *.md, test files, and dotfiles
+// Helper: recursive copy excluding internal *.md, test files, and dotfiles
 function copyDirFiltered(srcDir, destDir) {
     if (!fs.existsSync(srcDir)) return;
     fs.mkdirSync(destDir, { recursive: true });
@@ -65,8 +66,9 @@ function copyDirFiltered(srcDir, destDir) {
         const srcPath = path.join(srcDir, item.name);
         const destPath = path.join(destDir, item.name);
 
-        // Skip internal markdown, tests, hidden files
-        if (item.name.endsWith('.md') || item.name.startsWith('.')) continue;
+        // Skip internal markdown (except future-plans which is a published roadmap doc), tests, hidden files
+        if (item.name.endsWith('.md') && !srcPath.includes('future-plans')) continue;
+        if (item.name.startsWith('.')) continue;
         if (item.name.includes('.test.') || item.name.includes('.spec.')) continue;
 
         if (item.isDirectory()) {

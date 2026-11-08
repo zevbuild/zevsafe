@@ -779,6 +779,13 @@
                                 <strong>Service Worker Cache v74:</strong> Removed obsolete baseline comment in <code>sw.js</code>, added <code>./js/init.js</code> and <code>./404.html</code> to <code>SHELL_ASSETS</code>, and bumped <code>APP_VERSION = 'v74'</code>.
                             </div>
                         </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--perf">Test</span>
+                            <div class="cl-item-body">
+                                <strong>Automated Dist Completeness &amp; Extended CDP Verification:</strong> Built <code>test/test-dist-completeness.js</code> verifying that 100% of <code>SHELL_ASSETS</code>, <code>index.html</code> assets, manifest icons, sitemap URLs, and subpages exist in <code>dist/</code> with zero internal clutter leaks. Extended <code>test/browser-verification-phase3.js</code> verifying zero CSP violations, zero worker/blob errors, real WebCrypto folder encryption/decryption round-trip, in-browser video/image preview with <code>blob:</code> URLs, and all 13 modals.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </article>

@@ -2969,6 +2969,7 @@ function showPasswordSavePrompt(recordOrPassword) {
 function closePwModal() {
     const modal = document.getElementById('pw-save-modal');
     if (modal) {
+        modal.classList.add('d-none');
         modal.style.display = 'none';
     }
 }
@@ -5872,7 +5873,10 @@ async function launchVaultSalvage(explicitFile = null, explicitPw = null) {
     const progressPct = document.getElementById('salvage-progress-pct');
     const actionsPanel = document.getElementById('salvage-actions-panel');
 
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.classList.remove('d-none');
+        modal.style.display = 'flex';
+    }
     if (logList) logList.innerHTML = '';
     if (countRescued) countRescued.textContent = '0';
     if (countCorrupted) countCorrupted.textContent = '0';
@@ -6321,6 +6325,7 @@ function initPasswordGenerator() {
 
     function closeModal() {
         if (!modal) return;
+        modal.classList.add('d-none');
         modal.style.display = 'none';
     }
 
@@ -6759,9 +6764,9 @@ function initExplorerUI() {
     const btnCloseHealth = document.getElementById('btn-close-health-modal');
     const btnDismissHealth = document.getElementById('btn-dismiss-health-modal');
     const healthModal = document.getElementById('vault-health-modal');
-    btnCloseHealth?.addEventListener('click', () => { if (healthModal) healthModal.style.display = 'none'; });
-    btnDismissHealth?.addEventListener('click', () => { if (healthModal) healthModal.style.display = 'none'; });
-    healthModal?.addEventListener('click', (e) => { if (e.target.id === 'vault-health-modal') healthModal.style.display = 'none'; });
+    btnCloseHealth?.addEventListener('click', () => { if (healthModal) { healthModal.classList.add('d-none'); healthModal.style.display = 'none'; } });
+    btnDismissHealth?.addEventListener('click', () => { if (healthModal) { healthModal.classList.add('d-none'); healthModal.style.display = 'none'; } });
+    healthModal?.addEventListener('click', (e) => { if (e.target.id === 'vault-health-modal') { healthModal.classList.add('d-none'); healthModal.style.display = 'none'; } });
 
     // Deep Scan & Salvage event wiring
     const btnDeepScan = document.getElementById('btn-health-deep-scan');
@@ -6776,9 +6781,9 @@ function initExplorerUI() {
     const btnCloseSalvage = document.getElementById('btn-close-salvage-modal');
     const btnDismissSalvage = document.getElementById('btn-dismiss-salvage-modal');
     const salvageModal = document.getElementById('vault-salvage-modal');
-    btnCloseSalvage?.addEventListener('click', () => { if (salvageModal) salvageModal.style.display = 'none'; });
-    btnDismissSalvage?.addEventListener('click', () => { if (salvageModal) salvageModal.style.display = 'none'; });
-    salvageModal?.addEventListener('click', (e) => { if (e.target.id === 'vault-salvage-modal') salvageModal.style.display = 'none'; });
+    btnCloseSalvage?.addEventListener('click', () => { if (salvageModal) { salvageModal.classList.add('d-none'); salvageModal.style.display = 'none'; } });
+    btnDismissSalvage?.addEventListener('click', () => { if (salvageModal) { salvageModal.classList.add('d-none'); salvageModal.style.display = 'none'; } });
+    salvageModal?.addEventListener('click', (e) => { if (e.target.id === 'vault-salvage-modal') { salvageModal.classList.add('d-none'); salvageModal.style.display = 'none'; } });
 
     const btnDlRescuedZip = document.getElementById('btn-salvage-download-zip');
     btnDlRescuedZip?.addEventListener('click', downloadSalvageZip);
@@ -7027,7 +7032,10 @@ function initPwaInstall() {
                 if (nativeSec) nativeSec.style.display = 'none';
             }).catch(() => {});
         } else {
-            if (modal) modal.style.display = 'flex';
+            if (modal) {
+        modal.classList.remove('d-none');
+        modal.style.display = 'flex';
+    }
         }
     }
 
@@ -7338,6 +7346,7 @@ function initUsbBackupKit() {
     }
 
     function closeModal() {
+        modal.classList.add('d-none');
         modal.style.display = 'none';
         modal.setAttribute('aria-hidden', 'true');
         if (progressCard) progressCard.style.display = 'none';
