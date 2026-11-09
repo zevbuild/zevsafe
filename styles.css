@@ -2840,158 +2840,158 @@ body {
 }
 
 .light-theme .explorer-title {
-    color: #f8fafc !important;
+    color: #f8fafc;
 }
 
 .light-theme .explorer-meta {
-    color: #94a3b8 !important;
+    color: #94a3b8;
 }
 
 .light-theme .explorer-search-wrap {
-    background: rgba(0, 0, 0, 0.35) !important;
-    border-color: rgba(255, 255, 255, 0.15) !important;
+    background: rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .light-theme .explorer-search-input {
-    color: #f8fafc !important;
+    color: #f8fafc;
 }
 
 .light-theme .explorer-search-input::placeholder {
-    color: #64748b !important;
+    color: #64748b;
 }
 
 .light-theme .explorer-sort-select {
-    background: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(255, 255, 255, 0.14) !important;
-    color: #f8fafc !important;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #f8fafc;
 }
 
 .light-theme .explorer-view-btn {
-    color: #94a3b8 !important;
+    color: #94a3b8;
 }
 
 .light-theme .explorer-view-btn--active {
-    color: #5eead4 !important;
-    background: rgba(20, 184, 166, 0.25) !important;
+    color: #5eead4;
+    background: rgba(20, 184, 166, 0.25);
 }
 
 .light-theme .explorer-filter-tab {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
-    color: rgba(255, 255, 255, 0.75) !important;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.75);
 }
 
 .light-theme .explorer-filter-tab:hover {
-    background: rgba(255, 255, 255, 0.12) !important;
-    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
 }
 
 .light-theme .explorer-filter-tab--active {
-    background: rgba(20, 184, 166, 0.22) !important;
-    border-color: rgba(20, 184, 166, 0.55) !important;
-    color: #5eead4 !important;
+    background: rgba(20, 184, 166, 0.22);
+    border-color: rgba(20, 184, 166, 0.55);
+    color: #5eead4;
 }
 
 .light-theme .explorer-item {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border-color: rgba(255, 255, 255, 0.06) !important;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
 }
 
 .light-theme .explorer-item:hover {
-    background: rgba(20, 184, 166, 0.08) !important;
-    border-color: rgba(20, 184, 166, 0.3) !important;
+    background: rgba(20, 184, 166, 0.08);
+    border-color: rgba(20, 184, 166, 0.3);
 }
 
 .light-theme .explorer-breadcrumbs {
-    background: rgba(0, 0, 0, 0.04) !important;
-    border-color: rgba(0, 0, 0, 0.08) !important;
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
 }
 
 .light-theme .breadcrumb-item {
-    color: #475569 !important;
+    color: #475569;
 }
 
 .light-theme .breadcrumb-item:hover {
-    color: #0d9488 !important;
-    background: rgba(13, 148, 136, 0.1) !important;
+    color: #0d9488;
+    background: rgba(13, 148, 136, 0.1);
 }
 
 .light-theme .breadcrumb-item--root {
-    color: #0d9488 !important;
+    color: #0d9488;
 }
 
 .light-theme .breadcrumb-item--current {
-    color: #0f172a !important;
-    background: rgba(0, 0, 0, 0.06) !important;
+    color: #0f172a;
+    background: rgba(0, 0, 0, 0.06);
 }
 
 .light-theme .explorer-folder-item {
-    background: rgba(13, 148, 136, 0.05) !important;
-    border-left-color: #0d9488 !important;
+    background: rgba(13, 148, 136, 0.05);
+    border-left-color: #0d9488;
 }
 
 .light-theme .explorer-folder-name {
-    color: #0f766e !important;
+    color: #0f766e;
 }
 
 .light-theme .explorer-parent-item {
-    background: rgba(124, 58, 237, 0.05) !important;
-    border-left-color: #7c3aed !important;
+    background: rgba(124, 58, 237, 0.05);
+    border-left-color: #7c3aed;
 }
 
 .light-theme .explorer-parent-item .explorer-item-name {
-    color: #6d28d9 !important;
+    color: #6d28d9;
 }
 
 .light-theme .text-code-textarea {
-    color: #0f172a !important;
-    background: transparent !important;
+    color: #0f172a;
+    background: transparent;
 }
 
 .light-theme .explorer-item-name {
-    color: #f8fafc !important;
+    color: #f8fafc;
 }
 
 .light-theme .explorer-item-path {
-    color: #64748b !important;
+    color: #64748b;
 }
 
 .light-theme .explorer-item-size,
 .light-theme .explorer-grid-size {
-    background: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(255, 255, 255, 0.08) !important;
-    color: #cbd5e1 !important;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
 }
 
 .light-theme .explorer-grid-card {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border-color: rgba(255, 255, 255, 0.07) !important;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.07);
 }
 
 .light-theme .explorer-grid-card:hover {
-    background: rgba(20, 184, 166, 0.08) !important;
-    border-color: rgba(20, 184, 166, 0.35) !important;
+    background: rgba(20, 184, 166, 0.08);
+    border-color: rgba(20, 184, 166, 0.35);
 }
 
 .light-theme .explorer-grid-name {
-    color: #f8fafc !important;
+    color: #f8fafc;
 }
 
 .light-theme .explorer-footer {
-    background: rgba(8, 10, 26, 0.65) !important;
-    border-top-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(8, 10, 26, 0.65);
+    border-top-color: rgba(255, 255, 255, 0.08);
 }
 
 .light-theme .explorer-footer-hint {
-    color: #94a3b8 !important;
+    color: #94a3b8;
 }
 
 .light-theme .media-modal-title {
-    color: #f8fafc !important;
+    color: #f8fafc !important; /* Retained: overrides media-player.css mobile title */
 }
 
 .light-theme .media-modal-counter {
-    color: #94a3b8 !important;
+    color: #94a3b8 !important; /* Retained: overrides media-player.css counter */
 }
 
 .light-theme .media-ctrl-btn {
