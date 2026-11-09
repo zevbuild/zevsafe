@@ -719,6 +719,8 @@
                             <span class="cl-badge cl-badge--date">November 9, 2026</span>
                         </div>
                         <div class="cl-tags">
+                            <span class="cl-tag">Modular Document Viewer</span>
+                            <span class="cl-tag">PDF Stacking Fix</span>
                             <span class="cl-tag">Service Worker Range Fix</span>
                             <span class="cl-tag">CSS Refactoring</span>
                             <span class="cl-tag">JS Decomposition</span>
@@ -732,6 +734,12 @@
                     </p>
 
                     <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Modular On-Demand Document &amp; PDF Viewer (<code>js/document-viewer.js</code>):</strong> Extracted in-vault text reader, code editor, note creator, and PDF previewer from <code>app.js</code> into standalone modular controller <code>js/document-viewer.js</code> (470+ lines pruned from initial bundle), lazy-loaded strictly on demand via <code>ensureDocViewerLoaded</code> when clicking a document or PDF in Decrypted Vault Explorer. Fixed PDF backdrop stacking bug: established explicit <code>.text-modal-overlay</code> with <code>position: fixed; inset: 0; z-index: 2100;</code> in <code>styles.css</code>, guaranteeing document previews stack cleanly above Decrypted Vault Explorer (<code>z-index: 2000</code>). Precached in <code>sw.js</code> (65 shell assets) and certified by automated test suite <code>test/ui/test-document-viewer.js</code> (10/10 passed).
+                            </div>
+                        </div>
                         <div class="cl-item">
                             <span class="cl-bullet cl-bullet--fix">Fix</span>
                             <div class="cl-item-body">
@@ -756,7 +764,7 @@
                         <div class="cl-item">
                             <span class="cl-bullet cl-bullet--new">New</span>
                             <div class="cl-item-body">
-                                <strong>Unified Test Harness &amp; Categorized Subdirectory Architecture (Phase B):</strong> Standalone dependency-free test runner <code>test/run-all.js</code> executing all 30 test suites sequentially with process isolation, exit-code verification, cross-platform PowerShell execution, and categorized subdirectories (<code>test/crypto/</code>, <code>test/security/</code>, <code>test/ui/</code>, <code>test/pwa/</code>, <code>test/a11y/</code>). Added GitHub Actions matrix CI workflow on Ubuntu Linux and Windows.
+                                <strong>Unified Test Harness &amp; Categorized Subdirectory Architecture (Phase B):</strong> Standalone dependency-free test runner <code>test/run-all.js</code> executing all 30 test suites sequentially with process isolation, exit-code verification, cross-platform PowerShell execution, and categorized subdirectories (<code>test/crypto/</code>, <code>test/security/</code>, <code>test/ui/</code>, <code>test/pwa/</code>, <code>test/a11y/</code>). Automated deployment handled via Cloudflare Pages with zero external CI dependencies.
                             </div>
                         </div>
 

@@ -137,16 +137,16 @@ npx serve .
 
 ---
 
-## 6. Continuous Integration (GitHub Actions)
+## 6. Continuous Integration & Deployment (Cloudflare Pages)
 
-Continuous Integration is configured via `.github/workflows/test.yml`:
+Automated deployment is handled natively and securely via **Cloudflare Pages** directly connected to the repository's `main` branch.
 
-- **Operating System:** Ubuntu Latest (`ubuntu-latest`)
-- **Node.js Matrix:** Node `20.x` and Node `22.x`
-- **Security Permissions:** Pinned to least-privilege `permissions: contents: read`.
-- **Action Pinning:** All GitHub Actions use pinned releases (e.g. `actions/checkout@v4.2.2`, `actions/setup-node@v4.2.0`).
-- **Browser Automation:** Configures pre-installed Google Chrome via `CHROME_PATH=/usr/bin/google-chrome`.
-- **Command:** Executes `node test/run-all.js`.
+- **Static Zero-Knowledge Architecture:** Because ZevSafe is 100% client-side and requires zero build steps or server runtimes in production, commits pushed to `main` trigger instant edge deployment across Cloudflare's global CDN network (`https://zevsafe.pages.dev`).
+- **Local & Pre-Commit Verification:** Full automated regression testing is executed locally via the offline test harness:
+  ```bash
+  node test/run-all.js
+  ```
+- **Matrix Compatibility:** All 30 test suites run against Node.js 20.x and 22.x with process isolation, exit-code validation as ground truth, and zero external network access.
 
 ---
 

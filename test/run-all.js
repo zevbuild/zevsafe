@@ -175,6 +175,12 @@ const SUITE_CATALOG = [
         description: 'End-to-end real v3 streaming playback, HTTP 206 range protocol, seek across chunks, audio and photo'
     },
     {
+        file: 'test-document-viewer.js',
+        category: 'ui',
+        name: 'In-Vault Modular Document & PDF Viewer',
+        description: 'Lazy-loaded document viewer, PDF blob frame, z-index 2100 backdrop fix, 5 MB memory limit'
+    },
+    {
         file: 'test-header-navbar-upgrade.js',
         category: 'ui',
         name: 'Header & Navbar Architecture',

@@ -101,11 +101,11 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 ### 3.6 Web Vault Explorer & Ephemeral Virtual Filesystem Architecture
 - **Hierarchical Directory Tree Engine (`getItemsInDirectory`):** Groups decrypted files at `explorerCurrentDir` into immediate subdirectories and direct files. Computes recursive file counts and total byte sizes per folder in $O(N)$ time with zero memory allocations beyond folder summaries.
 - **Interactive Breadcrumb Navigation (`renderBreadcrumbs`):** Renders navigable crumb pills (`📁 Vault Root / photos / vacation`) allowing instant jumping to parent directory levels.
-- **In-Browser Text Document Editing & Note Creation:** Decrypted Vault Explorer document modal (`#vault-text-modal`) provides interactive `<textarea>` editing (`.text-code-textarea`) for text/code documents with dynamic line numbering (`syncTextareaLineNumbers`), tab indentation (4 spaces), and `Ctrl+S` saving. A `➕ New Note` button enables creating new `.txt` notes in `explorerCurrentDir`.
+- **In-Browser Text Document Editing & Note Creation (`js/document-viewer.js`):** Decrypted Vault Explorer document modal (`#vault-text-modal`) provides interactive `<textarea>` editing (`.text-code-textarea`) for text/code documents with dynamic line numbering (`syncTextareaLineNumbers`), tab indentation (4 spaces), and `Ctrl+S` saving. A `➕ New Note` button enables creating new `.txt` notes in `explorerCurrentDir`. Extracted to standalone modular controller `js/document-viewer.js` (loaded on demand via `ensureDocViewerLoaded`) reducing initial page payload.
 - **In-Session Decrypted Overlay Map (`editedFiles`):** Newly edited or created text files are kept in `currentV3Vault.editedFiles` (or mutates `currentDecryptedZip`). Requests through `getDecryptedFileBlob(filePath)` dynamically prioritize the overlay Blob, updating file sizes, displaying an `(Edited)` badge pill, and seamlessly bundling edits into full vault exports (`btn-explorer-download-all`) via JSZip.
 - **Floating Audio Mini-Player Dock (`dockAudioPlayer`, `expandAudioDock`, `closeAudioDock`):** Persistent bottom player dock allowing uninterrupted audio playback while navigating folders, reading documents, or editing files in Vault Explorer.
 - **Vault Cryptographic Health & Bit-Rot Verifier (`verifyVaultIntegrity`):** Diagnostic scorecard verifying 57-byte container header, version 3 magic, PBKDF2 salt and iteration floor (>= 100k rounds), 12B IV + 42B AAD layouts, and AES-256-GCM 16-byte authentication tags across all chunks.
-- **In-Browser Decrypted PDF Document Previewer (`openPdfViewerByPath`):** Dynamically mounts decrypted PDF blobs into a dedicated viewer frame (`#pdf-preview-frame`) in the document modal with pop-out tab support.
+- **In-Browser Decrypted PDF Document Previewer (`openPdfViewerByPath` in `js/document-viewer.js`):** Dynamically mounts decrypted PDF blobs into a dedicated viewer frame (`#pdf-preview-frame`) in the document modal with pop-out tab support. Fixed backdrop occlusion bug by explicitly defining `.text-modal-overlay` with `position: fixed; inset: 0; z-index: 2100;` in `styles.css` ensuring documents and PDFs stack cleanly above `#vault-explorer-modal` (`z-index: 2000`).
 - **In-Vault Direct Re-Encryption to `.zev` (`reEncryptVaultToZev`):** Direct in-place re-encryption from Vault Explorer packaging modified and new notes with preserved relative paths into an updated `.zev` streaming container with zero temporary zip roundtripping.
 - **Auto-Lock Inactivity Timer Protocol (`startExplorerIdleWatcher`, `stopExplorerIdleWatcher`):** Tracks user activity and automatically executes zero-knowledge session teardown (`lockVaultSession`) upon configurable idle timeout (5/15/30 min).
 
@@ -558,6 +558,10 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 
 ### 3.30 Phase 6: Code Quality, CSS Refactoring, JS Decomposition, Unified Test Infrastructure & SW Range Streaming Restoration (v8.27.0 / WEB-VERSION-78)
+- **Modular On-Demand Document & PDF Viewer (`js/document-viewer.js`) & Backdrop Stacking Fix:**
+  - Extracted in-vault text reader, code editor, note creator, and PDF previewer from `app.js` into standalone modular controller `js/document-viewer.js` (470+ lines pruned from initial bundle), lazy-loaded strictly on demand via `ensureDocViewerLoaded` when clicking a document or PDF in Decrypted Vault Explorer.
+  - Fixed PDF backdrop stacking bug: established explicit `.text-modal-overlay` with `position: fixed; inset: 0; z-index: 2100;` in `styles.css`, guaranteeing document previews stack cleanly above Decrypted Vault Explorer (`z-index: 2000`).
+  - Precached in `sw.js` (65 shell assets) and certified by automated test suite `test/ui/test-document-viewer.js` (10/10 passed).
 - **Service Worker HTTP 206 Range Streaming & Playlist Contracts Restored:**
   - Aligned `js/media-player.js` with Service Worker protocol contracts: restored `READ_MEDIA_RANGE` and `MEDIA_RANGE_DATA` messaging with `requestId`, eliminated unhandled `initChannel` promise hangs, replaced non-existent `vaultBytes` references with `currentV3Vault.file` and `masterKey`, integrated bounded `StreamUnpacker.createBoundedChunkCache(6)`, and restored call-time playlist builders for media and image lightbox viewers from `global.currentDecryptedFileList`.
   - Added clean fallback to direct blob extraction when `navigator.serviceWorker.controller` is null.
@@ -574,14 +578,14 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Test Infrastructure Runner & Categorized Directory Architecture (Phase B):**
   - Architected standalone, dependency-free test runner `test/run-all.js` executing all 30 repository test suites sequentially with process isolation, exit-code verification as ground truth, PowerShell detection for cross-platform `.ps1` execution, and advanced CLI filtering.
   - Relocated all 30 test suites into domain-categorized subdirectories (`test/crypto/`, `test/security/`, `test/ui/`, `test/pwa/`, `test/a11y/`).
-  - Added GitHub Actions workflow `.github/workflows/test.yml` matrix-tested across Node 20 and 22 on Ubuntu Linux.
+  - Direct Edge Deployment & Local Test Runner: Cloudflare Pages handles automated production edge deployments directly on push to `main` with zero serverless build steps; automated test harness executes locally via `node test/run-all.js` with matrix testing support on Node 20 and 22 without requiring GitHub Actions workflows.
   - Implemented cross-platform LF-normalized SHA-256 content hashing in `tools/shared-whitelist.js:computeContentHash` ensuring deterministic cache hash across Windows, macOS, and Linux runners.
   - Hardened headless Chrome CDP test runners across all suites with Linux path resolution (`/usr/bin/google-chrome`, `/usr/bin/google-chrome-stable`, etc.) and `--no-sandbox`, `--disable-setuid-sandbox`, `--disable-dev-shm-usage` flags.
 - **Service Worker Cache Bump & Distribution Synchronization:**
   - Bumped `APP_VERSION = 'v78'` in `sw.js` and application shell tags to `WEB-VERSION-78` / `v8.27.0`.
   - Precached 64 application shell assets in `SHELL_CACHE` (`zevsafe-shell-v78-adfccc86`).
   - Synchronized production distribution build (`tools/build-dist.js`) and validated zero internal test or documentation clutter in `dist/`.
-  - Total test suite: 30 test suites | 1,227+ passing tests (100% pass rate).
+  - Total test suite: 31 test suites | 1,237+ passing tests (100% pass rate).
 
 ---
 
@@ -595,7 +599,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ## 5. Mandatory Verification & Automated Test Battery
 
-The ZevSafe test suite comprises **30 test suites** and **1,227+ passing automated assertions** across low-level cryptographic streaming, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, and WCAG accessibility.
+The ZevSafe test suite comprises **31 test suites** and **1,237+ passing automated assertions** across low-level cryptographic streaming, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, and WCAG accessibility.
 
 Whenever ANY code or documentation is touched, run the automated test suites and ensure **100% pass rate**:
 
