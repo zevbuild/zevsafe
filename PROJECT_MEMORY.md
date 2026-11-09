@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.27.0` (`WEB-VERSION-78`, Service Worker `v77`)  
+> **Web Portal Version:** `v8.27.0` (`WEB-VERSION-78`, Service Worker `v78`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -556,6 +556,35 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ---
 
+
+### 3.30 Phase 6: Code Quality, CSS Refactoring, JS Decomposition, Unified Test Infrastructure & SW Range Streaming Restoration (v8.27.0 / WEB-VERSION-78)
+- **Service Worker HTTP 206 Range Streaming & Playlist Contracts Restored:**
+  - Aligned `js/media-player.js` with Service Worker protocol contracts: restored `READ_MEDIA_RANGE` and `MEDIA_RANGE_DATA` messaging with `requestId`, eliminated unhandled `initChannel` promise hangs, replaced non-existent `vaultBytes` references with `currentV3Vault.file` and `masterKey`, integrated bounded `StreamUnpacker.createBoundedChunkCache(6)`, and restored call-time playlist builders for media and image lightbox viewers from `global.currentDecryptedFileList`.
+  - Added clean fallback to direct blob extraction when `navigator.serviceWorker.controller` is null.
+  - Added automated end-to-end test suite `test/ui/test-real-playback.js` (7/7 passed) verifying real v3 vault encryption, range streaming, seek across chunk boundaries, audio streaming, image viewing, and SW absence fallback.
+- **Phase 6 CSS Architecture Cleanup & Systematic `!important` Pruning:**
+  - Consolidated duplicate selectors and intra-component media queries across `styles.css` and `css/media-player.css`.
+  - Systematically pruned 125 unneeded `!important` declarations across 3 verification batches (Batch 1: 36 in `media-player.css` mobile stage, Batch 2: 34 in `styles.css`, Batch 3: 55 in `styles.css` light-theme explorer rules), reducing `!important` declarations from 544 to 419 (-23.0%).
+  - Every retained declaration is annotated with an explicit inline explanatory comment documenting its architectural requirement.
+  - Certified zero unexpected computed-style diffs across the 2,574-combo extended baseline snapshot (100% visual parity across 11 viewports).
+- **Phase 6 JS Helper Decomposition & Explorer Idempotency Guards:**
+  - Decomposed large functions `renderExplorerFileList`, `initExplorerUI`, `playMediaByIndex`, and `initMediaPlayerUI` into clean, named local helper functions in the same lexical scope without introducing new window globals.
+  - Added strict idempotency guards `_isExplorerUIInitialized` and `_isMediaPlayerUIInitialized` preventing duplicate event listener attachment on repeated opens.
+  - Validated 5,000-file catalog rendering performance with mean 376.88ms (+0.69% vs baseline, well within \pm 5% tolerance).
+- **Test Infrastructure Runner & Categorized Directory Architecture (Phase B):**
+  - Architected standalone, dependency-free test runner `test/run-all.js` executing all 30 repository test suites sequentially with process isolation, exit-code verification as ground truth, PowerShell detection for cross-platform `.ps1` execution, and advanced CLI filtering.
+  - Relocated all 30 test suites into domain-categorized subdirectories (`test/crypto/`, `test/security/`, `test/ui/`, `test/pwa/`, `test/a11y/`).
+  - Added GitHub Actions workflow `.github/workflows/test.yml` matrix-tested across Node 20 and 22 on Ubuntu Linux.
+  - Implemented cross-platform LF-normalized SHA-256 content hashing in `tools/shared-whitelist.js:computeContentHash` ensuring deterministic cache hash across Windows, macOS, and Linux runners.
+  - Hardened headless Chrome CDP test runners across all suites with Linux path resolution (`/usr/bin/google-chrome`, `/usr/bin/google-chrome-stable`, etc.) and `--no-sandbox`, `--disable-setuid-sandbox`, `--disable-dev-shm-usage` flags.
+- **Service Worker Cache Bump & Distribution Synchronization:**
+  - Bumped `APP_VERSION = 'v78'` in `sw.js` and application shell tags to `WEB-VERSION-78` / `v8.27.0`.
+  - Precached 64 application shell assets in `SHELL_CACHE` (`zevsafe-shell-v78-10f54a74`).
+  - Synchronized production distribution build (`tools/build-dist.js`) and validated zero internal test or documentation clutter in `dist/`.
+  - Total test suite: 30 test suites | 1,227+ passing tests (100% pass rate).
+
+---
+
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]
 
 - **Status:** **Sunset & Deprecated** — Succeeded entirely by the mobile Web PWA at `zevsafe.pages.dev`.
@@ -566,7 +595,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ## 5. Mandatory Verification & Automated Test Battery
 
-The ZevSafe test suite comprises **31 test suites** and **1,224 passing automated assertions** across low-level cryptographic streaming, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, and WCAG accessibility.
+The ZevSafe test suite comprises **30 test suites** and **1,227+ passing automated assertions** across low-level cryptographic streaming, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, and WCAG accessibility.
 
 Whenever ANY code or documentation is touched, run the automated test suites and ensure **100% pass rate**:
 

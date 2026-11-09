@@ -190,9 +190,10 @@ function computeSectionRoutes(rootDir) {
     return routes;
 }
 
-// 7. Compute deterministic content hash of all precached files
+// 7. Compute deterministic content hash of all precached files (cross-platform LF normalization)
 function computeContentHash(rootDir, shellAssets) {
     const hash = crypto.createHash('sha256');
+    const textExts = new Set(['.html', '.js', '.css', '.json', '.svg', '.xml', '.txt', '.webmanifest']);
     for (const asset of shellAssets) {
         // Strip leading ./ and trailing / for directory routes
         let clean = asset.replace(/^\.\//, '');
@@ -202,7 +203,14 @@ function computeContentHash(rootDir, shellAssets) {
         const fullPath = path.join(rootDir, clean);
         if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
             hash.update(asset);
-            hash.update(fs.readFileSync(fullPath));
+            const ext = path.extname(clean).toLowerCase();
+            let buf = fs.readFileSync(fullPath);
+            if (textExts.has(ext)) {
+                // Normalize CRLF to LF so content hash is deterministic across Windows, macOS, and Linux runners
+                const text = buf.toString('utf8').replace(/\r\n/g, '\n');
+                buf = Buffer.from(text, 'utf8');
+            }
+            hash.update(buf);
         }
     }
     return hash.digest('hex').slice(0, 8);

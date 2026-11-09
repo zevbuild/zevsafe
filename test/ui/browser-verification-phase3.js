@@ -82,15 +82,27 @@ const server = http.createServer((req, res) => {
 
 // Chrome launcher
 function findChrome() {
+    if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+        return process.env.CHROME_PATH;
+    }
+    if (process.env.CHROME_BIN && fs.existsSync(process.env.CHROME_BIN)) {
+        return process.env.CHROME_BIN;
+    }
     const paths = [
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-        process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe'
-    ];
+        process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Google\\Chrome\\Application\\chrome.exe') : null,
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/snap/bin/chromium',
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    ].filter(Boolean);
     for (const p of paths) {
         if (fs.existsSync(p)) return p;
     }
-    return 'chrome';
+    return null;
 }
 
 // Lightweight Raw WebSocket client for Node.js
@@ -223,7 +235,11 @@ async function runBrowserVerification() {
     await new Promise(resolve => server.listen(PORT, resolve));
     console.log(`Server listening on http://localhost:${PORT}`);
 
-    const chromePath = findChrome();
+        const chromePath = findChrome();
+    if (!chromePath) {
+        console.log('Chrome binary not found, skipping CDP browser verification.');
+        return;
+    }
     const cdpPort = 9223;
     const os = require('os');
     const userDataDir = path.join(os.tmpdir(), 'chrome-profile-p3-' + Date.now());
@@ -233,10 +249,14 @@ async function runBrowserVerification() {
         `--user-data-dir=${userDataDir}`,
         '--headless=new',
         '--disable-gpu',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
         '--no-first-run',
         '--no-default-browser-check',
         'about:blank'
     ], { stdio: 'ignore' });
+    chromeProc.on('error', (err) => console.error('Chrome spawn error:', err.message));
 
     // Wait for CDP to respond
     let versionData = null;

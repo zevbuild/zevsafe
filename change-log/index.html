@@ -669,7 +669,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.26.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.27.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -708,6 +708,68 @@
         <!-- Release Timeline -->
         <main id="main-content" tabindex="-1" class="cl-timeline">
 
+            <!-- ── VERSION 8.27.0 (WEB-VERSION-78) ── -->
+            <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">🚀</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.27.0 (WEB-VERSION-78)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 9, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Service Worker Range Fix</span>
+                            <span class="cl-tag">CSS Refactoring</span>
+                            <span class="cl-tag">JS Decomposition</span>
+                            <span class="cl-tag">Test Infrastructure</span>
+                            <span class="cl-tag">PWA v78</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Restored Service Worker HTTP 206 Range Streaming &amp; Playlist Contracts in <code>js/media-player.js</code>, completed Phase 6 CSS Architecture Cleanup &amp; Systematic <code>!important</code> Pruning (-23.0%), completed Phase 6 JS Helper Decomposition &amp; Explorer Idempotency Guards, architected Unified Test Harness &amp; Categorized Subdirectory Architecture (Phase B, 30 suites passing), and bumped Service Worker Cache to <code>v78</code> (<code>APP_VERSION = 'v78'</code>).
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Service Worker HTTP 206 Range Streaming &amp; Playlist Contracts:</strong> Aligned <code>js/media-player.js</code> with Service Worker protocol contracts: restored <code>READ_MEDIA_RANGE</code> and <code>MEDIA_RANGE_DATA</code> messaging, eliminated unhandled <code>initChannel</code> hangs, replaced non-existent <code>vaultBytes</code> with <code>currentV3Vault.file</code> and <code>masterKey</code>, integrated bounded <code>createBoundedChunkCache(6)</code>, and restored call-time playlist builders for media and image lightbox viewers from <code>global.currentDecryptedFileList</code>. Added automated test suite <code>test/ui/test-real-playback.js</code> (7/7 passed).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-body">
+                                <strong>Phase 6 CSS Architecture Cleanup &amp; Systematic !important Pruning:</strong> Consolidated duplicate selectors and intra-component media queries across <code>styles.css</code> and <code>css/media-player.css</code>. Systematically pruned 125 unneeded <code>!important</code> declarations across 3 batches, reducing total declarations from 544 to 419 (-23.0%) with every retained declaration annotated with explanatory comments and zero computed-style diffs across 2,574-combo baseline.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-body">
+                                <strong>Phase 6 JS Helper Decomposition &amp; Explorer Idempotency Guards:</strong> Decomposed large functions <code>renderExplorerFileList</code>, <code>initExplorerUI</code>, <code>playMediaByIndex</code>, and <code>initMediaPlayerUI</code> into clean, named local helper functions in the same lexical scope. Added strict idempotency guards preventing duplicate event listener attachment on repeated opens. Validated 5,000-file catalog rendering performance with mean 376.88ms (+0.69% vs baseline).
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Unified Test Harness &amp; Categorized Subdirectory Architecture (Phase B):</strong> Standalone dependency-free test runner <code>test/run-all.js</code> executing all 30 test suites sequentially with process isolation, exit-code verification, cross-platform PowerShell execution, and categorized subdirectories (<code>test/crypto/</code>, <code>test/security/</code>, <code>test/ui/</code>, <code>test/pwa/</code>, <code>test/a11y/</code>). Added GitHub Actions matrix CI workflow on Ubuntu Linux and Windows.
+                            </div>
+                        </div>
+
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--pwa">PWA</span>
+                            <div class="cl-item-body">
+                                <strong>Service Worker Cache v78 Bump &amp; Shell Precache:</strong> Bumped <code>APP_VERSION = 'v78'</code> and updated <code>WEB-VERSION-78</code> in <code>index.html</code>. Precached 64 application shell assets in <code>SHELL_CACHE</code> (<code>zevsafe-shell-v78-1e73292b</code>) with cross-platform LF-normalized deterministic content hashing. Synchronized production <code>dist/</code> distribution build.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
             <!-- ── VERSION 8.26.0 (WEB-VERSION-78) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
                 <div class="cl-marker">♿</div>
@@ -735,12 +797,6 @@
                     </p>
 
                     <div class="cl-items-list">
-                        <div class="cl-item">
-                            <span class="cl-bullet cl-bullet--fix">Fix</span>
-                            <div class="cl-item-body">
-                                <strong>Service Worker HTTP 206 Range Streaming &amp; Playlist Contracts:</strong> Aligned <code>js/media-player.js</code> with Service Worker protocol contracts: restored <code>READ_MEDIA_RANGE</code> and <code>MEDIA_RANGE_DATA</code> messaging, eliminated unhandled <code>initChannel</code> hangs, replaced non-existent <code>vaultBytes</code> with <code>currentV3Vault.file</code> and <code>masterKey</code>, integrated bounded <code>createBoundedChunkCache(6)</code>, and restored call-time playlist builders for media and image lightbox viewers from <code>global.currentDecryptedFileList</code>. Added automated test suite <code>test/ui/test-real-playback.js</code> (7/7 passed).
-                            </div>
-                        </div>
                         <div class="cl-item">
                             <span class="cl-bullet cl-bullet--new">New</span>
                             <div class="cl-item-body">

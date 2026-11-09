@@ -59,17 +59,23 @@ async function runAsyncTest(name, fn) {
 
 // Find Chrome binary path
 async function findChromePath() {
+    if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+        return process.env.CHROME_PATH;
+    }
     if (process.env.CHROME_BIN && fs.existsSync(process.env.CHROME_BIN)) {
         return process.env.CHROME_BIN;
     }
     const candidates = [
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-        process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe',
+        process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Google\\Chrome\\Application\\chrome.exe') : null,
         '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
         '/usr/bin/chromium-browser',
+        '/snap/bin/chromium',
         '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-    ];
+    ].filter(Boolean);
     for (const c of candidates) {
         if (c && fs.existsSync(c)) return c;
     }
@@ -261,15 +267,19 @@ async function main() {
     const os = require('os');
     const tmpProfileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zevsafe-upgrade-profile-'));
 
-    const chromeExecutable = await findChromePath();
+        const chromeExecutable = await findChromePath();
     const chromeProc = spawn(chromeExecutable, [
         '--headless=new',
-        `--remote-debugging-port=${CDP_PORT}`,
+        '--remote-debugging-port=9224',
         `--user-data-dir=${tmpProfileDir}`,
         '--disable-gpu',
         '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--enable-features=ServiceWorkerUpdateCheckOnPageLoad',
         `http://127.0.0.1:${PORT}/index.html`
     ]);
+    chromeProc.on('error', (err) => console.error('Chrome spawn error:', err.message));
 
     try {
         const wsUrl = await getWsUrl(CDP_PORT);

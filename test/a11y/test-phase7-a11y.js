@@ -99,12 +99,24 @@ function getContrastRatio(hex1, hex2) {
 }
 
 function findChrome() {
+    if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+        return process.env.CHROME_PATH;
+    }
+    if (process.env.CHROME_BIN && fs.existsSync(process.env.CHROME_BIN)) {
+        return process.env.CHROME_BIN;
+    }
     const paths = [
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-        process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe'
-    ];
-    return paths.find(p => fs.existsSync(p));
+        process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Google\\Chrome\\Application\\chrome.exe') : null,
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/snap/bin/chromium',
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    ].filter(Boolean);
+    return paths.find(p => fs.existsSync(p)) || null;
 }
 
 function createServer() {
@@ -463,14 +475,17 @@ async function main() {
     }
 
     const tmpProfileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zevsafe-axe-profile-'));
-    const chromeProc = spawn(chromePath, [
+        const chromeProc = spawn(chromePath, [
         '--headless=new',
         `--remote-debugging-port=${CDP_PORT}`,
         `--user-data-dir=${tmpProfileDir}`,
         '--disable-gpu',
         '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
         `http://127.0.0.1:${PORT}/index.html`
     ]);
+    chromeProc.on('error', (err) => console.error('Chrome spawn error:', err.message));
 
     try {
         await new Promise(r => setTimeout(r, 2000));

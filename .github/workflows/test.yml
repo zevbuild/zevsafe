@@ -41,6 +41,8 @@ jobs:
         run: |
           if [ -f /usr/bin/google-chrome ]; then
             echo "CHROME_PATH=/usr/bin/google-chrome" >> $GITHUB_ENV
+          elif [ -f /usr/bin/google-chrome-stable ]; then
+            echo "CHROME_PATH=/usr/bin/google-chrome-stable" >> $GITHUB_ENV
           elif [ -f /usr/bin/chromium-browser ]; then
             echo "CHROME_PATH=/usr/bin/chromium-browser" >> $GITHUB_ENV
           elif [ -f /usr/bin/chromium ]; then
@@ -49,6 +51,5 @@ jobs:
 
       - name: Run Test Suite
         env:
-          CHROME_PATH: /usr/bin/google-chrome
           NODE_ENV: test
         run: node test/run-all.js

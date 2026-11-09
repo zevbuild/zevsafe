@@ -63,15 +63,27 @@ const server = http.createServer((req, res) => {
 });
 
 function findChrome() {
+    if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+        return process.env.CHROME_PATH;
+    }
+    if (process.env.CHROME_BIN && fs.existsSync(process.env.CHROME_BIN)) {
+        return process.env.CHROME_BIN;
+    }
     const paths = [
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-        process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe'
-    ];
+        process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Google\\Chrome\\Application\\chrome.exe') : null,
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/snap/bin/chromium',
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    ].filter(Boolean);
     for (const p of paths) {
         if (fs.existsSync(p)) return p;
     }
-    return 'chrome';
+    return null;
 }
 
 function connectCDP(wsUrl) {
@@ -216,11 +228,18 @@ function connectCDP(wsUrl) {
 
 function launchChrome(debugPort) {
     const chromePath = findChrome();
+    if (!chromePath) {
+        throw new Error('Google Chrome binary not found');
+    }
     const userDataDir = path.join(ROOT_DIR, '.tmp-chrome-p4-' + Date.now());
     const args = [
         '--headless=new',
         `--remote-debugging-port=${debugPort}`,
         `--user-data-dir=${userDataDir}`,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
         '--no-first-run',
         '--no-default-browser-check',
         '--disable-background-networking',
@@ -233,6 +252,7 @@ function launchChrome(debugPort) {
         `http://127.0.0.1:${PORT}/index.html`
     ];
     const proc = spawn(chromePath, args);
+    proc.on('error', (err) => console.error('Chrome spawn error:', err.message));
     return { proc, userDataDir };
 }
 

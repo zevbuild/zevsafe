@@ -1,3 +1,26 @@
+function findChrome() {
+    if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+        return process.env.CHROME_PATH;
+    }
+    if (process.env.CHROME_BIN && fs.existsSync(process.env.CHROME_BIN)) {
+        return process.env.CHROME_BIN;
+    }
+    const paths = [
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+        process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Google\\Chrome\\Application\\chrome.exe') : null,
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/snap/bin/chromium',
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    ].filter(Boolean);
+    for (const p of paths) {
+        if (fs.existsSync(p)) return p;
+    }
+    return null;
+}
 /**
  * Phase 2 Headless Chrome Browser Verification Script
  * Launches Chrome via CDP on port 9333, serves static root on port 8085,
@@ -58,8 +81,8 @@ server.listen(PORT, async () => {
 });
 
 async function runHeadlessVerification() {
-    const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-    if (!fs.existsSync(chromePath)) {
+    const chromePath = findChrome();
+    if (!chromePath) {
         console.log('Chrome binary not found at default path, skipping CDP test.');
         return;
     }
@@ -69,11 +92,15 @@ async function runHeadlessVerification() {
         `--remote-debugging-port=${CDP_PORT}`,
         '--headless=new',
         '--disable-gpu',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
         '--no-first-run',
         '--no-default-browser-check',
         `--user-data-dir=${userDataDir}`,
         `http://localhost:${PORT}/`
     ]);
+    chromeProc.on('error', (err) => console.error('Chrome spawn error:', err.message));
 
     // Give Chrome 2 seconds to launch
     await new Promise(r => setTimeout(r, 2000));

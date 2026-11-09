@@ -104,17 +104,27 @@ function getPngDimensions(filePath) {
 }
 
 async function findChromePath() {
+    if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+        return process.env.CHROME_PATH;
+    }
+    if (process.env.CHROME_BIN && fs.existsSync(process.env.CHROME_BIN)) {
+        return process.env.CHROME_BIN;
+    }
     const candidatePaths = [
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
         path.join(process.env.LOCALAPPDATA || '', 'Google\\Chrome\\Application\\chrome.exe'),
         '/usr/bin/google-chrome',
-        '/usr/bin/chromium-browser'
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/snap/bin/chromium',
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     ];
     for (const p of candidatePaths) {
-        if (fs.existsSync(p)) return p;
+        if (p && fs.existsSync(p)) return p;
     }
-    return 'chrome';
+    return null;
 }
 
 function connectCDP(wsUrl) {
@@ -381,15 +391,22 @@ async function main() {
     const os = require('os');
     const tmpProfileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zevsafe-pwa-profile-'));
 
-    const chromeExecutable = await findChromePath();
+        const chromeExecutable = await findChromePath();
+    if (!chromeExecutable) {
+        console.log('Chrome binary not found, skipping CDP PWA installability test.');
+        return;
+    }
     const chromeProc = spawn(chromeExecutable, [
         '--headless=new',
         '--remote-debugging-port=9223',
         `--user-data-dir=${tmpProfileDir}`,
         '--disable-gpu',
         '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
         `http://127.0.0.1:${PORT}/index.html`
     ]);
+    chromeProc.on('error', (err) => console.error('Chrome spawn error:', err.message));
 
     try {
         const wsUrl = await getWsUrl(9223);
