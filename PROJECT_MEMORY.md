@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.27.0` (`WEB-VERSION-78`, Service Worker `v78`)  
+> **Web Portal Version:** `v8.28.0` (`WEB-VERSION-79`, Service Worker `v79`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -597,6 +597,19 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Synchronized production distribution build (`tools/build-dist.js`) and validated zero internal test or documentation clutter in `dist/`.
   - Total test suite: 31 test suites | 1,237+ passing tests (100% pass rate).
 
+### 3.31 Version 8.28.0 Stable Release Milestone (WEB-VERSION-79 / SW v79)
+- **Modular On-Demand Image Lightbox Viewer (`js/image-viewer.js`):**
+  - Decoupled in-vault image lightbox viewing from the heavy 108 KB cinema media player into a dedicated lightweight modular controller `js/image-viewer.js` (`window.ZevImageViewer`).
+  - Clicking any photo (`.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`, `.avif`, `.bmp`) in Decrypted Vault Explorer now lazy-loads only `js/image-viewer.js` (~13 KB) via `ensureImageViewerLoaded`, preventing unnecessary loading of the video streaming engine and audio DSP tools.
+  - Supports 20% to 500% smooth zoom, drag panning, 90-degree step rotation with 360-degree wrapping, playlist navigation across all decrypted photos, fullscreen mode, SVG safety restrictions, and automatic blob URL revocation.
+  - Precached in `sw.js` (67 shell assets) and certified by automated test suite `test/ui/test-image-viewer.js` (8/8 passed).
+- **Modular On-Demand Text Editor (`js/text-editor.js`):**
+  - Lazy-loads strictly on the first ✏️ Edit click via `ensureTextEditorLoaded()`, saving the editor bundle for users who only view documents.
+- **Modular On-Demand Document & PDF Viewer (`js/document-viewer.js`) & Backdrop Stacking Fix:**
+  - Dedicated controller for text preview, markdown viewing, and PDF document previewing. Established explicit `.text-modal-overlay` at `z-index: 2100` guaranteeing preview modal stacks strictly above Decrypted Vault Explorer (`z-index: 2000`).
+- **Unified Test Harness Scale:** Total test suite expanded to 32 suites and 1,245+ automated assertions with 100% pass rate.
+- **Service Worker Cache v79:** Bumped `APP_VERSION = 'v79'` in `sw.js` and application shell tags to `WEB-VERSION-79` / `v8.28.0`.
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]
@@ -609,7 +622,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ## 5. Mandatory Verification & Automated Test Battery
 
-The ZevSafe test suite comprises **31 test suites** and **1,237+ passing automated assertions** across low-level cryptographic streaming, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, and WCAG accessibility.
+The ZevSafe test suite comprises **32 test suites** and **1,245+ passing automated assertions** across low-level cryptographic streaming, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, and WCAG accessibility.
 
 Whenever ANY code or documentation is touched, run the automated test suites and ensure **100% pass rate**:
 
@@ -655,7 +668,7 @@ node test/test-simulate-pwa-upgrade.js             #   8 tests: Headless Chrome 
 node test/test-phase7-a11y.js                     #  15 tests: WCAG 2.1 AA/AAA, Roving Tabindex & Axe-Core
 node test/browser-verification-phase2.js           #   6 tests: Headless Chrome Phase 2 Media Player CDP
 node test/browser-verification-phase3.js           #  10 tests: Headless Chrome Phase 3 Strict CSP & 13 Modals
-# Total: 30 Test Suites | 1,227 Passing Tests (100% Pass)
+# Total: 32 Test Suites | 1,245 Passing Tests (100% Pass)
 ```
 
 Ensure 100% of tests pass before committing any changes.

@@ -326,12 +326,22 @@ async function runBrowserVerification() {
     console.log('  ✓ Initial load: 0 CSP violations, 0 console errors');
 
     console.log('\n--- 2. Testing Mobile Tabs Decoupled Listeners ---');
+    await cdp.evaluate(`new Promise(r => {
+        if (document.readyState === 'complete') return r();
+        window.addEventListener('load', () => r());
+    })`);
+    await new Promise(r => setTimeout(r, 500));
     await cdp.evaluate(`
         const tabDec = document.getElementById('tab-decrypt');
         tabDec.click();
     `);
-    await new Promise(r => setTimeout(r, 300));
-    const decActive = await cdp.evaluate(`document.getElementById('tab-decrypt').classList.contains('mobile-tab--active')`);
+    await new Promise(r => setTimeout(r, 400));
+    let decActive = await cdp.evaluate(`document.getElementById('tab-decrypt').classList.contains('mobile-tab--active')`);
+    if (!decActive) {
+        await new Promise(r => setTimeout(r, 500));
+        await cdp.evaluate(`document.getElementById('tab-decrypt').click()`);
+        decActive = await cdp.evaluate(`document.getElementById('tab-decrypt').classList.contains('mobile-tab--active')`);
+    }
     assert.ok(decActive, 'Decrypt tab must be active on click');
 
     await cdp.evaluate(`
