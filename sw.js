@@ -8,7 +8,7 @@
 // ================================================================
 
 const APP_VERSION    = 'v78';
-const CONTENT_HASH   = 'f8153c09';
+const CONTENT_HASH   = '27dbcf40';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -78,6 +78,7 @@ const SHELL_ASSETS = [
     './js/stream-packer.js',
     './js/stream-saver.js',
     './js/stream-unpacker.js',
+    './js/text-editor.js',
     './js/usb-backup-kit.js',
     './js/worker-bridge.js'
 ];

@@ -19,6 +19,42 @@
     let hasUnsavedChanges = false;
     let currentPdfBlobUrl = null;
     let _isInitialized = false;
+    let _textEditorLoadingPromise = null;
+
+    // Lazy-load js/text-editor.js only when user clicks ✏️ Edit
+    function ensureTextEditorLoaded() {
+        if (typeof global.ZevTextEditor !== 'undefined' && global.ZevTextEditor.isLoaded()) {
+            return Promise.resolve();
+        }
+        if (_textEditorLoadingPromise) return _textEditorLoadingPromise;
+        _textEditorLoadingPromise = new Promise((resolve, reject) => {
+            const script  = document.createElement('script');
+            script.src    = './js/text-editor.js';
+            script.async  = true;
+            script.onload = () => {
+                if (global.ZevTextEditor && typeof global.ZevTextEditor.initUI === 'function') {
+                    global.ZevTextEditor.initUI();
+                }
+                resolve();
+            };
+            script.onerror = () => {
+                _textEditorLoadingPromise = null;
+                reject(new Error('Failed to load text-editor.js'));
+            };
+            document.head.appendChild(script);
+        });
+        return _textEditorLoadingPromise;
+    }
+
+    // Mutators called by text-editor.js to sync state back
+    function setTextContent(newText, newBlob) {
+        currentTextContent = newText;
+        if (newBlob) currentTextBlob = newBlob;
+    }
+
+    function setEditingState(editing) {
+        isEditingText = editing;
+    }
 
     function getDecryptedFileList() {
         return global.currentDecryptedFileList || [];
@@ -301,198 +337,6 @@
         }
     }
 
-    function syncTextareaLineNumbers() {
-        const textareaEl = document.getElementById('text-code-textarea');
-        const linesEl = document.getElementById('text-line-numbers');
-        if (!textareaEl || !linesEl) return;
-        const count = textareaEl.value.split('\n').length;
-        linesEl.textContent = Array.from({ length: Math.max(1, count) }, (_, i) => i + 1).join('\n');
-    }
-
-    function toggleTextEditMode() {
-        const codeEl = document.getElementById('text-code-content');
-        const textareaEl = document.getElementById('text-code-textarea');
-        const editBtn = document.getElementById('btn-text-edit');
-        const saveBtn = document.getElementById('btn-text-save-changes');
-        const meta = document.getElementById('text-modal-meta');
-
-        if (!codeEl || !textareaEl) return;
-
-        if (isEditingText) {
-            // Switch back to view/preview mode
-            currentTextContent = textareaEl.value;
-            codeEl.textContent = currentTextContent;
-            codeEl.style.display = 'block';
-            textareaEl.style.display = 'none';
-            if (editBtn) editBtn.textContent = '✏️ Edit';
-            if (saveBtn) saveBtn.style.display = hasUnsavedChanges ? 'inline-flex' : 'none';
-            isEditingText = false;
-            const count = currentTextContent.split('\n').length;
-            if (meta && currentTextBlob) {
-                const v3Vault = getV3Vault();
-                const isEdited = v3Vault?.editedFiles?.has(currentEditingPath) || getDecryptedFileList().find(f => f.path === currentEditingPath)?.isEdited;
-                meta.textContent = `${count} lines · ${formatBytes(currentTextBlob.size)}${isEdited ? ' · (Edited)' : ''}`;
-            }
-        } else {
-            // Switch to interactive editing mode
-            textareaEl.value = currentTextContent;
-            codeEl.style.display = 'none';
-            textareaEl.style.display = 'block';
-            textareaEl.className = `text-code-content text-code-textarea ${isTextWordWrapped ? 'is-wrapped' : ''}`;
-            if (editBtn) editBtn.textContent = '👁️ Preview';
-            if (saveBtn) saveBtn.style.display = 'inline-flex';
-            isEditingText = true;
-            syncTextareaLineNumbers();
-            textareaEl.focus();
-        }
-    }
-
-    async function saveTextFileChanges() {
-        if (!currentEditingPath) return;
-        const textareaEl = document.getElementById('text-code-textarea');
-        const codeEl = document.getElementById('text-code-content');
-        const saveBtn = document.getElementById('btn-text-save-changes');
-        const meta = document.getElementById('text-modal-meta');
-        const searchInput = document.getElementById('explorer-search-input');
-
-        const updatedText = textareaEl ? textareaEl.value : currentTextContent;
-        currentTextContent = updatedText;
-        if (codeEl) codeEl.textContent = updatedText;
-
-        const newBlob = new Blob([updatedText], { type: 'text/plain;charset=utf-8' });
-        currentTextBlob = newBlob;
-
-        // 1. In-session overlay for V3 streaming vaults
-        const v3Vault = getV3Vault();
-        if (v3Vault) {
-            if (!v3Vault.editedFiles) {
-                v3Vault.editedFiles = new Map();
-            }
-            v3Vault.editedFiles.set(currentEditingPath, newBlob);
-        }
-
-        // 2. In-session mutation for legacy JSZip vaults
-        const decryptedZip = getDecryptedZip();
-        if (decryptedZip) {
-            decryptedZip.file(currentEditingPath, updatedText);
-        }
-
-        // 3. Update file item metadata in currentDecryptedFileList
-        const fileList = getDecryptedFileList();
-        const fileItem = fileList.find(f => f.path === currentEditingPath);
-        if (fileItem) {
-            fileItem.size = newBlob.size;
-            fileItem.isEdited = true;
-            if (fileItem.entry) fileItem.entry.size = newBlob.size;
-        }
-
-        hasUnsavedChanges = false;
-
-        // 4. Update UI feedback
-        const lines = updatedText.split('\n');
-        if (meta) meta.textContent = `${lines.length} lines · ${formatBytes(newBlob.size)} · (Edited)`;
-
-        if (saveBtn) {
-            const originalText = saveBtn.textContent;
-            saveBtn.textContent = '✅ Saved';
-            setTimeout(() => {
-                if (saveBtn) saveBtn.textContent = originalText;
-            }, 1500);
-        }
-
-        showToast(`Changes saved to "${currentTextFilename}" (in-session)`, 'success');
-
-        // Re-render file list to reflect updated file size and edited badge
-        if (typeof global.renderExplorerFileList === 'function') {
-            global.renderExplorerFileList(searchInput ? searchInput.value : '');
-        }
-    }
-
-    function handleTextareaKeydown(e) {
-        const textarea = e.target;
-        if (e.key === 'Tab') {
-            e.preventDefault();
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const value = textarea.value;
-            textarea.value = value.substring(0, start) + '    ' + value.substring(end);
-            textarea.selectionStart = textarea.selectionEnd = start + 4;
-            hasUnsavedChanges = true;
-            syncTextareaLineNumbers();
-        } else if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
-            e.preventDefault();
-            saveTextFileChanges();
-        }
-    }
-
-    async function createNewTextFile() {
-        const v3Vault = getV3Vault();
-        const decryptedZip = getDecryptedZip();
-        const decryptedFolderName = global.currentDecryptedFolderName || '';
-
-        if (!decryptedFolderName && !v3Vault && !decryptedZip) {
-            showToast('Open a decrypted vault before creating a note.', 'warn');
-            return;
-        }
-
-        const inputName = prompt('Enter filename for new text note:', 'note.txt');
-        if (!inputName) return;
-        let filename = inputName.trim();
-        if (!filename) return;
-
-        // Sanitize filename to avoid path traversal
-        filename = filename.replace(/[\/\\]/g, '');
-        if (!filename.includes('.')) {
-            filename += '.txt';
-        }
-
-        const explorerDir = global.explorerCurrentDir || '';
-        const prefix = explorerDir ? (explorerDir.replace(/\/+$/, '') + '/') : '';
-        const newPath = prefix + filename;
-
-        const fileList = getDecryptedFileList();
-        if (fileList.some(f => f.path.toLowerCase() === newPath.toLowerCase())) {
-            showToast(`A file named "${filename}" already exists in this folder.`, 'warn');
-            return;
-        }
-
-        const emptyBlob = new Blob([''], { type: 'text/plain;charset=utf-8' });
-
-        if (v3Vault) {
-            if (!v3Vault.editedFiles) v3Vault.editedFiles = new Map();
-            v3Vault.editedFiles.set(newPath, emptyBlob);
-        }
-
-        if (decryptedZip) {
-            decryptedZip.file(newPath, '');
-        }
-
-        const newItem = {
-            path: newPath,
-            name: filename,
-            dirPath: explorerDir || '',
-            size: 0,
-            isEdited: true,
-            entry: { path: newPath, size: 0 }
-        };
-        fileList.push(newItem);
-
-        if (typeof global.updateCategoryFilterCounts === 'function') {
-            global.updateCategoryFilterCounts();
-        }
-        const searchInput = document.getElementById('explorer-search-input');
-        if (typeof global.renderExplorerFileList === 'function') {
-            global.renderExplorerFileList(searchInput ? searchInput.value : '');
-        }
-
-        showToast(`Created note "${filename}". Opening editor...`, 'success');
-
-        await openTextViewerByPath(newPath);
-        if (!isEditingText) {
-            toggleTextEditMode();
-        }
-    }
-
     function closeTextViewer() {
         if (isEditingText && hasUnsavedChanges) {
             if (!confirm('You have unsaved changes in this document. Discard them?')) {
@@ -612,20 +456,33 @@
             if (e.target.id === 'vault-text-modal') closeTextViewer();
         });
 
-        textEditBtn?.addEventListener('click', toggleTextEditMode);
-        textSaveBtn?.addEventListener('click', saveTextFileChanges);
+        // ✏️ Edit button: lazy-load text-editor.js on first click, then toggle
+        textEditBtn?.addEventListener('click', async () => {
+            try {
+                await ensureTextEditorLoaded();
+                if (global.ZevTextEditor && typeof global.ZevTextEditor.toggleTextEditMode === 'function') {
+                    global.ZevTextEditor.toggleTextEditMode();
+                }
+            } catch (err) {
+                console.error('[DocViewer] Failed to load text editor:', err);
+                showToast('Failed to load text editor.', 'error');
+            }
+        });
+
+        // 💾 Save button: delegates to text-editor.js (already loaded by then)
+        textSaveBtn?.addEventListener('click', async () => {
+            try {
+                await ensureTextEditorLoaded();
+                if (global.ZevTextEditor && typeof global.ZevTextEditor.saveTextFileChanges === 'function') {
+                    global.ZevTextEditor.saveTextFileChanges();
+                }
+            } catch (err) {
+                console.error('[DocViewer] Failed to save:', err);
+            }
+        });
+
         textWrapBtn?.addEventListener('click', toggleTextWrap);
         textCopyBtn?.addEventListener('click', copyTextToClipboard);
-
-        textareaEl?.addEventListener('input', () => {
-            hasUnsavedChanges = true;
-            syncTextareaLineNumbers();
-        });
-        textareaEl?.addEventListener('scroll', () => {
-            const linesEl = document.getElementById('text-line-numbers');
-            if (linesEl) linesEl.scrollTop = textareaEl.scrollTop;
-        });
-        textareaEl?.addEventListener('keydown', handleTextareaKeydown);
 
         textOpenTabBtn?.addEventListener('click', () => {
             if (currentPdfBlobUrl) {
@@ -647,17 +504,26 @@
         openTextViewerByPath,
         openPdfViewerByPath,
         closeTextViewer,
-        createNewTextFile,
-        toggleTextEditMode,
-        saveTextFileChanges,
+        // createNewTextFile delegates to text-editor.js (lazy-loaded on demand)
+        createNewTextFile: async () => {
+            await ensureTextEditorLoaded();
+            if (global.ZevTextEditor && typeof global.ZevTextEditor.createNewTextFile === 'function') {
+                return global.ZevTextEditor.createNewTextFile();
+            }
+        },
         copyTextToClipboard,
         toggleTextWrap,
         initUI: initDocumentViewerUI,
+        // State mutators for text-editor.js callbacks
+        setTextContent,
+        setEditingState,
         getState: () => ({
             isEditingText,
             hasUnsavedChanges,
             currentEditingPath,
             currentTextFilename,
+            currentTextContent,
+            currentTextBlob,
             isTextWordWrapped
         })
     };

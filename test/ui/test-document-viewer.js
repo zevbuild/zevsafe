@@ -6,10 +6,13 @@
  *  1. CSS overlay stacking (z-index: 2100 > 2000) so PDF/Text viewer never renders in explorer backdrop
  *  2. Container and header CSS independence in styles.css
  *  3. Dynamic lazy-loading of js/document-viewer.js on demand
- *  4. In-vault text reading, line numbering, and 5 MB memory-bounded protection
+ *  4. js/document-viewer.js exports correct read-only API (viewer + PDF)
  *  5. In-vault PDF rendering into iframe via tracked blob URL
- *  6. Interactive in-browser editing, tab indentation, and in-session saving
- *  7. State zeroization and blob URL revocation on modal close
+ *  6. js/text-editor.js lazy-loaded only on Edit click (not on doc open)
+ *  7. js/text-editor.js contains Tab indentation, Ctrl+S, in-session save logic
+ *  8. State zeroization and blob URL revocation on modal close
+ *  9. sw.js precaches both js/document-viewer.js and js/text-editor.js
+ * 10. document-viewer.js enforces 5 MB bounded memory guardrail
  */
 
 const fs = require('fs');
@@ -69,6 +72,10 @@ runTest('2.1: sw.js SHELL_ASSETS includes ./js/document-viewer.js for offline us
     assert.ok(swJs.includes("'./js/document-viewer.js'"), 'sw.js SHELL_ASSETS must contain ./js/document-viewer.js');
 });
 
+runTest('2.2: sw.js SHELL_ASSETS includes ./js/text-editor.js for offline use', () => {
+    assert.ok(swJs.includes("'./js/text-editor.js'"), 'sw.js SHELL_ASSETS must contain ./js/text-editor.js');
+});
+
 // ── 3. Runtime Lazy-Loading & Public API ──────────────────────────────
 console.log('\n--- 3. Modular Runtime Lazy-Loading & Delegators ---');
 
@@ -91,12 +98,11 @@ console.log('\n--- 4. Document Viewer Logic & Bounded Memory ---');
 
 const docViewerJs = fs.readFileSync(path.join(ROOT_DIR, 'js/document-viewer.js'), 'utf8');
 
-runTest('4.1: js/document-viewer.js exports window.ZevDocViewer with complete interface', () => {
+runTest('4.1: js/document-viewer.js exports window.ZevDocViewer with viewer API', () => {
     assert.ok(docViewerJs.includes('global.ZevDocViewer = ZevDocViewer;'), 'Must export ZevDocViewer');
     assert.ok(docViewerJs.includes('openTextViewerByPath,'), 'Must export openTextViewerByPath');
     assert.ok(docViewerJs.includes('openPdfViewerByPath,'), 'Must export openPdfViewerByPath');
     assert.ok(docViewerJs.includes('closeTextViewer,'), 'Must export closeTextViewer');
-    assert.ok(docViewerJs.includes('createNewTextFile,'), 'Must export createNewTextFile');
 });
 
 runTest('4.2: Enforces bounded memory guardrail (5 MB preview limit)', () => {
@@ -110,11 +116,34 @@ runTest('4.3: PDF viewer dynamically mounts blob URL and revokes on close', () =
     assert.ok(docViewerJs.includes('revokeTrackedBlobUrl(currentPdfBlobUrl)'), 'Must revoke PDF blob URL on replacement and close');
 });
 
-runTest('4.4: In-browser editor supports Tab indentation (4 spaces) and Ctrl+S saving', () => {
-    assert.ok(docViewerJs.includes("e.key === 'Tab'"), 'Must handle Tab key');
-    assert.ok(docViewerJs.includes("'    '"), 'Must insert 4 spaces for Tab');
-    assert.ok(docViewerJs.includes("e.key === 's' || e.key === 'S'"), 'Must handle Ctrl+S save shortcut');
-    assert.ok(docViewerJs.includes('saveTextFileChanges()'), 'Must invoke saveTextFileChanges');
+runTest('4.4: document-viewer.js lazy-loads text-editor.js via ensureTextEditorLoaded', () => {
+    assert.ok(docViewerJs.includes('ensureTextEditorLoaded'), 'Must define ensureTextEditorLoaded lazy-loader');
+    assert.ok(docViewerJs.includes('./js/text-editor.js'), 'ensureTextEditorLoaded must inject ./js/text-editor.js');
+    assert.ok(docViewerJs.includes('ZevTextEditor.toggleTextEditMode'), 'Edit button must delegate to ZevTextEditor');
+});
+
+// ── 5. Text Editor Module In js/text-editor.js ──────────────────────────────
+console.log('\n--- 5. Lazy Text Editor Module ---');
+
+const textEditorJs = fs.readFileSync(path.join(ROOT_DIR, 'js/text-editor.js'), 'utf8');
+
+runTest('5.1: js/text-editor.js exports window.ZevTextEditor', () => {
+    assert.ok(textEditorJs.includes('global.ZevTextEditor = {'), 'Must export ZevTextEditor');
+    assert.ok(textEditorJs.includes('toggleTextEditMode,'), 'Must export toggleTextEditMode');
+    assert.ok(textEditorJs.includes('saveTextFileChanges,'), 'Must export saveTextFileChanges');
+    assert.ok(textEditorJs.includes('createNewTextFile,'), 'Must export createNewTextFile');
+});
+
+runTest('5.2: js/text-editor.js supports Tab indentation (4 spaces) and Ctrl+S saving', () => {
+    assert.ok(textEditorJs.includes("e.key === 'Tab'"), 'Must handle Tab key');
+    assert.ok(textEditorJs.includes("'    '"), 'Must insert 4 spaces for Tab');
+    assert.ok(textEditorJs.includes("e.key === 's' || e.key === 'S'"), 'Must handle Ctrl+S save shortcut');
+    assert.ok(textEditorJs.includes('saveTextFileChanges()'), 'Must invoke saveTextFileChanges on Ctrl+S');
+});
+
+runTest('5.3: js/text-editor.js writes back to ZevDocViewer state via setTextContent/setEditingState', () => {
+    assert.ok(textEditorJs.includes('docViewer.setTextContent'), 'Must call ZevDocViewer.setTextContent to sync state');
+    assert.ok(textEditorJs.includes('docViewer.setEditingState'), 'Must call ZevDocViewer.setEditingState to sync editing flag');
 });
 
 console.log('===============================================================');

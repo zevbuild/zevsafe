@@ -719,6 +719,7 @@
                             <span class="cl-badge cl-badge--date">November 9, 2026</span>
                         </div>
                         <div class="cl-tags">
+                            <span class="cl-tag">Lazy Text Editor</span>
                             <span class="cl-tag">Modular Document Viewer</span>
                             <span class="cl-tag">PDF Stacking Fix</span>
                             <span class="cl-tag">Service Worker Range Fix</span>
@@ -734,6 +735,12 @@
                     </p>
 
                     <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Modular On-Demand Text Editor (<code>js/text-editor.js</code>):</strong> Extracted all text-editing logic (<code>toggleTextEditMode</code>, <code>saveTextFileChanges</code>, <code>syncTextareaLineNumbers</code>, <code>handleTextareaKeydown</code>, <code>createNewTextFile</code>) from <code>js/document-viewer.js</code> into new standalone controller <code>js/text-editor.js</code> (<code>window.ZevTextEditor</code>). The editor bundle is lazy-loaded strictly on first &#x270F;&#xFE0F; Edit click via <code>ensureTextEditorLoaded()</code> — users who only open files for reading never download the editor. Callbacks <code>ZevDocViewer.setTextContent()</code> and <code>ZevDocViewer.setEditingState()</code> keep shared viewer state in sync. Precached in <code>sw.js</code> (66 shell assets, hash <code>d82e21ab</code>).
+                            </div>
+                        </div>
                         <div class="cl-item">
                             <span class="cl-bullet cl-bullet--new">New</span>
                             <div class="cl-item-body">
