@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.26.0` (`WEB-VERSION-77`, Service Worker `v77`)  
+> **Web Portal Version:** `v8.27.0` (`WEB-VERSION-78`, Service Worker `v77`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -71,7 +71,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Universal Auto-Hiding Sticky Header:** Auto-hides sticky navbar on downward scroll across desktop, tablet, and mobile browsers with 60 FPS hardware-accelerated transitions to maximize screen workspace, instantly restoring on upward scroll.
 - **Symmetrical Above-The-Fold Layout:** Optimized vertical shell spacing and CSS Grid stretch alignment with bottom-anchored CTA action buttons for seamless drop-zone visibility on laptop displays.
 
-### 3.4 Comprehensive Knowledge Hub & 10-Service Manual (`knowledge/`) [v8.2.0]
+### 3.4 Comprehensive Knowledge Hub & 10-Service Manual (`knowledge/`) [v8.27.0]
 - **Architecture & Portal (`knowledge/index.html`, `knowledge/knowledge.css`, `knowledge/knowledge.js`):**
   - Instant client-side search engine with keyboard shortcut `/` and `ESC` clearing.
   - Interactive Dual-Perspective Architecture: 2-way / 3-way view toggle between 🟢 *Simple Step-by-Step User Guides* (plain English, screenshots, workflows) and 🔵 *Deep Cryptographic & Technical Disclosures* (byte offsets, Web Crypto API parameters, mathematical formulas, memory bounds) with `localStorage` state persistence.
@@ -89,7 +89,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   10. `knowledge/airgap-usb-backup/index.html`: 1-Click USB Air-Gap Backup Kit & Standalone Portability Engine
 - **Air-Gapped PWA Precaching:** All Knowledge Hub pages and assets are precached in `SHELL_ASSETS` for 100% offline availability in airplane mode.
 
-### 3.5 Strategic Remediation & Hardening Roadmap (v8.8.0)
+### 3.5 Strategic Remediation & Hardening Roadmap (v8.27.0)
 - **Multi-Tier PBKDF2 Iteration Auto-Resolution (`js/stream-unpacker.js`):** `readVaultManifest` reads the manifest envelope trailer before testing candidate keys, sequentially trialing candidate tiers `[600000, 1200000, 2400000]` against Envelope 0 and Envelope 1, retaining the successfully derived `masterKey` so downstream operations avoid re-derivation.
 - **Plausible Deniability Protection (`js/worker-bridge.js`):** Suppressed `V3_FLAG_DURESS (0x02)` in unencrypted container header flags. The dual-manifest parser decrypts Envelope 1 seamlessly without requiring public flag disclosure.
 - **Zero-Copy Direct Buffer Transfer & Zeroization (`js/worker-bridge.js`):** Eliminated buffer cloning in `initTransfers = [saltBuf, kfBuf]`, transferring array buffers directly to prevent memory leaks, and added `.fill(0)` wiping for `keyfileBytes` in `extractSingleFile`'s `finally` block.
@@ -133,31 +133,31 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Zero-Knowledge Memory-Bounded Execution (< 20 MB RAM):** Uses reusable 1MB buffers to stream multi-megabyte stress tests without accumulating heap allocations, and immediately scrubs all test keys, salts, and plaintexts via `.fill(0)`.
 - **Hardware Tier Classification:** Classifies machines into Class S (Cyber-Station ⚡, > 650 MB/s, <= 300ms KDF), Class A (High-Efficiency 🚀, 350-650 MB/s, 300-650ms KDF), Class B (Balanced Everyday ⚖️, 120-350 MB/s, 650-1300ms KDF), and Class C (Low-Power 🛡️, < 120 MB/s, > 1300ms KDF).
 
-### 3.12 Phase 9: Visual Paper-Safe & Optical QR Emergency Recovery Sheet (`js/qr-engine.js`, `index.html`, `app.js`, `styles.css`) [v8.10.0]
+### 3.12 Phase 9: Visual Paper-Safe & Optical QR Emergency Recovery Sheet (`js/qr-engine.js`, `index.html`, `app.js`, `styles.css`) [v8.27.0]
 - **Air-Gapped Pure-JS QR Engine (`js/qr-engine.js`):** Built a zero-dependency ISO/IEC 18004 QR Code Model 2 engine implementing Byte Mode data encoding (UTF-8), Galois Field GF(256) arithmetic, standard Reed-Solomon polynomial division, dynamic version scaling (V1 to V14), and 8-mask penalty scoring.
 - **Cold-Storage Zero-Knowledge Principle:** Raw passwords are never transmitted to shared or network printers; provides structured handwriting boxes for indelible pen Diceware passphrases and formatted 8-group CSPRNG salt fingerprints (`XXXX-XXXX-XXXX-...`).
 - **Standalone Air-Gapped Printable Recovery Certificate (.html):** One-click download of a self-contained HTML cold-storage certificate featuring security Guilloche dashed borders, high-contrast `@media print` rules, embedded SVG QR, and offline restoration manuals.
 - **In-App Optical QR Scanner & Image Drop Decoder (`#qr-scanner-modal`):** Integrated a camera viewfinder (`navigator.mediaDevices.getUserMedia`) with animated laser targeting utilizing native W3C `BarcodeDetector`, plus drag-and-drop image decoding.
 
-### 3.13 Master Plan & Strategic Roadmap Portal (`roadmap/index.html`) [v8.11.0]
+### 3.13 Master Plan & Strategic Roadmap Portal (`roadmap/index.html`) [v8.27.0]
 - **Interactive 14-Phase Ecosystem Blueprint (`roadmap/index.html`):** A dedicated, zero-external-network portal documenting the 14-phase engineering roadmap that evolves ZevSafe from an authenticated streaming container into a zero-footprint ephemeral virtual operating environment.
 - **Desktop & Mobile Navbar Pill UI (`#nav-roadmap-pill`, `.plan-pill-nav`):** Cybernetic pill button embedded in the main navigation bar, mobile hamburger drawer, and footer, displaying a real-time progress counter badge (`11 / 14`).
 - **Filterable Status Matrix & Live Progress HUD:** Instant client-side status filtering (`All 14`, `Shipped 11`, `Up Next 1`, `Planned 2`) and visual progress bar (`78.5% Complete`).
 
-### 3.14 Optical Paper-Safe Clipboard & Screenshot Paste System (`js/qr-engine.js`, `app.js`) [v8.12.0]
+### 3.14 Optical Paper-Safe Clipboard & Screenshot Paste System (`js/qr-engine.js`, `app.js`) [v8.27.0]
 - **Unified Clipboard & Screenshot Paste System:** Users can press `Ctrl+V` (or `Cmd+V`) anywhere on the Decrypt screen or within the Optical QR Scanner modal with an image/screenshot in their clipboard (from Snipping Tool, Win+Shift+S, PrtScn) to decode and apply Paper-Safe parameters in client-side RAM.
 - **Intelligent Password Field Interception:** Pasting raw Paper-Safe text payloads (JSON, `ZEVSAFE_PAPER:`) directly into `decrypt-password` automatically extracts vault parameters, applies salt fingerprint and KDF preset, and clears the password field.
 
-### 3.15 Master Key QR 1-Scan Vault Unlock Engine (`js/qr-engine.js`, `app.js`) [v8.13.0]
+### 3.15 Master Key QR 1-Scan Vault Unlock Engine (`js/qr-engine.js`, `app.js`) [v8.27.0]
 - **Master Key QR Code Embedding:** Allows the QR code on the Paper-Safe recovery sheet to act as a physical **Master Keycard** by embedding the master password directly into the QR payload (`pw: String(password)`). Controlled by an intuitive toggle (`#chk-paper-embed-password`, enabled by default).
 - **1-Scan Zero-Typing Vault Unlock:** When the Master Key QR is scanned via camera, pasted via `Ctrl+V` screenshot, or uploaded as an image, ZevSafe instantly extracts the password, populates `#decrypt-password`, and immediately triggers decryption if the `.zev` vault file is selected.
 
-### 3.16 280-Item Feature Checklist Master Audit & Remediations [v8.13.0]
+### 3.16 280-Item Feature Checklist Master Audit & Remediations [v8.27.0]
 - **Exhaustive 280-Item Audit Certification ([`CHECKLIST_AUDIT_REPORT.md`](docs/audit-reports/CHECKLIST_AUDIT_REPORT.md)):** Conducted a deep technical audit covering all 280 items across Sections 1 to 12. Certified 100% PASS post-remediation.
 - **Decryption `OperationError` User Feedback:** `showToast('Decryption failed: Wrong password, wrong keyfile, or corrupted vault.', 'error')` and `shakeField('decrypt-password')` on WebCrypto authentication tag / decryption failure.
 - **Interactive Light/Dark Theme Switcher & Persistence:** Added `#btn-theme-toggle` in the desktop navbar and `#btn-theme-toggle-mobile` in the mobile drawer with sun/moon icons and state badges, persisted to `localStorage`.
 
-### 3.17 Video Player 2.0 & 3.0 (Pro Studio Upgrade) [v8.14.0–v8.15.0]
+### 3.17 Video Player 2.0 & 3.0 (Pro Studio Upgrade) [v8.27.0–v8.27.0]
 - **Precision Cybernetic Timeline Scrubber:** Custom timeline replacing native browser controls with dynamic buffered range visualization (`video.buffered`), gradient progress fill (`#38bdf8` to `#8b5cf6`), glowing draggable thumb, and real-time hover timestamp tooltip (`MM:SS`).
 - **Forensic Single-Frame Stepper (`.` / `,`):** Allows nudging playback forward and backward by single 33.3ms frames (30/60 fps) for granular video inspection.
 - **1-Click Full-Resolution Frame Snapshot (`📸 Snap Frame` / `S`):** Extracts active video frames at full native resolution (`video.videoWidth` × `video.videoHeight`) via an offscreen `<canvas>` with any active rotation/flip and filters applied. Saves directly into the decrypted vault overlay (`currentV3Vault.editedFiles`) and downloads as a PNG.
@@ -171,7 +171,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Extended Playback Speed Deck (`0.25×` to `4.0×`):** Added 0.25x Super Slow-Motion and 3.0x/4.0x high-speed presets with `<` and `>` keyboard shortcuts for instant speed nudging.
 - **Extended Keyboard Shortcuts Matrix:** Full studio keyboard matrix (`[`, `]`, `\`, `V`, `+`, `-`, `0`, `<`, `>`, `Shift+M`, Space, K, J, L, ,, ., B, R, S, F, P, M, Arrows).
 
-### 3.18 Video Player 4.0 (On-Demand Range Streaming Engine & Instant Playback) [v8.16.0]
+### 3.18 Video Player 4.0 (On-Demand Range Streaming Engine & Instant Playback) [v8.27.0]
 - **Instant Playback for Large Videos (> 1 GB up to 5 GB):** Solved the root cause of 1–2 minute startup latency and video stuttering. Instead of decrypting hundreds of chunks (1–2 GB) into a monolithic `Uint8Array` / `Blob` upfront, video playback starts **instantly (< 1 second)** via partial range streaming.
 - **Byte-Exact Range Extractor (`StreamUnpacker.extractFileRange`):** Reads and decrypts only the specific 4 MB chunks holding the requested byte range. Because pre-compressed video and audio media files are stored using ZIP STORE mode (uncompressed, method 0), plaintext offsets map 1:1 to encrypted chunk positions: $\text{chunkIndex} = \lfloor(\text{localHeaderOffset} + \text{headerLen} + \text{startByte}) / 4194304\rfloor$. Serving any 1–2 MB range takes only ~25 ms instead of 120,000 ms.
 - **Synthetic Service Worker Range Route (`/_stream_media?id=...`):** Service Worker fetch handler intercepts native browser `Range: bytes=start-end` requests from `<video>` and `<audio>`, exchanges range slices with the client page via `MessageChannel` (`READ_MEDIA_RANGE` / `MEDIA_RANGE_DATA`), and returns standard `HTTP/206 Partial Content` with `Content-Range: bytes START-END/TOTAL` and `Accept-Ranges: bytes`.
@@ -205,13 +205,13 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Revokes all tracked Blob URLs.
   - Scrubs password and keyfile input fields from the DOM.
 
-### 3.20 Main Website Header & Cybernetic Navbar Redesign [v8.17.0]
+### 3.20 Main Website Header & Cybernetic Navbar Redesign [v8.27.0]
 - **Elevated Cybernetic Glassmorphism:**
   - Navbar styled with `backdrop-filter: blur(24px) saturate(190%)`, high-depth drop shadow (`box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35)`), and cybernetic border highlight.
   - Logo wrapped in accessible `<a href="./" class="brand-link">` with interactive rotation (`transform: rotate(-8deg) scale(1.1)`) and visible focus states.
 - **3-Zone Streamlined Desktop Navigation Hierarchy:**
   - Zone 1: Interactive Brand & Offline Status Badge (`.brand-link`, `.brand-status-badge`, glowing pulse dot).
-  - Zone 2: Informational Links Group (`.nav-links-group`): Knowledge Hub (`Manual` pill), Documentation, Device Power, Security Audit (`99.3/100` pill), Changelog (`v8.17.0` pill), Master Plan (`11 / 14` pill), and GitHub.
+  - Zone 2: Informational Links Group (`.nav-links-group`): Knowledge Hub (`Manual` pill), Documentation, Device Power, Security Audit (`99.3/100` pill), Changelog (`v8.27.0` pill), Master Plan (`11 / 14` pill), and GitHub.
   - Zone 3: Action Deck (`.nav-actions-deck`): Divided by vertical separator (`.nav-actions-divider`), housing 1-Click USB Backup Kit, Install PWA App, Theme Toggle, and PC Toolkit (25GB+).
 - **Responsive 1-Row Protection (769px–1240px):**
   - Solved desktop/laptop wrapping where 11 items previously broke onto two lines.
@@ -224,7 +224,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Added 4th Trust Pill: `<div class="trust-pill trust-pill--highlight">` highlighting `5 GB Instant Streaming` powered by Video Player 4.0 on-demand range streaming.
   - Interactive hover transitions (`transform: translateY(-1px)`) and glowing borders across badge and trust strip.
 
-### 3.21 Main Landing Page UI, Bento Cards & Light Theme Overhaul (v8.18.0)
+### 3.21 Main Landing Page UI, Bento Cards & Light Theme Overhaul (v8.27.0)
 - **Desktop Navbar Streamlining & Unified Tools Dropdown:**
   - Removed clutter by moving redundant top-level buttons and links (`Documentation`, `⚡ Device Power`, `GitHub ↗`) and consolidating secondary utilities (`USB Air-Gap Backup Kit`, `25GB+ PC Toolkit`, documentation) into an accessible, glassmorphic `Tools ▾` dropdown menu (`#nav-tools-dropdown`).
   - Streamlined desktop navbar footprint from 11 cluttered elements to 4 primary links (`Knowledge Hub`, `Security Audit`, `Changelog`, `Master Plan`) + 3 focused action buttons (`Tools ▾`, `Install App`, `Theme Toggle`), completely resolving button crowding and edge clipping.
@@ -254,7 +254,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Preservation of Interactive Contracts:**
   - 100% preservation of all tested IDs (`#encrypt-drop-zone`, `#decrypt-drop-zone`, `#btn-encrypt`, `#btn-decrypt`, `#encrypt-password`, `#decrypt-password`, `#max-security-bar`, `#btn-toggle-max-security`, `#btn-decrypt-salvage`, etc.).
 
-### 3.22 Video Player 5.0 Pro Studio Cyber Cinema & Forensic Ergonomics (v8.19.0)
+### 3.22 Video Player 5.0 Pro Studio Cyber Cinema & Forensic Ergonomics (v8.27.0)
 - **Expansive Cinematic Theater Mode (`🔲 Theater` / `T`):**
   - Fluid, expansive viewport (`width: 96vw; max-width: 1560px; height: 92vh;`) with ambient vignetting, togglable via `#btn-media-theater` or `T` shortcut key without hijacking OS fullscreen.
   - Allows side-by-side note-taking, browser tab switching, and forensic inspection of 1080p and 4K footage.
@@ -312,12 +312,12 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Crawl Budget & Indexing Hygiene:**
   - Updated `robots.txt` to disallow internal test harnesses (`/test/`, `/tools/`), focusing crawl budget exclusively on production pages.
   - Updated all 17 page timestamps in `sitemap.xml` to `2026-11-07` with calibrated priority weights.
-  - Synchronized historical version strings across `security-audit/index.html` and `how-to-use-zevsafe/index.html` to active `v8.19.0 / WEB-VERSION-70`.
+  - Synchronized historical version strings across `security-audit/index.html` and `how-to-use-zevsafe/index.html` to active `v8.27.0 / WEB-VERSION-78`.
 
 - **100% Backward Compatibility & Automated Regression Certification:**
   - Preserved all 31 existing IDs and assertions while adding Section 6 assertions (11 new tests, total 42/42 passing in `test/test-video-player-pro.js` and 210/210 passing across all 10 suites).
 
-### 3.24 Mobile Video Player Overhaul & Slide-Up Forensic Studio Bottom Sheet Drawer (v8.20.0 / WEB-VERSION-71)
+### 3.24 Mobile Video Player Overhaul & Slide-Up Forensic Studio Bottom Sheet Drawer (v8.27.0 / WEB-VERSION-78)
 - **Zero-Clutter Mobile Video Stage & Viewport Edge-to-Edge:**
   - Eliminated artificial `calc(100dvh - 210px)` stage squish on viewports <= 768px and landscape <= 500px.
   - Video stage (`.cinema-video-stage`) and video player element (`.media-player-element`) occupy 100% of the viewport with `object-fit: contain` and OLED black background, delivering edge-to-edge mobile viewing matching native apps.
@@ -346,7 +346,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Automated Verification Suite:**
   - Verified across 22 tests in `test/test-mobile-video-player.js` alongside 45/45 tests in `test/test-video-player-pro.js` and all core regression suites (100% pass).
 
-### 3.25 Phase 1: Faster First Load & Asset Pipeline Optimization (v8.21.0 / WEB-VERSION-72)
+### 3.25 Phase 1: Faster First Load & Asset Pipeline Optimization (v8.27.0 / WEB-VERSION-78)
 - **Deferred Script Execution Model:**
   - Added `defer` attribute to core streaming cryptography and application scripts in `index.html` (`js/stream-crypto.js`, `js/stream-packer.js`, `js/stream-unpacker.js`, `js/crypto-worker.js`, `js/stream-saver.js`, `js/worker-bridge.js`, `app.js`).
   - Guaranteed ordered, non-render-blocking script execution immediately before `DOMContentLoaded`.
@@ -371,9 +371,9 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Maintained defense-in-depth security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP).
 - **PWA Service Worker & Shell Assets Synchronization:**
   - Added `./js/passphrase-words.js` to `SHELL_ASSETS` in `sw.js` for complete offline functionality in airplane mode.
-  - Bumped Service Worker cache version to `v72` (`APP_VERSION = 'v72'`) and application shell tags to `WEB-VERSION-72` / `v8.21.0`.
+  - Bumped Service Worker cache version to `v72` (`APP_VERSION = 'v78'`) and application shell tags to `WEB-VERSION-78` / `v8.27.0`.
 
-### 3.26 Phase 2: Modular Mobile Cinema Player & Gesture Architecture (v8.22.0 / WEB-VERSION-73)
+### 3.26 Phase 2: Modular Mobile Cinema Player & Gesture Architecture (v8.27.0 / WEB-VERSION-78)
 - **Modular Codebase Extraction & Payload Shrink:**
   - Extracted cinema media player, image lightbox, studio drawer, forensic tools, and mobile player styles from `styles.css` into [`css/media-player.css`](css/media-player.css) (49.6 KB, 1,678 lines). Reduced `styles.css` from 210 KB to 166 KB (-43 KB on first load).
   - Extracted video streaming engine, image viewer, frame steppers, WebAudio filters, A-B segment looper, bookmarks, gestures, and hotkeys from `app.js` into [`js/media-player.js`](js/media-player.js) (84.2 KB, 2,173 lines). Reduced `app.js` from 390 KB to 313 KB (-77 KB on first load).
@@ -406,12 +406,12 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **PWA Service Worker & Cache Synchronization:**
   - Added `./css/media-player.css` and `./js/media-player.js` to `SHELL_ASSETS` in `sw.js` for 100% offline playback.
   - Added `/css/*` with `Cache-Control: no-cache` in `_headers`.
-  - Bumped Service Worker cache version to `v73` (`APP_VERSION = 'v73'`) and application shell tags to `WEB-VERSION-73` / `v8.22.0`.
+  - Bumped Service Worker cache version to `v73` (`APP_VERSION = 'v78'`) and application shell tags to `WEB-VERSION-78` / `v8.27.0`.
 - **Automated Verification Suites:**
   - Added `test/test-media-player-security-lifecycle.js` (17 tests) and `test/browser-verification-phase2.js` (Chrome CDP headless verification across portrait 390x844, landscape 844x390, and desktop 1280x800).
   - All 45/45 video player tests and 22/22 mobile player tests passed with 100%.
 
-### 3.27 Phase 3: Strict CSP Hardening, Zero Inline Script/Style Migration & Clutter-Free Production Distribution (v8.23.0 / WEB-VERSION-74)
+### 3.27 Phase 3: Strict CSP Hardening, Zero Inline Script/Style Migration & Clutter-Free Production Distribution (v8.27.0 / WEB-VERSION-78)
 - **Strict Content Security Policy (Zero `'unsafe-inline'`):**
   - Completely removed `'unsafe-inline'` from both `script-src` and `style-src` in root `/*` directive in `_headers`.
   - Preserved all defensive CSP directives (`default-src 'self'`, `font-src 'self' data:`, `img-src 'self' data: blob:`, `media-src 'self' blob:`, `frame-src 'self' blob:`, `connect-src 'self' blob: data:`, `object-src 'none'`, `base-uri 'self'`, `frame-ancestors 'none'`).
@@ -433,16 +433,16 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Added standalone branded zero-knowledge [`404.html`](404.html).
   - Relocated root audit reports to [`docs/audit-reports/`](docs/audit-reports/) (`AUDIT_REPORT.md`, `CHECKLIST_AUDIT_REPORT.md`, `SECURITY_AUDIT_REPORT.md`).
 - **Service Worker Cleanup & Version Bump:**
-  - Removed obsolete `// Baseline regression assertion preservation: const APP_VERSION = 'v70';` in `sw.js`.
+  - Removed obsolete `// Baseline regression assertion preservation: const APP_VERSION = 'v78';` in `sw.js`.
   - Modernized assertion 4.1 in `test/test-video-player-pro.js` with regex `/const APP_VERSION\s*=\s*'v\d+';/`.
   - Added `./js/init.js` and `./404.html` to `SHELL_ASSETS` in `sw.js`.
-  - Bumped `APP_VERSION = 'v74'` and updated `index.html` to `v8.23.0` / `WEB-VERSION-74`.
+  - Bumped `APP_VERSION = 'v78'` and updated `index.html` to `v8.27.0` / `WEB-VERSION-78`.
 - **Automated Verification Suites:**
   - Created `test/test-security-csp-audit.js` (18 automated assertions verifying zero inline scripts, zero inline styles, zero inline on* handlers, real XSS sanitization across `escapeHtml` and `renderSafeMarkdown`, and `sw.js` pre-caching).
   - Created `test/test-dist-completeness.js` (8 automated assertions verifying that 100% of files in `SHELL_ASSETS`, `index.html` assets, manifest icons, sitemap URLs, and subpage assets exist in `dist/`, with 0 internal notes/tests leaking into distribution).
   - Extended `test/browser-verification-phase3.js` running headless Chrome CDP over local HTTP server with real `_headers` CSP, verifying 0 CSP violations, 0 worker/blob errors, 0 console errors, real in-browser folder encryption & decryption round-trip via Web Workers under strict CSP, real video playback and image lightbox with `blob:` URLs, and complete open/close cycles across ALL 13 modals on portrait (390x844), landscape (844x390), and desktop (1280x800).
 
-### 3.28 Phase 4: Phone Reliability, Screen Wake Lock Engine, Battery Guard & Accessible High-Contrast UI (v8.24.0 / WEB-VERSION-75)
+### 3.28 Phase 4: Phone Reliability, Screen Wake Lock Engine, Battery Guard & Accessible High-Contrast UI (v8.27.0 / WEB-VERSION-78)
 - **Screen Wake Lock Engine (`withWakeLock`):**
   - Integrated W3C Screen Wake Lock API (`navigator.wakeLock.request('screen')`) to prevent mobile OS screen timeouts and CPU sleep states during long-running cryptographic operations.
   - Implemented shared wrapper `window.withWakeLock(fn)` with reference counting (`activeWakeLockCount`), wrapped across:
@@ -486,7 +486,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
     - Phone Landscape (844x390): `screen-landscape-dark-cards.png`, `screen-landscape-dark-modal.png`, `screen-landscape-dark-player.png` / `screen-landscape-light-cards.png`, `screen-landscape-light-modal.png`, `screen-landscape-light-player.png`
     - Desktop (1280x800): `screen-desktop-dark-cards.png`, `screen-desktop-dark-modal.png`, `screen-desktop-dark-player.png` / `screen-desktop-light-cards.png`, `screen-desktop-light-modal.png`, `screen-desktop-light-player.png`
 
-### 3.29 Phase 5: Progressive Web App (PWA) Upgrade, File Handling Engine & Safe Update Lifecycle (v8.25.0 / WEB-VERSION-76)
+### 3.29 Phase 5: Progressive Web App (PWA) Upgrade, File Handling Engine & Safe Update Lifecycle (v8.27.0 / WEB-VERSION-78)
 - **High-Resolution Vector-Rasterized Maskable & Apple Touch Icons:**
   - Rasterized crisp, authentic PNG icons from source `assets/favicon.svg` with an exact 80% safe zone centered on `#08091a` (`assets/icon-maskable-192.png`, `assets/icon-maskable-512.png`).
   - Added dedicated `180x180` `assets/apple-touch-icon.png` across `index.html` and all subpages (`change-log/`, `device-power/`, `how-to-use-zevsafe/`, `knowledge/`, and all 10 knowledge sub-pages).
@@ -517,7 +517,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Created `test/test-simulate-pwa-upgrade.js` (8 automated tests simulating full upgrade lifecycle from v75 to v76 in headless Chrome: update banner appearance, mid-job reload suppression, user-triggered reload, cache cleanup, and 100% offline lazy-loaded playback).
   - Extended `test/test-dist-completeness.js` to 10/10 tests verifying `dist/` and `SHELL_ASSETS` synchronization.
 
-### 3.8 Phase 7: Full Accessibility (WCAG 2.1 AA/AAA & Section 508 Hardening) [v8.26.0]
+### 3.8 Phase 7: Full Accessibility (WCAG 2.1 AA/AAA & Section 508 Hardening) [v8.27.0]
 - **Accessible Names & WCAG 2.5.3 (Label in Name):**
   - Audited and updated all 168 buttons across the application: 87 buttons equipped with clear, descriptive `aria-label` attributes that strictly include their visible text verbatim (per WCAG 2.5.3, e.g., `aria-label="Snap Frame - Extract full-res frame"` for button showing `📸 Snap Frame`), and 81 buttons self-labelled via visible text. Exactly 0 unlabelled buttons.
   - Audited all 34 form inputs: 30 inputs explicitly associated with `<label>` tags via `for`/`id` or `aria-label`/`aria-labelledby`, and 4 hidden credential-helper inputs/buttons explicitly marked `aria-hidden="true"` with `tabindex="-1"` so password managers autofill without polluting screen reader accessibility trees.
@@ -577,7 +577,7 @@ node test/test-stream-crypto.js                    #  95 tests: STREAM AEAD Prim
 node test/test-stream-packer.js                    # 142 tests: ZIP64 Streaming Packer
 node test/test-stream-unpacker.js                  #  99 tests: Range Demuxer & Streaming Unpacker
 node test/test-worker-bridge.js                    #  74 tests: Multi-Thread Worker Bridge
-node test/test-integration-m5.js                   #   5 tests: M5 Streaming Sink & Round-Trip
+node test/pwa/test-integration-m5.js                   #   5 tests: M5 Streaming Sink & Round-Trip
 
 # === Adversarial Security & Remediation Suites ===
 node test/test-adversarial-challenger.js           #  30 tests: Adversarial Challenger Chunk Wiping
@@ -588,7 +588,7 @@ node test/test-checklist-remediations.js           #   8 tests: Checklist Defens
 node test/test-security-csp-audit.js               #  18 tests: Strict CSP Directives & XSS Sanitization
 
 # === Mobile, Platform & Storage Engines ===
-node test/test-android-encryption.js               #  33 tests: Android OPFS & Multi-Tier StreamSaver
+node test/crypto/test-android-encryption.js               #  33 tests: Android OPFS & Multi-Tier StreamSaver
 node test/test-paper-safe-qr.js                    #  20 tests: Paper-Safe Optical QR & Master Keycard
 node test/test-device-power.js                     #   5 tests: Device Hardware Power Profiler
 node test/test-explorer-folder-nav.js              #  41 tests: Decrypted Vault Explorer & Folder Tree

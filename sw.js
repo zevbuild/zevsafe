@@ -7,8 +7,8 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v77';
-const CONTENT_HASH   = '0d4cb6fd';
+const APP_VERSION    = 'v78';
+const CONTENT_HASH   = '27468439';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
