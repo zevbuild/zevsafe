@@ -1250,14 +1250,11 @@
     // 🎛️ EVENT LISTENERS & USER INTERACTION WIRING
     // =====================================================
 
-    function initMediaPlayerUI() {
+    function _initMediaModalBaseControls() {
         const mediaModal = document.getElementById('vault-media-modal');
         const closeMediaBtn = document.getElementById('btn-close-media');
         const mediaOpenTabBtn = document.getElementById('btn-media-open-tab');
         const mediaDlBtn = document.getElementById('btn-media-download');
-        const mediaFitBtn = document.getElementById('btn-media-fit');
-        const mediaPipBtn = document.getElementById('btn-media-pip');
-        const mediaFullscreenBtn = document.getElementById('btn-media-fullscreen');
 
         closeMediaBtn?.addEventListener('click', closeMediaPlayer);
         mediaModal?.addEventListener('click', (e) => {
@@ -1285,8 +1282,9 @@
                 }
             }
         });
+    }
 
-        // Bind video & audio sync events
+    function _initMediaElementSyncEvents() {
         ['cinema-video', 'cinema-audio'].forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
@@ -1334,8 +1332,10 @@
                 }
             });
         });
+    }
 
-        // Inactivity reset listeners
+    function _initMediaPlaybackAndVolumeControls() {
+        const mediaModal = document.getElementById('vault-media-modal');
         if (mediaModal) {
             ['mousemove', 'pointerdown', 'touchstart', 'keydown'].forEach(ev => {
                 mediaModal.addEventListener(ev, resetCinemaInactivityTimer, { passive: true });
@@ -1399,7 +1399,9 @@
         // Frame Steppers
         document.getElementById('btn-media-step-back')?.addEventListener('click', () => stepVideoFrame(-1));
         document.getElementById('btn-media-step-fwd')?.addEventListener('click', () => stepVideoFrame(1));
+    }
 
+    function _initMediaStudioDrawerAndTools() {
         // Theater & Hotkeys
         document.getElementById('btn-media-theater')?.addEventListener('click', toggleTheaterMode);
         document.getElementById('btn-media-hotkeys')?.addEventListener('click', toggleHotkeysModal);
@@ -1488,7 +1490,9 @@
         document.getElementById('btn-filter-invert')?.addEventListener('click', () => toggleVideoFilter('invert'));
         document.getElementById('btn-filter-cctv')?.addEventListener('click', () => toggleVideoFilter('cctv'));
         document.getElementById('btn-filter-reset')?.addEventListener('click', resetVideoTransforms);
+    }
 
+    function _initMediaScrubberAndTimeline() {
         // Time display toggle
         document.getElementById('media-time-display')?.addEventListener('click', () => {
             currentMediaShowRemaining = !currentMediaShowRemaining;
@@ -1552,10 +1556,11 @@
                 timelineWrap.classList.remove('is-dragging');
             });
         }
+    }
 
-        // Video Stage Touch Gestures: Double-Tap Accumulation, Single Tap Controls Toggle, Pinch Zoom & Pan (Directive 1)
+    function _initMediaVideoStageGestures() {
         const videoStage = document.getElementById('cinema-video-stage');
-        if (videoStage) {
+        if (!videoStage) return;
 
         // Gesture State Machine: Double-Tap Accumulation & 250ms Single-Tap Delay
         let accumulatedSeekDelta = 0;
@@ -1596,188 +1601,193 @@
                 accumulateSeekTimer = setTimeout(() => { accumulatedSeekDelta = 0; }, 800);
             } else {
                 // Center double-tap
+                const mediaFullscreenBtn = document.getElementById('btn-media-fullscreen');
                 mediaFullscreenBtn?.click();
             }
         }
 
+        videoStage.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0) nudgeVideoZoom(0.25);
+            else if (e.deltaY > 0) nudgeVideoZoom(-0.25);
+        }, { passive: false });
 
-            videoStage.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                if (e.deltaY < 0) nudgeVideoZoom(0.25);
-                else if (e.deltaY > 0) nudgeVideoZoom(-0.25);
-            }, { passive: false });
-
-            videoStage.addEventListener('touchstart', (e) => {
-                if (e.touches && e.touches.length === 2) {
-                    clearTimeout(singleTapTimer);
-                    singleTapTimer = null;
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    touchPinchDist = Math.hypot(dx, dy);
-                    touchPinchStartZoom = currentMediaZoom;
-                } else if (e.touches && e.touches.length === 1) {
-                    if (currentMediaZoom > 1.0) {
-                        isTouchPanning = true;
-                        panMoved = false;
-                        touchPanStartX = e.touches[0].clientX - currentMediaPanX;
-                        touchPanStartY = e.touches[0].clientY - currentMediaPanY;
-                    }
+        videoStage.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length === 2) {
+                clearTimeout(singleTapTimer);
+                singleTapTimer = null;
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                touchPinchDist = Math.hypot(dx, dy);
+                touchPinchStartZoom = currentMediaZoom;
+            } else if (e.touches && e.touches.length === 1) {
+                if (currentMediaZoom > 1.0) {
+                    isTouchPanning = true;
+                    panMoved = false;
+                    touchPanStartX = e.touches[0].clientX - currentMediaPanX;
+                    touchPanStartY = e.touches[0].clientY - currentMediaPanY;
                 }
-            }, { passive: true });
+            }
+        }, { passive: true });
 
-            videoStage.addEventListener('touchmove', (e) => {
-                if (e.touches && e.touches.length === 2 && touchPinchDist) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    const dist = Math.hypot(dx, dy);
-                    if (touchPinchDist > 0) {
-                        const factor = dist / touchPinchDist;
-                        setVideoZoom(touchPinchStartZoom * factor);
-                    }
-                } else if (e.touches && e.touches.length === 1 && isTouchPanning && currentMediaZoom > 1.0) {
-                    panMoved = true;
-                    currentMediaPanX = e.touches[0].clientX - touchPanStartX;
-                    currentMediaPanY = e.touches[0].clientY - touchPanStartY;
+        videoStage.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches.length === 2 && touchPinchDist) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.hypot(dx, dy);
+                if (touchPinchDist > 0) {
+                    const factor = dist / touchPinchDist;
+                    setVideoZoom(touchPinchStartZoom * factor);
+                }
+            } else if (e.touches && e.touches.length === 1 && isTouchPanning && currentMediaZoom > 1.0) {
+                panMoved = true;
+                currentMediaPanX = e.touches[0].clientX - touchPanStartX;
+                currentMediaPanY = e.touches[0].clientY - touchPanStartY;
+                applyVideoTransforms();
+            }
+        }, { passive: true });
+
+        videoStage.addEventListener('touchend', (e) => {
+            if (!e.touches || e.touches.length < 2) {
+                touchPinchDist = null;
+            }
+            if (!e.touches || e.touches.length === 0) {
+                if (isTouchPanning) {
+                    isTouchPanning = false;
                     applyVideoTransforms();
                 }
-            }, { passive: true });
 
-            videoStage.addEventListener('touchend', (e) => {
-                if (!e.touches || e.touches.length < 2) {
-                    touchPinchDist = null;
-                }
-                if (!e.touches || e.touches.length === 0) {
-                    if (isTouchPanning) {
-                        isTouchPanning = false;
-                        applyVideoTransforms();
-                    }
+                // Mobile Tap / Double-Tap detection on 1-finger release
+                if (!panMoved && e.changedTouches && e.changedTouches.length === 1) {
+                    const now = Date.now();
+                    const clientX = e.changedTouches[0].clientX;
+                    const rect = videoStage.getBoundingClientRect();
+                    const relX = clientX - rect.left;
 
-                    // Mobile Tap / Double-Tap detection on 1-finger release
-                    if (!panMoved && e.changedTouches && e.changedTouches.length === 1) {
-                        const now = Date.now();
-                        const clientX = e.changedTouches[0].clientX;
-                        const rect = videoStage.getBoundingClientRect();
-                        const relX = clientX - rect.left;
-
-                        if (now - lastTouchTapTime < 300 && Math.abs(clientX - lastTouchTapX) < 40) {
-                            // Accumulated Double-Tap Seek (Left 35% = -10s, Right 35% = +10s)
-                            clearTimeout(singleTapTimer);
-                            singleTapTimer = null;
-                            lastTouchTapTime = 0;
-                            const media = getActiveCinemaMedia();
-                            applyDoubleTapSeek(relX, rect.width, media);
-                        } else {
-                            lastTouchTapTime = now;
-                            lastTouchTapX = clientX;
-                            singleTapTimer = setTimeout(() => {
-                                const modal = document.getElementById('vault-media-modal');
-                                const bar = document.getElementById('media-tools-bar');
-                                const btnToggle = document.getElementById('btn-toggle-tools');
-                                // Dismiss open drawer on stage tap
-                                if (bar && bar.classList.contains('is-open')) {
-                                    bar.classList.remove('is-open');
-                                    if (btnToggle) {
-                                        btnToggle.classList.remove('is-active');
-                                        btnToggle.innerHTML = '🎛️ Studio ▾';
-                                    }
-                                    resetCinemaInactivityTimer();
-                                    return;
+                    if (now - lastTouchTapTime < 300 && Math.abs(clientX - lastTouchTapX) < 40) {
+                        // Accumulated Double-Tap Seek (Left 35% = -10s, Right 35% = +10s)
+                        clearTimeout(singleTapTimer);
+                        singleTapTimer = null;
+                        lastTouchTapTime = 0;
+                        const media = getActiveCinemaMedia();
+                        applyDoubleTapSeek(relX, rect.width, media);
+                    } else {
+                        lastTouchTapTime = now;
+                        lastTouchTapX = clientX;
+                        singleTapTimer = setTimeout(() => {
+                            const modal = document.getElementById('vault-media-modal');
+                            const bar = document.getElementById('media-tools-bar');
+                            const btnToggle = document.getElementById('btn-toggle-tools');
+                            // Dismiss open drawer on stage tap
+                            if (bar && bar.classList.contains('is-open')) {
+                                bar.classList.remove('is-open');
+                                if (btnToggle) {
+                                    btnToggle.classList.remove('is-active');
+                                    btnToggle.innerHTML = '🎛️ Studio ▾';
                                 }
-                                // Single tap toggles controls visibility
-                                if (modal) {
-                                    modal.classList.toggle('cinema-ui--hidden');
-                                    resetCinemaInactivityTimer();
-                                }
-                            }, 250);
-                        }
-                    }
-                    panMoved = false;
-                }
-            });
-
-            // Desktop Mouse Drag Pan
-            videoStage.addEventListener('mousedown', (e) => {
-                if (currentMediaZoom > 1.0 && e.button === 0) {
-                    isMediaPanning = true;
-                    panMoved = false;
-                    mediaPanStartX = e.clientX - currentMediaPanX;
-                    mediaPanStartY = e.clientY - currentMediaPanY;
-                    applyVideoTransforms();
-                    const onMove = (ev) => {
-                        if (isMediaPanning) {
-                            if (Math.abs(ev.clientX - (mediaPanStartX + currentMediaPanX)) > 4 ||
-                                Math.abs(ev.clientY - (mediaPanStartY + currentMediaPanY)) > 4) {
-                                panMoved = true;
+                                resetCinemaInactivityTimer();
+                                return;
                             }
-                            currentMediaPanX = ev.clientX - mediaPanStartX;
-                            currentMediaPanY = ev.clientY - mediaPanStartY;
-                            applyVideoTransforms();
-                        }
-                    };
-                    const onUp = () => {
-                        isMediaPanning = false;
-                        applyVideoTransforms();
-                        window.removeEventListener('mousemove', onMove);
-                        window.removeEventListener('mouseup', onUp);
-                    };
-                    window.addEventListener('mousemove', onMove);
-                    window.addEventListener('mouseup', onUp);
-                }
-            });
-
-            // Desktop Mouse Click
-            videoStage.addEventListener('click', (e) => {
-                if (panMoved) {
-                    panMoved = false;
-                    return;
-                }
-                const modal = document.getElementById('vault-media-modal');
-                const bar = document.getElementById('media-tools-bar');
-                const btnToggle = document.getElementById('btn-toggle-tools');
-
-                if (bar && bar.classList.contains('is-open')) {
-                    const target = e.target;
-                    if (!target || (!target.closest('#media-tools-bar') && !target.closest('#btn-toggle-tools'))) {
-                        bar.classList.remove('is-open');
-                        if (btnToggle) {
-                            btnToggle.classList.remove('is-active');
-                            btnToggle.innerHTML = '🎛️ Studio ▾';
-                        }
-                        resetCinemaInactivityTimer();
-                        return;
+                            // Single tap toggles controls visibility
+                            if (modal) {
+                                modal.classList.toggle('cinema-ui--hidden');
+                                resetCinemaInactivityTimer();
+                            }
+                        }, 250);
                     }
                 }
+                panMoved = false;
+            }
+        });
 
-                if (modal && modal.classList.contains('cinema-ui--hidden')) {
-                    modal.classList.remove('cinema-ui--hidden');
+        // Desktop Mouse Drag Pan
+        videoStage.addEventListener('mousedown', (e) => {
+            if (currentMediaZoom > 1.0 && e.button === 0) {
+                isMediaPanning = true;
+                panMoved = false;
+                mediaPanStartX = e.clientX - currentMediaPanX;
+                mediaPanStartY = e.clientY - currentMediaPanY;
+                applyVideoTransforms();
+                const onMove = (ev) => {
+                    if (isMediaPanning) {
+                        if (Math.abs(ev.clientX - (mediaPanStartX + currentMediaPanX)) > 4 ||
+                            Math.abs(ev.clientY - (mediaPanStartY + currentMediaPanY)) > 4) {
+                            panMoved = true;
+                        }
+                        currentMediaPanX = ev.clientX - mediaPanStartX;
+                        currentMediaPanY = ev.clientY - mediaPanStartY;
+                        applyVideoTransforms();
+                    }
+                };
+                const onUp = () => {
+                    isMediaPanning = false;
+                    applyVideoTransforms();
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mouseup', onUp);
+                };
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+            }
+        });
+
+        // Desktop Mouse Click
+        videoStage.addEventListener('click', (e) => {
+            if (panMoved) {
+                panMoved = false;
+                return;
+            }
+            const modal = document.getElementById('vault-media-modal');
+            const bar = document.getElementById('media-tools-bar');
+            const btnToggle = document.getElementById('btn-toggle-tools');
+
+            if (bar && bar.classList.contains('is-open')) {
+                const target = e.target;
+                if (!target || (!target.closest('#media-tools-bar') && !target.closest('#btn-toggle-tools'))) {
+                    bar.classList.remove('is-open');
+                    if (btnToggle) {
+                        btnToggle.classList.remove('is-active');
+                        btnToggle.innerHTML = '🎛️ Studio ▾';
+                    }
                     resetCinemaInactivityTimer();
                     return;
                 }
+            }
 
-                const media = getActiveCinemaMedia();
-                if (!media) return;
+            if (modal && modal.classList.contains('cinema-ui--hidden')) {
+                modal.classList.remove('cinema-ui--hidden');
+                resetCinemaInactivityTimer();
+                return;
+            }
 
-                if (e.detail === 2) {
-                    const rect = videoStage.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    applyDoubleTapSeek(clickX, rect.width, media);
-                } else if (e.detail === 1) {
-                    // Desktop click toggles play/pause or controls
-                    if (window.innerWidth > 768) {
-                        if (media.paused) {
-                            media.play();
-                            showCinemaCenterRipple('▶');
-                        } else {
-                            media.pause();
-                            showCinemaCenterRipple('⏸');
-                        }
+            const media = getActiveCinemaMedia();
+            if (!media) return;
+
+            if (e.detail === 2) {
+                const rect = videoStage.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                applyDoubleTapSeek(clickX, rect.width, media);
+            } else if (e.detail === 1) {
+                // Desktop click toggles play/pause or controls
+                if (window.innerWidth > 768) {
+                    if (media.paused) {
+                        media.play();
+                        showCinemaCenterRipple('▶');
                     } else {
-                        modal.classList.toggle('cinema-ui--hidden');
-                        resetCinemaInactivityTimer();
+                        media.pause();
+                        showCinemaCenterRipple('⏸');
                     }
+                } else {
+                    modal.classList.toggle('cinema-ui--hidden');
+                    resetCinemaInactivityTimer();
                 }
-            });
-        }
+            }
+        });
+    }
+
+    function _initMediaSecondaryControls() {
+        const mediaFitBtn = document.getElementById('btn-media-fit');
+        const mediaPipBtn = document.getElementById('btn-media-pip');
+        const mediaFullscreenBtn = document.getElementById('btn-media-fullscreen');
 
         // Aspect Ratio
         const aspectModes = ['fit', 'fill', '16:9', '4:3'];
@@ -1967,8 +1977,9 @@
                 }
             }
         });
+    }
 
-        // ── Image Lightbox Modal Events ──
+    function _initImageLightboxModalEvents() {
         const imageModal = document.getElementById('vault-image-modal');
         const closeImageBtn = document.getElementById('btn-close-image-modal');
         const imageOpenTabBtn = document.getElementById('btn-image-open-tab');
@@ -2063,6 +2074,22 @@
             if (imageZoomLevel > 1.0) resetImageZoom();
             else zoomImage(1.5);
         });
+    }
+
+    let _isMediaPlayerUIInitialized = false;
+
+    function initMediaPlayerUI() {
+        if (_isMediaPlayerUIInitialized) return;
+        _isMediaPlayerUIInitialized = true;
+
+        _initMediaModalBaseControls();
+        _initMediaElementSyncEvents();
+        _initMediaPlaybackAndVolumeControls();
+        _initMediaStudioDrawerAndTools();
+        _initMediaScrubberAndTimeline();
+        _initMediaVideoStageGestures();
+        _initMediaSecondaryControls();
+        _initImageLightboxModalEvents();
     }
 
     // Auto-initialize when DOM is ready
