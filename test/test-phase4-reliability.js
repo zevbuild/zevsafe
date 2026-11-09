@@ -294,6 +294,8 @@ async function runPhase4Tests() {
     await cdp.send('Runtime.enable');
     await cdp.send('DOM.enable');
     await cdp.send('CSS.enable');
+    await cdp.send('Network.enable');
+    await cdp.send('Network.setBypassServiceWorker', { bypass: true });
 
     await new Promise(r => setTimeout(r, 1500));
 
