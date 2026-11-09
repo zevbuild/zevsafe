@@ -102,8 +102,8 @@ runTest('1.6: Extended speed options (0.25x to 4.0x) present', () => {
 
 // ── 2. CSS STYLING IN styles.css & css/media-player.css ──────────────────────────────
 console.log('\n--- 2. CSS Rules & Visual Styling in styles.css & css/media-player.css ---');
-const stylesCss = fs.readFileSync(path.join(ROOT_DIR, 'styles.css'), 'utf8') + '\n' +
-    (fs.existsSync(path.join(ROOT_DIR, 'css/media-player.css')) ? fs.readFileSync(path.join(ROOT_DIR, 'css/media-player.css'), 'utf8') : '');
+const stylesCss = (fs.readFileSync(path.join(ROOT_DIR, 'styles.css'), 'utf8') + '\n' +
+    (fs.existsSync(path.join(ROOT_DIR, 'css/media-player.css')) ? fs.readFileSync(path.join(ROOT_DIR, 'css/media-player.css'), 'utf8') : '')).replace(/\r\n/g, '\n');
 
 runTest('2.1: Scrubber timeline track, buffer, progress, thumb, A-B range and markers styled', () => {
     assert.ok(stylesCss.includes('.media-timeline-wrap'), 'Must define .media-timeline-wrap');
