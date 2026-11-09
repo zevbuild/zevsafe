@@ -7049,35 +7049,15 @@ if (typeof window !== 'undefined') {
     window.reencryptCurrentVault = reencryptCurrentVault;
 }
 
-// Wire up Explorer & Cinema Media Player UI event listeners
-function initExplorerUI() {
+function _initExplorerSearchAndFilterControls() {
     const searchInput = document.getElementById('explorer-search-input');
     const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
-    const closeBtn = document.getElementById('btn-close-explorer');
-    const doneBtn = document.getElementById('btn-done-explorer');
-    const dlAllBtn = document.getElementById('btn-explorer-download-all');
-    const modal = document.getElementById('vault-explorer-modal');
-
     const sortSelect = document.getElementById('explorer-sort-select');
     const viewListBtn = document.getElementById('btn-view-list');
     const viewGridBtn = document.getElementById('btn-view-grid');
     const selectAllCb = document.getElementById('explorer-select-all');
     const batchDlBtn = document.getElementById('btn-batch-download');
     const filterTabs = document.querySelectorAll('.explorer-filter-tab');
-
-    // Media modal elements
-    const mediaModal = document.getElementById('vault-media-modal');
-    const closeMediaBtn = document.getElementById('btn-close-media-modal');
-    const mediaOpenTabBtn = document.getElementById('btn-media-open-tab');
-    const mediaDlBtn = document.getElementById('btn-media-download');
-    const mediaPrevBtn = document.getElementById('btn-media-prev');
-    const mediaNextBtn = document.getElementById('btn-media-next');
-    const mediaRewind10Btn = document.getElementById('btn-media-rewind10');
-    const mediaForward10Btn = document.getElementById('btn-media-forward10');
-    const mediaSpeedSelect = document.getElementById('media-speed-select');
-    const mediaFitBtn = document.getElementById('btn-media-fit');
-    const mediaPipBtn = document.getElementById('btn-media-pip');
-    const mediaFullscreenBtn = document.getElementById('btn-media-fullscreen');
 
     // Search
     searchInput?.addEventListener('input', () => {
@@ -7131,7 +7111,6 @@ function initExplorerUI() {
         });
     });
 
-
     // Select All
     selectAllCb?.addEventListener('change', () => {
         const q = (searchInput?.value || '').trim().toLowerCase();
@@ -7163,9 +7142,21 @@ function initExplorerUI() {
 
     // Batch download
     batchDlBtn?.addEventListener('click', batchDownloadSelected);
+}
 
+function _initExplorerFileActionControls() {
+    const modal = document.getElementById('vault-explorer-modal');
+    const closeBtn = document.getElementById('btn-close-explorer');
+    const doneBtn = document.getElementById('btn-done-explorer');
+    const dlAllBtn = document.getElementById('btn-explorer-download-all');
     const addFilesBtn = document.getElementById('btn-explorer-add-files');
     const addFilesInput = document.getElementById('explorer-add-files-input');
+    const newFileBtn = document.getElementById('btn-explorer-new-file');
+    const reencryptBtn = document.getElementById('btn-explorer-reencrypt');
+    const autoLockSelect = document.getElementById('explorer-autolock-select');
+    const verifyBtn = document.getElementById('btn-explorer-verify');
+    const explorerFileListEl = document.getElementById('explorer-file-list');
+
     addFilesBtn?.addEventListener('click', () => addFilesInput?.click());
     addFilesInput?.addEventListener('change', (e) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -7175,7 +7166,6 @@ function initExplorerUI() {
     });
 
     // Drag and drop files onto explorer modal to import
-    const explorerFileListEl = document.getElementById('explorer-file-list');
     if (modal) {
         modal.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -7197,13 +7187,9 @@ function initExplorerUI() {
         });
     }
 
-    const newFileBtn = document.getElementById('btn-explorer-new-file');
     newFileBtn?.addEventListener('click', createNewTextFile);
-
-    const reencryptBtn = document.getElementById('btn-explorer-reencrypt');
     reencryptBtn?.addEventListener('click', reEncryptVaultToZev);
 
-    const autoLockSelect = document.getElementById('explorer-autolock-select');
     if (autoLockSelect) {
         autoLockSelect.value = String(explorerAutoLockMinutes);
         autoLockSelect.addEventListener('change', (e) => {
@@ -7220,10 +7206,105 @@ function initExplorerUI() {
 
     closeBtn?.addEventListener('click', closeVaultExplorer);
     doneBtn?.addEventListener('click', closeVaultExplorer);
-
-    const verifyBtn = document.getElementById('btn-explorer-verify');
     verifyBtn?.addEventListener('click', verifyVaultIntegrity);
 
+    dlAllBtn?.addEventListener('click', async () => {
+        return await withWakeLock(async () => {
+            if (!currentDecryptedFolderName) return;
+            const outName = `${currentDecryptedFolderName}_decrypted.zip`;
+            const hasEditedFiles = (currentV3Vault && currentV3Vault.editedFiles && currentV3Vault.editedFiles.size > 0);
+
+            if (hasEditedFiles || (currentDecryptedZip && !currentDecryptedBlob)) {
+                dlAllBtn.textContent = '⏳ Packaging edited vault...';
+                try {
+                    const totalEditedBytes = currentDecryptedFileList.reduce((sum, f) => sum + (f.size || 0), 0);
+                    await checkBrowserStorageQuota(totalEditedBytes);
+                    if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
+                    const outZip = currentDecryptedZip || new JSZip();
+                    if (hasEditedFiles) {
+                        for (const item of currentDecryptedFileList) {
+                            const blob = await getDecryptedFileBlob(item.path);
+                            outZip.file(item.path, blob);
+                        }
+                    }
+                    const outZipBlob = await outZip.generateAsync({ type: 'blob' });
+                    triggerDownload(outZipBlob, outName);
+                    dlAllBtn.textContent = '✅ Downloaded!';
+                    log(`✅ Downloaded edited vault: "${outName}"`, 'success');
+                    setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
+                } catch (err) {
+                    console.error('[Download All Edited Error]', err);
+                    showToast(`Download failed: ${err.message}`, 'error');
+                    dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+                }
+            } else if (currentDecryptedBlob) {
+                dlAllBtn.textContent = '⏳ Downloading...';
+                triggerDownload(currentDecryptedBlob, outName);
+                log(`✅ Downloaded full vault: "${outName}"`, 'success');
+                setTimeout(() => {
+                    dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+                }, 2000);
+            } else if (currentV3Vault) {
+                dlAllBtn.textContent = '⏳ Streaming ZIP...';
+                try {
+                    let streamWriter = null;
+                    if (typeof StreamSaverAdapter !== 'undefined') {
+                        streamWriter = await StreamSaverAdapter.createStreamWriter(outName, currentV3Vault.catalog.totalSize);
+                        if (streamWriter && streamWriter.tier === 'tier3') {
+                            await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
+                        }
+                    }
+                    if (!streamWriter) {
+                        await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
+                    }
+                    await new Promise((resolve, reject) => {
+                        WorkerBridge.startDecryption({
+                            vaultSource: currentV3Vault.file,
+                            password: currentV3Vault.password || currentV3Vault.masterKey,
+                            keyfile: currentV3Vault.keyfileBytes,
+                            options: {
+                                writable: streamWriter ? (streamWriter.writable || streamWriter) : null,
+                                bufferChunks: !streamWriter
+                            },
+                            onProgress(t) {
+                                const speed = t.throughputMBs > 0 ? ` · ${t.throughputMBs.toFixed(1)} MB/s` : '';
+                                dlAllBtn.textContent = `⏳ ${Math.round(t.percent)}%${speed}`;
+                            },
+                            async onComplete(res) {
+                                try {
+                                    if (streamWriter && typeof streamWriter.finalize === 'function') {
+                                        await streamWriter.finalize();
+                                    } else if (res.decryptedBytes) {
+                                        const b = new Blob([res.decryptedBytes], { type: 'application/zip' });
+                                        triggerDownload(b, outName);
+                                    }
+                                    dlAllBtn.textContent = '✅ Downloaded!';
+                                    log(`✅ Stream-downloaded full decrypted vault: "${outName}"`, 'success');
+                                    setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
+                                    resolve(res);
+                                } catch (e) { reject(e); }
+                            },
+                            onError(err) {
+                                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+                                reject(err);
+                            }
+                        });
+                    });
+                } catch (err) {
+                    console.error('[Download All Error]', err);
+                    showToast(`Download failed: ${err.message}`, 'error');
+                    dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+                }
+            }
+        });
+    });
+
+    modal?.addEventListener('click', (e) => {
+        if (e.target.id === 'vault-explorer-modal') closeVaultExplorer();
+    });
+}
+
+function _initExplorerHealthAndSalvageModals() {
     const btnCloseHealth = document.getElementById('btn-close-health-modal');
     const btnDismissHealth = document.getElementById('btn-dismiss-health-modal');
     const healthModal = document.getElementById('vault-health-modal');
@@ -7256,8 +7337,9 @@ function initExplorerUI() {
 
     const btnOpenRescuedExplorer = document.getElementById('btn-salvage-open-explorer');
     btnOpenRescuedExplorer?.addEventListener('click', openExplorerFromSalvage);
+}
 
-    // Audio dock controls
+function _initExplorerAudioDockControls() {
     const mediaDockBtn = document.getElementById('btn-media-dock');
     mediaDockBtn?.addEventListener('click', dockAudioPlayer);
 
@@ -7284,106 +7366,9 @@ function initExplorerUI() {
     dockNextBtn?.addEventListener('click', () => {
         if (currentMediaIndex < currentMediaPlaylist.length - 1) playMediaByIndex(currentMediaIndex + 1);
     });
+}
 
-    dlAllBtn?.addEventListener('click', async () => {
-        return await withWakeLock(async () => {
-        if (!currentDecryptedFolderName) return;
-        const outName = `${currentDecryptedFolderName}_decrypted.zip`;
-        const hasEditedFiles = (currentV3Vault && currentV3Vault.editedFiles && currentV3Vault.editedFiles.size > 0);
-
-        if (hasEditedFiles || (currentDecryptedZip && !currentDecryptedBlob)) {
-            dlAllBtn.textContent = '⏳ Packaging edited vault...';
-            try {
-                const totalEditedBytes = currentDecryptedFileList.reduce((sum, f) => sum + (f.size || 0), 0);
-                await checkBrowserStorageQuota(totalEditedBytes);
-                if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
-                const outZip = currentDecryptedZip || new JSZip();
-                if (hasEditedFiles) {
-                    for (const item of currentDecryptedFileList) {
-                        const blob = await getDecryptedFileBlob(item.path);
-                        outZip.file(item.path, blob);
-                    }
-                }
-                const outZipBlob = await outZip.generateAsync({ type: 'blob' });
-                triggerDownload(outZipBlob, outName);
-                dlAllBtn.textContent = '✅ Downloaded!';
-                log(`✅ Downloaded edited vault: "${outName}"`, 'success');
-                setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
-            } catch (err) {
-                console.error('[Download All Edited Error]', err);
-                showToast(`Download failed: ${err.message}`, 'error');
-                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
-            }
-        } else if (currentDecryptedBlob) {
-            dlAllBtn.textContent = '⏳ Downloading...';
-            triggerDownload(currentDecryptedBlob, outName);
-            log(`✅ Downloaded full vault: "${outName}"`, 'success');
-            setTimeout(() => {
-                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
-            }, 2000);
-        } else if (currentV3Vault) {
-            dlAllBtn.textContent = '⏳ Streaming ZIP...';
-            try {
-                let streamWriter = null;
-                if (typeof StreamSaverAdapter !== 'undefined') {
-                    streamWriter = await StreamSaverAdapter.createStreamWriter(outName, currentV3Vault.catalog.totalSize);
-                    if (streamWriter && streamWriter.tier === 'tier3') {
-                        await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
-                    }
-                }
-                if (!streamWriter) {
-                    await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
-                }
-                await new Promise((resolve, reject) => {
-                    WorkerBridge.startDecryption({
-                        vaultSource: currentV3Vault.file,
-                        password: currentV3Vault.password || currentV3Vault.masterKey,
-                        keyfile: currentV3Vault.keyfileBytes,
-                        options: {
-                            writable: streamWriter ? (streamWriter.writable || streamWriter) : null,
-                            bufferChunks: !streamWriter
-                        },
-                        onProgress(t) {
-                            const speed = t.throughputMBs > 0 ? ` · ${t.throughputMBs.toFixed(1)} MB/s` : '';
-                            dlAllBtn.textContent = `⏳ ${Math.round(t.percent)}%${speed}`;
-                        },
-                        async onComplete(res) {
-                            try {
-                                if (streamWriter && typeof streamWriter.finalize === 'function') {
-                                    await streamWriter.finalize();
-                                } else if (res.decryptedBytes) {
-                                    const b = new Blob([res.decryptedBytes], { type: 'application/zip' });
-                                    triggerDownload(b, outName);
-                                }
-                                dlAllBtn.textContent = '✅ Downloaded!';
-                                log(`✅ Stream-downloaded full decrypted vault: "${outName}"`, 'success');
-                                setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
-                                resolve(res);
-                            } catch (e) { reject(e); }
-                        },
-                        onError(err) {
-                            dlAllBtn.textContent = '⬇️ Download All (ZIP)';
-                            reject(err);
-                        }
-                    });
-                });
-            } catch (err) {
-                console.error('[Download All Error]', err);
-                showToast(`Download failed: ${err.message}`, 'error');
-                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
-            }
-        }
-        });
-    });
-
-    modal?.addEventListener('click', (e) => {
-        if (e.target.id === 'vault-explorer-modal') closeVaultExplorer();
-    });
-
-    // ── Cinema Media & Image Lightbox Modal Events ──
-    // Handled on demand inside js/media-player.js via initMediaPlayerUI()
-
-    // ── Text / Code Viewer Modal Events ──
+function _initExplorerTextViewerControls() {
     const textModal = document.getElementById('vault-text-modal');
     const closeTextBtn = document.getElementById('btn-close-text-modal');
     const textWrapBtn = document.getElementById('btn-text-wrap');
@@ -7426,7 +7411,9 @@ function initExplorerUI() {
             showToast(`Saved "${currentTextFilename}"`, 'success');
         }
     });
+}
 
+function _initExplorerKeyboardAndLifecycleListeners() {
     // Keyboard Shortcuts for Viewer & Explorer Modals
     window.addEventListener('keydown', (e) => {
         const imgModalEl = document.getElementById('vault-image-modal');
@@ -7461,6 +7448,7 @@ function initExplorerUI() {
                 rotateImage();
             } else if (e.key === 'f' || e.key === 'F') {
                 e.preventDefault();
+                const imageFullscreenBtn = document.getElementById('btn-image-fullscreen');
                 imageFullscreenBtn?.click();
             }
         } else if (isTxtActive) {
@@ -7477,6 +7465,21 @@ function initExplorerUI() {
     // Lifecycle Zeroization Listeners
     window.addEventListener('beforeunload', () => lockV3VaultSession());
     window.addEventListener('pagehide', () => lockV3VaultSession());
+}
+
+let _isExplorerUIInitialized = false;
+
+// Wire up Explorer & Cinema Media Player UI event listeners
+function initExplorerUI() {
+    if (_isExplorerUIInitialized) return;
+    _isExplorerUIInitialized = true;
+
+    _initExplorerSearchAndFilterControls();
+    _initExplorerFileActionControls();
+    _initExplorerHealthAndSalvageModals();
+    _initExplorerAudioDockControls();
+    _initExplorerTextViewerControls();
+    _initExplorerKeyboardAndLifecycleListeners();
 }
 
 let deferredPwaPrompt = null;
