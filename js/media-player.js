@@ -164,9 +164,12 @@
     // 🚀 ON-DEMAND HTTP 206 RANGE STREAMING EVALUATION
     // =====================================================
 
-    function canStreamRange(item) {
-        if (!item || item.category !== 'video') return false;
-        if (typeof global.currentV3Vault === 'undefined' || !global.currentV3Vault) return false;
+    function canStreamRange(item, targetEntry) {
+        if (!item || (item.category !== 'video' && item.category !== 'audio')) return false;
+        const entry = targetEntry || item.entry || item;
+        if (entry && entry.compressed) return false;
+        const v3Vault = global.currentV3Vault;
+        if (!v3Vault || !v3Vault.file || (!v3Vault.masterKey && !v3Vault.password)) return false;
         if (typeof StreamUnpacker === 'undefined' || typeof StreamUnpacker.extractFileRange !== 'function') return false;
         if (typeof navigator === 'undefined' || !navigator.serviceWorker || !navigator.serviceWorker.controller) return false;
         return true;
@@ -314,7 +317,7 @@
         _updateMediaModalHeaderState(modal, item, index);
 
         // 1. Check On-Demand Range Streaming Path
-        if (canStreamRange(item) && v3Vault && v3Vault.vaultBytes && v3Vault.password) {
+        if (canStreamRange(item)) {
             await setupRangeStreaming(videoEl, item, targetEntry);
             return;
         }
@@ -323,80 +326,147 @@
         await setupDirectBlobPlayback(item);
     }
 
-    async function setupRangeStreaming(videoEl, item, targetEntry) {
-        const v3Vault = global.currentV3Vault;
+    async function setupRangeStreaming(videoElOrItem, itemOrTargetEntry, maybeTargetEntry) {
+        let videoEl = null;
+        let item = null;
+        let targetEntry = null;
+
+        if (videoElOrItem && (videoElOrItem.tagName === 'VIDEO' || videoElOrItem.nodeType === 1)) {
+            videoEl = videoElOrItem;
+            item = itemOrTargetEntry;
+            targetEntry = maybeTargetEntry || (item ? (item.entry || item) : {});
+        } else {
+            videoEl = document.getElementById('cinema-video');
+            item = videoElOrItem;
+            targetEntry = itemOrTargetEntry || (item ? (item.entry || item) : {});
+        }
+
+        const audioEl = document.getElementById('cinema-audio');
         const loader = document.getElementById('media-loading-indicator');
         const loaderText = document.getElementById('media-loading-text');
 
         try {
             if (loaderText) loaderText.textContent = `Streaming ${item.name} via on-demand HTTP 206…`;
-            activeMediaStreamId = 'stream_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            activeMediaStreamId = 'stream_' + Date.now() + '_' + Math.random().toString(36).slice(2);
             activeMediaChannel = new MessageChannel();
-            activeMediaChunkCache = new Map();
+            activeMediaChunkCache = (typeof StreamUnpacker !== 'undefined' && typeof StreamUnpacker.createBoundedChunkCache === 'function')
+                ? StreamUnpacker.createBoundedChunkCache(6)
+                : new Map();
 
             activeMediaChannel.port1.onmessage = async (event) => {
-                const { type, streamId, start, end } = event.data;
-                if (type === 'REQUEST_MEDIA_RANGE' && streamId === activeMediaStreamId) {
-                    try {
-                        const rangeBytes = await StreamUnpacker.extractFileRange(
-                            v3Vault.vaultBytes,
-                            v3Vault.password,
-                            targetEntry,
-                            start,
-                            end,
-                            {
-                                keyfile: v3Vault.keyfile,
-                                manifest: v3Vault.catalog,
-                                chunkSize: (v3Vault.header && v3Vault.header.chunkSize) || 4194304,
-                                chunkCache: activeMediaChunkCache
-                            }
-                        );
-                        activeMediaChannel.port1.postMessage({
-                            type: 'MEDIA_RANGE_CHUNK',
-                            streamId,
-                            start,
-                            end,
-                            chunk: rangeBytes
-                        }, [rangeBytes.buffer]);
-                    } catch (streamErr) {
-                        console.error('[ZevSafe Stream Error]', streamErr);
-                        activeMediaChannel.port1.postMessage({
-                            type: 'MEDIA_RANGE_ERROR',
-                            streamId,
-                            start,
-                            end,
-                            error: streamErr.message
-                        });
-                    }
+                const msg = event.data;
+                if (!msg || msg.type !== 'READ_MEDIA_RANGE') return;
+                const { requestId, start, end } = msg;
+                try {
+                    const currentVault = global.currentV3Vault;
+                    const keyOrPassword = currentVault.masterKey || currentVault.password;
+                    const rangeBytes = await StreamUnpacker.extractFileRange(
+                        currentVault.file,
+                        keyOrPassword,
+                        targetEntry,
+                        start,
+                        end,
+                        {
+                            keyfileBytes: currentVault.keyfileBytes,
+                            manifest: currentVault.catalog,
+                            header: currentVault.catalog?.header,
+                            chunkCache: activeMediaChunkCache
+                        }
+                    );
+                    activeMediaChannel.port1.postMessage({
+                        type: 'MEDIA_RANGE_DATA',
+                        requestId,
+                        data: rangeBytes
+                    }, [rangeBytes.buffer]);
+                } catch (err) {
+                    console.error('[Media Range Stream Error]', err);
+                    activeMediaChannel.port1.postMessage({
+                        type: 'MEDIA_RANGE_ERROR',
+                        requestId,
+                        error: err.message
+                    });
                 }
             };
 
-            const registration = await navigator.serviceWorker.ready;
-            const swTarget = navigator.serviceWorker.controller || registration.active;
+            let swTarget = (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) || null;
+            if (!swTarget && typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.ready) {
+                const registration = await navigator.serviceWorker.ready;
+                swTarget = registration ? registration.active : null;
+            }
+            if (!swTarget) {
+                throw new Error('Service Worker controller is not available for media range streaming');
+            }
 
-            await new Promise((resolve) => {
-                const initChannel = new MessageChannel();
-                initChannel.port1.onmessage = (e) => {
-                    if (e.data && e.data.status === 'OK') resolve();
-                };
-                swTarget.postMessage({
-                    type: 'REGISTER_MEDIA_STREAM',
-                    streamId: activeMediaStreamId,
-                    mimeType: item.mimeType || 'video/mp4',
-                    totalSize: item.size
-                }, [activeMediaChannel.port2, initChannel.port2]);
-            });
+            const streamMime = item.mimeType || (item.category === 'video' ? 'video/mp4' : 'audio/mp3');
+            swTarget.postMessage({
+                type: 'REGISTER_MEDIA_STREAM',
+                streamId: activeMediaStreamId,
+                fileSize: item.size,
+                mimeType: streamMime,
+                filename: item.name
+            }, [activeMediaChannel.port2]);
 
-            const streamUrl = `/_stream_media?id=${activeMediaStreamId}`;
+            const streamUrl = `/_stream_media?id=${encodeURIComponent(activeMediaStreamId)}&filename=${encodeURIComponent(item.name)}`;
             currentMediaBlobUrl = streamUrl;
+            currentMediaBlob = null;
+            currentMediaFilename = item.name;
 
-            if (videoEl) {
+            const speedSelect = document.getElementById('media-speed-select');
+            const rate = parseFloat(speedSelect?.value || '1');
+            const toolsBar = document.getElementById('media-tools-bar');
+            const snapBtn = document.getElementById('btn-media-snapshot');
+            const fitBtn = document.getElementById('btn-media-fit');
+            const pipBtn = document.getElementById('btn-media-pip');
+            const stepBackBtn = document.getElementById('btn-media-step-back');
+            const stepFwdBtn = document.getElementById('btn-media-step-fwd');
+            const btnToggleTools = document.getElementById('btn-toggle-tools');
+            if (btnToggleTools) {
+                btnToggleTools.style.display = item.category === 'video' ? 'inline-flex' : 'none';
+                btnToggleTools.classList.remove('is-active');
+                btnToggleTools.innerHTML = '🎛️ Studio ▾';
+            }
+            if (toolsBar) {
+                toolsBar.classList.remove('is-open');
+                if (window.innerWidth <= 768) {
+                    toolsBar.classList.add('is-collapsed');
+                }
+            }
+
+            if (item.category === 'video' && videoEl) {
+                if (audioEl) {
+                    try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); audioEl.style.display = 'none'; } catch (_) {}
+                }
                 videoEl.classList.remove('d-none');
                 videoEl.style.display = 'block';
                 videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
                 videoEl.src = streamUrl;
+                videoEl.playbackRate = rate;
+                resetVideoTransforms();
+                if (toolsBar) toolsBar.style.display = 'flex';
+                if (snapBtn) snapBtn.style.display = 'inline-flex';
+                if (fitBtn) fitBtn.style.display = 'inline-flex';
+                if (pipBtn) pipBtn.style.display = 'inline-flex';
+                if (stepBackBtn) stepBackBtn.style.display = 'inline-flex';
+                if (stepFwdBtn) stepFwdBtn.style.display = 'inline-flex';
                 videoEl.load();
                 videoEl.play().catch(() => {});
+            } else if (audioEl) {
+                if (videoEl) {
+                    try { videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load(); videoEl.style.display = 'none'; } catch (_) {}
+                }
+                audioEl.classList.remove('d-none');
+                audioEl.style.display = 'block';
+                audioEl.className = 'media-player-element';
+                audioEl.src = streamUrl;
+                audioEl.playbackRate = rate;
+                if (toolsBar) toolsBar.style.display = 'none';
+                if (snapBtn) snapBtn.style.display = 'none';
+                if (fitBtn) fitBtn.style.display = 'none';
+                if (pipBtn) pipBtn.style.display = 'none';
+                if (stepBackBtn) stepBackBtn.style.display = 'none';
+                if (stepFwdBtn) stepFwdBtn.style.display = 'none';
+                audioEl.load();
+                audioEl.play().catch(() => {});
             }
 
             if (loader) {
@@ -471,11 +541,56 @@
 
     function openMediaPlayerByPath(filePath) {
         if (!currentMediaPlaylist || currentMediaPlaylist.length === 0) {
-            if (global.explorerFiles) {
-                currentMediaPlaylist = global.explorerFiles.filter(f => f.category === 'video' || f.category === 'audio');
+            if (Array.isArray(global.currentMediaPlaylist) && global.currentMediaPlaylist.length > 0) {
+                currentMediaPlaylist = [...global.currentMediaPlaylist];
+            } else if (Array.isArray(global.currentDecryptedFileList)) {
+                currentMediaPlaylist = [];
+                for (const fileItem of global.currentDecryptedFileList) {
+                    const mediaCat = (typeof global.getMediaCategory === 'function')
+                        ? global.getMediaCategory(fileItem.name)
+                        : (/.(mp4|webm|mov|mkv)$/i.test(fileItem.name) ? 'video' : (/.(mp3|wav|ogg|m4a|flac)$/i.test(fileItem.name) ? 'audio' : null));
+                    if (mediaCat) {
+                        const v3Vault = global.currentV3Vault;
+                        const catalogEntry = fileItem.entry || (v3Vault && v3Vault.catalog && Array.isArray(v3Vault.catalog.files)
+                            ? v3Vault.catalog.files.find(f => f.path === fileItem.path || f.name === fileItem.name)
+                            : null);
+                        currentMediaPlaylist.push({
+                            ...(catalogEntry || {}),
+                            path: fileItem.path,
+                            name: fileItem.name,
+                            category: mediaCat,
+                            mimeType: fileItem.mimeType || (typeof global.getMediaMimeType === 'function' ? global.getMediaMimeType(fileItem.name) : (mediaCat === 'video' ? 'video/mp4' : 'audio/mp3')),
+                            size: fileItem.size,
+                            entry: catalogEntry || fileItem.entry
+                        });
+                    }
+                }
             }
         }
-        const idx = currentMediaPlaylist.findIndex(f => f.path === filePath);
+        let idx = currentMediaPlaylist.findIndex(f => f.path === filePath);
+        if (idx === -1 && Array.isArray(global.currentDecryptedFileList)) {
+            const fileItem = global.currentDecryptedFileList.find(f => f.path === filePath);
+            if (fileItem) {
+                const mediaCat = (typeof global.getMediaCategory === 'function')
+                    ? global.getMediaCategory(fileItem.name)
+                    : (/.(mp4|webm|mov|mkv)$/i.test(fileItem.name) ? 'video' : (/.(mp3|wav|ogg|m4a|flac)$/i.test(fileItem.name) ? 'audio' : 'video'));
+                const v3Vault = global.currentV3Vault;
+                const catalogEntry = fileItem.entry || (v3Vault && v3Vault.catalog && Array.isArray(v3Vault.catalog.files)
+                    ? v3Vault.catalog.files.find(f => f.path === fileItem.path || f.name === fileItem.name)
+                    : null);
+                const mediaObj = {
+                    ...(catalogEntry || {}),
+                    path: fileItem.path,
+                    name: fileItem.name,
+                    category: mediaCat,
+                    mimeType: fileItem.mimeType || (typeof global.getMediaMimeType === 'function' ? global.getMediaMimeType(fileItem.name) : (mediaCat === 'video' ? 'video/mp4' : 'audio/mp3')),
+                    size: fileItem.size,
+                    entry: catalogEntry || fileItem.entry
+                };
+                currentMediaPlaylist.push(mediaObj);
+                idx = currentMediaPlaylist.length - 1;
+            }
+        }
         if (idx !== -1) {
             playMediaByIndex(idx);
         }
@@ -1213,16 +1328,39 @@
 
     function openImageViewerByPath(filePath) {
         if (!currentImagePlaylist || currentImagePlaylist.length === 0) {
-            if (global.explorerFiles) {
-                currentImagePlaylist = global.explorerFiles.filter(f => {
-                    const ext = (f.path || '').toLowerCase();
-                    return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') ||
-                           ext.endsWith('.gif') || ext.endsWith('.webp') || ext.endsWith('.svg') ||
-                           ext.endsWith('.avif') || ext.endsWith('.bmp');
-                });
+            if (Array.isArray(global.currentImagePlaylist) && global.currentImagePlaylist.length > 0) {
+                currentImagePlaylist = [...global.currentImagePlaylist];
+            } else if (Array.isArray(global.currentDecryptedFileList)) {
+                currentImagePlaylist = [];
+                for (const fileItem of global.currentDecryptedFileList) {
+                    const isPhoto = (typeof global.getFileCategory === 'function' && global.getFileCategory(fileItem.name) === 'photo') ||
+                        /.(jpg|jpeg|png|gif|webp|svg|avif|bmp)$/i.test(fileItem.name || fileItem.path || '');
+                    if (isPhoto) {
+                        currentImagePlaylist.push({
+                            path: fileItem.path,
+                            name: fileItem.name,
+                            size: fileItem.size,
+                            mimeType: fileItem.mimeType,
+                            entry: fileItem.entry || fileItem
+                        });
+                    }
+                }
             }
         }
-        const idx = currentImagePlaylist.findIndex(f => f.path === filePath);
+        let idx = currentImagePlaylist.findIndex(p => p.path === filePath);
+        if (idx === -1 && Array.isArray(global.currentDecryptedFileList)) {
+            const fileItem = global.currentDecryptedFileList.find(f => f.path === filePath);
+            if (fileItem) {
+                currentImagePlaylist.push({
+                    path: fileItem.path,
+                    name: fileItem.name,
+                    size: fileItem.size,
+                    mimeType: fileItem.mimeType,
+                    entry: fileItem.entry || fileItem
+                });
+                idx = currentImagePlaylist.length - 1;
+            }
+        }
         if (idx !== -1) {
             showImageByIndex(idx);
         }

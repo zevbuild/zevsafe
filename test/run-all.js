@@ -169,6 +169,12 @@ const SUITE_CATALOG = [
         description: 'Zero-clutter stage, single-row transport bar <= 56px, slide-up studio drawer, auto-hide'
     },
     {
+        file: 'test-real-playback.js',
+        category: 'ui',
+        name: 'SW HTTP 206 Range Streaming & Playback',
+        description: 'End-to-end real v3 streaming playback, HTTP 206 range protocol, seek across chunks, audio and photo'
+    },
+    {
         file: 'test-header-navbar-upgrade.js',
         category: 'ui',
         name: 'Header & Navbar Architecture',

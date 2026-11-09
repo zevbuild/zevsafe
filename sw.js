@@ -8,7 +8,7 @@
 // ================================================================
 
 const APP_VERSION    = 'v78';
-const CONTENT_HASH   = '27468439';
+const CONTENT_HASH   = 'ea1079c7';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];

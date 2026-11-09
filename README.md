@@ -332,6 +332,7 @@ zevsafe/
 ├── test/                           # Automated regression, unit, and integration test suites
 │   ├── test-android-encryption.js  # Mobile browser OPFS & memory regression tests
 │   ├── test-integration-m5.js      # Milestone 5 streaming pipeline integration tests
+│   ├── test-real-playback.js       # End-to-end real playback & range streaming test suite
 │   └── ...                         # E2E test runners and synthetic streaming mocks
 ├── app.js                          # Main UI controller: state, drag & drop, Explorer, player
 ├── styles.css                      # Glassmorphic responsive styling, cinema player, dark theme
