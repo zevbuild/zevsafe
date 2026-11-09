@@ -5479,25 +5479,11 @@ function toggleTextWrap() {
 }
 
 /**
- * Render file list with hierarchical folder drill-down, search, category filtering,
- * sorting, and view modes (list/grid).
+ * Filter and sort vault files and folders based on query, active category filter, and sort mode.
  */
-function renderExplorerFileList(query = '') {
-    const listEl = document.getElementById('explorer-file-list');
-    const selectAllCb = document.getElementById('explorer-select-all');
-    if (!listEl) return;
-
-    listEl.innerHTML = '';
-    listEl.className = `explorer-body ${explorerViewMode === 'grid' ? 'explorer-body--grid' : 'explorer-body--list'}`;
-    listEl.setAttribute('role', 'listbox');
-    listEl.setAttribute('aria-label', 'Decrypted vault files and directories');
-
+function _filterAndSortExplorerItems(query) {
     const q = query.trim().toLowerCase();
     const isSearching = !!q;
-
-    // 1. Render Breadcrumbs Navigation Trail
-    renderBreadcrumbs(isSearching, query);
-
     let displayFiles = [];
     let displayFolders = [];
     let isFolderMode = false;
@@ -5534,6 +5520,500 @@ function renderExplorerFileList(query = '') {
         displayFiles = sortFileList(directFiles, explorerSortMode);
     }
 
+    return { displayFiles, displayFolders, isFolderMode, isSearching };
+}
+
+/**
+ * Render empty state placeholder when folder or search result contains zero items.
+ */
+function _renderExplorerEmptyState(listEl, isSearching, query) {
+    const empty = document.createElement('div');
+    empty.className = 'explorer-empty';
+    if (isSearching) {
+        empty.textContent = `No files match "${query}" in this view.`;
+    } else if (explorerFilterCategory !== 'all') {
+        empty.textContent = `No ${explorerFilterCategory} files found in this location.`;
+    } else {
+        const parentDir = explorerCurrentDir.includes('/')
+            ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
+            : '';
+        const parentName = parentDir ? parentDir.split('/').pop() : 'Vault Root';
+        empty.innerHTML = `
+            <div class="explorer-empty-icon">📁</div>
+            <div class="explorer-empty-title">This folder is empty.</div>
+            ${explorerCurrentDir ? `<button type="button" class="explorer-file-view-btn explorer-btn-empty-up" id="btn-empty-up">⬆️ Back to ${escapeHtml(parentName)}</button>` : ''}
+        `;
+    }
+    listEl.appendChild(empty);
+    const upBtn = document.getElementById('btn-empty-up');
+    if (upBtn) {
+        const parentDir = explorerCurrentDir.includes('/')
+            ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
+            : '';
+        upBtn.addEventListener('click', () => navigateToDir(parentDir));
+    }
+}
+
+/**
+ * Render "Up to Parent" navigation card/row inside subfolders.
+ */
+function _renderExplorerParentItem(listEl, parentDir, parentName, viewMode) {
+    if (viewMode === 'grid') {
+        const upCard = document.createElement('div');
+        upCard.className = 'explorer-grid-card explorer-grid-parent';
+        upCard.tabIndex = 0;
+        upCard.title = `Up to parent folder (${parentName})`;
+        upCard.innerHTML = `
+            <div class="explorer-grid-icon">⬆️</div>
+            <div class="explorer-grid-name">.. [Parent]</div>
+            <div class="explorer-grid-meta">Up to ${escapeHtml(parentName)}</div>
+        `;
+        upCard.addEventListener('click', () => navigateToDir(parentDir));
+        upCard.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(parentDir); }
+        });
+        listEl.appendChild(upCard);
+    } else {
+        const upRow = document.createElement('div');
+        upRow.className = 'explorer-item explorer-parent-item';
+        upRow.tabIndex = 0;
+        upRow.title = `Up to parent folder (${parentName})`;
+        upRow.innerHTML = `
+            <div class="explorer-item-left">
+                <span class="explorer-item-icon">⬆️</span>
+                <div class="explorer-item-info">
+                    <span class="explorer-item-name">.. [Parent Folder]</span>
+                    <span class="explorer-item-path">Return to ${escapeHtml(parentName)}</span>
+                </div>
+            </div>
+            <div class="explorer-item-right">
+                <span class="explorer-folder-arrow">↩️ Up</span>
+            </div>
+        `;
+        upRow.addEventListener('click', () => navigateToDir(parentDir));
+        upRow.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(parentDir); }
+        });
+        listEl.appendChild(upRow);
+    }
+}
+
+/**
+ * Render subfolder items in grid or list view.
+ */
+function _renderExplorerSubfolders(listEl, displayFolders, viewMode) {
+    displayFolders.forEach(folder => {
+        if (viewMode === 'grid') {
+            const card = document.createElement('div');
+            card.className = 'explorer-grid-card explorer-grid-folder';
+            card.tabIndex = 0;
+            card.setAttribute('role', 'option');
+            card.setAttribute('aria-label', `Folder: ${folder.name}, ${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}`);
+            card.title = `Open folder: ${folder.name}`;
+            card.innerHTML = `
+                <div class="explorer-grid-icon">📁</div>
+                <div class="explorer-grid-name explorer-folder-name">${escapeHtml(folder.name)}</div>
+                <div class="explorer-grid-meta">${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}</div>
+                <div class="explorer-grid-size">${folder.totalBytes > 0 ? formatBytes(folder.totalBytes) : ''}</div>
+            `;
+            card.addEventListener('click', () => navigateToDir(folder.path));
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(folder.path); }
+            });
+            listEl.appendChild(card);
+        } else {
+            const row = document.createElement('div');
+            row.className = 'explorer-item explorer-folder-item';
+            row.tabIndex = 0;
+            row.setAttribute('role', 'option');
+            row.setAttribute('aria-label', `Folder: ${folder.name}, ${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}`);
+            row.title = `Open folder: ${folder.name}`;
+            row.innerHTML = `
+                <div class="explorer-item-left">
+                    <span class="explorer-item-icon">📁</span>
+                    <div class="explorer-item-info">
+                        <span class="explorer-item-name explorer-folder-name">${escapeHtml(folder.name)}</span>
+                        <span class="explorer-item-path">${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'} · ${formatBytes(folder.totalBytes)}</span>
+                    </div>
+                </div>
+                <div class="explorer-item-right">
+                    <span class="explorer-folder-arrow">📂 Open ➔</span>
+                </div>
+            `;
+            row.addEventListener('click', () => navigateToDir(folder.path));
+            row.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(folder.path); }
+            });
+            listEl.appendChild(row);
+        }
+    });
+}
+
+/**
+ * Create a grid card element for a single file.
+ */
+function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
+    const isSelected = explorerSelectedFiles.has(file.path);
+    const mediaCategory = getMediaCategory(file.name);
+    const isPhoto = getFileCategory(file.name) === 'photo';
+    const isTextDoc = isTextOrCodeFile(file.name);
+    const isPdf = isPdfFile(file.name);
+
+    const card = document.createElement('div');
+    card.className = 'explorer-grid-card';
+    card.setAttribute('role', 'option');
+    card.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    card.setAttribute('aria-label', `File: ${file.name}, ${file.size > 0 ? formatBytes(file.size) : ''}`);
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'explorer-grid-cb';
+    cb.checked = isSelected;
+    cb.setAttribute('aria-label', `Select ${file.name}`);
+    cb.addEventListener('change', () => {
+        if (cb.checked) explorerSelectedFiles.add(file.path);
+        else explorerSelectedFiles.delete(file.path);
+        updateBatchBar();
+    });
+    card.appendChild(cb);
+
+    const icon = document.createElement('div');
+    icon.className = 'explorer-grid-icon';
+    icon.textContent = getFileIcon(file.name);
+    card.appendChild(icon);
+
+    const name = document.createElement('div');
+    name.className = 'explorer-grid-name';
+    name.innerHTML = escapeHtml(file.name) + (file.isEdited ? ' <span class="explorer-item-badge--edited" title="Modified in this session">Edited</span>' : '');
+    name.title = file.path;
+    card.appendChild(name);
+
+    // Show directory badge if searching or not in standard folder mode
+    if (file.dirPath && (!isFolderMode || isSearching)) {
+        const pathEl = document.createElement('div');
+        pathEl.className = 'explorer-grid-path';
+        pathEl.textContent = `📁 ${file.dirPath}/`;
+        pathEl.title = `Navigate to folder ${file.dirPath}`;
+        pathEl.style.cursor = 'pointer';
+        pathEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigateToDir(file.dirPath);
+        });
+        card.appendChild(pathEl);
+    }
+
+    const size = document.createElement('div');
+    size.className = 'explorer-grid-size';
+    size.textContent = file.size > 0 ? formatBytes(file.size) : '';
+    card.appendChild(size);
+
+    const actions = document.createElement('div');
+    actions.className = 'explorer-grid-actions';
+
+    if (mediaCategory) {
+        const playBtn = document.createElement('button');
+        playBtn.className = 'explorer-file-play-btn';
+        playBtn.title = `Play ${file.name}`;
+        playBtn.setAttribute('aria-label', `Play ${file.name}`);
+        playBtn.innerHTML = '▶️';
+        playBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openMediaPlayerByPath(file.path);
+        });
+        actions.appendChild(playBtn);
+    } else if (isPhoto) {
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'explorer-file-view-btn';
+        viewBtn.title = `View ${file.name}`;
+        viewBtn.setAttribute('aria-label', `View ${file.name}`);
+        viewBtn.innerHTML = '👁️';
+        viewBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openImageViewerByPath(file.path);
+        });
+        actions.appendChild(viewBtn);
+    } else if (isPdf) {
+        const pdfBtn = document.createElement('button');
+        pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
+        pdfBtn.title = `View ${file.name} PDF document`;
+        pdfBtn.setAttribute('aria-label', `View ${file.name} PDF document`);
+        pdfBtn.innerHTML = '📄';
+        pdfBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openPdfViewerByPath(file.path);
+        });
+        actions.appendChild(pdfBtn);
+    } else if (isTextDoc) {
+        const readBtn = document.createElement('button');
+        readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
+        readBtn.title = `Read ${file.name}`;
+        readBtn.setAttribute('aria-label', `Read ${file.name}`);
+        readBtn.innerHTML = '📄';
+        readBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openTextViewerByPath(file.path);
+        });
+        actions.appendChild(readBtn);
+    }
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'explorer-file-dl-btn';
+    dlBtn.title = `Download ${file.name}`;
+    dlBtn.setAttribute('aria-label', `Download ${file.name}`);
+    dlBtn.innerHTML = '⬇️';
+    dlBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+            dlBtn.textContent = '⏳';
+            const fileBlob = await getDecryptedFileBlob(file.path);
+            triggerDownload(fileBlob, sanitizeFilenamePart(file.name, 'file'));
+            dlBtn.textContent = '✅';
+            setTimeout(() => { dlBtn.innerHTML = '⬇️'; }, 2000);
+        } catch (err) {
+            console.error('[Explorer Download]', err);
+            showToast(`Failed to extract file: ${err.message}`, 'error');
+            dlBtn.innerHTML = '⬇️';
+        }
+    });
+
+    const renameBtn = document.createElement('button');
+    renameBtn.className = 'explorer-file-rename-btn';
+    renameBtn.title = `Rename ${file.name}`;
+    renameBtn.setAttribute('aria-label', `Rename ${file.name}`);
+    renameBtn.innerHTML = '✏️';
+    renameBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        renameVaultFile(file.path);
+    });
+    actions.appendChild(renameBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'explorer-file-del-btn';
+    delBtn.title = `Delete ${file.name} from vault`;
+    delBtn.setAttribute('aria-label', `Delete ${file.name} from vault`);
+    delBtn.innerHTML = '🗑️';
+    delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteVaultFile(file.path);
+    });
+    actions.appendChild(delBtn);
+
+    actions.appendChild(dlBtn);
+    card.appendChild(actions);
+
+    // Clicking card previews directly
+    if (mediaCategory || isPhoto || isTextDoc || isPdf) {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('input')) return;
+            if (mediaCategory) openMediaPlayerByPath(file.path);
+            else if (isPhoto) openImageViewerByPath(file.path);
+            else if (isPdf) openPdfViewerByPath(file.path);
+            else if (isTextDoc) openTextViewerByPath(file.path);
+        });
+    }
+
+    return card;
+}
+
+/**
+ * Create a list row element for a single file.
+ */
+function _createExplorerListFileRow(file, isFolderMode, isSearching) {
+    const isSelected = explorerSelectedFiles.has(file.path);
+    const mediaCategory = getMediaCategory(file.name);
+    const isPhoto = getFileCategory(file.name) === 'photo';
+    const isTextDoc = isTextOrCodeFile(file.name);
+    const isPdf = isPdfFile(file.name);
+
+    const row = document.createElement('div');
+    row.className = 'explorer-item';
+    row.setAttribute('role', 'option');
+    row.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    row.setAttribute('aria-label', `File: ${file.name}, ${file.size > 0 ? formatBytes(file.size) : ''}`);
+
+    const left = document.createElement('div');
+    left.className = 'explorer-item-left';
+
+    // Show checkboxes for file selection
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'explorer-item-cb';
+    cb.checked = isSelected;
+    cb.setAttribute('aria-label', `Select ${file.name}`);
+    cb.addEventListener('change', (e) => {
+        e.stopPropagation();
+        if (cb.checked) explorerSelectedFiles.add(file.path);
+        else explorerSelectedFiles.delete(file.path);
+        updateBatchBar();
+    });
+    left.appendChild(cb);
+
+    const icon = document.createElement('span');
+    icon.className = 'explorer-item-icon';
+    icon.textContent = getFileIcon(file.name);
+    left.appendChild(icon);
+
+    const info = document.createElement('div');
+    info.className = 'explorer-item-info';
+
+    const name = document.createElement('span');
+    name.className = 'explorer-item-name';
+    name.innerHTML = escapeHtml(file.name) + (file.isEdited ? ' <span class="explorer-item-badge--edited" title="Modified in this session">Edited</span>' : '');
+    name.title = file.path;
+    info.appendChild(name);
+
+    // Show directory badge if searching or not in standard folder mode
+    if (file.dirPath && (!isFolderMode || isSearching)) {
+        const pathEl = document.createElement('span');
+        pathEl.className = 'explorer-item-path';
+        pathEl.textContent = `📁 ${file.dirPath}/`;
+        pathEl.title = `Navigate to folder ${file.dirPath}`;
+        pathEl.style.cursor = 'pointer';
+        pathEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigateToDir(file.dirPath);
+        });
+        info.appendChild(pathEl);
+    }
+
+    left.appendChild(info);
+
+    const right = document.createElement('div');
+    right.className = 'explorer-item-right';
+
+    const size = document.createElement('span');
+    size.className = 'explorer-item-size';
+    size.textContent = file.size > 0 ? formatBytes(file.size) : '';
+    right.appendChild(size);
+
+    if (mediaCategory) {
+        const playBtn = document.createElement('button');
+        playBtn.className = 'explorer-file-play-btn';
+        playBtn.title = `Play ${file.name} directly in browser`;
+        playBtn.setAttribute('aria-label', `Play ${file.name} directly in browser`);
+        playBtn.innerHTML = '▶️ Play';
+        playBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openMediaPlayerByPath(file.path);
+        });
+        right.appendChild(playBtn);
+    } else if (isPhoto) {
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'explorer-file-view-btn';
+        viewBtn.title = `View ${file.name} in high-res lightbox`;
+        viewBtn.setAttribute('aria-label', `View ${file.name} in high-res lightbox`);
+        viewBtn.innerHTML = '👁️ View';
+        viewBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openImageViewerByPath(file.path);
+        });
+        right.appendChild(viewBtn);
+    } else if (isPdf) {
+        const pdfBtn = document.createElement('button');
+        pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
+        pdfBtn.title = `View ${file.name} PDF document`;
+        pdfBtn.setAttribute('aria-label', `View ${file.name} PDF document`);
+        pdfBtn.innerHTML = '📄 View';
+        pdfBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openPdfViewerByPath(file.path);
+        });
+        right.appendChild(pdfBtn);
+    } else if (isTextDoc) {
+        const readBtn = document.createElement('button');
+        readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
+        readBtn.title = `Read ${file.name} document`;
+        readBtn.setAttribute('aria-label', `Read ${file.name} document`);
+        readBtn.innerHTML = '📄 Read';
+        readBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openTextViewerByPath(file.path);
+        });
+        right.appendChild(readBtn);
+    }
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'explorer-file-dl-btn';
+    dlBtn.title = `Download ${file.name}`;
+    dlBtn.setAttribute('aria-label', `Save ${file.name}`);
+    dlBtn.innerHTML = '⬇️ Save';
+    dlBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+            dlBtn.textContent = '⏳ ...';
+            const fileBlob = await getDecryptedFileBlob(file.path);
+            triggerDownload(fileBlob, sanitizeFilenamePart(file.name, 'file'));
+            dlBtn.textContent = '✅ Saved';
+            setTimeout(() => { dlBtn.innerHTML = '⬇️ Save'; }, 2000);
+        } catch (err) {
+            console.error('[Explorer Download]', err);
+            showToast(`Failed to extract file: ${err.message}`, 'error');
+            dlBtn.innerHTML = '⬇️ Save';
+        }
+    });
+
+    const renameBtn = document.createElement('button');
+    renameBtn.className = 'explorer-file-rename-btn';
+    renameBtn.title = `Rename ${file.name}`;
+    renameBtn.setAttribute('aria-label', `Rename ${file.name}`);
+    renameBtn.innerHTML = '✏️ Rename';
+    renameBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        renameVaultFile(file.path);
+    });
+    right.appendChild(renameBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'explorer-file-del-btn';
+    delBtn.title = `Delete ${file.name} from vault`;
+    delBtn.setAttribute('aria-label', `Delete ${file.name} from vault`);
+    delBtn.innerHTML = '🗑️ Delete';
+    delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteVaultFile(file.path);
+    });
+    right.appendChild(delBtn);
+
+    right.appendChild(dlBtn);
+
+    // Allow clicking row to play media or view document
+    if (mediaCategory || isPhoto || isTextDoc || isPdf) {
+        row.style.cursor = 'pointer';
+        row.title = isPhoto ? 'Click to view photo' : (isPdf ? 'Click to view PDF' : (isTextDoc ? 'Click to read document' : 'Click to play media'));
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('input')) return;
+            if (mediaCategory) openMediaPlayerByPath(file.path);
+            else if (isPhoto) openImageViewerByPath(file.path);
+            else if (isPdf) openPdfViewerByPath(file.path);
+            else if (isTextDoc) openTextViewerByPath(file.path);
+        });
+    }
+
+    row.appendChild(left);
+    row.appendChild(right);
+    return row;
+}
+
+/**
+ * Render file list with hierarchical folder drill-down, search, category filtering,
+ * sorting, and view modes (list/grid).
+ */
+function renderExplorerFileList(query = '') {
+    const listEl = document.getElementById('explorer-file-list');
+    const selectAllCb = document.getElementById('explorer-select-all');
+    if (!listEl) return;
+
+    listEl.innerHTML = '';
+    listEl.className = `explorer-body ${explorerViewMode === 'grid' ? 'explorer-body--grid' : 'explorer-body--list'}`;
+    listEl.setAttribute('role', 'listbox');
+    listEl.setAttribute('aria-label', 'Decrypted vault files and directories');
+
+    const { displayFiles, displayFolders, isFolderMode, isSearching } = _filterAndSortExplorerItems(query);
+
+    // 1. Render Breadcrumbs Navigation Trail
+    renderBreadcrumbs(isSearching, query);
+
     // 2. Update Select-All Checkbox state
     if (selectAllCb) {
         if (displayFiles.length > 0 && displayFiles.every(f => explorerSelectedFiles.has(f.path))) {
@@ -5545,31 +6025,7 @@ function renderExplorerFileList(query = '') {
 
     // 3. Handle Empty State
     if (displayFolders.length === 0 && displayFiles.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'explorer-empty';
-        if (isSearching) {
-            empty.textContent = `No files match "${query}" in this view.`;
-        } else if (explorerFilterCategory !== 'all') {
-            empty.textContent = `No ${explorerFilterCategory} files found in this location.`;
-        } else {
-            const parentDir = explorerCurrentDir.includes('/')
-                ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
-                : '';
-            const parentName = parentDir ? parentDir.split('/').pop() : 'Vault Root';
-            empty.innerHTML = `
-                <div class="explorer-empty-icon">📁</div>
-                <div class="explorer-empty-title">This folder is empty.</div>
-                ${explorerCurrentDir ? `<button type="button" class="explorer-file-view-btn explorer-btn-empty-up" id="btn-empty-up">⬆️ Back to ${escapeHtml(parentName)}</button>` : ''}
-            `;
-        }
-        listEl.appendChild(empty);
-        const upBtn = document.getElementById('btn-empty-up');
-        if (upBtn) {
-            const parentDir = explorerCurrentDir.includes('/')
-                ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
-                : '';
-            upBtn.addEventListener('click', () => navigateToDir(parentDir));
-        }
+        _renderExplorerEmptyState(listEl, isSearching, query);
         return;
     }
 
@@ -5579,429 +6035,20 @@ function renderExplorerFileList(query = '') {
             ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
             : '';
         const parentName = parentDir ? parentDir.split('/').pop() : 'Vault Root';
-
-        if (explorerViewMode === 'grid') {
-            const upCard = document.createElement('div');
-            upCard.className = 'explorer-grid-card explorer-grid-parent';
-            upCard.tabIndex = 0;
-            upCard.title = `Up to parent folder (${parentName})`;
-            upCard.innerHTML = `
-                <div class="explorer-grid-icon">⬆️</div>
-                <div class="explorer-grid-name">.. [Parent]</div>
-                <div class="explorer-grid-meta">Up to ${escapeHtml(parentName)}</div>
-            `;
-            upCard.addEventListener('click', () => navigateToDir(parentDir));
-            upCard.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(parentDir); }
-            });
-            listEl.appendChild(upCard);
-        } else {
-            const upRow = document.createElement('div');
-            upRow.className = 'explorer-item explorer-parent-item';
-            upRow.tabIndex = 0;
-            upRow.title = `Up to parent folder (${parentName})`;
-            upRow.innerHTML = `
-                <div class="explorer-item-left">
-                    <span class="explorer-item-icon">⬆️</span>
-                    <div class="explorer-item-info">
-                        <span class="explorer-item-name">.. [Parent Folder]</span>
-                        <span class="explorer-item-path">Return to ${escapeHtml(parentName)}</span>
-                    </div>
-                </div>
-                <div class="explorer-item-right">
-                    <span class="explorer-folder-arrow">↩️ Up</span>
-                </div>
-            `;
-            upRow.addEventListener('click', () => navigateToDir(parentDir));
-            upRow.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(parentDir); }
-            });
-            listEl.appendChild(upRow);
-        }
+        _renderExplorerParentItem(listEl, parentDir, parentName, explorerViewMode);
     }
 
     // 5. In Directory Mode: Render Subfolders First
     if (isFolderMode && displayFolders.length > 0) {
-        displayFolders.forEach(folder => {
-            if (explorerViewMode === 'grid') {
-                const card = document.createElement('div');
-                card.className = 'explorer-grid-card explorer-grid-folder';
-                card.tabIndex = 0;
-                card.setAttribute('role', 'option');
-                card.setAttribute('aria-label', `Folder: ${folder.name}, ${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}`);
-                card.title = `Open folder: ${folder.name}`;
-                card.innerHTML = `
-                    <div class="explorer-grid-icon">📁</div>
-                    <div class="explorer-grid-name explorer-folder-name">${escapeHtml(folder.name)}</div>
-                    <div class="explorer-grid-meta">${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}</div>
-                    <div class="explorer-grid-size">${folder.totalBytes > 0 ? formatBytes(folder.totalBytes) : ''}</div>
-                `;
-                card.addEventListener('click', () => navigateToDir(folder.path));
-                card.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(folder.path); }
-                });
-                listEl.appendChild(card);
-            } else {
-                const row = document.createElement('div');
-                row.className = 'explorer-item explorer-folder-item';
-                row.tabIndex = 0;
-                row.setAttribute('role', 'option');
-                row.setAttribute('aria-label', `Folder: ${folder.name}, ${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}`);
-                row.title = `Open folder: ${folder.name}`;
-                row.innerHTML = `
-                    <div class="explorer-item-left">
-                        <span class="explorer-item-icon">📁</span>
-                        <div class="explorer-item-info">
-                            <span class="explorer-item-name explorer-folder-name">${escapeHtml(folder.name)}</span>
-                            <span class="explorer-item-path">${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'} · ${formatBytes(folder.totalBytes)}</span>
-                        </div>
-                    </div>
-                    <div class="explorer-item-right">
-                        <span class="explorer-folder-arrow">📂 Open ➔</span>
-                    </div>
-                `;
-                row.addEventListener('click', () => navigateToDir(folder.path));
-                row.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(folder.path); }
-                });
-                listEl.appendChild(row);
-            }
-        });
+        _renderExplorerSubfolders(listEl, displayFolders, explorerViewMode);
     }
 
     // 6. Render Files (with PDF, media, image, text viewers, download buttons, checkboxes)
     displayFiles.forEach(file => {
-        const isSelected = explorerSelectedFiles.has(file.path);
-        const mediaCategory = getMediaCategory(file.name);
-        const isPhoto = getFileCategory(file.name) === 'photo';
-        const isTextDoc = isTextOrCodeFile(file.name);
-        const isPdf = isPdfFile(file.name);
-
         if (explorerViewMode === 'grid') {
-            // ── Grid Card Layout ──
-            const card = document.createElement('div');
-            card.className = 'explorer-grid-card';
-            card.setAttribute('role', 'option');
-            card.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-            card.setAttribute('aria-label', `File: ${file.name}, ${file.size > 0 ? formatBytes(file.size) : ''}`);
-
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.className = 'explorer-grid-cb';
-            cb.checked = isSelected;
-            cb.setAttribute('aria-label', `Select ${file.name}`);
-            cb.addEventListener('change', () => {
-                if (cb.checked) explorerSelectedFiles.add(file.path);
-                else explorerSelectedFiles.delete(file.path);
-                updateBatchBar();
-            });
-            card.appendChild(cb);
-
-            const icon = document.createElement('div');
-            icon.className = 'explorer-grid-icon';
-            icon.textContent = getFileIcon(file.name);
-            card.appendChild(icon);
-
-            const name = document.createElement('div');
-            name.className = 'explorer-grid-name';
-            name.innerHTML = escapeHtml(file.name) + (file.isEdited ? ' <span class="explorer-item-badge--edited" title="Modified in this session">Edited</span>' : '');
-            name.title = file.path;
-            card.appendChild(name);
-
-            // Show directory badge if searching or not in standard folder mode
-            if (file.dirPath && (!isFolderMode || isSearching)) {
-                const pathEl = document.createElement('div');
-                pathEl.className = 'explorer-grid-path';
-                pathEl.textContent = `📁 ${file.dirPath}/`;
-                pathEl.title = `Navigate to folder ${file.dirPath}`;
-                pathEl.style.cursor = 'pointer';
-                pathEl.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    navigateToDir(file.dirPath);
-                });
-                card.appendChild(pathEl);
-            }
-
-            const size = document.createElement('div');
-            size.className = 'explorer-grid-size';
-            size.textContent = file.size > 0 ? formatBytes(file.size) : '';
-            card.appendChild(size);
-
-            const actions = document.createElement('div');
-            actions.className = 'explorer-grid-actions';
-
-            if (mediaCategory) {
-                const playBtn = document.createElement('button');
-                playBtn.className = 'explorer-file-play-btn';
-                playBtn.title = `Play ${file.name}`;
-                playBtn.setAttribute('aria-label', `Play ${file.name}`);
-                playBtn.innerHTML = '▶️';
-                playBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openMediaPlayerByPath(file.path);
-                });
-                actions.appendChild(playBtn);
-            } else if (isPhoto) {
-                const viewBtn = document.createElement('button');
-                viewBtn.className = 'explorer-file-view-btn';
-                viewBtn.title = `View ${file.name}`;
-                viewBtn.setAttribute('aria-label', `View ${file.name}`);
-                viewBtn.innerHTML = '👁️';
-                viewBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openImageViewerByPath(file.path);
-                });
-                actions.appendChild(viewBtn);
-            } else if (isPdf) {
-                const pdfBtn = document.createElement('button');
-                pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
-                pdfBtn.title = `View ${file.name} PDF document`;
-                pdfBtn.setAttribute('aria-label', `View ${file.name} PDF document`);
-                pdfBtn.innerHTML = '📄';
-                pdfBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openPdfViewerByPath(file.path);
-                });
-                actions.appendChild(pdfBtn);
-            } else if (isTextDoc) {
-                const readBtn = document.createElement('button');
-                readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
-                readBtn.title = `Read ${file.name}`;
-                readBtn.setAttribute('aria-label', `Read ${file.name}`);
-                readBtn.innerHTML = '📄';
-                readBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openTextViewerByPath(file.path);
-                });
-                actions.appendChild(readBtn);
-            }
-
-            const dlBtn = document.createElement('button');
-            dlBtn.className = 'explorer-file-dl-btn';
-            dlBtn.title = `Download ${file.name}`;
-            dlBtn.setAttribute('aria-label', `Download ${file.name}`);
-            dlBtn.innerHTML = '⬇️';
-            dlBtn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                try {
-                    dlBtn.textContent = '⏳';
-                    const fileBlob = await getDecryptedFileBlob(file.path);
-                    triggerDownload(fileBlob, sanitizeFilenamePart(file.name, 'file'));
-                    dlBtn.textContent = '✅';
-                    setTimeout(() => { dlBtn.innerHTML = '⬇️'; }, 2000);
-                } catch (err) {
-                    console.error('[Explorer Download]', err);
-                    showToast(`Failed to extract file: ${err.message}`, 'error');
-                    dlBtn.innerHTML = '⬇️';
-                }
-            });
-            const renameBtn = document.createElement('button');
-            renameBtn.className = 'explorer-file-rename-btn';
-            renameBtn.title = `Rename ${file.name}`;
-            renameBtn.setAttribute('aria-label', `Rename ${file.name}`);
-            renameBtn.innerHTML = '✏️';
-            renameBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                renameVaultFile(file.path);
-            });
-            actions.appendChild(renameBtn);
-
-            const delBtn = document.createElement('button');
-            delBtn.className = 'explorer-file-del-btn';
-            delBtn.title = `Delete ${file.name} from vault`;
-            delBtn.setAttribute('aria-label', `Delete ${file.name} from vault`);
-            delBtn.innerHTML = '🗑️';
-            delBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteVaultFile(file.path);
-            });
-            actions.appendChild(delBtn);
-
-            actions.appendChild(dlBtn);
-            card.appendChild(actions);
-
-            // Clicking card previews directly
-            if (mediaCategory || isPhoto || isTextDoc || isPdf) {
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('button') || e.target.closest('input')) return;
-                    if (mediaCategory) openMediaPlayerByPath(file.path);
-                    else if (isPhoto) openImageViewerByPath(file.path);
-                    else if (isPdf) openPdfViewerByPath(file.path);
-                    else if (isTextDoc) openTextViewerByPath(file.path);
-                });
-            }
-
-            listEl.appendChild(card);
-
+            listEl.appendChild(_createExplorerGridFileCard(file, isFolderMode, isSearching));
         } else {
-            // ── List Row Layout ──
-            const row = document.createElement('div');
-            row.className = 'explorer-item';
-            row.setAttribute('role', 'option');
-            row.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-            row.setAttribute('aria-label', `File: ${file.name}, ${file.size > 0 ? formatBytes(file.size) : ''}`);
-
-            const left = document.createElement('div');
-            left.className = 'explorer-item-left';
-
-            // Show checkboxes for file selection
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.className = 'explorer-item-cb';
-            cb.checked = isSelected;
-            cb.setAttribute('aria-label', `Select ${file.name}`);
-            cb.addEventListener('change', (e) => {
-                e.stopPropagation();
-                if (cb.checked) explorerSelectedFiles.add(file.path);
-                else explorerSelectedFiles.delete(file.path);
-                updateBatchBar();
-            });
-            left.appendChild(cb);
-
-            const icon = document.createElement('span');
-            icon.className = 'explorer-item-icon';
-            icon.textContent = getFileIcon(file.name);
-            left.appendChild(icon);
-
-            const info = document.createElement('div');
-            info.className = 'explorer-item-info';
-
-            const name = document.createElement('span');
-            name.className = 'explorer-item-name';
-            name.innerHTML = escapeHtml(file.name) + (file.isEdited ? ' <span class="explorer-item-badge--edited" title="Modified in this session">Edited</span>' : '');
-            name.title = file.path;
-            info.appendChild(name);
-
-            // Show directory badge if searching or not in standard folder mode
-            if (file.dirPath && (!isFolderMode || isSearching)) {
-                const pathEl = document.createElement('span');
-                pathEl.className = 'explorer-item-path';
-                pathEl.textContent = `📁 ${file.dirPath}/`;
-                pathEl.title = `Navigate to folder ${file.dirPath}`;
-                pathEl.style.cursor = 'pointer';
-                pathEl.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    navigateToDir(file.dirPath);
-                });
-                info.appendChild(pathEl);
-            }
-
-            left.appendChild(info);
-
-            const right = document.createElement('div');
-            right.className = 'explorer-item-right';
-
-            const size = document.createElement('span');
-            size.className = 'explorer-item-size';
-            size.textContent = file.size > 0 ? formatBytes(file.size) : '';
-            right.appendChild(size);
-
-            if (mediaCategory) {
-                const playBtn = document.createElement('button');
-                playBtn.className = 'explorer-file-play-btn';
-                playBtn.title = `Play ${file.name} directly in browser`;
-                playBtn.setAttribute('aria-label', `Play ${file.name} directly in browser`);
-                playBtn.innerHTML = '▶️ Play';
-                playBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openMediaPlayerByPath(file.path);
-                });
-                right.appendChild(playBtn);
-            } else if (isPhoto) {
-                const viewBtn = document.createElement('button');
-                viewBtn.className = 'explorer-file-view-btn';
-                viewBtn.title = `View ${file.name} in high-res lightbox`;
-                viewBtn.setAttribute('aria-label', `View ${file.name} in high-res lightbox`);
-                viewBtn.innerHTML = '👁️ View';
-                viewBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openImageViewerByPath(file.path);
-                });
-                right.appendChild(viewBtn);
-            } else if (isPdf) {
-                const pdfBtn = document.createElement('button');
-                pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
-                pdfBtn.title = `View ${file.name} PDF document`;
-                pdfBtn.setAttribute('aria-label', `View ${file.name} PDF document`);
-                pdfBtn.innerHTML = '📄 View';
-                pdfBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openPdfViewerByPath(file.path);
-                });
-                right.appendChild(pdfBtn);
-            } else if (isTextDoc) {
-                const readBtn = document.createElement('button');
-                readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
-                readBtn.title = `Read ${file.name} document`;
-                readBtn.setAttribute('aria-label', `Read ${file.name} document`);
-                readBtn.innerHTML = '📄 Read';
-                readBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openTextViewerByPath(file.path);
-                });
-                right.appendChild(readBtn);
-            }
-
-            const dlBtn = document.createElement('button');
-            dlBtn.className = 'explorer-file-dl-btn';
-            dlBtn.title = `Download ${file.name}`;
-            dlBtn.setAttribute('aria-label', `Save ${file.name}`);
-            dlBtn.innerHTML = '⬇️ Save';
-            dlBtn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                try {
-                    dlBtn.textContent = '⏳ ...';
-                    const fileBlob = await getDecryptedFileBlob(file.path);
-                    triggerDownload(fileBlob, sanitizeFilenamePart(file.name, 'file'));
-                    dlBtn.textContent = '✅ Saved';
-                    setTimeout(() => { dlBtn.innerHTML = '⬇️ Save'; }, 2000);
-                } catch (err) {
-                    console.error('[Explorer Download]', err);
-                    showToast(`Failed to extract file: ${err.message}`, 'error');
-                    dlBtn.innerHTML = '⬇️ Save';
-                }
-            });
-            const renameBtn = document.createElement('button');
-            renameBtn.className = 'explorer-file-rename-btn';
-            renameBtn.title = `Rename ${file.name}`;
-            renameBtn.setAttribute('aria-label', `Rename ${file.name}`);
-            renameBtn.innerHTML = '✏️ Rename';
-            renameBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                renameVaultFile(file.path);
-            });
-            right.appendChild(renameBtn);
-
-            const delBtn = document.createElement('button');
-            delBtn.className = 'explorer-file-del-btn';
-            delBtn.title = `Delete ${file.name} from vault`;
-            delBtn.setAttribute('aria-label', `Delete ${file.name} from vault`);
-            delBtn.innerHTML = '🗑️ Delete';
-            delBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteVaultFile(file.path);
-            });
-            right.appendChild(delBtn);
-
-            right.appendChild(dlBtn);
-
-            // Allow clicking row to play media or view document
-            if (mediaCategory || isPhoto || isTextDoc || isPdf) {
-                row.style.cursor = 'pointer';
-                row.title = isPhoto ? 'Click to view photo' : (isPdf ? 'Click to view PDF' : (isTextDoc ? 'Click to read document' : 'Click to play media'));
-                row.addEventListener('click', (e) => {
-                    if (e.target.closest('button') || e.target.closest('input')) return;
-                    if (mediaCategory) openMediaPlayerByPath(file.path);
-                    else if (isPhoto) openImageViewerByPath(file.path);
-                    else if (isPdf) openPdfViewerByPath(file.path);
-                    else if (isTextDoc) openTextViewerByPath(file.path);
-                });
-            }
-
-            row.appendChild(left);
-            row.appendChild(right);
-            listEl.appendChild(row);
+            listEl.appendChild(_createExplorerListFileRow(file, isFolderMode, isSearching));
         }
     });
 
@@ -7002,35 +7049,15 @@ if (typeof window !== 'undefined') {
     window.reencryptCurrentVault = reencryptCurrentVault;
 }
 
-// Wire up Explorer & Cinema Media Player UI event listeners
-function initExplorerUI() {
+function _initExplorerSearchAndFilterControls() {
     const searchInput = document.getElementById('explorer-search-input');
     const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
-    const closeBtn = document.getElementById('btn-close-explorer');
-    const doneBtn = document.getElementById('btn-done-explorer');
-    const dlAllBtn = document.getElementById('btn-explorer-download-all');
-    const modal = document.getElementById('vault-explorer-modal');
-
     const sortSelect = document.getElementById('explorer-sort-select');
     const viewListBtn = document.getElementById('btn-view-list');
     const viewGridBtn = document.getElementById('btn-view-grid');
     const selectAllCb = document.getElementById('explorer-select-all');
     const batchDlBtn = document.getElementById('btn-batch-download');
     const filterTabs = document.querySelectorAll('.explorer-filter-tab');
-
-    // Media modal elements
-    const mediaModal = document.getElementById('vault-media-modal');
-    const closeMediaBtn = document.getElementById('btn-close-media-modal');
-    const mediaOpenTabBtn = document.getElementById('btn-media-open-tab');
-    const mediaDlBtn = document.getElementById('btn-media-download');
-    const mediaPrevBtn = document.getElementById('btn-media-prev');
-    const mediaNextBtn = document.getElementById('btn-media-next');
-    const mediaRewind10Btn = document.getElementById('btn-media-rewind10');
-    const mediaForward10Btn = document.getElementById('btn-media-forward10');
-    const mediaSpeedSelect = document.getElementById('media-speed-select');
-    const mediaFitBtn = document.getElementById('btn-media-fit');
-    const mediaPipBtn = document.getElementById('btn-media-pip');
-    const mediaFullscreenBtn = document.getElementById('btn-media-fullscreen');
 
     // Search
     searchInput?.addEventListener('input', () => {
@@ -7084,7 +7111,6 @@ function initExplorerUI() {
         });
     });
 
-
     // Select All
     selectAllCb?.addEventListener('change', () => {
         const q = (searchInput?.value || '').trim().toLowerCase();
@@ -7116,9 +7142,21 @@ function initExplorerUI() {
 
     // Batch download
     batchDlBtn?.addEventListener('click', batchDownloadSelected);
+}
 
+function _initExplorerFileActionControls() {
+    const modal = document.getElementById('vault-explorer-modal');
+    const closeBtn = document.getElementById('btn-close-explorer');
+    const doneBtn = document.getElementById('btn-done-explorer');
+    const dlAllBtn = document.getElementById('btn-explorer-download-all');
     const addFilesBtn = document.getElementById('btn-explorer-add-files');
     const addFilesInput = document.getElementById('explorer-add-files-input');
+    const newFileBtn = document.getElementById('btn-explorer-new-file');
+    const reencryptBtn = document.getElementById('btn-explorer-reencrypt');
+    const autoLockSelect = document.getElementById('explorer-autolock-select');
+    const verifyBtn = document.getElementById('btn-explorer-verify');
+    const explorerFileListEl = document.getElementById('explorer-file-list');
+
     addFilesBtn?.addEventListener('click', () => addFilesInput?.click());
     addFilesInput?.addEventListener('change', (e) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -7128,7 +7166,6 @@ function initExplorerUI() {
     });
 
     // Drag and drop files onto explorer modal to import
-    const explorerFileListEl = document.getElementById('explorer-file-list');
     if (modal) {
         modal.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -7150,13 +7187,9 @@ function initExplorerUI() {
         });
     }
 
-    const newFileBtn = document.getElementById('btn-explorer-new-file');
     newFileBtn?.addEventListener('click', createNewTextFile);
-
-    const reencryptBtn = document.getElementById('btn-explorer-reencrypt');
     reencryptBtn?.addEventListener('click', reEncryptVaultToZev);
 
-    const autoLockSelect = document.getElementById('explorer-autolock-select');
     if (autoLockSelect) {
         autoLockSelect.value = String(explorerAutoLockMinutes);
         autoLockSelect.addEventListener('change', (e) => {
@@ -7173,10 +7206,105 @@ function initExplorerUI() {
 
     closeBtn?.addEventListener('click', closeVaultExplorer);
     doneBtn?.addEventListener('click', closeVaultExplorer);
-
-    const verifyBtn = document.getElementById('btn-explorer-verify');
     verifyBtn?.addEventListener('click', verifyVaultIntegrity);
 
+    dlAllBtn?.addEventListener('click', async () => {
+        return await withWakeLock(async () => {
+            if (!currentDecryptedFolderName) return;
+            const outName = `${currentDecryptedFolderName}_decrypted.zip`;
+            const hasEditedFiles = (currentV3Vault && currentV3Vault.editedFiles && currentV3Vault.editedFiles.size > 0);
+
+            if (hasEditedFiles || (currentDecryptedZip && !currentDecryptedBlob)) {
+                dlAllBtn.textContent = '⏳ Packaging edited vault...';
+                try {
+                    const totalEditedBytes = currentDecryptedFileList.reduce((sum, f) => sum + (f.size || 0), 0);
+                    await checkBrowserStorageQuota(totalEditedBytes);
+                    if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
+                    const outZip = currentDecryptedZip || new JSZip();
+                    if (hasEditedFiles) {
+                        for (const item of currentDecryptedFileList) {
+                            const blob = await getDecryptedFileBlob(item.path);
+                            outZip.file(item.path, blob);
+                        }
+                    }
+                    const outZipBlob = await outZip.generateAsync({ type: 'blob' });
+                    triggerDownload(outZipBlob, outName);
+                    dlAllBtn.textContent = '✅ Downloaded!';
+                    log(`✅ Downloaded edited vault: "${outName}"`, 'success');
+                    setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
+                } catch (err) {
+                    console.error('[Download All Edited Error]', err);
+                    showToast(`Download failed: ${err.message}`, 'error');
+                    dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+                }
+            } else if (currentDecryptedBlob) {
+                dlAllBtn.textContent = '⏳ Downloading...';
+                triggerDownload(currentDecryptedBlob, outName);
+                log(`✅ Downloaded full vault: "${outName}"`, 'success');
+                setTimeout(() => {
+                    dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+                }, 2000);
+            } else if (currentV3Vault) {
+                dlAllBtn.textContent = '⏳ Streaming ZIP...';
+                try {
+                    let streamWriter = null;
+                    if (typeof StreamSaverAdapter !== 'undefined') {
+                        streamWriter = await StreamSaverAdapter.createStreamWriter(outName, currentV3Vault.catalog.totalSize);
+                        if (streamWriter && streamWriter.tier === 'tier3') {
+                            await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
+                        }
+                    }
+                    if (!streamWriter) {
+                        await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
+                    }
+                    await new Promise((resolve, reject) => {
+                        WorkerBridge.startDecryption({
+                            vaultSource: currentV3Vault.file,
+                            password: currentV3Vault.password || currentV3Vault.masterKey,
+                            keyfile: currentV3Vault.keyfileBytes,
+                            options: {
+                                writable: streamWriter ? (streamWriter.writable || streamWriter) : null,
+                                bufferChunks: !streamWriter
+                            },
+                            onProgress(t) {
+                                const speed = t.throughputMBs > 0 ? ` · ${t.throughputMBs.toFixed(1)} MB/s` : '';
+                                dlAllBtn.textContent = `⏳ ${Math.round(t.percent)}%${speed}`;
+                            },
+                            async onComplete(res) {
+                                try {
+                                    if (streamWriter && typeof streamWriter.finalize === 'function') {
+                                        await streamWriter.finalize();
+                                    } else if (res.decryptedBytes) {
+                                        const b = new Blob([res.decryptedBytes], { type: 'application/zip' });
+                                        triggerDownload(b, outName);
+                                    }
+                                    dlAllBtn.textContent = '✅ Downloaded!';
+                                    log(`✅ Stream-downloaded full decrypted vault: "${outName}"`, 'success');
+                                    setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
+                                    resolve(res);
+                                } catch (e) { reject(e); }
+                            },
+                            onError(err) {
+                                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+                                reject(err);
+                            }
+                        });
+                    });
+                } catch (err) {
+                    console.error('[Download All Error]', err);
+                    showToast(`Download failed: ${err.message}`, 'error');
+                    dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+                }
+            }
+        });
+    });
+
+    modal?.addEventListener('click', (e) => {
+        if (e.target.id === 'vault-explorer-modal') closeVaultExplorer();
+    });
+}
+
+function _initExplorerHealthAndSalvageModals() {
     const btnCloseHealth = document.getElementById('btn-close-health-modal');
     const btnDismissHealth = document.getElementById('btn-dismiss-health-modal');
     const healthModal = document.getElementById('vault-health-modal');
@@ -7209,8 +7337,9 @@ function initExplorerUI() {
 
     const btnOpenRescuedExplorer = document.getElementById('btn-salvage-open-explorer');
     btnOpenRescuedExplorer?.addEventListener('click', openExplorerFromSalvage);
+}
 
-    // Audio dock controls
+function _initExplorerAudioDockControls() {
     const mediaDockBtn = document.getElementById('btn-media-dock');
     mediaDockBtn?.addEventListener('click', dockAudioPlayer);
 
@@ -7237,106 +7366,9 @@ function initExplorerUI() {
     dockNextBtn?.addEventListener('click', () => {
         if (currentMediaIndex < currentMediaPlaylist.length - 1) playMediaByIndex(currentMediaIndex + 1);
     });
+}
 
-    dlAllBtn?.addEventListener('click', async () => {
-        return await withWakeLock(async () => {
-        if (!currentDecryptedFolderName) return;
-        const outName = `${currentDecryptedFolderName}_decrypted.zip`;
-        const hasEditedFiles = (currentV3Vault && currentV3Vault.editedFiles && currentV3Vault.editedFiles.size > 0);
-
-        if (hasEditedFiles || (currentDecryptedZip && !currentDecryptedBlob)) {
-            dlAllBtn.textContent = '⏳ Packaging edited vault...';
-            try {
-                const totalEditedBytes = currentDecryptedFileList.reduce((sum, f) => sum + (f.size || 0), 0);
-                await checkBrowserStorageQuota(totalEditedBytes);
-                if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
-                const outZip = currentDecryptedZip || new JSZip();
-                if (hasEditedFiles) {
-                    for (const item of currentDecryptedFileList) {
-                        const blob = await getDecryptedFileBlob(item.path);
-                        outZip.file(item.path, blob);
-                    }
-                }
-                const outZipBlob = await outZip.generateAsync({ type: 'blob' });
-                triggerDownload(outZipBlob, outName);
-                dlAllBtn.textContent = '✅ Downloaded!';
-                log(`✅ Downloaded edited vault: "${outName}"`, 'success');
-                setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
-            } catch (err) {
-                console.error('[Download All Edited Error]', err);
-                showToast(`Download failed: ${err.message}`, 'error');
-                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
-            }
-        } else if (currentDecryptedBlob) {
-            dlAllBtn.textContent = '⏳ Downloading...';
-            triggerDownload(currentDecryptedBlob, outName);
-            log(`✅ Downloaded full vault: "${outName}"`, 'success');
-            setTimeout(() => {
-                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
-            }, 2000);
-        } else if (currentV3Vault) {
-            dlAllBtn.textContent = '⏳ Streaming ZIP...';
-            try {
-                let streamWriter = null;
-                if (typeof StreamSaverAdapter !== 'undefined') {
-                    streamWriter = await StreamSaverAdapter.createStreamWriter(outName, currentV3Vault.catalog.totalSize);
-                    if (streamWriter && streamWriter.tier === 'tier3') {
-                        await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
-                    }
-                }
-                if (!streamWriter) {
-                    await checkBrowserStorageQuota(currentV3Vault.catalog.totalSize);
-                }
-                await new Promise((resolve, reject) => {
-                    WorkerBridge.startDecryption({
-                        vaultSource: currentV3Vault.file,
-                        password: currentV3Vault.password || currentV3Vault.masterKey,
-                        keyfile: currentV3Vault.keyfileBytes,
-                        options: {
-                            writable: streamWriter ? (streamWriter.writable || streamWriter) : null,
-                            bufferChunks: !streamWriter
-                        },
-                        onProgress(t) {
-                            const speed = t.throughputMBs > 0 ? ` · ${t.throughputMBs.toFixed(1)} MB/s` : '';
-                            dlAllBtn.textContent = `⏳ ${Math.round(t.percent)}%${speed}`;
-                        },
-                        async onComplete(res) {
-                            try {
-                                if (streamWriter && typeof streamWriter.finalize === 'function') {
-                                    await streamWriter.finalize();
-                                } else if (res.decryptedBytes) {
-                                    const b = new Blob([res.decryptedBytes], { type: 'application/zip' });
-                                    triggerDownload(b, outName);
-                                }
-                                dlAllBtn.textContent = '✅ Downloaded!';
-                                log(`✅ Stream-downloaded full decrypted vault: "${outName}"`, 'success');
-                                setTimeout(() => { dlAllBtn.textContent = '⬇️ Download All (ZIP)'; }, 2000);
-                                resolve(res);
-                            } catch (e) { reject(e); }
-                        },
-                        onError(err) {
-                            dlAllBtn.textContent = '⬇️ Download All (ZIP)';
-                            reject(err);
-                        }
-                    });
-                });
-            } catch (err) {
-                console.error('[Download All Error]', err);
-                showToast(`Download failed: ${err.message}`, 'error');
-                dlAllBtn.textContent = '⬇️ Download All (ZIP)';
-            }
-        }
-        });
-    });
-
-    modal?.addEventListener('click', (e) => {
-        if (e.target.id === 'vault-explorer-modal') closeVaultExplorer();
-    });
-
-    // ── Cinema Media & Image Lightbox Modal Events ──
-    // Handled on demand inside js/media-player.js via initMediaPlayerUI()
-
-    // ── Text / Code Viewer Modal Events ──
+function _initExplorerTextViewerControls() {
     const textModal = document.getElementById('vault-text-modal');
     const closeTextBtn = document.getElementById('btn-close-text-modal');
     const textWrapBtn = document.getElementById('btn-text-wrap');
@@ -7379,7 +7411,9 @@ function initExplorerUI() {
             showToast(`Saved "${currentTextFilename}"`, 'success');
         }
     });
+}
 
+function _initExplorerKeyboardAndLifecycleListeners() {
     // Keyboard Shortcuts for Viewer & Explorer Modals
     window.addEventListener('keydown', (e) => {
         const imgModalEl = document.getElementById('vault-image-modal');
@@ -7414,6 +7448,7 @@ function initExplorerUI() {
                 rotateImage();
             } else if (e.key === 'f' || e.key === 'F') {
                 e.preventDefault();
+                const imageFullscreenBtn = document.getElementById('btn-image-fullscreen');
                 imageFullscreenBtn?.click();
             }
         } else if (isTxtActive) {
@@ -7430,6 +7465,21 @@ function initExplorerUI() {
     // Lifecycle Zeroization Listeners
     window.addEventListener('beforeunload', () => lockV3VaultSession());
     window.addEventListener('pagehide', () => lockV3VaultSession());
+}
+
+let _isExplorerUIInitialized = false;
+
+// Wire up Explorer & Cinema Media Player UI event listeners
+function initExplorerUI() {
+    if (_isExplorerUIInitialized) return;
+    _isExplorerUIInitialized = true;
+
+    _initExplorerSearchAndFilterControls();
+    _initExplorerFileActionControls();
+    _initExplorerHealthAndSalvageModals();
+    _initExplorerAudioDockControls();
+    _initExplorerTextViewerControls();
+    _initExplorerKeyboardAndLifecycleListeners();
 }
 
 let deferredPwaPrompt = null;
