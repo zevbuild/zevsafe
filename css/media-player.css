@@ -1094,63 +1094,63 @@ audio.media-player-element {
 @media (max-width: 768px), (max-height: 500px) {
     /* ── 1. Full-Stage 100% Edge-to-Edge Viewport Maximization (Zero Squish) ── */
     .media-modal-overlay {
-        padding: 0 !important;
+        padding: 0;
         height: 100vh;
         height: 100dvh;
     }
 
     .media-modal-container {
-        width: 100vw !important;
-        height: 100vh !important;
-        height: 100dvh !important;
-        max-width: 100% !important;
-        max-height: 100vh !important;
-        max-height: 100dvh !important;
-        border-radius: 0 !important;
-        border: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        max-width: 100%;
+        max-height: 100vh;
+        max-height: 100dvh;
+        border-radius: 0;
+        border: none;
+        margin: 0;
+        padding: 0;
     }
 
     .media-modal-body {
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 100% !important;
-        max-height: 100% !important;
-        padding: 0 !important;
-        position: relative !important;
-        overflow: hidden !important;
-        background: #000 !important;
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+        max-height: 100%;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+        background: #000;
     }
 
     .cinema-video-stage {
-        width: 100% !important;
-        height: 100% !important;
-        max-height: 100% !important;
-        position: relative !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        overflow: hidden !important;
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
     }
 
     .media-player-element {
-        width: 100% !important;
-        height: 100% !important;
-        max-height: 100% !important;
-        object-fit: contain !important;
-        position: relative !important;
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        position: relative;
     }
 
     .media-player-element.media-player-element--cover {
-        object-fit: cover !important;
+        object-fit: cover !important; /* Retained: overrides base media-player-element containment when cover mode is active */
     }
 
     audio.media-player-element {
-        max-height: 54px !important;
-        height: 54px !important;
-        width: 90% !important;
-        margin: auto !important;
+        max-height: 54px;
+        height: 54px;
+        width: 90%;
+        margin: auto;
     }
 
     /* ── 2. Minimal Mobile Floating Header with Safe Area Inset (<= 40px base) ── */
