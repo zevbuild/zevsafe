@@ -176,18 +176,10 @@
     // 🎬 PLAY MEDIA BY INDEX (CORE STREAMING PIPELINE)
     // =====================================================
 
-    async function playMediaByIndex(index) {
-        if (!currentMediaPlaylist || index < 0 || index >= currentMediaPlaylist.length) return;
-        currentMediaIndex = index;
-        const item = currentMediaPlaylist[index];
-
-        const isMobilePhone = (window.innerWidth <= 768 && window.innerHeight <= 950) ||
-            (typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.userAgentData && navigator.userAgentData.mobile)));
-
-        // Phase 2 Directive 5: 2.5 GB Phone Memory Guardrail is enforced conditionally in setupDirectBlobPlayback
-
-        // Resolve catalog entry if available
-        const v3Vault = global.currentV3Vault;
+    /**
+     * Resolve catalog entry for media item and bind offsets.
+     */
+    function _resolveMediaTargetEntry(item, v3Vault) {
         const catalogEntry = (v3Vault && v3Vault.catalog && Array.isArray(v3Vault.catalog.files))
             ? v3Vault.catalog.files.find(f => f.path === item.path || f.name === item.name)
             : null;
@@ -206,26 +198,20 @@
             if (item.compressed === undefined) item.compressed = catalogEntry.compressed;
         }
 
-        const modal = document.getElementById('vault-media-modal');
-        const badge = document.getElementById('media-modal-badge');
-        const title = document.getElementById('media-modal-title');
-        const counter = document.getElementById('media-modal-counter');
-        const prevBtn = document.getElementById('btn-media-prev');
-        const nextBtn = document.getElementById('btn-media-next');
-        const videoEl = document.getElementById('cinema-video');
-        const audioEl = document.getElementById('cinema-audio');
-        const loader = document.getElementById('media-loading-indicator');
-        const loaderText = document.getElementById('media-loading-text');
+        return targetEntry;
+    }
 
-        if (!modal || (!global.currentDecryptedZip && !v3Vault)) return;
-
-        // Reset elements
+    /**
+     * Reset active video/audio elements, tear down previous stream channel, and reset view transforms.
+     */
+    function _resetMediaPlaybackElements(videoEl, audioEl, item) {
         if (videoEl) {
             try {
                 videoEl.pause();
                 videoEl.removeAttribute('src');
                 videoEl.load();
             } catch (_) {}
+            videoEl.style.display = 'none';
         }
         if (audioEl) {
             try {
@@ -233,6 +219,7 @@
                 audioEl.removeAttribute('src');
                 audioEl.load();
             } catch (_) {}
+            audioEl.style.display = 'none';
         }
 
         if (currentMediaBlobUrl && currentMediaBlobUrl.startsWith('blob:')) {
@@ -270,6 +257,19 @@
         clearMediaABLoop();
         currentMediaBookmarks = [];
         renderMediaBookmarks();
+    }
+
+    /**
+     * Update media player modal title, counter, badges, and loader state.
+     */
+    function _updateMediaModalHeaderState(modal, item, index) {
+        const badge = document.getElementById('media-modal-badge');
+        const title = document.getElementById('media-modal-title');
+        const counter = document.getElementById('media-modal-counter');
+        const prevBtn = document.getElementById('btn-media-prev');
+        const nextBtn = document.getElementById('btn-media-next');
+        const loader = document.getElementById('media-loading-indicator');
+        const loaderText = document.getElementById('media-loading-text');
 
         modal.classList.remove('d-none');
         modal.style.display = 'flex';
@@ -289,9 +289,29 @@
 
         if (prevBtn) prevBtn.disabled = index === 0;
         if (nextBtn) nextBtn.disabled = index === currentMediaPlaylist.length - 1;
+    }
 
-        if (videoEl) videoEl.style.display = 'none';
-        if (audioEl) audioEl.style.display = 'none';
+    async function playMediaByIndex(index) {
+        if (!currentMediaPlaylist || index < 0 || index >= currentMediaPlaylist.length) return;
+        currentMediaIndex = index;
+        const item = currentMediaPlaylist[index];
+
+        const isMobilePhone = (window.innerWidth <= 768 && window.innerHeight <= 950) ||
+            (typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.userAgentData && navigator.userAgentData.mobile)));
+
+        // Phase 2 Directive 5: 2.5 GB Phone Memory Guardrail is enforced conditionally in setupDirectBlobPlayback
+
+        const v3Vault = global.currentV3Vault;
+        const targetEntry = _resolveMediaTargetEntry(item, v3Vault);
+
+        const modal = document.getElementById('vault-media-modal');
+        const videoEl = document.getElementById('cinema-video');
+        const audioEl = document.getElementById('cinema-audio');
+
+        if (!modal || (!global.currentDecryptedZip && !v3Vault)) return;
+
+        _resetMediaPlaybackElements(videoEl, audioEl, item);
+        _updateMediaModalHeaderState(modal, item, index);
 
         // 1. Check On-Demand Range Streaming Path
         if (canStreamRange(item) && v3Vault && v3Vault.vaultBytes && v3Vault.password) {
