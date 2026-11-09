@@ -37,7 +37,7 @@ console.log('  ZevSafe Header & Cybernetic Navbar Test Suite               ');
 console.log('===============================================================');
 
 const indexHtml = fs.readFileSync(path.join(ROOT_DIR, 'index.html'), 'utf8');
-const stylesCss = fs.readFileSync(path.join(ROOT_DIR, 'styles.css'), 'utf8');
+const stylesCss = fs.readFileSync(path.join(ROOT_DIR, 'styles.css'), 'utf8').replace(/\r\n/g, '\n');
 
 // ── 1. DOM STRUCTURE & ACCESSIBILITY IN INDEX.HTML ──────────────────
 console.log('\n--- 1. Semantic DOM Structure & Accessibility ---');

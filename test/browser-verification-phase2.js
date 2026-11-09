@@ -104,6 +104,8 @@ async function runHeadlessVerification() {
         await cdp.send('Page.enable');
         await cdp.send('Runtime.enable');
         await cdp.send('Log.enable');
+        await cdp.send('Network.enable');
+        await cdp.send('Network.setBypassServiceWorker', { bypass: true });
 
         const consoleErrors = [];
         cdp.on('Runtime.exceptionThrown', (e) => { console.error('Chrome Uncaught Exception:', e.exceptionDetails); });
@@ -225,7 +227,7 @@ async function runHeadlessVerification() {
             mobile: false
         });
         await cdp.eval(`window.dispatchEvent(new Event('resize'))`);
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 1200));
 
         const desktopMetrics = await cdp.eval(`
             (() => {

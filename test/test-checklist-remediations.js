@@ -57,7 +57,7 @@ runTest('Item 4.22: app.js global paste listener checks decrypt-section and visi
 runTest('Item 7.25: index.html and app.js implement theme toggle buttons and persistence', () => {
     const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
     const appJs = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
-    const stylesCss = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+    const stylesCss = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8').replace(/\r\n/g, '\n');
 
     assert(indexHtml.includes('id="btn-theme-toggle"'), 'index.html must contain #btn-theme-toggle in navbar');
     assert(indexHtml.includes('id="btn-theme-toggle-mobile"'), 'index.html must contain #btn-theme-toggle-mobile in mobile drawer');
@@ -92,7 +92,7 @@ runTest('Item 10.2: _headers contains frame-src and camera=(self) Permissions-Po
 
 // 6. Item 10.11 / 10.9: WCAG AA color contrast in styles.css
 runTest('Item 10.11 & 10.9: styles.css enforces WCAG AA compliant text contrast in light theme', () => {
-    const stylesCss = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+    const stylesCss = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8').replace(/\r\n/g, '\n');
     // Dark modal surface override in light theme
     assert(
         stylesCss.includes('--text-3: #7c8ba1;'),
