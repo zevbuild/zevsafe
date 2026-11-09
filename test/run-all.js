@@ -181,6 +181,12 @@ const SUITE_CATALOG = [
         description: 'Lazy-loaded document viewer, PDF blob frame, z-index 2100 backdrop fix, 5 MB memory limit'
     },
     {
+        file: 'test-image-viewer.js',
+        category: 'ui',
+        name: 'In-Vault Modular Image Lightbox Viewer',
+        description: 'Lazy-loaded on photo click, pan/zoom/rotate math, playlist construction, blob URL cleanup'
+    },
+    {
         file: 'test-header-navbar-upgrade.js',
         category: 'ui',
         name: 'Header & Navbar Architecture',

@@ -558,6 +558,11 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 
 ### 3.30 Phase 6: Code Quality, CSS Refactoring, JS Decomposition, Unified Test Infrastructure & SW Range Streaming Restoration (v8.27.0 / WEB-VERSION-78)
+- **Modular On-Demand Image Lightbox Viewer (`js/image-viewer.js`):**
+  - Decoupled in-vault image lightbox viewing from the heavy 108 KB cinema media player into a dedicated lightweight modular controller `js/image-viewer.js` (`window.ZevImageViewer`).
+  - Clicking any photo (`.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`, `.avif`, `.bmp`) in Decrypted Vault Explorer now lazy-loads only `js/image-viewer.js` (~13 KB) via `ensureImageViewerLoaded`, preventing unnecessary loading of the video streaming engine and audio DSP tools.
+  - Features complete pan, zoom (clamped 0.2x to 5.0x), 90-degree step rotation, playlist browsing across all decrypted photos, fullscreen toggle, SVG security restrictions, and safe blob URL revocation.
+  - Precached in `sw.js` (67 shell assets) and certified by automated test suite `test/ui/test-image-viewer.js` (8/8 passed). Total test suite expanded to 32 suites (100% pass rate).
 - **Modular On-Demand Text Editor (`js/text-editor.js`) — Lazy-load on Edit click only:**
   - Extracted all text-editing functions (`toggleTextEditMode`, `saveTextFileChanges`, `syncTextareaLineNumbers`, `handleTextareaKeydown`, `createNewTextFile`) from `js/document-viewer.js` into new standalone controller `js/text-editor.js` (`window.ZevTextEditor`).
   - `js/document-viewer.js` now carries only view + PDF logic and an `ensureTextEditorLoaded()` lazy-loader that injects `js/text-editor.js` via a dynamic `<script>` tag strictly on first ✏️ Edit click.

@@ -8,7 +8,7 @@
 // ================================================================
 
 const APP_VERSION    = 'v78';
-const CONTENT_HASH   = '27dbcf40';
+const CONTENT_HASH   = '30ac46ac';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -71,6 +71,7 @@ const SHELL_ASSETS = [
     './js/crypto-worker.js',
     './js/device-benchmark.js',
     './js/document-viewer.js',
+    './js/image-viewer.js',
     './js/media-player.js',
     './js/passphrase-words.js',
     './js/qr-engine.js',

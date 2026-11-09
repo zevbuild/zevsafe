@@ -114,6 +114,42 @@ if (typeof window !== 'undefined') {
     window.ensureMediaPlayerLoaded = ensureMediaPlayerLoaded;
 }
 
+let _imageViewerLoadingPromise = null;
+function ensureImageViewerLoaded() {
+    if (typeof window !== 'undefined' && window.ZevImageViewer && window.ZevImageViewer.isLoaded()) {
+        return Promise.resolve();
+    }
+    if (_imageViewerLoadingPromise) {
+        return _imageViewerLoadingPromise;
+    }
+    if (typeof window !== 'undefined') {
+        window.currentImagePlaylist = currentImagePlaylist;
+        window.currentDecryptedFileList = currentDecryptedFileList;
+        window.getDecryptedFileBlob = getDecryptedFileBlob;
+        window.createTrackedBlobUrl = createTrackedBlobUrl;
+        window.revokeTrackedBlobUrl = revokeTrackedBlobUrl;
+        window.triggerDownload = triggerDownload;
+        window.showToast = showToast;
+        window.getFileCategory = getFileCategory;
+    }
+    _imageViewerLoadingPromise = Promise.all([
+        loadStyle('css/media-player.css'),
+        loadScript('js/image-viewer.js')
+    ]).then(() => {
+        if (typeof window !== 'undefined' && window.ZevImageViewer && typeof window.ZevImageViewer.initUI === 'function') {
+            window.ZevImageViewer.initUI();
+        }
+    }).catch(err => {
+        _imageViewerLoadingPromise = null;
+        console.error('Failed to load image viewer module:', err);
+        throw err;
+    });
+    return _imageViewerLoadingPromise;
+}
+if (typeof window !== 'undefined') {
+    window.ensureImageViewerLoaded = ensureImageViewerLoaded;
+}
+
 let _docViewerLoadingPromise = null;
 function ensureDocViewerLoaded() {
     if (typeof window !== 'undefined' && window.ZevDocViewer && window.ZevDocViewer.isLoaded()) {
@@ -5029,14 +5065,18 @@ function closeMediaPlayer() {
 }
 
 async function openImageViewerByPath(filePath) {
-    await ensureMediaPlayerLoaded();
-    if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.openImageViewerByPath === 'function') {
+    await ensureImageViewerLoaded();
+    if (typeof window !== 'undefined' && window.ZevImageViewer && typeof window.ZevImageViewer.openImageViewerByPath === 'function') {
+        return window.ZevImageViewer.openImageViewerByPath(filePath);
+    } else if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.openImageViewerByPath === 'function') {
         return window.ZevMedia.openImageViewerByPath(filePath);
     }
 }
 
 function closeImageViewer() {
-    if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.closeImageViewer === 'function') {
+    if (typeof window !== 'undefined' && window.ZevImageViewer && typeof window.ZevImageViewer.closeImageViewer === 'function') {
+        window.ZevImageViewer.closeImageViewer();
+    } else if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.closeImageViewer === 'function') {
         window.ZevMedia.closeImageViewer();
     }
 }

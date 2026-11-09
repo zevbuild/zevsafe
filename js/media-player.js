@@ -1327,6 +1327,15 @@
     }
 
     function openImageViewerByPath(filePath) {
+        if (global.ZevImageViewer && typeof global.ZevImageViewer.openImageViewerByPath === 'function') {
+            return global.ZevImageViewer.openImageViewerByPath(filePath);
+        }
+        if (typeof require !== 'undefined') {
+            try { require('./image-viewer.js'); } catch (_) {}
+            if (global.ZevImageViewer && typeof global.ZevImageViewer.openImageViewerByPath === 'function') {
+                return global.ZevImageViewer.openImageViewerByPath(filePath);
+            }
+        }
         if (!currentImagePlaylist || currentImagePlaylist.length === 0) {
             if (Array.isArray(global.currentImagePlaylist) && global.currentImagePlaylist.length > 0) {
                 currentImagePlaylist = [...global.currentImagePlaylist];

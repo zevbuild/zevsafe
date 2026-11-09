@@ -719,6 +719,7 @@
                             <span class="cl-badge cl-badge--date">November 9, 2026</span>
                         </div>
                         <div class="cl-tags">
+                            <span class="cl-tag">Modular Image Viewer</span>
                             <span class="cl-tag">Lazy Text Editor</span>
                             <span class="cl-tag">Modular Document Viewer</span>
                             <span class="cl-tag">PDF Stacking Fix</span>
@@ -735,6 +736,12 @@
                     </p>
 
                     <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div class="cl-item-body">
+                                <strong>Modular On-Demand Image Lightbox Viewer (<code>js/image-viewer.js</code>):</strong> Decoupled image lightbox viewing from the heavy 108 KB cinema media player into a standalone lightweight controller <code>js/image-viewer.js</code> (<code>window.ZevImageViewer</code>). Clicking any photo (<code>.jpg</code>, <code>.png</code>, <code>.webp</code>, <code>.svg</code>) in Decrypted Vault Explorer now loads only <code>js/image-viewer.js</code> (~13 KB) via <code>ensureImageViewerLoaded()</code>, saving over 90 KB of unneeded video streaming code for pure picture viewing. Precached in <code>sw.js</code> (67 shell assets, hash updated) and certified by automated test suite <code>test/ui/test-image-viewer.js</code> (8/8 passed).
+                            </div>
+                        </div>
                         <div class="cl-item">
                             <span class="cl-bullet cl-bullet--new">New</span>
                             <div class="cl-item-body">
