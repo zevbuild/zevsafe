@@ -736,6 +736,12 @@
 
                     <div class="cl-items-list">
                         <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Service Worker HTTP 206 Range Streaming &amp; Playlist Contracts:</strong> Aligned <code>js/media-player.js</code> with Service Worker protocol contracts: restored <code>READ_MEDIA_RANGE</code> and <code>MEDIA_RANGE_DATA</code> messaging, eliminated unhandled <code>initChannel</code> hangs, replaced non-existent <code>vaultBytes</code> with <code>currentV3Vault.file</code> and <code>masterKey</code>, integrated bounded <code>createBoundedChunkCache(6)</code>, and restored call-time playlist builders for media and image lightbox viewers from <code>global.currentDecryptedFileList</code>. Added automated test suite <code>test/test-real-playback.js</code> (7/7 passed).
+                            </div>
+                        </div>
+                        <div class="cl-item">
                             <span class="cl-bullet cl-bullet--new">New</span>
                             <div class="cl-item-body">
                                 <strong>Modular Focus Trap, Dialog Controller &amp; Background Inerting (<code>js/a11y-manager.js</code>):</strong> Standalone zero-dependency accessibility controller managing all 13 application modals. Automatically traps keyboard focus cycles within dialogs, transfers focus to the initial actionable control on open, restores focus to the triggering element on dismissal, dynamically applies HTML <code>inert</code> and <code>aria-hidden="true"</code> to background landmarks (<code>&lt;main&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code>), and guards Escape key dismissal during active jobs with user confirmation.

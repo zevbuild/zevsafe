@@ -179,6 +179,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Instant Timeline Seeking:** Seeking to any point across multi-GB files takes only ~25–35 ms because only the destination chunk is fetched and decrypted on demand.
 - **Seamless Progressive Fallback:** Automatically utilizes on-demand range streaming for v3 vaults while gracefully preserving full fallback to `getDecryptedFileBlob` for legacy vaults or environments without Service Worker support.
 - **On-Demand Decrypted Download:** The cinema modal download button (`#btn-media-download`) extracts the full file blob only when explicitly requested by the user, conserving RAM during standard playback.
+- **Service Worker Range Streaming Protocol Restoration (`js/media-player.js` hotfix):** Re-aligned message types with `sw.js` (`READ_MEDIA_RANGE` -> `MEDIA_RANGE_DATA`), eliminated unhandled `initChannel` hangs, corrected `extractFileRange` parameters to pass `v3Vault.file` and `v3Vault.masterKey`, bounded chunk caching with `StreamUnpacker.createBoundedChunkCache(6)`, and repaired dynamic playlist construction for media and images from `global.currentDecryptedFileList`. Verified via automated test suite `test/test-real-playback.js`.
 
 ### 3.19 Master Memory Management, Bounding, Cache Hygiene & Zeroization Protocol
 - **Stream AEAD Chunk Memory Architecture:**
@@ -598,6 +599,7 @@ node test/test-roadmap-plan.js                     #  11 tests: Strategic Roadma
 node test/test-video-player-pro.js                 #  45 tests: Video Player Pro Studio & Hotkeys
 node test/test-mobile-video-player.js              #  22 tests: Mobile Video Player & Slide-Up Drawer
 node test/test-media-player-security-lifecycle.js  #  17 tests: Security Lifecycle, Stream Revocation & Gestures
+node test/test-real-playback.js                    #   7 tests: E2E Real Playback & Range Streaming
 
 # === Landing Page & Production Distribution Integrity ===
 node test/test-header-navbar-upgrade.js            #  17 tests: Main Website Header & Cybernetic Navbar
@@ -610,7 +612,7 @@ node test/test-simulate-pwa-upgrade.js             #   8 tests: Headless Chrome 
 node test/test-phase7-a11y.js                     #  15 tests: WCAG 2.1 AA/AAA, Roving Tabindex & Axe-Core
 node test/browser-verification-phase2.js           #   6 tests: Headless Chrome Phase 2 Media Player CDP
 node test/browser-verification-phase3.js           #  10 tests: Headless Chrome Phase 3 Strict CSP & 13 Modals
-# Total: 29 Test Suites | 1,220 Passing Tests (100% Pass)
+# Total: 30 Test Suites | 1,227 Passing Tests (100% Pass)
 ```
 
 Ensure 100% of tests pass before committing any changes.
