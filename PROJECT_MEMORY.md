@@ -579,7 +579,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Hardened headless Chrome CDP test runners across all suites with Linux path resolution (`/usr/bin/google-chrome`, `/usr/bin/google-chrome-stable`, etc.) and `--no-sandbox`, `--disable-setuid-sandbox`, `--disable-dev-shm-usage` flags.
 - **Service Worker Cache Bump & Distribution Synchronization:**
   - Bumped `APP_VERSION = 'v78'` in `sw.js` and application shell tags to `WEB-VERSION-78` / `v8.27.0`.
-  - Precached 64 application shell assets in `SHELL_CACHE` (`zevsafe-shell-v78-10f54a74`).
+  - Precached 64 application shell assets in `SHELL_CACHE` (`zevsafe-shell-v78-adfccc86`).
   - Synchronized production distribution build (`tools/build-dist.js`) and validated zero internal test or documentation clutter in `dist/`.
   - Total test suite: 30 test suites | 1,227+ passing tests (100% pass rate).
 

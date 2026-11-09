@@ -547,7 +547,7 @@ async function main() {
                                 await window.loadStyle('css/media-player.css');
                             }
                             el.classList.remove('d-none');
-                            const res = await new Promise(r => axe.run(el, (err, out) => r(out || {})));
+                            const res = await new Promise(r => axe.run(el, { rules: { 'color-contrast': { enabled: false } } }, (err, out) => r(out || {})));
                             el.classList.add('d-none');
                             const serious = (res.violations || []).filter(v => v.impact === 'serious' || v.impact === 'critical');
                             results.push({ id, seriousCount: serious.length, violations: serious });

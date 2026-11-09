@@ -249,7 +249,7 @@ function launchChrome(debugPort) {
         '--disable-translate',
         '--mute-audio',
         '--hide-scrollbars',
-        `http://127.0.0.1:${PORT}/index.html`
+        'about:blank'
     ];
     const proc = spawn(chromePath, args);
     proc.on('error', (err) => console.error('Chrome spawn error:', err.message));
@@ -268,8 +268,9 @@ async function getWsUrl(debugPort) {
                 r.on('error', rej);
             });
             const list = JSON.parse(data);
-            if (list.length > 0 && list[0].webSocketDebuggerUrl) {
-                return list[0].webSocketDebuggerUrl;
+            const targetPage = list.find(p => p.type === 'page') || list[0];
+            if (targetPage && targetPage.webSocketDebuggerUrl) {
+                return targetPage.webSocketDebuggerUrl;
             }
         } catch (_) {}
         await new Promise(r => setTimeout(r, 200));
@@ -317,12 +318,18 @@ async function runPhase4Tests() {
     await cdp.send('Network.enable');
     await cdp.send('Network.setBypassServiceWorker', { bypass: true });
 
-    await new Promise(r => setTimeout(r, 1500));
+    // Explicitly navigate to test server and wait for initial render
+    await cdp.send('Page.navigate', { url: `http://127.0.0.1:${PORT}/index.html` });
+    await new Promise(r => setTimeout(r, 2000));
 
-    // Ensure document is loaded and deferred scripts (app.js) have evaluated
-    await cdp.evaluate(`new Promise(res => {
+    // Ensure document is loaded and deferred scripts (app.js) have evaluated with 15s timeout
+    await cdp.evaluate(`new Promise((res, rej) => {
+        const timeout = setTimeout(() => rej(new Error('Timed out waiting for window.withWakeLock to initialize')), 15000);
         const check = () => {
-            if (typeof window.withWakeLock === 'function') return res();
+            if (typeof window.withWakeLock === 'function') {
+                clearTimeout(timeout);
+                return res();
+            }
             setTimeout(check, 50);
         };
         check();

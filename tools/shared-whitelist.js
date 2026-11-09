@@ -193,7 +193,10 @@ function computeSectionRoutes(rootDir) {
 // 7. Compute deterministic content hash of all precached files (cross-platform LF normalization)
 function computeContentHash(rootDir, shellAssets) {
     const hash = crypto.createHash('sha256');
-    const textExts = new Set(['.html', '.js', '.css', '.json', '.svg', '.xml', '.txt', '.webmanifest']);
+    const textExts = new Set([
+        '.html', '.js', '.css', '.json', '.svg', '.xml', '.txt',
+        '.webmanifest', '.ps1', '.bat', '.cmd', '.sh', '.md'
+    ]);
     for (const asset of shellAssets) {
         // Strip leading ./ and trailing / for directory routes
         let clean = asset.replace(/^\.\//, '');
