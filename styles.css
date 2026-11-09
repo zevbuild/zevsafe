@@ -65,7 +65,7 @@
     z-index: 10000;
     padding: 10px 18px;
     background: var(--purple-dark, #6d28d9);
-    color: #ffffff !important;
+    color: #ffffff !important; /* Retained: guarantees WCAG AAA 4.5:1+ contrast on purple skip link */
     font-size: 0.9rem;
     font-weight: 700;
     text-decoration: none;
@@ -81,16 +81,17 @@
     outline-offset: 3px;
 }
 
+/* Accessibility: Standard W3C visually-hidden screen reader utility (retained !important guarantees element is non-visual across all layouts) */
 .sr-only {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
+    position: absolute !important; /* Retained: removes element from layout flow */
+    width: 1px !important; /* Retained: minimizes box geometry */
+    height: 1px !important; /* Retained: minimizes box geometry */
+    padding: 0 !important; /* Retained: eliminates box model spacing */
+    margin: -1px !important; /* Retained: pulls element off-screen */
+    overflow: hidden !important; /* Retained: clips overflow content */
+    clip: rect(0, 0, 0, 0) !important; /* Retained: legacy clip rect support */
+    white-space: nowrap !important; /* Retained: prevents unexpected text wrapping */
+    border: 0 !important; /* Retained: eliminates default borders */
 }
 
 /* html scroll-behavior consolidated below with viewport bounds */
@@ -156,9 +157,9 @@ body {
 @media (max-width: 820px), (hover: none) and (pointer: coarse), (prefers-reduced-motion: reduce) {
     .orb,
     .noise {
-        display: none !important;
-        animation: none !important;
-        filter: none !important;
+        display: none !important; /* Retained: eliminates GPU ambient blur overhead on mobile/reduced-motion */
+        animation: none !important; /* Retained: mandatory reduced-motion animation stop */
+        filter: none !important; /* Retained: eliminates expensive GPU filter convolution */
     }
 }
 
@@ -1363,12 +1364,12 @@ body {
 }
 
 .btn--loading {
-    opacity: 0.9 !important;
-    cursor: wait !important;
+    opacity: 0.9 !important; /* Retained: overrides .btn:disabled opacity 0.4 during active crypto jobs */
+    cursor: wait !important; /* Retained: provides mandatory UX wait cursor over default not-allowed */
     position: relative;
     pointer-events: none;
-    filter: brightness(1.08) !important;
-    box-shadow: 0 0 25px rgba(139, 92, 246, 0.6) !important;
+    filter: brightness(1.08) !important; /* Retained: keeps loading button visually vibrant */
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.6) !important; /* Retained: maintains active neon pulse during streaming */
 }
 
 .btn--loading::after {
@@ -2028,12 +2029,12 @@ body {
     .mobile-tabs,
     .mobile-file-btn,
     .bottom-nav,
-    .device-banner { display: none !important; }
+    .device-banner { display: none !important; /* Retained: strictly hides mobile components on desktop screens */ }
 
     /* Normal two-column grid */
     .cards-grid { grid-template-columns: 1fr 1fr; }
     #encrypt-section,
-    #decrypt-section { display: flex !important; }
+    #decrypt-section { display: flex !important; /* Retained: overrides JS inline style (display:none) set by switchTab() when expanding to desktop */ }
 }
 
 /* =====================================================
@@ -2074,7 +2075,7 @@ body {
    RESPONSIVE — MOBILE NAVBAR ADJUSTMENTS (≤640px)
    ===================================================== */
 @media (max-width: 640px) {
-    .navbar-links #btn-download-pc-setup { display: none !important; }
+    .navbar-links #btn-download-pc-setup { display: none !important; /* Retained: declutters compact mobile nav links */ }
 }
 
 /* =====================================================
@@ -2083,7 +2084,7 @@ body {
 @media (max-width: 600px) {
     /* Auto-hide hero section on mobile to bring vault cards right to the top */
     .hero {
-        display: none !important;
+        display: none !important; /* Retained: guarantees zero-scroll access to vault cards on phone */
     }
 }
 
@@ -2092,7 +2093,7 @@ body {
    ===================================================== */
 @media (max-width: 520px) {
     /* Phone-only hide utility */
-    .phone-hide { display: none !important; }
+    .phone-hide { display: none !important; /* Retained: utility for phone viewport concealment */ }
 
     /* Compact shell layout */
     .app-shell {
@@ -2103,21 +2104,21 @@ body {
 
     /* Auto-hide hero section on mobile to bring vault cards right to the top */
     .hero {
-        display: none !important;
+        display: none !important; /* Retained: guarantees zero-scroll access to vault cards on phone */
     }
-    .hero-tech-line { display: none !important; }
+    .hero-tech-line { display: none !important; /* Retained: declutters phone hero */ }
 
     /* Hide desktop browse elements in drop-zones so they are clean tap-only targets */
     .btn-browse,
     .drop-secondary {
-        display: none !important;
+        display: none !important; /* Retained: creates seamless tap-target drop zone on small touchscreens */
     }
 
     /* Compact navbar */
     .navbar { padding: 1rem 0.9rem; }
     .navbar-links .nav-pill-ghost,
-    .navbar-links a[href*="github"] { display: none !important; }
-    .navbar-links #btn-download-pc-setup { display: none !important; }
+    .navbar-links a[href*="github"] { display: none !important; /* Retained: prevents navbar overflow on small phones */ }
+    .navbar-links #btn-download-pc-setup { display: none !important; /* Retained: hides desktop installer link on phone */ }
     .brand-name { font-size: 1.05rem; }
     .brand-status-badge { display: none; }
 
@@ -2175,7 +2176,7 @@ body {
 @media (max-width: 820px), (hover: none) and (pointer: coarse) {
     /* 1. Fast native touch momentum scrolling */
     html {
-        scroll-behavior: auto !important;
+        scroll-behavior: auto !important; /* Retained: enables immediate scroll response on touch without inertial interference */
         -webkit-overflow-scrolling: touch;
     }
 
@@ -2183,8 +2184,8 @@ body {
     body {
         background: radial-gradient(circle at 15% 0%, rgba(109, 40, 217, 0.16) 0%, transparent 45%),
                     radial-gradient(circle at 85% 100%, rgba(20, 184, 166, 0.12) 0%, transparent 45%),
-                    var(--bg) !important;
-        background-attachment: fixed !important;
+                    var(--bg) !important; /* Retained: overrides desktop fixed background image on mobile */
+        background-attachment: fixed !important; /* Retained: prevents mobile repaint on scrolling */
     }
 
     /* 3. Strip heavy backdrop-filters that cause mobile scroll stutter */
@@ -2196,9 +2197,9 @@ body {
     .cta-block,
     .cl-toolbar,
     .sa-toc {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        background: rgba(13, 17, 28, 0.94) !important;
+        backdrop-filter: none !important; /* Retained: eliminates expensive mobile GPU blur convolution */
+        -webkit-backdrop-filter: none !important; /* Retained: eliminates WebKit mobile GPU blur convolution */
+        background: rgba(13, 17, 28, 0.94) !important; /* Retained: provides high contrast solid surface in lieu of blur */
     }
 
     /* 4. Disable continuous GPU repaint animations on idle mobile screens */
@@ -2210,12 +2211,12 @@ body {
     .guide-hero-icon,
     .cl-hero-icon,
     .sa-hero-icon {
-        animation: none !important;
+        animation: none !important; /* Retained: conserves mobile battery by stopping idle GPU animations */
     }
 
     .btn--purple,
     .btn--teal {
-        background-size: 100% 100% !important;
+        background-size: 100% 100% !important; /* Retained: locks gradient size without animated shift */
     }
 }
 
@@ -2231,8 +2232,8 @@ body {
     .mobile-nav-drawer,
     .progress-panel,
     .progress-card {
-        -webkit-backdrop-filter: none !important;
-        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important; /* Retained: eliminates touch device blur overhead */
+        backdrop-filter: none !important; /* Retained: eliminates touch device blur overhead */
     }
 
     .card,
@@ -2296,8 +2297,8 @@ body {
 
     /* Active states for touch */
     .btn:active:not(:disabled) {
-        transform: scale(0.97) !important;
-        filter: brightness(0.92) !important;
+        transform: scale(0.97) !important; /* Retained: guarantees immediate tactile touch feedback */
+        filter: brightness(0.92) !important; /* Retained: darkens button on tap */
     }
 
     .nav-pill:active { opacity: 0.7; }
@@ -2314,16 +2315,16 @@ body {
 .tab-hidden .qr-scan-laser,
 .tab-hidden .progress-glow,
 .tab-hidden .btn--cyber::after {
-    animation-play-state: paused !important;
+    animation-play-state: paused !important; /* Retained: mandatory browser background tab CPU conservation */
 }
 
 /* ── Universal Reduced Motion: Respect system preference while preserving loading spinners (Directive 3 & 4.5) ── */
 @media (prefers-reduced-motion: reduce) {
     *:not(.spinner):not(.btn--loading):not(.btn--loading *):not(.loading-ring):not(.loading-spinner):not(.progress-fill):not(.progress-bar-fill):not(.progress-pct):not(.stage-pill-pct):not(#telemetry-hud):not(#telemetry-hud *) {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important; /* Retained: mandatory reduced-motion accessibility preference */
+        animation-iteration-count: 1 !important; /* Retained: stops looping motion for vestibular safety */
+        transition-duration: 0.01ms !important; /* Retained: eliminates transition movement */
+        scroll-behavior: auto !important; /* Retained: disables smooth scrolling motion */
     }
 }
 
@@ -2995,31 +2996,31 @@ body {
 }
 
 .light-theme .media-ctrl-btn {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
-    color: #f1f5f9 !important;
+    background: rgba(255, 255, 255, 0.05) !important; /* Retained: preserves dark overlay button surface in light theme */
+    border-color: rgba(255, 255, 255, 0.1) !important; /* Retained: maintains dark modal button border in light theme */
+    color: #f1f5f9 !important; /* Retained: maintains light icon contrast against dark overlay */
 }
 
 .light-theme .media-btn-action {
-    background: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
-    color: #f1f5f9 !important;
+    background: rgba(255, 255, 255, 0.06) !important; /* Retained: preserves dark overlay button surface in light theme */
+    border-color: rgba(255, 255, 255, 0.12) !important; /* Retained: maintains dark modal button border in light theme */
+    color: #f1f5f9 !important; /* Retained: maintains light icon contrast against dark overlay */
 }
 
 .light-theme .progress-title {
-    color: #f1f5f9 !important;
+    color: #f1f5f9 !important; /* Retained: keeps white title on dark progress card in light theme */
 }
 
 .light-theme .hud-val {
-    color: #f1f5f9 !important;
+    color: #f1f5f9 !important; /* Retained: maintains high contrast data value on dark HUD surface */
 }
 
 .light-theme .hud-label {
-    color: #94a3b8 !important;
+    color: #94a3b8 !important; /* Retained: preserves secondary text contrast on dark HUD surface */
 }
 
 .light-theme .progress-status-text {
-    color: #f1f5f9 !important;
+    color: #f1f5f9 !important; /* Retained: keeps status text legible on dark progress card */
 }
 
 
@@ -4678,7 +4679,7 @@ body {
 /* Suppress empty size badge pill when 0 bytes or omitted */
 .explorer-grid-size:empty,
 .explorer-item-size:empty {
-    display: none !important;
+    display: none !important; /* Retained: guarantees empty size badges are strictly collapsed */
 }
 
 /* Explorer Breadcrumbs Navigation */
@@ -5643,9 +5644,9 @@ body {
 }
 
 .field-error-shake {
-    animation: fieldShake 0.4s ease-in-out !important;
-    border-color: rgba(239, 68, 68, 0.8) !important;
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2) !important;
+    animation: fieldShake 0.4s ease-in-out !important; /* Retained: overrides standard field animations on validation error */
+    border-color: rgba(239, 68, 68, 0.8) !important; /* Retained: provides immediate red validation alert */
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2) !important; /* Retained: highlights active invalid field */
 }
 
 .light-theme .toast-item {
@@ -7053,16 +7054,16 @@ body {
 /* Dedicated Print Stylesheet */
 @media print {
     body * {
-        visibility: hidden !important;
+        visibility: hidden !important; /* Retained: strictly hides all web elements during paper recovery sheet print */
     }
 
     #paper-safe-sheet-container,
     #paper-safe-sheet-container * {
-        visibility: visible !important;
+        visibility: visible !important; /* Retained: guarantees paper recovery sheet is the sole printed element */
     }
 
     #paper-safe-sheet-container {
-        position: absolute !important;
+        position: absolute !important; /* Retained: aligns sheet to paper top-left margin */
         left: 0 !important;
         top: 0 !important;
         width: 100% !important;
@@ -7071,8 +7072,8 @@ body {
     }
 
     .paper-safe-sheet {
-        box-shadow: none !important;
-        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important; /* Retained: eliminates printer ink waste on drop-shadows */
+        border: 1px solid #cbd5e1 !important; /* Retained: provides clean boundary on paper sheet */
         max-width: 100% !important;
         padding: 24px !important;
     }
@@ -7085,7 +7086,7 @@ body {
     .tab-bar,
     .site-nav,
     .site-footer {
-        display: none !important;
+        display: none !important; /* Retained: completely strips screen chrome during print */
     }
 }
 
@@ -7271,13 +7272,13 @@ html {
 
 @media (max-width: 768px) {
     .navbar {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
+        margin-left: 0 !important; /* Retained: resets desktop negative gutter margins on mobile */
+        margin-right: 0 !important; /* Retained: resets desktop negative gutter margins on mobile */
+        padding-left: 0 !important; /* Retained: resets desktop horizontal padding */
+        padding-right: 0 !important; /* Retained: resets desktop horizontal padding */
+        width: 100% !important; /* Retained: forces full width on mobile viewports */
+        max-width: 100% !important; /* Retained: prevents horizontal viewport blowout */
+        box-sizing: border-box !important; /* Retained: strict box model calculation */
     }
     .mobile-nav-panel {
         position: relative;

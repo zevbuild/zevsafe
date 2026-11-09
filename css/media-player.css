@@ -1226,15 +1226,15 @@ audio.media-player-element {
     #btn-media-open-tab,
     #btn-media-download,
     #btn-media-theater {
-        display: none !important;
+        display: none !important; /* Retained: declutters phone video player header overlay */
     }
 
     /* Touch-friendly Close Button (>= 44px tap target) */
     .explorer-btn-close {
-        width: 44px !important;
-        height: 44px !important;
-        min-width: 44px !important;
-        min-height: 44px !important;
+        width: 44px !important; /* Retained: guarantees WCAG 2.1 AA 44x44px minimum tap target for touch */
+        height: 44px !important; /* Retained: guarantees WCAG 2.1 AA 44x44px minimum tap target for touch */
+        min-width: 44px !important; /* Retained: prevents compression */
+        min-height: 44px !important; /* Retained: prevents compression */
         padding: 0 !important;
         display: flex !important;
         align-items: center !important;
@@ -1243,7 +1243,7 @@ audio.media-player-element {
         border-radius: 50% !important;
         background: rgba(255, 255, 255, 0.14) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: #fff !important;
+        color: #fff !important; /* Retained: ensures maximum contrast on dark backdrop */
     }
 
     /* ── 3. Single-Row Mobile Transport Bar with Safe Area Insets ── */
@@ -1363,7 +1363,7 @@ audio.media-player-element {
     #btn-media-rewind10,
     #btn-media-forward10,
     #btn-media-next {
-        display: none !important;
+        display: none !important; /* Retained: declutters compact phone single-row transport bar */
     }
 
     .media-volume-wrap .media-volume-range {
@@ -1371,11 +1371,11 @@ audio.media-player-element {
     }
 
     .media-volume-wrap {
-        display: none !important;
+        display: none !important; /* Retained: suppresses desktop volume slider in favor of hardware phone volume rockers */
     }
 
     .media-cinema-center {
-        display: none !important;
+        display: none !important; /* Retained: eliminates multi-row layout on phone screens */
     }
 
     /* Right Group: Speed + Fit + PiP + Fullscreen + Studio Drawer Toggle */
