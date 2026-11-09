@@ -1,0 +1,54 @@
+name: Test Suite
+
+on:
+  push:
+    branches:
+      - main
+      - 'phase6/**'
+  pull_request:
+    branches:
+      - main
+
+# Strict least-privilege permissions
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Node ${{ matrix.node-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Configure Chrome Environment
+        run: |
+          if [ -f /usr/bin/google-chrome ]; then
+            echo "CHROME_PATH=/usr/bin/google-chrome" >> $GITHUB_ENV
+          elif [ -f /usr/bin/chromium-browser ]; then
+            echo "CHROME_PATH=/usr/bin/chromium-browser" >> $GITHUB_ENV
+          elif [ -f /usr/bin/chromium ]; then
+            echo "CHROME_PATH=/usr/bin/chromium" >> $GITHUB_ENV
+          fi
+
+      - name: Run Test Suite
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          NODE_ENV: test
+        run: node test/run-all.js
