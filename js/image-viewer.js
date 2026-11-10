@@ -61,7 +61,8 @@
     }
 
     function rotateImage(deg = 90) {
-        imageRotationDeg = (imageRotationDeg + deg) % 360;
+        if (typeof deg !== 'number' || isNaN(deg)) deg = 90;
+        imageRotationDeg = (((imageRotationDeg || 0) + deg) % 360 + 360) % 360;
         applyImageTransform();
     }
 
@@ -234,7 +235,7 @@
         imageZoomInBtn?.addEventListener('click', () => zoomImage(0.25));
         imageZoomOutBtn?.addEventListener('click', () => zoomImage(-0.25));
         imageZoomResetBtn?.addEventListener('click', resetImageZoom);
-        imageRotateBtn?.addEventListener('click', rotateImage);
+        imageRotateBtn?.addEventListener('click', () => rotateImage(90));
 
         imageFullscreenBtn?.addEventListener('click', () => {
             const container = document.querySelector('.image-modal-container') || imageViewport;

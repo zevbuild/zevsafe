@@ -669,7 +669,7 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.28.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.28.3</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
@@ -708,14 +708,58 @@
         <!-- Release Timeline -->
         <main id="main-content" tabindex="-1" class="cl-timeline">
 
-            <!-- ── VERSION 8.28.2 (WEB-VERSION-79) ── -->
+            <!-- ── VERSION 8.28.3 (WEB-VERSION-79) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">🔍</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.28.3 (WEB-VERSION-79)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 10, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">PDF Preview Fix</span>
+                            <span class="cl-tag">Image Rotate Fix</span>
+                            <span class="cl-tag">Audio Dock Sync</span>
+                            <span class="cl-tag">Multi-Format Verification</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Completed exhaustive step-by-step browser verification across all vault file formats (PDFs, Markdown notes, high-res images, MP4 range streaming videos, and Unicode Hindi audio recordings) with targeted fixes for PDF iframe display, image rotation event sanitization, and audio dock time formatting.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>PDF Preview Frame &amp; Controls Display (<code>js/document-viewer.js</code>):</strong> Resolved issue where <code>#pdf-preview-frame</code> remained occluded due to <code>d-none</code> class retained on initial load; added atomic <code>classList.remove('d-none')</code> alongside <code>style.display = 'block'</code> in <code>openPdfViewerByPath</code>, restored "↗️ New Tab" button (<code>#btn-text-open-tab</code>), and cleanly hid irrelevant Markdown preview controls on PDF documents.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Image Rotation Degree Event Sanitization (<code>js/image-viewer.js</code>):</strong> Fixed bug where clicking <code>#btn-image-rotate</code> passed the browser <code>PointerEvent</code> into <code>rotateImage(deg = 90)</code>, causing <code>NaNdeg</code> CSS transforms; sanitized <code>deg</code> to default to 90 upon receiving non-numbers and bound an explicit arrow function listener.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Floating Audio Dock Time Synchronization &amp; Recursion Guard (<code>app.js</code>, <code>js/media-player.js</code>):</strong> Defined <code>formatMediaTime</code> globally in <code>app.js</code>, eliminating <code>ReferenceError</code> console spam on audio <code>timeupdate</code> events. Eliminated self-referential delegation in <code>media-player.js</code> <code>formatTime()</code> and added atomic <code>classList</code> toggles for dock minimization and expansion.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.28.2 (WEB-VERSION-79) ── -->
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🎬</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.28.2 (WEB-VERSION-79)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
                             <span class="cl-badge cl-badge--date">November 10, 2026</span>
                         </div>
                         <div class="cl-tags">

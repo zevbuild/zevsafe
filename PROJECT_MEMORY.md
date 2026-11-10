@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.28.2` (`WEB-VERSION-79`, Service Worker `v79`)  
+> **Web Portal Version:** `v8.28.3` (`WEB-VERSION-79`, Service Worker `v79`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -191,6 +191,12 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 ### 3.20 Video Player 4.2 (Modal Occlusion & Service Worker Keepalive Fix) [v8.28.2]
 - **CSS Specificity Modal Occlusion Resolution:** Discovered through headless Chrome DevTools testing that `#vault-text-modal` (Code & Document Viewer) and `#media-hotkeys-modal` were rendering with `display: flex;` (`z-index: 2100`) directly on top of the cinema video player because base component rules appeared after `.d-none` in CSS cascade and lacked `!important`. Hardened `.d-none` to `display: none !important;` in `styles.css` and `css/media-player.css` with explicit compound modal utility selectors, completely eliminating the visual obstruction.
 - **Service Worker Thread Keepalive & Dynamic Reconnection:** Prevented Chrome from shutting down idle background Service Worker threads during long playback by adding an 8-second periodic heartbeat (`MEDIA_STREAM_HEARTBEAT`). Added transparent channel recovery (`RECONNECT_MEDIA_STREAM`) in `sw.js` and `js/media-player.js` to re-establish `MessageChannel` ports on demand without 404 or `FFmpegDemuxer: data source error` pipeline failures.
+
+### 3.20.1 Multi-Viewer Verification & Operational Hardening (v8.28.3)
+- **PDF Preview Frame Visibility & Header Actions (`js/document-viewer.js`):** Resolved the issue where `#pdf-preview-frame` remained hidden because the `d-none` class was retained on initial load; added atomic `classList.remove('d-none')` alongside `style.display = 'block'` in `openPdfViewerByPath`, restored the "↗️ New Tab" button (`#btn-text-open-tab`) by removing its initial `d-none` class, and cleanly hid the Markdown controls (`#btn-text-markdown` and `#markdown-preview-body`) on PDF documents.
+- **Image Rotation Degree Sanitization (`js/image-viewer.js`):** Fixed bug where clicking `#btn-image-rotate` passed the browser's `PointerEvent` into `rotateImage(deg = 90)`, yielding `NaN` from `(0 + [object PointerEvent]) % 360` and injecting invalid `rotate(NaNdeg)` CSS transforms. Sanitized the `deg` argument to default to 90 for non-numeric types and wrapped the event listener in an explicit arrow function `() => rotateImage(90)`.
+- **Floating Audio Dock Time Formatting & Recursion Guard (`app.js`, `js/media-player.js`):** Defined `formatMediaTime(sec)` in `app.js` and exported to `window.formatMediaTime` and `window.formatTime`, eliminating `ReferenceError: formatMediaTime is not defined` console spam on audio `timeupdate` events. Removed self-referential delegation in `media-player.js` `formatTime()` to prevent `RangeError: Maximum call stack size exceeded`. Added atomic `classList` toggles for dock minimization and expansion.
+- **Comprehensive Multi-Format Verification:** 100% verified all 17 files across 5 distinct media formats in `test-of-zevsafe.zev` (PDFs, Markdown/Text notes, high-res photos with pan/zoom/rotate, MP4 HTTP 206 range-streaming videos, and Hindi Unicode `.m4a` audio recordings) in live Chrome DevTools session.
 
 ### 3.21 Master Memory Management, Bounding, Cache Hygiene & Zeroization Protocol
 - **Stream AEAD Chunk Memory Architecture:**

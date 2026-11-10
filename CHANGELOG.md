@@ -1,5 +1,20 @@
 # Changelog
 
+## Version 8.28.3 (WEB-VERSION-79) — November 10, 2026
+
+- `Fix` & `UI` (`js/document-viewer.js`): PDF Preview Frame Display & Action Bar Controls.
+  - Resolved issue where `#pdf-preview-frame` remained hidden due to `d-none` class retained on initial load; added atomic `classList.remove('d-none')` alongside `style.display = 'block'` in `openPdfViewerByPath`, and restored `d-none` on dismissal in `closeTextViewer`.
+  - Fixed visibility of the "↗️ New Tab" button (`#btn-text-open-tab`) on PDF documents by removing its initial `d-none` class.
+  - Cleanly hid the Markdown preview toggle (`#btn-text-markdown`) and markdown body container (`#markdown-preview-body`) when viewing PDF documents.
+- `Fix` & `UI` (`js/image-viewer.js`): Image Rotation Degree Event Sanitization.
+  - Fixed bug where clicking `#btn-image-rotate` passed the browser `PointerEvent` as the `deg` argument into `rotateImage(deg = 90)`, causing `(0 + [object PointerEvent]) % 360` to evaluate to `NaN` and injecting invalid `rotate(NaNdeg)` CSS transforms.
+  - Sanitized the `deg` parameter (`if (typeof deg !== 'number' || isNaN(deg)) deg = 90;`) and bound the click listener to an explicit arrow function `() => rotateImage(90)`.
+- `Fix` & `UI` (`app.js`, `js/media-player.js`): Floating Audio Dock Time Synchronization & Recursion Guard.
+  - Defined `formatMediaTime(sec)` globally in `app.js` and exported it to `window.formatMediaTime` and `window.formatTime`, eliminating `ReferenceError: formatMediaTime is not defined` console spam on audio `timeupdate` events.
+  - Removed self-referential delegation in `media-player.js` `formatTime()` to prevent `RangeError: Maximum call stack size exceeded`.
+  - Added atomic `classList.remove('d-none')` and `classList.add('d-none')` transitions for `#vault-audio-dock` and `#vault-media-modal` in `dockAudioPlayer()`, `expandAudioDock()`, and `closeAudioDock()`.
+- `PWA` (`sw.js`, `tools/build-sw.js`, `tools/build-dist.js`): Synchronized Service Worker precache manifest with updated shell assets (hash `ac4e9b94`, 67 items precached).
+
 ## Version 8.28.2 (WEB-VERSION-79) — November 10, 2026
 
 - `Fix` & `UI` (`styles.css`, `css/media-player.css`): Root-Cause Resolution for Invisible Video Picture (CSS Specificity & Modal Occlusion Bug).

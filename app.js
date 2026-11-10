@@ -92,6 +92,8 @@ function ensureMediaPlayerLoaded() {
         window.showToast = showToast;
         window.getMediaCategory = getMediaCategory;
         window.formatBytes = formatBytes;
+        window.formatMediaTime = formatMediaTime;
+        window.formatTime = formatMediaTime;
     }
     _mediaPlayerLoadingPromise = Promise.all([
         loadStyle('css/media-player.css'),
@@ -3918,6 +3920,14 @@ function formatBytes(bytes, decimals = 1) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+function formatMediaTime(sec) {
+    if (typeof sec !== 'number' || isNaN(sec) || !isFinite(sec) || sec < 0) return '0:00';
+    const s = Math.floor(sec);
+    const m = Math.floor(s / 60);
+    const remS = s % 60;
+    return `${m}:${remS < 10 ? '0' : ''}${remS}`;
+}
+
 
 // ============================================
 // V2 UI — MODE TOGGLE, KEYFILE WIRING
@@ -5787,7 +5797,11 @@ function dockAudioPlayer() {
 
     if (!audioDock || !audioEl) return;
 
-    if (mediaModal) mediaModal.style.display = 'none';
+    if (mediaModal) {
+        mediaModal.classList.add('d-none');
+        mediaModal.style.display = 'none';
+    }
+    audioDock.classList.remove('d-none');
     audioDock.style.display = 'block';
     isAudioDocked = true;
 
@@ -5795,8 +5809,9 @@ function dockAudioPlayer() {
 
     function syncDockState() {
         if (!audioEl || !isAudioDocked) return;
-        const cur = formatMediaTime(audioEl.currentTime || 0);
-        const dur = formatMediaTime(audioEl.duration || 0);
+        const fmt = typeof formatMediaTime === 'function' ? formatMediaTime : (typeof window !== 'undefined' && window.formatMediaTime ? window.formatMediaTime : ((s) => `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`));
+        const cur = fmt(audioEl.currentTime || 0);
+        const dur = fmt(audioEl.duration || 0);
         if (dockTime) dockTime.textContent = `${cur} / ${dur}`;
         if (dockPlayBtn) dockPlayBtn.textContent = audioEl.paused ? '▶️' : '⏸️';
     }
@@ -5814,8 +5829,14 @@ function dockAudioPlayer() {
 function expandAudioDock() {
     const mediaModal = document.getElementById('vault-media-modal');
     const audioDock = document.getElementById('vault-audio-dock');
-    if (audioDock) audioDock.style.display = 'none';
-    if (mediaModal) mediaModal.style.display = 'flex';
+    if (audioDock) {
+        audioDock.classList.add('d-none');
+        audioDock.style.display = 'none';
+    }
+    if (mediaModal) {
+        mediaModal.classList.remove('d-none');
+        mediaModal.style.display = 'flex';
+    }
     isAudioDocked = false;
 }
 
@@ -5826,6 +5847,7 @@ function closeAudioDock() {
         audioEl.pause();
     }
     if (audioDock) {
+        audioDock.classList.add('d-none');
         audioDock.style.display = 'none';
     }
     isAudioDocked = false;

@@ -172,27 +172,31 @@
         if (title) title.textContent = fileItem.name;
         if (meta) meta.textContent = `Loading · ${formatBytes(fileItem.size)}`;
 
-        if (wrapBtn) wrapBtn.style.display = 'inline-flex';
-        if (copyBtn) copyBtn.style.display = 'inline-flex';
-        if (openTabBtn) openTabBtn.style.display = 'none';
+        if (wrapBtn) { wrapBtn.classList.remove('d-none'); wrapBtn.style.display = 'inline-flex'; }
+        if (copyBtn) { copyBtn.classList.remove('d-none'); copyBtn.style.display = 'inline-flex'; }
+        if (openTabBtn) { openTabBtn.classList.add('d-none'); openTabBtn.style.display = 'none'; }
         if (editBtn) {
+            editBtn.classList.remove('d-none');
             editBtn.style.display = 'inline-flex';
             editBtn.textContent = '✏️ Edit';
         }
-        if (saveBtn) saveBtn.style.display = 'none';
+        if (saveBtn) { saveBtn.classList.add('d-none'); saveBtn.style.display = 'none'; }
 
-        if (loader) loader.style.display = 'flex';
-        if (editorView) editorView.style.display = 'none';
+        if (loader) { loader.classList.remove('d-none'); loader.style.display = 'flex'; }
+        if (editorView) { editorView.classList.add('d-none'); editorView.style.display = 'none'; }
         if (pdfFrame) {
+            pdfFrame.classList.add('d-none');
             pdfFrame.style.display = 'none';
             pdfFrame.src = 'about:blank';
         }
         if (codeEl) {
             codeEl.textContent = '';
+            codeEl.classList.remove('d-none');
             codeEl.style.display = 'block';
         }
         if (textareaEl) {
             textareaEl.value = '';
+            textareaEl.classList.add('d-none');
             textareaEl.style.display = 'none';
         }
         if (linesEl) linesEl.innerHTML = '';
@@ -208,7 +212,7 @@
             // Bounded memory protection: limit live text preview and in-browser editing to 5 MB
             if (blob.size > 5 * 1024 * 1024) {
                 currentTextContent = '⚠️ This document is larger than 5 MB. Please download the file to inspect complete contents.';
-                if (editBtn) editBtn.style.display = 'none';
+                if (editBtn) { editBtn.classList.add('d-none'); editBtn.style.display = 'none'; }
             } else {
                 currentTextContent = await blob.text();
             }
@@ -233,29 +237,44 @@
             const mdBody = document.getElementById('markdown-preview-body');
             const isMd = (fileItem.name || '').toLowerCase().endsWith('.md') || (fileItem.name || '').toLowerCase().endsWith('.markdown');
             if (btnMd) {
-                btnMd.style.display = isMd ? 'inline-flex' : 'none';
+                if (isMd) {
+                    btnMd.classList.remove('d-none');
+                    btnMd.style.display = 'inline-flex';
+                } else {
+                    btnMd.classList.add('d-none');
+                    btnMd.style.display = 'none';
+                }
                 btnMd.onclick = () => {
                     if (!mdBody || !editorView) return;
-                    if (mdBody.style.display === 'none') {
+                    const isMdHidden = mdBody.style.display === 'none' || mdBody.classList.contains('d-none');
+                    if (isMdHidden) {
                         const currentText = textareaEl && textareaEl.style.display !== 'none' ? textareaEl.value : (codeEl?.textContent || '');
                         mdBody.innerHTML = renderSafeMarkdown(currentText);
+                        mdBody.classList.remove('d-none');
                         mdBody.style.display = 'block';
+                        editorView.classList.add('d-none');
                         editorView.style.display = 'none';
                         btnMd.textContent = '👁️ Raw View';
                     } else {
+                        mdBody.classList.add('d-none');
                         mdBody.style.display = 'none';
+                        editorView.classList.remove('d-none');
                         editorView.style.display = 'flex';
                         btnMd.textContent = '📖 Markdown';
                     }
                 };
             }
-            if (mdBody) mdBody.style.display = 'none';
+            if (mdBody) {
+                mdBody.classList.add('d-none');
+                mdBody.style.display = 'none';
+                mdBody.innerHTML = '';
+            }
 
-            if (loader) loader.style.display = 'none';
-            if (editorView) editorView.style.display = 'flex';
+            if (loader) { loader.classList.add('d-none'); loader.style.display = 'none'; }
+            if (editorView) { editorView.classList.remove('d-none'); editorView.style.display = 'flex'; }
         } catch (err) {
             console.error('[Text Viewer Error]', err);
-            if (loader) loader.style.display = 'none';
+            if (loader) { loader.classList.add('d-none'); loader.style.display = 'none'; }
             showToast(`Failed to extract text document: ${err.message}`, 'error');
         }
     }
@@ -294,15 +313,21 @@
         if (title) title.textContent = fileItem.name;
         if (meta) meta.textContent = `Loading · ${formatBytes(fileItem.size)}`;
 
-        if (wrapBtn) wrapBtn.style.display = 'none';
-        if (copyBtn) copyBtn.style.display = 'none';
-        if (editBtn) editBtn.style.display = 'none';
-        if (saveBtn) saveBtn.style.display = 'none';
-        if (openTabBtn) openTabBtn.style.display = 'inline-flex';
+        if (wrapBtn) { wrapBtn.classList.add('d-none'); wrapBtn.style.display = 'none'; }
+        if (copyBtn) { copyBtn.classList.add('d-none'); copyBtn.style.display = 'none'; }
+        if (editBtn) { editBtn.classList.add('d-none'); editBtn.style.display = 'none'; }
+        if (saveBtn) { saveBtn.classList.add('d-none'); saveBtn.style.display = 'none'; }
+        if (openTabBtn) { openTabBtn.classList.remove('d-none'); openTabBtn.style.display = 'inline-flex'; }
 
-        if (loader) loader.style.display = 'flex';
-        if (editorView) editorView.style.display = 'none';
+        const btnMd = document.getElementById('btn-text-markdown');
+        const mdBody = document.getElementById('markdown-preview-body');
+        if (btnMd) { btnMd.classList.add('d-none'); btnMd.style.display = 'none'; }
+        if (mdBody) { mdBody.classList.add('d-none'); mdBody.style.display = 'none'; mdBody.innerHTML = ''; }
+
+        if (loader) { loader.classList.remove('d-none'); loader.style.display = 'flex'; }
+        if (editorView) { editorView.classList.add('d-none'); editorView.style.display = 'none'; }
         if (pdfFrame) {
+            pdfFrame.classList.add('d-none');
             pdfFrame.style.display = 'none';
             pdfFrame.src = 'about:blank';
         }
@@ -324,15 +349,16 @@
             currentPdfBlobUrl = createTrackedBlobUrl(pdfBlob);
 
             if (meta) meta.textContent = `PDF Document · ${formatBytes(pdfBlob.size)}`;
-            if (loader) loader.style.display = 'none';
+            if (loader) { loader.classList.add('d-none'); loader.style.display = 'none'; }
 
             if (pdfFrame) {
+                pdfFrame.classList.remove('d-none');
                 pdfFrame.style.display = 'block';
                 pdfFrame.src = currentPdfBlobUrl;
             }
         } catch (err) {
             console.error('[PDF Viewer Error]', err);
-            if (loader) loader.style.display = 'none';
+            if (loader) { loader.classList.add('d-none'); loader.style.display = 'none'; }
             showToast(`Failed to extract PDF document: ${err.message}`, 'error');
         }
     }
@@ -357,32 +383,45 @@
             modal.classList.add('d-none');
             modal.style.display = 'none';
         }
-        if (loader) loader.style.display = 'none';
+        if (loader) { loader.classList.add('d-none'); loader.style.display = 'none'; }
         if (codeEl) {
             codeEl.textContent = '';
+            codeEl.classList.remove('d-none');
             codeEl.style.display = 'block';
         }
         if (textareaEl) {
             textareaEl.value = '';
+            textareaEl.classList.add('d-none');
             textareaEl.style.display = 'none';
         }
         if (linesEl) linesEl.textContent = '';
         if (pdfFrame) {
             pdfFrame.src = 'about:blank';
+            pdfFrame.classList.add('d-none');
             pdfFrame.style.display = 'none';
+        }
+        const openTabBtn = document.getElementById('btn-text-open-tab');
+        if (openTabBtn) {
+            openTabBtn.classList.add('d-none');
+            openTabBtn.style.display = 'none';
         }
         const mdBody = document.getElementById('markdown-preview-body');
         if (mdBody) {
+            mdBody.classList.add('d-none');
             mdBody.style.display = 'none';
             mdBody.innerHTML = '';
         }
         const btnMd = document.getElementById('btn-text-markdown');
         if (btnMd) {
+            btnMd.classList.add('d-none');
             btnMd.style.display = 'none';
             btnMd.textContent = '📖 Markdown';
         }
         const editorView = document.getElementById('text-editor-view');
-        if (editorView) editorView.style.display = 'flex';
+        if (editorView) {
+            editorView.classList.remove('d-none');
+            editorView.style.display = 'flex';
+        }
 
         if (editBtn) {
             editBtn.textContent = '✏️ Edit';

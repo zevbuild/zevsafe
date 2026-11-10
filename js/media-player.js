@@ -236,8 +236,7 @@
     }
 
     function formatTime(sec) {
-        if (typeof global.formatTime === 'function') return global.formatTime(sec);
-        if (isNaN(sec) || !isFinite(sec)) return '0:00';
+        if (typeof sec !== 'number' || isNaN(sec) || !isFinite(sec) || sec < 0) return '0:00';
         const s = Math.floor(sec);
         const m = Math.floor(s / 60);
         const remS = s % 60;
@@ -2491,10 +2490,12 @@
         requestPlayerFullscreen,
         exitPlayerFullscreen,
         cleanupActiveSession,
+        formatTime,
         isLoaded: () => true
     };
     global.ZevMedia = ZevMedia;
 
+    global.formatTime = formatTime;
     global.cleanupActiveSession = cleanupActiveSession;
     global.requestPlayerFullscreen = requestPlayerFullscreen;
     global.exitPlayerFullscreen = exitPlayerFullscreen;

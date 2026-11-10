@@ -72,7 +72,9 @@
                 docViewer.setTextContent(newContent);
             }
             codeEl.textContent = newContent;
+            codeEl.classList.remove('d-none');
             codeEl.style.display = 'block';
+            textareaEl.classList.add('d-none');
             textareaEl.style.display = 'none';
             if (editBtn) editBtn.textContent = '✏️ Edit';
             if (saveBtn) saveBtn.style.display = _hasUnsavedChanges ? 'inline-flex' : 'none';
@@ -90,7 +92,9 @@
         } else {
             // ── Enter editing mode ────────────────────────────────────────────
             textareaEl.value     = currentTextContent;
+            codeEl.classList.add('d-none');
             codeEl.style.display = 'none';
+            textareaEl.classList.remove('d-none');
             textareaEl.style.display = 'block';
             textareaEl.className = `text-code-content text-code-textarea ${isTextWordWrapped ? 'is-wrapped' : ''}`;
             if (editBtn) editBtn.textContent = '👁️ Preview';
