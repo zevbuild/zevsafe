@@ -1,4 +1,14 @@
 # 🔒 ZevSafe — Zero-Knowledge Offline File & Folder Encryption Portal
+<p align="center">
+  <img src="assets/icon-512.png" width="120" height="120" alt="ZevBlock Logo" />
+  <h1 align="center">Zevsafe</h1>
+  <p align="center"><strong>Help to Encrypt and Decrypt files and folder in any brower &amp; and use Maletary grade security</strong></p>
+</p>
+
+
+
+
+
 
 > **by [zevbuild](https://github.com/zevbuild) · Encrypt and decrypt files and entire folders directly in your browser — zero uploads, zero tracking, 100% private & offline.**
 

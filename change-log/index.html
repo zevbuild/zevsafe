@@ -710,12 +710,67 @@
 
             <!-- ── VERSION 8.28.0 (WEB-VERSION-79) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
+                <div class="cl-marker">🎬</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.28.1 (WEB-VERSION-79)</h2>
+                            <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 10, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Video Visibility Fix</span>
+                            <span class="cl-tag">Transport Correction</span>
+                            <span class="cl-tag">Decode Error Surfacing</span>
+                            <span class="cl-tag">Ambient Canvas Z-Index</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Resolved the "audio plays, picture invisible" defect in the cinema media player, corrected active transport element resolution, surfaced silent decode and playback failures with friendly error toasts, and fixed ambient glow canvas stacking layers.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Video Element Picture Rendering &amp; Display Leak Prevention (<code>js/media-player.js</code>):</strong> Removed inline <code>display: none</code> leaks on <code>&lt;video id="cinema-video"&gt;</code> in <code>_resetMediaPlaybackElements</code> that caused browser engines to continue playing audio tracks while completely hiding the visual picture layer. Introduced atomic <code>showCinemaVideo()</code> and <code>showCinemaAudio()</code> helpers.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Computed Style Transport Detection (<code>js/media-player.js</code>):</strong> Rewrote <code>getActiveCinemaMedia()</code> to check computed styles (<code>getComputedStyle(el).display !== 'none' &amp;&amp; getComputedStyle(el).visibility !== 'hidden'</code>) instead of brittle inline styles, ensuring Spacebar, Play, Pause, Scrubber seek, and Volume controls always target the active video element.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div class="cl-item-body">
+                                <strong>Decode &amp; Playback Error Surfacing (<code>js/media-player.js</code>):</strong> Implemented <code>playWithErrorSurface()</code> capturing HTML5 media decode failures and presenting informative user toasts (Code 3 <code>DECODE</code>, Code 4 <code>SRC_NOT_SUPPORTED</code>) instead of silently discarding errors.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div class="cl-item-body">
+                                <strong>Ambient Canvas &amp; Loading Overlay Stacking (<code>css/media-player.css</code>):</strong> Clamped <code>.cinema-ambient-canvas</code> to <code>z-index: 0</code> and removed <code>scale(1.18)</code> blow-up to prevent ambient backlights from overlaying the video. Raised <code>.media-player-element</code> to <code>z-index: 1</code> and converted <code>.style-media-loading-indicator</code> to an absolute overlay (<code>z-index: 5</code>).
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Vault Reference Synchronization (<code>app.js</code>):</strong> Guaranteed <code>window.currentV3Vault</code>, <code>window.currentDecryptedFileList</code>, and <code>window.currentMediaPlaylist</code> are continually synchronized upon vault unlock and media launch.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="cl-card" data-version="v8">
                 <div class="cl-marker">🚀</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
                             <h2 class="cl-version-title">Version 8.28.0 (WEB-VERSION-79)</h2>
-                            <span class="cl-badge cl-badge--latest">Latest Release</span>
                             <span class="cl-badge cl-badge--date">November 9, 2026</span>
                         </div>
                         <div class="cl-tags">

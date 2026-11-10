@@ -251,8 +251,8 @@ function connectCDP(wsUrl) {
     });
 }
 
-async function getWsUrl(port = 9223) {
-    for (let i = 0; i < 30; i++) {
+async function getWsUrl(port = 9229) {
+    for (let i = 0; i < 50; i++) {
         try {
             const data = await new Promise((res, rej) => {
                 const r = http.get(`http://127.0.0.1:${port}/json`, resp => {
@@ -404,6 +404,8 @@ async function main() {
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
+        '--no-first-run',
+        '--no-default-browser-check',
         `http://127.0.0.1:${PORT}/index.html`
     ]);
     chromeProc.on('error', (err) => console.error('Chrome spawn error:', err.message));

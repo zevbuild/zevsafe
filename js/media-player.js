@@ -1,6 +1,6 @@
 /**
  * ZevSafe Dedicated Cinema Media Player & Image Lightbox Engine
- * js/media-player.js (Phase 2 Upgrade)
+ * js/media-player.js (Phase 3 Upgrade — visibility & transport correctness)
  *
  * Implements:
  * 1. Low-memory streaming video/audio player (< 60 MB RAM via HTTP 206 Service Worker streaming)
@@ -82,9 +82,41 @@
     function getActiveCinemaMedia() {
         const v = document.getElementById('cinema-video');
         const a = document.getElementById('cinema-audio');
-        if (v && !v.classList.contains('d-none') && v.style.display !== 'none' && v.style.display !== '') return v;
-        if (a && !a.classList.contains('d-none') && a.style.display !== 'none' && a.style.display !== '') return a;
+        const visible = el => {
+            if (!el || el.classList.contains('d-none')) return false;
+            if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+                const cs = window.getComputedStyle(el);
+                return cs.display !== 'none' && cs.visibility !== 'hidden';
+            }
+            return el.style.display !== 'none';
+        };
+        if (visible(v)) return v;
+        if (visible(a)) return a;
         return null;
+    }
+
+    async function playWithErrorSurface(el) {
+        if (!el) return;
+        el.addEventListener('error', () => {
+            const e = el.error;
+            const codeMsg = {
+                1: 'ABORTED — loading was aborted',
+                2: 'NETWORK — network/pipeline error',
+                3: 'DECODE — video track cannot be decoded (audio may still play)',
+                4: 'SRC_NOT_SUPPORTED — container/codec unsupported'
+            }[e?.code] || '';
+            const msg = `Media element error — code ${e ? e.code : '?'}${codeMsg ? ' (' + codeMsg + ')' : ''}, ${e ? e.message : 'unknown'}`;
+            if (typeof showToast === 'function') showToast(msg, 'error');
+            console.warn('[ZevMedia]', msg, el, e);
+        }, { once: true });
+
+        try {
+            await el.play();
+        } catch (err) {
+            const msg = `play() rejected — ${err.name}: ${err.message}`;
+            if (typeof showToast === 'function') showToast(msg, 'warning');
+            console.warn('[ZevMedia]', msg, el);
+        }
     }
 
     function updatePlayBtnUI(isPlaying) {
@@ -214,7 +246,6 @@
                 videoEl.removeAttribute('src');
                 videoEl.load();
             } catch (_) {}
-            videoEl.style.display = 'none';
         }
         if (audioEl) {
             try {
@@ -222,7 +253,6 @@
                 audioEl.removeAttribute('src');
                 audioEl.load();
             } catch (_) {}
-            audioEl.style.display = 'none';
         }
 
         if (currentMediaBlobUrl && currentMediaBlobUrl.startsWith('blob:')) {
@@ -262,6 +292,38 @@
         renderMediaBookmarks();
     }
 
+    function showCinemaVideo() {
+        const v = document.getElementById('cinema-video');
+        const a = document.getElementById('cinema-audio');
+        if (v) {
+            v.classList.remove('d-none');
+            v.style.display = 'block';
+        }
+        if (a) {
+            try { a.pause(); } catch (_) {}
+            a.classList.add('d-none');
+            a.style.display = 'none';
+            a.removeAttribute('src');
+            try { a.load(); } catch (_) {}
+        }
+    }
+
+    function showCinemaAudio() {
+        const v = document.getElementById('cinema-video');
+        const a = document.getElementById('cinema-audio');
+        if (a) {
+            a.classList.remove('d-none');
+            a.style.display = 'block';
+        }
+        if (v) {
+            try { v.pause(); } catch (_) {}
+            v.classList.add('d-none');
+            v.style.display = 'none';
+            v.removeAttribute('src');
+            try { v.load(); } catch (_) {}
+        }
+    }
+
     /**
      * Update media player modal title, counter, badges, and loader state.
      */
@@ -277,7 +339,7 @@
         modal.classList.remove('d-none');
         modal.style.display = 'flex';
         modal.classList.remove('cinema-ui--hidden');
-        if (loader) {
+        if (loader && item && item.size > 0) {
             loader.classList.remove('d-none');
             loader.style.display = 'flex';
         }
@@ -433,11 +495,7 @@
             }
 
             if (item.category === 'video' && videoEl) {
-                if (audioEl) {
-                    try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); audioEl.style.display = 'none'; } catch (_) {}
-                }
-                videoEl.classList.remove('d-none');
-                videoEl.style.display = 'block';
+                showCinemaVideo();
                 videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
                 videoEl.src = streamUrl;
                 videoEl.playbackRate = rate;
@@ -449,13 +507,9 @@
                 if (stepBackBtn) stepBackBtn.style.display = 'inline-flex';
                 if (stepFwdBtn) stepFwdBtn.style.display = 'inline-flex';
                 videoEl.load();
-                videoEl.play().catch(() => {});
+                await playWithErrorSurface(videoEl);
             } else if (audioEl) {
-                if (videoEl) {
-                    try { videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load(); videoEl.style.display = 'none'; } catch (_) {}
-                }
-                audioEl.classList.remove('d-none');
-                audioEl.style.display = 'block';
+                showCinemaAudio();
                 audioEl.className = 'media-player-element';
                 audioEl.src = streamUrl;
                 audioEl.playbackRate = rate;
@@ -466,7 +520,7 @@
                 if (stepBackBtn) stepBackBtn.style.display = 'none';
                 if (stepFwdBtn) stepFwdBtn.style.display = 'none';
                 audioEl.load();
-                audioEl.play().catch(() => {});
+                await playWithErrorSurface(audioEl);
             }
 
             if (loader) {
@@ -485,9 +539,13 @@
         const isMobilePhone = (window.innerWidth <= 768 && window.innerHeight <= 950) ||
             (typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.userAgentData && navigator.userAgentData.mobile)));
         if (isMobilePhone && item.size > 2.5 * 1024 * 1024 * 1024) {
-            showToast('⚠️ File exceeds 2.5 GB mobile memory limit for full buffering. Please use a desktop browser or stream via v3 vault.', 'warning');
+            showToast('⚠️ File exceeds 2.5 GB mobile memory limit. Use desktop or a v3 vault for streaming.', 'warning');
             const loaderText = document.getElementById('media-loading-text');
             if (loaderText) loaderText.textContent = 'File exceeds phone memory limit (2.5 GB)';
+            const loader = document.getElementById('media-loading-indicator');
+            if (loader) { loader.classList.add('d-none'); loader.style.display = 'none'; }
+            if (item.category === 'video') showCinemaVideo();
+            else showCinemaAudio();
             return;
         }
 
@@ -513,19 +571,17 @@
             }
 
             if (item.category === 'video' && videoEl) {
-                videoEl.classList.remove('d-none');
-                videoEl.style.display = 'block';
+                showCinemaVideo();
                 videoEl.className = 'media-player-element' + (currentMediaFitCover ? ' media-player-element--cover' : '');
                 videoEl.src = currentMediaBlobUrl;
                 videoEl.load();
-                videoEl.play().catch(() => {});
+                await playWithErrorSurface(videoEl);
             } else if (audioEl) {
-                audioEl.classList.remove('d-none');
-                audioEl.style.display = 'block';
+                showCinemaAudio();
                 audioEl.className = 'media-player-element';
                 audioEl.src = currentMediaBlobUrl;
                 audioEl.load();
-                audioEl.play().catch(() => {});
+                await playWithErrorSurface(audioEl);
             }
 
             if (loader) {
@@ -540,30 +596,29 @@
     }
 
     function openMediaPlayerByPath(filePath) {
-        if (!currentMediaPlaylist || currentMediaPlaylist.length === 0) {
-            if (Array.isArray(global.currentMediaPlaylist) && global.currentMediaPlaylist.length > 0) {
-                currentMediaPlaylist = [...global.currentMediaPlaylist];
-            } else if (Array.isArray(global.currentDecryptedFileList)) {
-                currentMediaPlaylist = [];
-                for (const fileItem of global.currentDecryptedFileList) {
-                    const mediaCat = (typeof global.getMediaCategory === 'function')
-                        ? global.getMediaCategory(fileItem.name)
-                        : (/.(mp4|webm|mov|mkv)$/i.test(fileItem.name) ? 'video' : (/.(mp3|wav|ogg|m4a|flac)$/i.test(fileItem.name) ? 'audio' : null));
-                    if (mediaCat) {
-                        const v3Vault = global.currentV3Vault;
-                        const catalogEntry = fileItem.entry || (v3Vault && v3Vault.catalog && Array.isArray(v3Vault.catalog.files)
-                            ? v3Vault.catalog.files.find(f => f.path === fileItem.path || f.name === fileItem.name)
-                            : null);
-                        currentMediaPlaylist.push({
-                            ...(catalogEntry || {}),
-                            path: fileItem.path,
-                            name: fileItem.name,
-                            category: mediaCat,
-                            mimeType: fileItem.mimeType || (typeof global.getMediaMimeType === 'function' ? global.getMediaMimeType(fileItem.name) : (mediaCat === 'video' ? 'video/mp4' : 'audio/mp3')),
-                            size: fileItem.size,
-                            entry: catalogEntry || fileItem.entry
-                        });
-                    }
+        // Synchronize with active vault playlist if global updated or current playlist is empty
+        if (Array.isArray(global.currentMediaPlaylist) && global.currentMediaPlaylist.length > 0) {
+            currentMediaPlaylist = [...global.currentMediaPlaylist];
+        } else if (Array.isArray(global.currentDecryptedFileList)) {
+            currentMediaPlaylist = [];
+            for (const fileItem of global.currentDecryptedFileList) {
+                const mediaCat = (typeof global.getMediaCategory === 'function')
+                    ? global.getMediaCategory(fileItem.name)
+                    : (/.(mp4|webm|mov|mkv)$/i.test(fileItem.name) ? 'video' : (/.(mp3|wav|ogg|m4a|flac)$/i.test(fileItem.name) ? 'audio' : null));
+                if (mediaCat) {
+                    const v3Vault = global.currentV3Vault;
+                    const catalogEntry = fileItem.entry || (v3Vault && v3Vault.catalog && Array.isArray(v3Vault.catalog.files)
+                        ? v3Vault.catalog.files.find(f => f.path === fileItem.path || f.name === fileItem.name)
+                        : null);
+                    currentMediaPlaylist.push({
+                        ...(catalogEntry || {}),
+                        path: fileItem.path,
+                        name: fileItem.name,
+                        category: mediaCat,
+                        mimeType: fileItem.mimeType || (typeof global.getMediaMimeType === 'function' ? global.getMediaMimeType(fileItem.name) : (mediaCat === 'video' ? 'video/mp4' : 'audio/mp3')),
+                        size: fileItem.size,
+                        entry: catalogEntry || fileItem.entry
+                    });
                 }
             }
         }
@@ -1449,7 +1504,7 @@
                 clearCinemaInactivityTimer();
                 if (currentMediaIsLooping) {
                     el.currentTime = 0;
-                    el.play().catch(() => {});
+                    playWithErrorSurface(el);
                     updatePlayBtnUI(true);
                 } else if (currentMediaIndex < currentMediaPlaylist.length - 1) {
                     playMediaByIndex(currentMediaIndex + 1);
@@ -1458,7 +1513,7 @@
             el.addEventListener('timeupdate', () => {
                 if (mediaLoopPointA !== null && mediaLoopPointB !== null && el.currentTime >= mediaLoopPointB) {
                     el.currentTime = mediaLoopPointA;
-                    if (el.paused) el.play().catch(() => {});
+                    if (el.paused) playWithErrorSurface(el);
                 }
                 updateTimelineScrubber(el);
             });
@@ -1494,7 +1549,7 @@
             const media = getActiveCinemaMedia();
             if (!media) return;
             if (media.paused) {
-                media.play();
+                playWithErrorSurface(media);
                 showCinemaCenterRipple('▶');
             } else {
                 media.pause();
@@ -1917,7 +1972,7 @@
                 // Desktop click toggles play/pause or controls
                 if (window.innerWidth > 768) {
                     if (media.paused) {
-                        media.play();
+                        playWithErrorSurface(media);
                         showCinemaCenterRipple('▶');
                     } else {
                         media.pause();
@@ -2027,7 +2082,7 @@
             if (e.key === ' ' || e.code === 'Space' || e.key === 'k' || e.key === 'K') {
                 e.preventDefault();
                 if (media.paused) {
-                    media.play();
+                    playWithErrorSurface(media);
                     showCinemaCenterRipple('▶');
                 } else {
                     media.pause();

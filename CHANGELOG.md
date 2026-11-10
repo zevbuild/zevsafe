@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 8.28.1 (WEB-VERSION-79) — November 10, 2026
+
+- `Fix` & `UI` (`js/media-player.js`, `css/media-player.css`, `app.js`): Video Player Invisible Picture & Transport Correction Fix (Phase 3 Upgrade).
+  - Resolved the "audio plays, picture invisible" defect caused by inline `display:none` leaks on `<video id="cinema-video">` in Chromium/WebKit engines.
+  - Rewrote `getActiveCinemaMedia()` to verify computed style visibility (`getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden'`), eliminating transport control disconnection where Spacebar, Play, Pause, and Scrubber were disconnected from the active video.
+  - Implemented atomic `showCinemaVideo()` and `showCinemaAudio()` state transitions; removed inline `style.display = 'none'` from `_resetMediaPlaybackElements`.
+  - Added `playWithErrorSurface()` across all player `.play()` invocations, catching decode errors and surfacing explicit user-facing toasts for unsupported codecs (Code 3 `DECODE`, Code 4 `SRC_NOT_SUPPORTED`).
+  - Converted `.style-media-loading-indicator` to an absolute overlay in `css/media-player.css` (`z-index: 5`) and guarded `_updateMediaModalHeaderState` so the buffering spinner cannot squeeze or hide the video stage.
+  - Fixed ambient canvas stacking: removed `scale(1.18)` blow-up and clamped `.cinema-ambient-canvas` strictly behind the video at `z-index: 0` while the video player element renders at `z-index: 1`.
+  - Fixed vault state synchronization between `app.js` and `js/media-player.js` on repeated opens, syncing `window.currentV3Vault`, `window.currentDecryptedFileList`, and `window.currentMediaPlaylist`.
+
 ## Version 8.28.0 (WEB-VERSION-79) — November 9, 2026
 
 - `New` & `Perf` (`js/image-viewer.js`, `app.js`, `js/media-player.js`, `sw.js`, `test/ui/test-image-viewer.js`): Modular On-Demand Image Lightbox Viewer. Decoupled in-vault image lightbox viewing from the heavy 108 KB cinema media player into a dedicated lightweight modular controller `js/image-viewer.js` (`window.ZevImageViewer`). Clicking an image or photo (`.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`, `.avif`, `.bmp`) in Decrypted Vault Explorer now lazy-loads only `js/image-viewer.js` (~13 KB) via `ensureImageViewerLoaded`, preventing unnecessary loading of the HTTP 206 streaming engine and WebAudio tools for pure image browsing. Supports full pan, zoom (clamped 0.2x to 5.0x), 90-degree step rotation, playlist browsing across all decrypted photos, fullscreen mode, SVG security guards, and safe blob URL revocation. Precached `./js/image-viewer.js` in `sw.js` (67 shell assets, hash `3370e655`) and added automated test suite `test/ui/test-image-viewer.js` (8/8 passed) integrated into `test/run-all.js` (32 suites total).

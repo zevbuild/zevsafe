@@ -1,7 +1,7 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.28.0` (`WEB-VERSION-79`, Service Worker `v79`)  
+> **Web Portal Version:** `v8.28.1` (`WEB-VERSION-79`, Service Worker `v79`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
 > **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
@@ -178,6 +178,13 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Strictly Bounded Memory (< 60 MB RAM Peak):** Completely eliminates the 2–3 GB memory explosion caused by allocating multi-gigabyte blobs on the main thread heap. Decrypted chunks are held in a bounded LRU cache (6 chunks = 24 MB), preventing browser tab crashes, frame drops, and GC freezing.
 - **Instant Timeline Seeking:** Seeking to any point across multi-GB files takes only ~25–35 ms because only the destination chunk is fetched and decrypted on demand.
 - **Seamless Progressive Fallback:** Automatically utilizes on-demand range streaming for v3 vaults while gracefully preserving full fallback to `getDecryptedFileBlob` for legacy vaults or environments without Service Worker support.
+
+### 3.19 Video Player 4.1 (Visibility, Transport & Decode Error Surfacing Fix) [v8.28.1]
+- **Elimination of Audio-Only Background Leaks:** Resolved the browser issue where a video element with leaked inline `display: none` continued playing its audio track while rendering no visual picture. Removed inline `style.display = 'none'` from `_resetMediaPlaybackElements` and introduced atomic `showCinemaVideo()` / `showCinemaAudio()` state synchronizers.
+- **Computed Style Transport Detection:** Rewrote `getActiveCinemaMedia()` to use `getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden'`, ensuring spacebar, play/pause buttons, keyboard shortcuts, and timeline scrubber accurately target the visible `<video>` element.
+- **Surface Decode & Playback Failures:** Added `playWithErrorSurface()` capturing video element errors and reporting explicit user-facing toasts for unsupported codecs (Code 3 `DECODE`, Code 4 `SRC_NOT_SUPPORTED`) rather than failing silently with `.catch(() => {})`.
+- **Overlay Loading Spinner & Ambient Stacking Hygiene:** Refactored `.style-media-loading-indicator` to an absolute overlay (`z-index: 5`) so buffering indicators cannot collapse or squeeze the video viewport. Clamped `.cinema-ambient-canvas` to `z-index: 0` with `transform: none` so the ambient glow strictly remains behind the active `<video>` (`z-index: 1`).
+- **Global Vault State Synchronization:** Guaranteed `window.currentV3Vault`, `window.currentDecryptedFileList`, and `window.currentMediaPlaylist` are continuously synced on vault explorer open and media item launch in `app.js`.
 - **On-Demand Decrypted Download:** The cinema modal download button (`#btn-media-download`) extracts the full file blob only when explicitly requested by the user, conserving RAM during standard playback.
 - **Service Worker Range Streaming Protocol Restoration (`js/media-player.js` hotfix):** Re-aligned message types with `sw.js` (`READ_MEDIA_RANGE` -> `MEDIA_RANGE_DATA`), eliminated unhandled `initChannel` hangs, corrected `extractFileRange` parameters to pass `v3Vault.file` and `v3Vault.masterKey`, bounded chunk caching with `StreamUnpacker.createBoundedChunkCache(6)`, and repaired dynamic playlist construction for media and images from `global.currentDecryptedFileList`. Verified via automated test suite `test/ui/test-real-playback.js` (7/7 passed).
 

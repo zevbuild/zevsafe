@@ -4164,6 +4164,18 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
         }
     }
 
+    if (typeof window !== 'undefined') {
+        window.currentV3Vault = currentV3Vault;
+        window.currentDecryptedFileList = currentDecryptedFileList;
+        window.currentMediaPlaylist = currentMediaPlaylist;
+        window.currentImagePlaylist = currentImagePlaylist;
+        window.currentDecryptedZip = currentDecryptedZip;
+        window.currentDecryptedBlob = currentDecryptedBlob;
+        window.getDecryptedFileBlob = getDecryptedFileBlob;
+        window.getMediaMimeType = getMediaMimeType;
+        window.getMediaCategory = getMediaCategory;
+    }
+
     if (modalTitle) modalTitle.textContent = `${folderName}`;
     const fileWord = currentDecryptedFileList.length === 1 ? 'file' : 'files';
     if (modalMeta) modalMeta.textContent = `${currentDecryptedFileList.length} ${fileWord} · ${formatBytes(totalBytes)} · v3 Streaming`;
@@ -4756,6 +4768,18 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
         }
     });
 
+    if (typeof window !== 'undefined') {
+        window.currentV3Vault = currentV3Vault;
+        window.currentDecryptedFileList = currentDecryptedFileList;
+        window.currentMediaPlaylist = currentMediaPlaylist;
+        window.currentImagePlaylist = currentImagePlaylist;
+        window.currentDecryptedZip = currentDecryptedZip;
+        window.currentDecryptedBlob = currentDecryptedBlob;
+        window.getDecryptedFileBlob = getDecryptedFileBlob;
+        window.getMediaMimeType = getMediaMimeType;
+        window.getMediaCategory = getMediaCategory;
+    }
+
     if (modalTitle) modalTitle.textContent = `${folderName}`;
     const fileWord = currentDecryptedFileList.length === 1 ? 'file' : 'files';
     if (modalMeta) modalMeta.textContent = `${currentDecryptedFileList.length} ${fileWord} · ${formatBytes(totalBytes || fullZipBlob.size)}`;
@@ -4792,12 +4816,16 @@ function revokeAllPlayerMediaSessions() {
         try { videoEl.pause(); } catch (_) {}
         videoEl.removeAttribute('src');
         try { videoEl.load(); } catch (_) {}
+        if (videoEl.classList && typeof videoEl.classList.add === 'function') videoEl.classList.add('d-none');
         videoEl.style.display = 'none';
+        videoEl.style.transform = '';
+        videoEl.style.filter = '';
     }
     if (audioEl) {
         try { audioEl.pause(); } catch (_) {}
         audioEl.removeAttribute('src');
         try { audioEl.load(); } catch (_) {}
+        if (audioEl.classList && typeof audioEl.classList.add === 'function') audioEl.classList.add('d-none');
         audioEl.style.display = 'none';
     }
     const imgEl = document.getElementById('lightbox-image');
@@ -5041,6 +5069,17 @@ if (typeof window !== 'undefined') {
 // ============================================
 
 async function playMediaByIndex(index) {
+    if (typeof window !== 'undefined') {
+        window.currentV3Vault = currentV3Vault;
+        window.currentDecryptedFileList = currentDecryptedFileList;
+        window.currentMediaPlaylist = currentMediaPlaylist;
+        window.currentImagePlaylist = currentImagePlaylist;
+        window.currentDecryptedZip = currentDecryptedZip;
+        window.currentDecryptedBlob = currentDecryptedBlob;
+        window.getDecryptedFileBlob = getDecryptedFileBlob;
+        window.getMediaMimeType = getMediaMimeType;
+        window.getMediaCategory = getMediaCategory;
+    }
     await ensureMediaPlayerLoaded();
     if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.playMediaByIndex === 'function') {
         return window.ZevMedia.playMediaByIndex(index);
@@ -5050,6 +5089,17 @@ async function playMediaByIndex(index) {
 }
 
 async function openMediaPlayerByPath(filePath) {
+    if (typeof window !== 'undefined') {
+        window.currentV3Vault = currentV3Vault;
+        window.currentDecryptedFileList = currentDecryptedFileList;
+        window.currentMediaPlaylist = currentMediaPlaylist;
+        window.currentImagePlaylist = currentImagePlaylist;
+        window.currentDecryptedZip = currentDecryptedZip;
+        window.currentDecryptedBlob = currentDecryptedBlob;
+        window.getDecryptedFileBlob = getDecryptedFileBlob;
+        window.getMediaMimeType = getMediaMimeType;
+        window.getMediaCategory = getMediaCategory;
+    }
     await ensureMediaPlayerLoaded();
     if (typeof window !== 'undefined' && window.ZevMedia && typeof window.ZevMedia.openMediaPlayerByPath === 'function') {
         return window.ZevMedia.openMediaPlayerByPath(filePath);
