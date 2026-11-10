@@ -21,6 +21,12 @@
     height: 100dvh;
 }
 
+.media-modal-overlay.d-none,
+.media-hotkeys-modal.d-none,
+.d-none {
+    display: none !important;
+}
+
 .media-modal-container {
     background: #02030a;
     border: 1px solid rgba(139, 92, 246, 0.35);

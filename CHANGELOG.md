@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 8.28.2 (WEB-VERSION-79) — November 10, 2026
+
+- `Fix` & `UI` (`styles.css`, `css/media-player.css`): Root-Cause Resolution for Invisible Video Picture (CSS Specificity & Modal Occlusion Bug).
+  - Resolved the critical defect where the video picture was physically blocked and covered by `#vault-text-modal` (Code & Document Viewer) and `#media-hotkeys-modal` while audio was playing.
+  - Hardened `.d-none` with `display: none !important;` in `styles.css` and `css/media-player.css`, adding explicit compound rules (`.media-modal-overlay.d-none`, `.text-modal-overlay.d-none`, `.image-modal-overlay.d-none`, `.media-hotkeys-modal.d-none`) to guarantee that utility hiding strictly overrides base component `display: flex` declarations regardless of stylesheet cascade order.
+- `Fix` & `Streaming` (`sw.js`, `js/media-player.js`): Service Worker Thread Keepalive & Dynamic Reconnection Protocol.
+  - Solved Chrome background Service Worker idle termination crash at ~80–90s of playback (`PipelineStatus::PIPELINE_ERROR_READ: FFmpegDemuxer: data source error`, HTTP 404).
+  - Implemented automatic 8-second periodic keepalive ping (`MEDIA_STREAM_HEARTBEAT`) from `js/media-player.js` while media is actively loaded, preventing Chrome from prematurely shutting down the background Service Worker instance.
+  - Implemented transparent stream recovery in `sw.js` `handleStreamMedia`: when an active media stream is requested but absent from memory due to an engine wake cycle, the Service Worker broadcasts `RECONNECT_MEDIA_STREAM` across client windows, allowing `js/media-player.js` to dynamically re-register the active `MessageChannel` port before responding to range requests.
+
 ## Version 8.28.1 (WEB-VERSION-79) — November 10, 2026
 
 - `Fix` & `UI` (`js/media-player.js`, `css/media-player.css`, `app.js`): Video Player Invisible Picture & Transport Correction Fix (Phase 3 Upgrade).

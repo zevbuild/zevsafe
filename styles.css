@@ -7231,8 +7231,12 @@ body {
 
 .btn-clear-subtle { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; }
 .btn-modal-dismiss-subtle { background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer; }
-.d-block { display:block; }
-.d-none { display:none; }
+.d-block { display:block !important; }
+.d-none { display:none !important; }
+.media-modal-overlay.d-none,
+.text-modal-overlay.d-none,
+.image-modal-overlay.d-none,
+.media-hotkeys-modal.d-none { display:none !important; }
 .form-credential-hidden { position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0; overflow: hidden; }
 .modal-card-inset { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem 1rem; }
 .modal-card-inset-subtle { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: var(--radius-md); padding: 0.65rem 0.85rem; }

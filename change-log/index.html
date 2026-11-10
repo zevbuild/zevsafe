@@ -708,14 +708,52 @@
         <!-- Release Timeline -->
         <main id="main-content" tabindex="-1" class="cl-timeline">
 
-            <!-- ── VERSION 8.28.0 (WEB-VERSION-79) ── -->
+            <!-- ── VERSION 8.28.2 (WEB-VERSION-79) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
                 <div class="cl-marker">🎬</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 8.28.1 (WEB-VERSION-79)</h2>
+                            <h2 class="cl-version-title">Version 8.28.2 (WEB-VERSION-79)</h2>
                             <span class="cl-badge cl-badge--latest">Latest Release</span>
+                            <span class="cl-badge cl-badge--date">November 10, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Modal Occlusion Fix</span>
+                            <span class="cl-tag">CSS Specificity</span>
+                            <span class="cl-tag">SW Stream Heartbeat</span>
+                            <span class="cl-tag">Dynamic Reconnection</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Resolved physical screen occlusion of the cinema video player caused by un-scoped CSS utility precedence on text/hotkey overlays, and added Service Worker heartbeat pings with dynamic channel reconnection to prevent background thread idle timeouts during continuous video playback.
+                    </p>
+
+                    <div class="cl-items-list">
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div class="cl-item-body">
+                                <strong>Video Modal Physical Occlusion Resolution (<code>styles.css</code>, <code>css/media-player.css</code>):</strong> Diagnosed and fixed the critical defect where <code>&lt;div id="vault-text-modal"&gt;</code> and <code>&lt;div id="media-hotkeys-modal"&gt;</code> were computed with <code>display: flex</code> (overriding <code>.d-none</code> due to missing <code>!important</code>), causing the Code Viewer and Cheatsheet to render at <code>z-index: 2100</code> directly on top of the cinema video player. Enforced <code>display: none !important;</code> on all modal hiding utilities.
+                            </div>
+                        </div>
+                        <div class="cl-item">
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div class="cl-item-body">
+                                <strong>Service Worker Keepalive Heartbeat &amp; Dynamic Reconnection (<code>sw.js</code>, <code>js/media-player.js</code>):</strong> Implemented an automated 8-second keepalive heartbeat (<code>MEDIA_STREAM_HEARTBEAT</code>) during active playback to prevent Chrome from terminating idle Service Worker threads. Added client broadcast query (<code>RECONNECT_MEDIA_STREAM</code>) in <code>handleStreamMedia</code> to transparently re-establish <code>MessageChannel</code> ports on demand without 404 stream dropouts or demuxer errors.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.28.1 (WEB-VERSION-79) ── -->
+            <article class="cl-card" data-version="v8">
+                <div class="cl-marker">🎬</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.28.1 (WEB-VERSION-79)</h2>
                             <span class="cl-badge cl-badge--date">November 10, 2026</span>
                         </div>
                         <div class="cl-tags">

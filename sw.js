@@ -8,7 +8,7 @@
 // ================================================================
 
 const APP_VERSION    = 'v79';
-const CONTENT_HASH   = 'b01a5b72';
+const CONTENT_HASH   = 'b4212cb0';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -417,7 +417,26 @@ const pendingMediaRanges = new Map();
  */
 async function handleStreamMedia(request, url) {
     const streamId = url.searchParams.get('id');
-    const session = activeMediaStreams.get(streamId);
+    let session = activeMediaStreams.get(streamId);
+
+    if (!session) {
+        // If the service worker process was restarted while playback was in progress,
+        // broadcast a RECONNECT_MEDIA_STREAM event to client windows and wait briefly for re-registration
+        try {
+            const allClients = await self.clients.matchAll({ type: 'window' });
+            if (allClients && allClients.length > 0) {
+                for (const client of allClients) {
+                    client.postMessage({ type: 'RECONNECT_MEDIA_STREAM', streamId });
+                }
+                // Allow up to 1000ms for client to re-register the port
+                for (let retry = 0; retry < 10; retry++) {
+                    await new Promise(r => setTimeout(r, 100));
+                    session = activeMediaStreams.get(streamId);
+                    if (session) break;
+                }
+            }
+        } catch (_) {}
+    }
 
     if (!session) {
         return new Response('Media stream expired or missing registration', {
@@ -612,6 +631,12 @@ self.addEventListener('message', event => {
             try { session.port.close(); } catch (_) {}
         }
         activeMediaStreams.clear();
+    } else if (data.type === 'MEDIA_STREAM_HEARTBEAT') {
+        const streamId = data.streamId || data.id;
+        if (streamId && activeMediaStreams.has(streamId)) {
+            const session = activeMediaStreams.get(streamId);
+            session.lastHeartbeat = Date.now();
+        }
     } else if (data.type === 'CLOSE_MEDIA_STREAM') {
         const streamId = data.streamId || data.id;
         if (streamId && activeMediaStreams.has(streamId)) {

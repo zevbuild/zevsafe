@@ -44,6 +44,100 @@
     let activeMediaStreamId = null;
     let activeMediaChannel = null;
     let activeMediaChunkCache = null;
+    let activeMediaHeartbeatTimer = null;
+    let currentStreamingItem = null;
+    let currentStreamingTargetEntry = null;
+    let currentStreamingMime = null;
+
+    function stopActiveMediaHeartbeat() {
+        if (activeMediaHeartbeatTimer) {
+            clearInterval(activeMediaHeartbeatTimer);
+            activeMediaHeartbeatTimer = null;
+        }
+    }
+
+    function startActiveMediaHeartbeat() {
+        stopActiveMediaHeartbeat();
+        if (!activeMediaStreamId) return;
+        activeMediaHeartbeatTimer = setInterval(() => {
+            if (!activeMediaStreamId || !navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+            try {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'MEDIA_STREAM_HEARTBEAT',
+                    streamId: activeMediaStreamId
+                });
+            } catch (_) {}
+        }, 8000);
+    }
+
+    function bindStreamChannelPort(port, targetEntry) {
+        if (!port) return;
+        port.onmessage = async (event) => {
+            const msg = event.data;
+            if (!msg || msg.type !== 'READ_MEDIA_RANGE') return;
+            const { requestId, start, end } = msg;
+            try {
+                const currentVault = global.currentV3Vault;
+                const keyOrPassword = currentVault ? (currentVault.masterKey || currentVault.password) : null;
+                if (!currentVault || !currentVault.file || !keyOrPassword) {
+                    throw new Error('Vault session expired or unavailable for range reading');
+                }
+                const rangeBytes = await StreamUnpacker.extractFileRange(
+                    currentVault.file,
+                    keyOrPassword,
+                    targetEntry,
+                    start,
+                    end,
+                    {
+                        keyfileBytes: currentVault.keyfileBytes,
+                        manifest: currentVault.catalog,
+                        header: currentVault.catalog?.header,
+                        chunkCache: activeMediaChunkCache
+                    }
+                );
+                port.postMessage({
+                    type: 'MEDIA_RANGE_DATA',
+                    requestId,
+                    data: rangeBytes
+                }, [rangeBytes.buffer]);
+            } catch (err) {
+                console.error('[Media Range Stream Error]', err);
+                port.postMessage({
+                    type: 'MEDIA_RANGE_ERROR',
+                    requestId,
+                    error: err.message
+                });
+            }
+        };
+    }
+
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'RECONNECT_MEDIA_STREAM') {
+                const reqStreamId = event.data.streamId;
+                if (reqStreamId && reqStreamId === activeMediaStreamId && currentStreamingTargetEntry) {
+                    try {
+                        if (activeMediaChannel) {
+                            try { activeMediaChannel.port1.close(); } catch (_) {}
+                        }
+                        activeMediaChannel = new MessageChannel();
+                        bindStreamChannelPort(activeMediaChannel.port1, currentStreamingTargetEntry);
+                        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({
+                                type: 'REGISTER_MEDIA_STREAM',
+                                streamId: activeMediaStreamId,
+                                fileSize: currentStreamingItem?.size || 0,
+                                mimeType: currentStreamingMime || 'video/mp4',
+                                filename: currentStreamingItem?.name || ''
+                            }, [activeMediaChannel.port2]);
+                        }
+                    } catch (rErr) {
+                        console.warn('[ZevMedia] Reconnect stream error:', rErr);
+                    }
+                }
+            }
+        });
+    }
 
     // Player 3.0 Pro Studio State
     let currentMediaZoom = 1.0; // 1.0 to 5.0
@@ -261,6 +355,14 @@
         }
 
         // Close previous active media stream
+        stopActiveMediaHeartbeat();
+        currentStreamingItem = null;
+        currentStreamingTargetEntry = null;
+        currentStreamingMime = null;
+        stopActiveMediaHeartbeat();
+        currentStreamingItem = null;
+        currentStreamingTargetEntry = null;
+        currentStreamingMime = null;
         if (activeMediaStreamId) {
             if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) {
                 try {
@@ -415,40 +517,12 @@
                 ? StreamUnpacker.createBoundedChunkCache(6)
                 : new Map();
 
-            activeMediaChannel.port1.onmessage = async (event) => {
-                const msg = event.data;
-                if (!msg || msg.type !== 'READ_MEDIA_RANGE') return;
-                const { requestId, start, end } = msg;
-                try {
-                    const currentVault = global.currentV3Vault;
-                    const keyOrPassword = currentVault.masterKey || currentVault.password;
-                    const rangeBytes = await StreamUnpacker.extractFileRange(
-                        currentVault.file,
-                        keyOrPassword,
-                        targetEntry,
-                        start,
-                        end,
-                        {
-                            keyfileBytes: currentVault.keyfileBytes,
-                            manifest: currentVault.catalog,
-                            header: currentVault.catalog?.header,
-                            chunkCache: activeMediaChunkCache
-                        }
-                    );
-                    activeMediaChannel.port1.postMessage({
-                        type: 'MEDIA_RANGE_DATA',
-                        requestId,
-                        data: rangeBytes
-                    }, [rangeBytes.buffer]);
-                } catch (err) {
-                    console.error('[Media Range Stream Error]', err);
-                    activeMediaChannel.port1.postMessage({
-                        type: 'MEDIA_RANGE_ERROR',
-                        requestId,
-                        error: err.message
-                    });
-                }
-            };
+            currentStreamingItem = item;
+            currentStreamingTargetEntry = targetEntry;
+            const streamMime = item.mimeType || (item.category === 'video' ? 'video/mp4' : 'audio/mp3');
+            currentStreamingMime = streamMime;
+
+            bindStreamChannelPort(activeMediaChannel.port1, targetEntry);
 
             let swTarget = (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) || null;
             if (!swTarget && typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.ready) {
@@ -459,7 +533,6 @@
                 throw new Error('Service Worker controller is not available for media range streaming');
             }
 
-            const streamMime = item.mimeType || (item.category === 'video' ? 'video/mp4' : 'audio/mp3');
             swTarget.postMessage({
                 type: 'REGISTER_MEDIA_STREAM',
                 streamId: activeMediaStreamId,
@@ -467,6 +540,8 @@
                 mimeType: streamMime,
                 filename: item.name
             }, [activeMediaChannel.port2]);
+
+            startActiveMediaHeartbeat();
 
             const streamUrl = `/_stream_media?id=${encodeURIComponent(activeMediaStreamId)}&filename=${encodeURIComponent(item.name)}`;
             currentMediaBlobUrl = streamUrl;
@@ -689,6 +764,10 @@
             currentMediaBlobUrl = null;
         }
 
+        stopActiveMediaHeartbeat();
+        currentStreamingItem = null;
+        currentStreamingTargetEntry = null;
+        currentStreamingMime = null;
         if (activeMediaStreamId) {
             if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) {
                 try {

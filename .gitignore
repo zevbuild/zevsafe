@@ -27,5 +27,7 @@ docs/ORIGINAL_REQUEST.md
 dist/
 node_modules/
 scratch/
+*.zev
+temp_sample.*
 
 
