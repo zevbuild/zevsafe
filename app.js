@@ -2619,8 +2619,19 @@ btnEncrypt.addEventListener('click', async () => {
     try {
         if (useV2 && typeof WorkerBridge !== 'undefined') {
             // ── V3 5 GB STREAMING ENCRYPTION PIPELINE (Low-RAM Web Worker) ────────
+            const kdfVal = document.getElementById('encrypt-kdf-select')?.value || '600000';
+            const isArgon2id = (kdfVal === 'argon2id');
+            const kdfIterations = isArgon2id ? 600000 : parseInt(kdfVal, 10);
+            const kdfTierName = isArgon2id
+                ? 'Ultra Security (Argon2id · 64MB RAM)'
+                : (kdfIterations === 2400000
+                    ? 'Maximum Security (PBKDF2 2.4M rounds)'
+                    : (kdfIterations === 1200000
+                        ? 'High Security (PBKDF2 1.2M rounds)'
+                        : 'Standard Security (PBKDF2 600k rounds)'));
+
             log(`🚀 Starting v3 Streaming Encryption of "${selectedEncryptFolderName}" (${selectedEncryptFiles.length} file(s), ${formatBytes(_origTotalBytes)})...`, 'info');
-            log('🔒 v3 STREAM AEAD mode: PBKDF2-SHA512 (600k rounds) · 4 MB Chunks · AES-256-GCM · Peak RAM < 150 MB' + (v2KeyfileEncrypt ? ' · Keyfile active' : ''), 'info');
+            log(`🔒 v3 STREAM AEAD mode: ${kdfTierName} · 4 MB Chunks · AES-256-GCM · Peak RAM < 150 MB` + (v2KeyfileEncrypt ? ' · Keyfile active' : ''), 'info');
             updateProgress('Initializing streaming engine...', 5);
 
             const filename = `${selectedEncryptFolderName}.zev`;
@@ -2638,6 +2649,10 @@ btnEncrypt.addEventListener('click', async () => {
                 } catch (sErr) {
                     if (sErr.name === 'AbortError') {
                         log('File save cancelled by user.', 'warn');
+                        btnEncrypt.disabled = false;
+                        btnEncrypt.classList.remove('btn--loading');
+                        if (encBtnContent) encBtnContent.textContent = encOrigText;
+                        showProgress(false);
                         return;
                     }
                     console.warn('[StreamSaver] Fallback to buffered sink:', sErr);
@@ -2670,9 +2685,6 @@ btnEncrypt.addEventListener('click', async () => {
             const progActions = document.getElementById('progress-actions');
             if (progActions) progActions.style.display = 'flex';
 
-            const kdfVal = document.getElementById('encrypt-kdf-select')?.value || 'argon2id';
-            const isArgon2id = (kdfVal === 'argon2id');
-            const kdfIterations = isArgon2id ? 600000 : parseInt(kdfVal, 10);
             const isPolyglot = !!(document.getElementById('polyglot-mode-toggle')?.checked && polyglotCoverBytes);
 
             let totalVaultBytes = 0;
@@ -3314,7 +3326,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
         saltHex = bytesToHex(tmpSalt);
         if (record) record.saltHex = saltHex;
     }
-    const rawKdfVal = record?.kdf || (record?.kdfIterations ? String(record.kdfIterations) : (document.getElementById('encrypt-kdf-select')?.value || 'argon2id'));
+    const rawKdfVal = record?.kdf || (record?.kdfIterations ? String(record.kdfIterations) : (document.getElementById('encrypt-kdf-select')?.value || '600000'));
     const isArgon2id = (rawKdfVal === 'argon2id');
     const kdfIterations = isArgon2id ? 600000 : (record?.kdfIterations || parseInt(document.getElementById('encrypt-kdf-select')?.value || '600000', 10));
     const keyfileRequired = !!record?.keyfileRequired;
@@ -7758,7 +7770,7 @@ function initMaxSecurityCollapsible() {
     function checkActiveState() {
         const hasActive = (polyToggle && polyToggle.checked) || 
                           (duressToggle && duressToggle.checked) || 
-                          (kdfSelect && kdfSelect.value !== 'argon2id');
+                          (kdfSelect && kdfSelect.value !== '600000');
         if (hasActive) {
             btn.classList.add('is-active');
             setExpanded(true);

@@ -106,6 +106,16 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Worker Plaintext Heap Memory Hygiene (`js/crypto-worker.js`):** Wrapped `EXTRACT_FILE` in `try...finally`. Ensured `outBuf` is independently sliced before transfer; in `finally`, safely zeroes all decrypted chunk buffers in `decryptedList` and `spanBytes` with `.fill(0)` to prevent plaintext retention on the worker heap.
 - **Single Keyfile Hashing Normalization (`app.js`):** Replaced `hashKeyfile` in v3 encryption, decryption, and salvage paths with raw `new Uint8Array(await file.arrayBuffer())`. Conformed with `StreamCrypto`'s single SHA-256 digest, preventing double-hashing divergence (`SHA256(SHA256(keyfile))`) and ensuring 100% interoperability with native Android, CLI, and test suites. Recovery record fingerprints use `crypto.subtle.digest('SHA-256', keyfileBytes)`. Legacy v2 paths remain untouched for backward compatibility.
 
+### 3.5.2 4-Tier Security Defense Architecture & Fast Standard Default
+- **Standard Security (Default) — 600,000 Rounds PBKDF2-SHA512 (`index.html`, `app.js`):** Restored 600,000 PBKDF2 iterations as the pre-selected default in the web UI for snappy, sub-second encryption (~150–300 ms via native WebCrypto hardware acceleration).
+- **Transparent 4-Tier Security Hierarchy:** Re-branded key derivation options into transparent security levels rather than commercial-sounding names:
+  1. `⚡ Standard Security (Default)`: 600,000 Rounds (PBKDF2-SHA512 · Fast & Balanced · ~0.2s)
+  2. `🛡️ High Security`: 1,200,000 Rounds (PBKDF2-SHA512 · Double Resistance · ~0.5s)
+  3. `🔒 Maximum Security`: 2,400,000 Rounds (PBKDF2-SHA512 · Heavy Hardening · ~1.0s)
+  4. `🧬 Ultra Security (Argon2id)`: RFC 9106 · 64MB RAM Cost (GPU/ASIC-Immune Memory-Hard · ~2.5s)
+- **Max Security Options Controller Synchronization (`app.js`):** In `initMaxSecurityCollapsible()`, `checkActiveState()` tests `kdfSelect.value !== '600000'`, automatically illuminating the "Max Security Options" badge pill when High, Maximum, or Ultra is selected.
+- **File Save Picker Cancellation Safety (`app.js`):** Handled `AbortError` when user dismisses the browser's native `showSaveFilePicker` dialog by resetting `btnEncrypt` state (`disabled = false`, removes loading class) and dismissing progress, preventing the UI from freezing.
+
 ### 3.6 Web Vault Explorer & Ephemeral Virtual Filesystem Architecture
 - **Hierarchical Directory Tree Engine (`getItemsInDirectory`):** Groups decrypted files at `explorerCurrentDir` into immediate subdirectories and direct files. Computes recursive file counts and total byte sizes per folder in $O(N)$ time with zero memory allocations beyond folder summaries.
 - **Interactive Breadcrumb Navigation (`renderBreadcrumbs`):** Renders navigable crumb pills (`📁 Vault Root / photos / vacation`) allowing instant jumping to parent directory levels.

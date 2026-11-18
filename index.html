@@ -564,7 +564,7 @@
                     <div class="max-security-bar" id="max-security-bar">
                         <div class="max-security-bar-left">
                             <span class="max-security-bar-icon">🛡️</span>
-                            <span class="max-security-bar-hint">Need forensic decoy or 2.4M rounds?</span>
+                            <span class="max-security-bar-hint">Need forensic decoy or High / Max / Ultra security?</span>
                         </div>
                         <button type="button" id="btn-toggle-max-security" class="btn-max-security-pill" aria-expanded="false" aria-controls="max-security-collapsible" title="Toggle advanced hardening options">
                             <span>Max Security Options</span>
@@ -574,15 +574,15 @@
 
                     <!-- Collapsible Container for Max Security Features -->
                     <div id="max-security-collapsible" class="max-security-collapsible">
-                    <!-- Key Derivation Hardening (Argon2id & PBKDF2 Iterations) -->
+                    <!-- Key Derivation Hardening (Standard / High / Maximum / Ultra) -->
                     <div class="field-group u-style-bwfyz2lu" >
-                        <label class="field-label" for="encrypt-kdf-select">Key Derivation Algorithm</label>
+                        <label class="field-label" for="encrypt-kdf-select">Key Derivation Security Level</label>
                         <div class="field-wrap">
                             <select class="field-input style-encrypt-kdf-select" id="encrypt-kdf-select" >
-                                <option value="argon2id" selected>Argon2id (RFC 9106 · 64MB RAM Cost - GPU/ASIC Immune)</option>
-                                <option value="600000">600,000 Rounds (PBKDF2-SHA512 - Fast Standard)</option>
-                                <option value="1200000">1,200,000 Rounds (PBKDF2 Hardened)</option>
-                                <option value="2400000">2,400,000 Rounds (PBKDF2 Maximum Security)</option>
+                                <option value="600000" selected>⚡ Standard Security (Default) — 600,000 Rounds (PBKDF2 · Instant ~0.2s)</option>
+                                <option value="1200000">🛡️ High Security — 1,200,000 Rounds (PBKDF2 · Double Resistance)</option>
+                                <option value="2400000">🔒 Maximum Security — 2,400,000 Rounds (PBKDF2 · Extreme Hardening)</option>
+                                <option value="argon2id">🧬 Ultra Security (Argon2id) — RFC 9106 · 64MB RAM (GPU/ASIC-Immune)</option>
                             </select>
                         </div>
                         <div class="u-style-zglzcgxh" >

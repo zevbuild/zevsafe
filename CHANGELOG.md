@@ -2,6 +2,18 @@
 
 ## Version 8.30.0 (WEB-VERSION-81) — November 18, 2026
 
+- `UI` & `Security` (`index.html`, `app.js`): 4-Tier Security Hierarchy & Fast Standard Default (Option 2).
+  - Restored **Standard Security (600,000 Rounds PBKDF2-SHA512 · Instant ~0.2s)** as the pre-selected default in `#encrypt-kdf-select`, ensuring snappy, sub-second encryption out-of-the-box.
+  - Re-branded key derivation options into transparent, self-explanatory defense levels to avoid commercial paywall confusion:
+    - ⚡ **Standard Security (Default)** — 600,000 Rounds (PBKDF2-SHA512 · Fast & Balanced · ~0.2s)
+    - 🛡️ **High Security** — 1,200,000 Rounds (PBKDF2 · Double Resistance · ~0.5s)
+    - 🔒 **Maximum Security** — 2,400,000 Rounds (PBKDF2 · Heavy Hardening · ~1.0s)
+    - 🧬 **Ultra Security (Argon2id)** — RFC 9106 · 64MB RAM (GPU/ASIC-Immune Memory-Hard · ~2.5s)
+  - Placed High, Maximum, and Ultra security tiers inside the collapsible **Max Security Options** panel.
+  - Updated `initMaxSecurityCollapsible()` so that selecting any tier above Standard Security (600k) automatically illuminates the Max Security badge pill.
+  - Enhanced encryption start telemetry to log the active security level dynamically.
+  - Added clean UI reset on native file picker cancellation (`AbortError`), unlocking the encrypt button and hiding progress.
+
 - `Security` & `Fix` (`js/crypto-worker.js`): Duress Decoy Dual-Manifest Envelope Slicing (Bug 1.1).
   - Resolved trailer envelope length mismatch where `parseEncryptedManifest` threw on combined dual envelopes.
   - Sliced primary envelope (`envelopeBytes.subarray(0, env0TotalLen)`) using declared payload length at offset 44.
