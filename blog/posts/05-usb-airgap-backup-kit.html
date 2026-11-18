@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>1-Click USB Air-Gap Backup Kit — ZevSafe Blog</title>
+    <meta name="description" content="Learn how to export a complete, self-contained ZevSafe vault environment directly to a USB flash drive with pure JavaScript PKZIP and multi-OS launchers.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">USB Air-Gap Backup Kit</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category guide blog-article-category-badge">🟢 How-To Guide #05</span>
+            <h1 class="blog-article-title">1-Click USB Air-Gap Backup Kit: Portable Offline Vaults</h1>
+            <p class="blog-article-lead">
+                How to create a self-contained, portable offline vault on a USB thumb drive that runs on any computer without an internet connection or software installation.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild infrastructure team</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 7 min read</span>
+                <span>💾 USB Air-Gap</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#why-usb-airgap">1. The Threat Model of Online Decryptors</a></li>
+                <li><a href="#how-to-export">2. Step-by-Step: Exporting to a USB Flash Drive</a></li>
+                <li><a href="#pure-js-pkzip">3. Pure-JS PKZIP Generator &amp; Direct FSA Writer</a></li>
+                <li><a href="#multi-os-launchers">4. Multi-OS Zero-Config Launchers (.bat &amp; .sh)</a></li>
+                <li><a href="#font-decoupling">5. True Air-Gap: 100% Font &amp; CDN Decoupling</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="why-usb-airgap">1. The Threat Model of Online Decryptors</h2>
+            <p>
+                What happens if you need to decrypt critical files 5 years from now, but:
+            </p>
+            <ul>
+                <li>The website hosting your encryption tool is down or acquired?</li>
+                <li>You are located in an off-grid location or emergency shelter with no internet connectivity?</li>
+                <li>You are using an air-gapped forensic workstation that is strictly forbidden from connecting to the web?</li>
+            </ul>
+            <p>
+                If your encryption software depends on an active internet connection or third-party CDNs to load, your data is effectively hostage to network availability.
+            </p>
+            <div class="blog-callout security">
+                <div class="blog-callout-header">🛡️ The Standalone USB Principle</div>
+                <p>
+                    ZevSafe's <strong>USB Air-Gap Backup Kit</strong> exports the complete web vault software, stylesheets, worker engines, documentation, and launchers into a single folder or ZIP archive directly on your USB drive. You own the software forever.
+                </p>
+            </div>
+
+            <h2 id="how-to-export">2. Step-by-Step: Exporting to a USB Flash Drive</h2>
+            <p>
+                Exporting your standalone kit takes less than 5 seconds:
+            </p>
+            <ol>
+                <li>Insert your USB flash drive into your computer.</li>
+                <li>In the ZevSafe top navigation, click <strong>Tools &rarr; USB Air-Gap Backup Kit</strong> (or click the USB icon in the sidebar).</li>
+                <li>Choose your export method:
+                    <ul>
+                        <li><strong>Option A: Direct USB Drive Writer (Recommended):</strong> Uses the W3C File System Access API (<code>showDirectoryPicker</code>). Select your USB drive root folder, and ZevSafe writes all 31 essential files and scripts directly to the flash drive.</li>
+                        <li><strong>Option B: Download Offline ZIP:</strong> Compiles a single <code>ZevSafe-Offline-Vault-Kit.zip</code> in browser memory and downloads it for manual extraction.</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h2 id="pure-js-pkzip">3. Pure-JS PKZIP Generator &amp; Direct FSA Writer</h2>
+            <p>
+                Most web applications rely on large external packaging libraries. ZevSafe's generator (<code>js/usb-backup-kit.js</code>) is completely written from scratch:
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>Pure-JS PKZIP 2.0 Generator · Bitwise IEEE 802.3 CRC32</span></div>
+                <pre><code>// Pure JavaScript ZIP generation conforming to PKZIP 2.0 specs
+function computeCRC32(bytes) {
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i &lt; bytes.length; i++) {
+        crc = (crc &gt;&gt;&gt; 8) ^ CRC32_TABLE[(crc ^ bytes[i]) &amp; 0xFF];
+    }
+    return (crc ^ 0xFFFFFFFF) &gt;&gt;&gt; 0;
+}</code></pre>
+            </div>
+            <p>
+                It computes exact byte lengths, central directory records, and relative header offsets in volatile memory, outputting a 100% compliant archive readable by Windows Explorer, macOS Archive Utility, and Linux <code>unzip</code>.
+            </p>
+
+            <h2 id="multi-os-launchers">4. Multi-OS Zero-Config Launchers (.bat &amp; .sh)</h2>
+            <p>
+                Browsers enforce strict security restrictions on <code>file://</code> URLs (such as disabling Web Workers or Service Workers in local files).
+            </p>
+            <p>
+                To provide a 1-click experience, the USB Air-Gap Kit includes two zero-config local launchers:
+            </p>
+            <ul>
+                <li><strong><code>Launch-ZevSafe-Windows.bat</code>:</strong> Automatically checks for Python or PowerShell on Windows, starts an ephemeral local HTTP server bound strictly to <code>127.0.0.1</code>, and launches your default browser. Closing the command window terminates the server instantly.</li>
+                <li><strong><code>Launch-ZevSafe-Mac-Linux.sh</code>:</strong> Shell script for macOS and Linux utilizing built-in <code>python3 -m http.server</code> or direct browser fallback.</li>
+            </ul>
+
+            <h2 id="font-decoupling">5. True Air-Gap: 100% Font &amp; CDN Decoupling</h2>
+            <p>
+                Many "offline" web templates silently fail when disconnected because they attempt to load fonts from <code>fonts.googleapis.com</code> or icons from un-cached CDNs.
+            </p>
+            <p>
+                ZevSafe guarantees <strong>Zero Remote Dependencies</strong>:
+            </p>
+            <ul>
+                <li>All font rules specify high-DPI native system typography stacks (<code>Inter</code>, <code>Outfit</code>, system-ui, and <code>JetBrains Mono</code>).</li>
+                <li>All icons are inline vector SVGs compiled directly into HTML markup.</li>
+                <li>Zero external network requests are made, guaranteeing zero Cumulative Layout Shift (CLS 0.00) and 100% air-gap compliance.</li>
+            </ul>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="04-cold-storage-optical-paper-safe.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Previous Guide</span>
+                    <span class="blog-nav-pagination-title">Cold-Storage Optical Paper-Safe</span>
+                </a>
+                <a href="06-passphrase-hygiene-autolock.html" class="blog-nav-pagination-card" style="text-align: right;">
+                    <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
+                    <span class="blog-nav-pagination-title">Passphrase Hygiene &amp; Auto-Lock Protocol</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog Hub</a></li>
+                <li><a href="../../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>Duress Decoy Vaults &amp; Coercion Defense — ZevSafe Blog</title>
+    <meta name="description" content="Surviving physical or legal coercion: how dual-manifest plausible deniability unlocks innocent decoy files while keeping primary data mathematically undetectable.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">Duress Decoy Vaults</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category security blog-article-category-badge">🟣 Security &amp; Tradecraft #07</span>
+            <h1 class="blog-article-title">Duress Decoy Vaults &amp; Coercion Defense: Plausible Deniability</h1>
+            <p class="blog-article-lead">
+                How ZevSafe protects users under physical, legal, or border coercion through cryptographic dual-manifest envelopes and IND-CPA indistinguishability.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild operational security lab</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 9 min read</span>
+                <span>🎭 Plausible Deniability</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#coercion-threat">1. The Threat Model: The $5 Wrench Attack</a></li>
+                <li><a href="#what-is-plausible-deniability">2. What is Plausible Deniability?</a></li>
+                <li><a href="#dual-manifest-architecture">3. The Dual-Manifest Architecture (Envelope 0 vs 1)</a></li>
+                <li><a href="#header-flag-suppression">4. The V3_FLAG_DURESS Flag Suppression Invariant</a></li>
+                <li><a href="#setting-up-decoys">5. Operational Tradecraft: Crafting Realistic Decoys</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="coercion-threat">1. The Threat Model: The $5 Wrench Attack</h2>
+            <p>
+                In classical cryptography, algorithms are designed to withstand adversary computation. However, real-world privacy threats frequently bypass mathematics through coercion:
+            </p>
+            <ul>
+                <li><strong>Border Inspection:</strong> Customs or immigration agents demanding you enter your device or archive password under threat of detention or device confiscation.</li>
+                <li><strong>Physical Extortion:</strong> Attackers threatening bodily harm unless you unlock your sensitive financial documents (the infamous "$5 wrench attack").</li>
+                <li><strong>Subpoena Compulsion:</strong> Court orders compelling disclosure of decryption keys.</li>
+            </ul>
+            <p>
+                If your encryption software simply refuses to open or displays an error, the adversary knows you possess an encrypted vault and are withholding the key.
+            </p>
+
+            <h2 id="what-is-plausible-deniability">2. What is Plausible Deniability?</h2>
+            <p>
+                <strong>Plausible deniability</strong> means an adversary who inspects the encrypted file cannot mathematically determine whether hidden data exists beyond what has been revealed.
+            </p>
+            <div class="blog-callout security">
+                <div class="blog-callout-header">🛡️ The Decoy Principle</div>
+                <p>
+                    When compelled to surrender a password, you supply your <strong>Duress Passphrase</strong>. ZevSafe unlocks a completely convincing, authentic-looking vault containing harmless decoy files (e.g. vacation photos, recipes, old utility bills). The adversary believes they have obtained full access.
+                </p>
+            </div>
+
+            <h2 id="dual-manifest-architecture">3. The Dual-Manifest Architecture (Envelope 0 vs 1)</h2>
+            <p>
+                How does ZevSafe store two completely different directory trees inside a single <code>.zev</code> file without creating detectable structural footprints?
+            </p>
+            <p>
+                At the tail of every ZV3 container resides the encrypted manifest trailer. When Duress mode is armed, ZevSafe constructs <strong>two distinct manifest envelopes</strong>:
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>Binary Structure · Tail Manifest Dual Envelope</span></div>
+                <pre><code>[ ... Chunk 0 ... Chunk 1 ... Chunk N ... ]
+======================= TAIL MANIFEST REGION =======================
+ENVELOPE 0 (Primary Manifest):
+  [Salt_A (32B) | IV_A (12B) | PlainLen_A (4B) | Ciphertext_A | Tag_A (16B)]
+
+ENVELOPE 1 (Decoy Manifest):
+  [Salt_B (32B) | IV_B (12B) | PlainLen_B (4B) | Ciphertext_B | Tag_B (16B)]
+====================================================================</code></pre>
+            </div>
+            <ul>
+                <li><strong>Independent Salts &amp; Keys:</strong> Envelope 0 and Envelope 1 are derived using independent CSPRNG salts and separate passphrases.</li>
+                <li><strong>Sequential Trial Decryption:</strong> When unlocking, ZevSafe tests your entered password against Envelope 0 first. If the AES-256-GCM authentication tag matches, it opens your Primary Vault. If Envelope 0 tag verification fails, it tests Envelope 1 without error logging. If Envelope 1 matches, it opens the Decoy Vault!</li>
+            </ul>
+
+            <h2 id="header-flag-suppression">4. The V3_FLAG_DURESS Flag Suppression Invariant</h2>
+            <p>
+                In early format designs, developers often set a header flag bit (e.g. <code>V3_FLAG_DURESS = 0x02</code>) to indicate that a decoy was present.
+            </p>
+            <div class="blog-callout warning">
+                <div class="blog-callout-header">⚠️ The Leaky Flag Vulnerability</div>
+                <p>
+                    If the header publicly announces a duress flag, an adversary inspecting the file with a hex editor will immediately notice the flag bit and demand the primary password.
+                </p>
+            </div>
+            <p>
+                In ZevSafe <strong>v8.27+</strong>, <code>V3_FLAG_DURESS</code> is <strong>strictly suppressed</strong> from the container header (Byte 5). The dual-envelope trial is conducted transparently. To an external adversary with a hex viewer or statistical analyzer, the tail manifest is indistinguishable from uniform high-entropy pseudo-random noise (IND-CPA security).
+            </p>
+
+            <h2 id="setting-up-decoys">5. Operational Tradecraft: Crafting Realistic Decoys</h2>
+            <p>
+                A decoy vault is only effective if its contents appear authentic to an inspector:
+            </p>
+            <ol>
+                <li><strong>Avoid Obvious Emptiness:</strong> Never create a decoy vault containing a single empty text file named <code>nothing_here.txt</code>.</li>
+                <li><strong>Include Plausible Content:</strong> Add real, non-sensitive personal photos, personal tax filings from 5 years ago, student notes, or household receipts.</li>
+                <li><strong>Commit the Passphrase to Muscle Memory:</strong> Practice typing your duress passphrase under stress so your reaction remains calm during inspection.</li>
+            </ol>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="06-passphrase-hygiene-autolock.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Previous Guide</span>
+                    <span class="blog-nav-pagination-title">Passphrase Hygiene &amp; Auto-Lock Protocol</span>
+                </a>
+                <a href="08-forensic-polyglot-media-camouflage.html" class="blog-nav-pagination-card" style="text-align: right;">
+                    <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
+                    <span class="blog-nav-pagination-title">Forensic Media Camouflage (Polyglot)</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog Hub</a></li>
+                <li><a href="../../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

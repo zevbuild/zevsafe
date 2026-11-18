@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>Multi-Worker Parallel Encryption (&lt;150MB RAM) — ZevSafe Blog</title>
+    <meta name="description" content="How ZevSafe encrypts 5 GB+ datasets in pure JavaScript: elastic WorkerPool scaling, credit-based flow control, and zero-copy transferable buffers under 150 MB RAM.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">Multi-Worker Parallel Crypto</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category architecture blog-article-category-badge">🔵 Architecture &amp; Crypto #12</span>
+            <h1 class="blog-article-title">Multi-Worker Parallel Encryption: Bounding RAM &lt; 150 MB</h1>
+            <p class="blog-article-lead">
+                An architectural exploration of ZevSafe's elastic Web Worker pool, credit-based backpressure pipeline, and zero-copy transferable buffers that make 5 GB+ in-browser encryption possible.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild systems team</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 11 min read</span>
+                <span>⚡ Parallel Web Workers</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#the-ram-trap">1. The Single-Threaded RAM Trap in Browsers</a></li>
+                <li><a href="#elastic-workerpool">2. The Elastic WorkerPool Architecture</a></li>
+                <li><a href="#zero-copy-transfers">3. Zero-Copy Transferable ArrayBuffers</a></li>
+                <li><a href="#ordered-reassembly">4. The OrderedReassemblyQueue: Solving Race Conditions</a></li>
+                <li><a href="#backpressure-flow">5. Credit-Based Flow Control: Guaranteeing &lt; 150 MB Peak Heap</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="the-ram-trap">1. The Single-Threaded RAM Trap in Browsers</h2>
+            <p>
+                Browsers enforce strict limits on single-tab memory consumption. On mobile operating systems (like Android and iOS), a web tab that exceeds 300–400 MB of heap memory is aggressively terminated by the low-memory killer (OOM).
+            </p>
+            <p>
+                If a web encryptor attempts to read a 4 GB video file into memory using <code>FileReader.readAsArrayBuffer()</code>, the browser immediately crashes. Even if chunking is used, naive Web Worker implementations copy buffers via structured cloning, duplicating memory usage across threads.
+            </p>
+
+            <h2 id="elastic-workerpool">2. The Elastic WorkerPool Architecture</h2>
+            <p>
+                ZevSafe implements an elastic Web Worker pool (<code>js/worker-bridge.js</code>) that scales dynamically to match user hardware concurrency:
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>JavaScript Architecture · Elastic Pool Scaling</span></div>
+                <pre><code>// Dynamic pool dimensioning clamped between 4 and 8 workers
+const coreCount = navigator.hardwareConcurrency || 4;
+const poolSize = Math.max(4, Math.min(8, coreCount));
+
+class WorkerPool {
+    constructor(size) {
+        this.workers = [];
+        for (let i = 0; i &lt; size; i++) {
+            this.workers.push(new Worker('js/crypto-worker.js'));
+        }
+    }
+}</code></pre>
+            </div>
+            <ul>
+                <li><strong>Session Multiplexing:</strong> Rather than passing encryption keys with every individual chunk message, an <code>INIT_SESSION</code> message distributes non-extractable <code>CryptoKey</code> instances to all pool workers during startup.</li>
+                <li><strong>Stateless Workers:</strong> Once initialized, any idle worker can process any chunk index independently.</li>
+            </ul>
+
+            <h2 id="zero-copy-transfers">3. Zero-Copy Transferable ArrayBuffers</h2>
+            <p>
+                Traditional <code>worker.postMessage(data)</code> performs a deep structured clone of the buffer, doubling heap allocations.
+            </p>
+            <p>
+                ZevSafe utilizes the HTML5 <strong>Transferable Objects</strong> specification:
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>Zero-Copy Transfer Hook</span></div>
+                <pre><code>// In js/worker-bridge.js:
+function dispatchChunkToWorker(worker, chunkPayload) {
+    const rawBuffer = chunkPayload.bytes.buffer;
+    // Hand over buffer ownership instantly without memory cloning
+    worker.postMessage({
+        action: 'ENCRYPT_CHUNK',
+        chunkIndex: chunkPayload.index,
+        data: rawBuffer
+    }, [rawBuffer]); // Transfer list
+}</code></pre>
+            </div>
+            <p>
+                Transferring ownership is an instantaneous $O(1)$ pointer exchange. On a 5 GB vault, this prevents allocating over 20 GB of intermediate garbage in the V8 engine!
+            </p>
+
+            <h2 id="ordered-reassembly">4. The OrderedReassemblyQueue: Solving Race Conditions</h2>
+            <p>
+                Because pool workers process chunks concurrently, chunks finish non-deterministically (e.g. Worker 3 may finish Chunk 7 before Worker 1 finishes Chunk 5).
+            </p>
+            <p>
+                Writing chunks out of order would completely corrupt the archive wire format. ZevSafe introduces the <strong><code>OrderedReassemblyQueue</code></strong>:
+            </p>
+            <ul>
+                <li>Incoming completed chunks are buffered in an index-keyed map.</li>
+                <li>A strict sequence pointer tracking <code>expectedNextChunk</code> (starting at 0) scans the queue.</li>
+                <li>Chunks are emitted to the disk writer in strictly sequential order ($0, 1, 2, 3, \dots$).</li>
+            </ul>
+
+            <h2 id="backpressure-flow">5. Credit-Based Flow Control: Guaranteeing &lt; 150 MB Peak Heap</h2>
+            <p>
+                If the file reader reads faster than the disk writer can flush to storage, unwritten chunks accumulate in memory, causing heap runaway.
+            </p>
+            <div class="blog-callout security">
+                <div class="blog-callout-header">🛡️ The Deferred Credit Window</div>
+                <p>
+                    ZevSafe enforces an adaptive credit window: $W = \max(2, \min(12, N \times 2))$. The reader cannot read Chunk $K$ until the writer has finished flushing Chunk $K - W$ to disk. Credits are released strictly after disk I/O completes.
+                </p>
+            </div>
+            <p>
+                This ensures that at any given millisecond, only a small, fixed number of 4 MB buffers exist in RAM, capping peak heap usage strictly below <strong>105 MB</strong> regardless of whether the file being encrypted is 500 MB or 50 GB.
+            </p>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="11-zv3-stream-aead-specification.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Previous Guide</span>
+                    <span class="blog-nav-pagination-title">ZV3 STREAM AEAD Binary Specification</span>
+                </a>
+                <a href="13-multi-tier-mobile-streaming-storage.html" class="blog-nav-pagination-card" style="text-align: right;">
+                    <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
+                    <span class="blog-nav-pagination-title">Multi-Tier Mobile Streaming Pipeline</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog Hub</a></li>
+                <li><a href="../../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

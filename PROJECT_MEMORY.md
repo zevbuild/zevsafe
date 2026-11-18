@@ -1,9 +1,9 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.28.3` (`WEB-VERSION-79`, Service Worker `v79`)  
+> **Web Portal Version:** `v8.29.0` (`WEB-VERSION-80`, Service Worker `v80`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
-> **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13 & 14 [78.5% Delivered]; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
+> **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13, 14 & Knowledge Blog Suite; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
 
 > **🤖 MANDATORY AI AGENT RULE:**  
 > Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
@@ -626,6 +626,32 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Dedicated controller for text preview, markdown viewing, and PDF document previewing. Established explicit `.text-modal-overlay` at `z-index: 2100` guaranteeing preview modal stacks strictly above Decrypted Vault Explorer (`z-index: 2000`).
 - **Unified Test Harness Scale:** Total test suite expanded to 32 suites and 1,245+ automated assertions with 100% pass rate.
 - **Service Worker Cache v79:** Bumped `APP_VERSION = 'v79'` in `sw.js` and application shell tags to `WEB-VERSION-79` / `v8.28.0`.
+
+### 3.32 Comprehensive Knowledge & Security Journal Blog Platform (v8.29.0 / WEB-VERSION-80 / SW v80)
+- **100% Client-Side Knowledge & Security Blog Hub (`blog/index.html`, `blog/blog.css`, `blog/blog.js`):**
+  - Instant client-side search engine with keyboard shortcut `/` and `ESC` clearing, combined with dynamic category filter pills (`All Articles`, `How-To Guides`, `Security & Tradecraft`, `Architecture & Cryptography`).
+  - Active top reading progress bar, responsive cybernetic design tokens, copy-to-clipboard code headers, and scroll-spy table of contents.
+- **Fourteen Authoritative Long-Form Knowledge & How-To Guides (`blog/posts/`):**
+  - **Pillar 1: How-To Guides:**
+    - `01-beginners-zero-knowledge-guide.html`: Step-by-step locking, passphrase selection, emergency sheets, and vault exploration.
+    - `02-virtual-filesystem-live-editing.html`: In-RAM text/markdown editing, line numbering, note creation, and direct `.zev` re-encryption.
+    - `03-zero-ram-cinema-deck-audio.html`: In-browser Video Player 4.0 range streaming, persistent floating audio mini-player dock, and blob URL auto-revocation.
+    - `04-cold-storage-optical-paper-safe.html`: Guilloche cold-storage printable certificates, handwritten Diceware boxes, pure-JS QR engine, and camera/clipboard paste (`Ctrl+V`) decoding.
+    - `05-usb-airgap-backup-kit.html`: 1-Click portable flash drive kit, pure-JS PKZIP 2.0 engine, direct FSA drive writer, and multi-OS offline launchers.
+    - `06-passphrase-hygiene-autolock.html`: CSPRNG Diceware generator, real-time Shannon entropy metrics, inactivity timers, and `.fill(0)` buffer zeroization.
+  - **Pillar 2: Security & Tradecraft:**
+    - `07-duress-decoy-coercion-defense.html`: Surviving physical/legal coercion with dual-manifest envelopes, `V3_FLAG_DURESS` suppression, and IND-CPA indistinguishability.
+    - `08-forensic-polyglot-media-camouflage.html`: Bicontextual JPEG/PNG steganography, termination markers (`FF D9`, `IEND`), and sliding-window container detection.
+    - `09-hardware-keyfile-2fa-kdf-hardening.html`: Scaling PBKDF2-SHA512 (600k/1.2M/2.4M), SHA-256 keyfile XOR mixing, and embedded interactive brute-force estimator widget.
+    - `10-vault-health-bitrot-salvage.html`: 4 MB chunk fault containment, silent bit-rot detection, and partial emergency file salvage.
+  - **Pillar 3: Architecture & Cryptography:**
+    - `11-zv3-stream-aead-specification.html`: 57-byte header breakdown, 12-byte IV layout, 42-byte AAD invariant, tail manifest envelope, and embedded interactive header inspector widget.
+    - `12-multi-worker-parallel-crypto-bounded-ram.html`: Elastic `WorkerPool`, `OrderedReassemblyQueue`, transferable zero-copy `ArrayBuffer` handoffs, and credit-based flow control (< 105 MB peak heap).
+    - `13-multi-tier-mobile-streaming-storage.html`: Four-tier storage fallback state machine (FSA &rarr; OPFS &rarr; Service Worker &rarr; Memory) eliminating mobile browser crashes.
+    - `14-zero-exfiltration-airgap-defense.html`: Strict CSP headers, 100% Google Font decoupling, W3C Credential Management API, and formal Grade A+ security audit attestation.
+- **PWA Service Worker Precache & Routing Hardening (`sw.js`, `_headers`, `sitemap.xml`):**
+  - Added all 17 blog assets to `SHELL_ASSETS` and registered `'blog'` route + dynamic `/blog/posts/<slug>` match in `SECTION_ROUTES`.
+  - Bumped `APP_VERSION = 'v80'`, updated Cloudflare `_headers` with strict CSP for `/blog/*`, and populated 15 new URLs in `sitemap.xml`.
 
 ---
 

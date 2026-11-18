@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>Multi-Tier Mobile Streaming Pipeline — ZevSafe Blog</title>
+    <meta name="description" content="How ZevSafe achieves crash-free multi-gigabyte encryption on mobile devices across FSA, OPFS, Service Worker, and memory fallbacks.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">Mobile Streaming Storage</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category architecture blog-article-category-badge">🔵 Architecture &amp; Crypto #13</span>
+            <h1 class="blog-article-title">Multi-Tier Mobile Streaming: Eliminating Browser Crashes</h1>
+            <p class="blog-article-lead">
+                How ZevSafe's four-tier storage fallback engine (FSA &rarr; OPFS &rarr; Service Worker &rarr; In-Memory) guarantees reliable 5 GB+ encryption across Android and iOS smartphones.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild mobile storage team</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 10 min read</span>
+                <span>📱 Mobile Storage Tiers</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#the-mobile-storage-problem">1. The Mobile Browser Storage Crisis</a></li>
+                <li><a href="#four-tier-overview">2. The Four-Tier Storage Fallback Hierarchy</a></li>
+                <li><a href="#tier-1-fsa">3. Tier 1: File System Access API (Desktop Chrome / Edge)</a></li>
+                <li><a href="#tier-3-opfs">4. Tier 3: Origin Private File System (Android Chrome &amp; iOS Safari)</a></li>
+                <li><a href="#tier-2-sw">5. Tier 2: Service Worker StreamSaver (Firefox &amp; Desktop Safari)</a></li>
+                <li><a href="#tier-4-memory">6. Tier 4: Memory Bounded Safe Fallback</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="the-mobile-storage-problem">1. The Mobile Browser Storage Crisis</h2>
+            <p>
+                Desktop browsers provide modern disk writing APIs like <code>window.showSaveFilePicker()</code>, which stream data directly to physical files on the hard drive without consuming RAM.
+            </p>
+            <p>
+                On mobile operating systems (Android and iOS), browser vendors deliberately restrict or disable <code>showSaveFilePicker()</code>. When an application generates large files, it is traditionally forced to accumulate everything into a single <code>Blob</code> object in memory.
+            </p>
+            <div class="blog-callout warning">
+                <div class="blog-callout-header">⚠️ Mobile Out-Of-Memory (OOM) Termination</div>
+                <p>
+                    A standard smartphone browser tab terminates with an "Aw, Snap!" error when heap allocations exceed 350 MB. Creating a 1 GB encrypted backup in an ordinary web app is impossible on mobile devices without crashing.
+                </p>
+            </div>
+
+            <h2 id="four-tier-overview">2. The Four-Tier Storage Fallback Hierarchy</h2>
+            <p>
+                ZevSafe solves this fragmentation through an intelligent capability-sensing pipeline (<code>js/stream-saver.js</code>):
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>Architecture · Storage Fallback State Machine</span></div>
+                <pre><code>[ Device Capability Detection ]
+             |
+             +--&gt; Has window.showSaveFilePicker?
+             |         YES: --&gt; [ TIER 1: File System Access API (Direct Disk) ]
+             |
+             +--&gt; Is Mobile (Android/iOS) &amp;&amp; Has OPFS (navigator.storage)?
+             |         YES: --&gt; [ TIER 3: Origin Private File System (OPFS) ]
+             |
+             +--&gt; Has Service Worker &amp;&amp; Non-Mobile (Firefox / Desktop Safari)?
+             |         YES: --&gt; [ TIER 2: Service Worker StreamSaver Pipeline ]
+             |
+             +--&gt; Incognito Mode / Restricted Environment?
+                       FALLBACK: --&gt; [ TIER 4: Memory-Bounded Chunk Fallback ]</code></pre>
+            </div>
+
+            <h2 id="tier-1-fsa">3. Tier 1: File System Access API (Desktop Chrome / Edge)</h2>
+            <p>
+                On supported desktop platforms, Tier 1 uses <code>window.showSaveFilePicker</code> to obtain a <code>FileSystemWritableFileStream</code>:
+            </p>
+            <ul>
+                <li>Allows seeking to byte offset 0 to write the finalized 57-byte header and manifest offset.</li>
+                <li>Direct OS-level streaming with zero intermediate buffer staging.</li>
+                <li>Zero heap memory growth regardless of output file size.</li>
+            </ul>
+
+            <h2 id="tier-3-opfs">4. Tier 3: Origin Private File System (Android Chrome &amp; iOS Safari)</h2>
+            <p>
+                On mobile devices where FSA is unavailable, ZevSafe promotes <strong>Tier 3 OPFS (Origin Private File System)</strong> to primary priority:
+            </p>
+            <ul>
+                <li>Accesses the private origin sandbox via <code>navigator.storage.getDirectory()</code>.</li>
+                <li>Streams 4 MB ciphertext chunks into a temporary file (<code>zevsafe_stage_*.tmp</code>) using high-speed native file handles.</li>
+                <li>Once encryption is complete, it seeks to byte 49 to write the final manifest offset, packages the staging file into a clean download trigger, and schedules cleanup after transfer.</li>
+                <li><strong>Result:</strong> Enables smartphones with only 4 GB of RAM to encrypt and decrypt 5 GB+ files without exhausting heap limits!</li>
+            </ul>
+
+            <h2 id="tier-2-sw">5. Tier 2: Service Worker StreamSaver (Firefox &amp; Desktop Safari)</h2>
+            <p>
+                On browsers lacking both FSA and synchronous OPFS handles (like older desktop Firefox builds), Tier 2 establishes an in-memory streaming bridge with the Service Worker:
+            </p>
+            <ul>
+                <li>The page streams chunks to the Service Worker via a <code>MessageChannel</code>.</li>
+                <li>The Service Worker intercepts a virtual download route and streams chunks out as an HTTP response with <code>Content-Disposition: attachment</code>.</li>
+                <li>The browser native download manager streams the bytes directly into the user's Downloads folder.</li>
+            </ul>
+
+            <h2 id="tier-4-memory">6. Tier 4: Memory Bounded Safe Fallback</h2>
+            <p>
+                If a user opens ZevSafe in a private/incognito window where browsers forbid OPFS and Service Workers, Tier 4 activates:
+            </p>
+            <ul>
+                <li>Streams chunks into an array of smaller buffer slices.</li>
+                <li>Enforces an active memory guardrail: checks available quota via <code>navigator.storage.estimate()</code>.</li>
+                <li>If the file exceeds safe memory thresholds, it proactively notifies the user with instructions to open standard mode or use the PC toolkit.</li>
+            </ul>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="12-multi-worker-parallel-crypto-bounded-ram.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Previous Guide</span>
+                    <span class="blog-nav-pagination-title">Multi-Worker Parallel Encryption (&lt;150MB RAM)</span>
+                </a>
+                <a href="14-zero-exfiltration-airgap-defense.html" class="blog-nav-pagination-card" style="text-align: right;">
+                    <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
+                    <span class="blog-nav-pagination-title">Zero-Exfiltration Air-Gap Defense-in-Depth</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog Hub</a></li>
+                <li><a href="../../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

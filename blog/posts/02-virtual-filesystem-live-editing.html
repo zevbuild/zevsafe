@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>Virtual Filesystem &amp; In-Vault Live Editing — ZevSafe Blog</title>
+    <meta name="description" content="Learn how to create notes, edit Markdown files live with line numbers, and trigger direct zero-export vault re-encryption directly inside ZevSafe.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">Virtual Filesystem</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category guide blog-article-category-badge">🟢 How-To Guide #02</span>
+            <h1 class="blog-article-title">Virtual Filesystem &amp; In-Vault Live Editing: The Complete Guide</h1>
+            <p class="blog-article-lead">
+                How to edit text documents, write notes, and re-encrypt an entire .zev vault in-browser without leaving temporary files on your hard drive.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild security team</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 7 min read</span>
+                <span>📁 In-Memory VFS</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#vfs-concept">1. What is an Ephemeral Virtual Filesystem?</a></li>
+                <li><a href="#editing-files">2. Opening &amp; Editing Code, Text, and Markdown</a></li>
+                <li><a href="#creating-notes">3. Creating New Encrypted Notes On the Fly</a></li>
+                <li><a href="#overlay-map">4. Under the Hood: The In-Memory Overlay Map</a></li>
+                <li><a href="#direct-re-encrypt">5. Direct Re-Encryption: Packaging Edits Back into .zev</a></li>
+                <li><a href="#security-forensics">6. Anti-Forensic Benefits: Zero Disk Traces</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="vfs-concept">1. What is an Ephemeral Virtual Filesystem?</h2>
+            <p>
+                In legacy archive tools (like standard ZIP or 7-Zip utilities), editing a file inside an encrypted archive requires extracting the unencrypted file to an operating system temporary directory (e.g. <code>C:\Users\AppData\Local\Temp</code> or <code>/tmp</code>).
+            </p>
+            <p>
+                This poses severe operational security risks:
+            </p>
+            <ul>
+                <li>Operating systems write temporary files to unencrypted swap or physical storage sectors.</li>
+                <li>Even after deletion, file contents can easily be recovered using simple forensic undelete tools.</li>
+                <li>Antivirus software, cloud sync agents, and search indexers immediately scan and read the cleartext file.</li>
+            </ul>
+            <div class="blog-callout security">
+                <div class="blog-callout-header">🛡️ The ZevSafe VFS Paradigm</div>
+                <p>
+                    ZevSafe completely eliminates disk writes during editing. When you unlock a vault, the <strong>Virtual Filesystem (VFS)</strong> maintains an in-RAM catalog and dynamic overlay. All reads, text edits, note creations, and file renames occur in volatile JavaScript heap memory.
+                </p>
+            </div>
+
+            <h2 id="editing-files">2. Opening &amp; Editing Code, Text, and Markdown</h2>
+            <p>
+                When exploring an unlocked vault in the <strong>Web Vault Explorer</strong>:
+            </p>
+            <ol>
+                <li>Click on any supported document file (such as <code>.txt</code>, <code>.md</code>, <code>.json</code>, <code>.js</code>, <code>.html</code>, <code>.csv</code>, or <code>.py</code>).</li>
+                <li>The decrypted document viewer modal opens instantly using cached ephemeral keys.</li>
+                <li>Click the <strong>✏️ Edit</strong> button in the viewer header. (Notice that the text editor engine <code>js/text-editor.js</code> is lazy-loaded strictly on this first click to preserve performance).</li>
+                <li>Edit your text with live syntax-aware line numbering, automatic 4-space tab indentation, and word wrap.</li>
+                <li>Press <span class="blog-kbd">Ctrl+S</span> (or <span class="blog-kbd">Cmd+S</span> on macOS) or click <strong>Save Changes</strong>.</li>
+            </ol>
+
+            <h2 id="creating-notes">3. Creating New Encrypted Notes On the Fly</h2>
+            <p>
+                You don't need to create a text file on your computer and encrypt an entirely new vault just to jot down private notes, recovery seeds, or credentials.
+            </p>
+            <ul>
+                <li>In Vault Explorer, navigate to the folder where you want your note stored.</li>
+                <li>Click the <strong>➕ New Note</strong> button in the action bar.</li>
+                <li>Enter a filename (e.g., <code>meeting-notes.txt</code> or <code>private-keys.md</code>).</li>
+                <li>Type your content and click <strong>Create &amp; Save</strong>. The file immediately appears in the directory listing decorated with an <code>(Edited)</code> badge.</li>
+            </ul>
+
+            <h2 id="overlay-map">4. Under the Hood: The In-Memory Overlay Map</h2>
+            <p>
+                How does ZevSafe keep track of your changes while the original <code>.zev</code> file remains sealed?
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>JavaScript Architecture · In-Session Overlay Map</span></div>
+                <pre><code>// In app.js & currentV3Vault session state:
+currentV3Vault.editedFiles = new Map();
+
+// When you save an edit:
+function saveEditedDocument(filePath, contentString) {
+    const encoder = new TextEncoder();
+    const utf8Bytes = encoder.encode(contentString);
+    const overlayBlob = new Blob([utf8Bytes], { type: 'text/plain' });
+    
+    // Stage into overlay map without touching disk
+    currentV3Vault.editedFiles.set(filePath, {
+        blob: overlayBlob,
+        size: utf8Bytes.length,
+        modified: Date.now()
+    });
+}</code></pre>
+            </div>
+            <p>
+                Whenever you preview, download, or re-encrypt, ZevSafe checks the <code>editedFiles</code> overlay map first. If a file path matches, it serves the modified in-RAM version; otherwise, it extracts the original stream chunk.
+            </p>
+
+            <h2 id="direct-re-encrypt">5. Direct Re-Encryption: Packaging Edits Back into .zev</h2>
+            <p>
+                Once you finish editing, you don't need to export a ZIP and go back to the Lock screen.
+            </p>
+            <ol>
+                <li>Click the <strong>🔒 Direct Re-Encrypt</strong> button in the Vault Explorer top bar.</li>
+                <li>ZevSafe prompts you to confirm your master passphrase (or set a new one).</li>
+                <li>The parallel worker pipeline streams both the original unmodified files and the edited overlay blobs into a fresh, authenticated <code>ZV3\0</code> STREAM AEAD container.</li>
+                <li>Your browser saves the updated <code>.zev</code> file directly to your downloads or storage destination.</li>
+            </ol>
+
+            <h2 id="security-forensics">6. Anti-Forensic Benefits: Zero Disk Traces</h2>
+            <p>
+                Because all edits happen in ephemeral browser memory:
+            </p>
+            <ul>
+                <li><strong>No Sector Overwrite Risk:</strong> Solid State Drives (SSDs) utilize wear leveling algorithms that prevent secure deletion of temporary files. By bypassing disk storage entirely, wear leveling vulnerabilities are completely eliminated.</li>
+                <li><strong>Instant Memory Zeroization:</strong> Closing the Vault Explorer modal or clicking <strong>Lock Session</strong> instantly scrubs the overlay map and nullifies all blob references.</li>
+            </ul>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="01-beginners-zero-knowledge-guide.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Previous Guide</span>
+                    <span class="blog-nav-pagination-title">The Beginner’s Zero-Knowledge Guide</span>
+                </a>
+                <a href="03-zero-ram-cinema-deck-audio.html" class="blog-nav-pagination-card" style="text-align: right;">
+                    <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
+                    <span class="blog-nav-pagination-title">Zero-RAM Cinema Deck &amp; Floating Audio Dock</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog Hub</a></li>
+                <li><a href="../../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

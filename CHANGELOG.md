@@ -1,5 +1,26 @@
 # Changelog
 
+## Version 8.29.0 (WEB-VERSION-80) — November 18, 2026
+
+- `New` & `UI` (`blog/index.html`, `blog/blog.css`, `blog/blog.js`): Comprehensive Knowledge & Security Journal Blog Hub.
+  - Built an air-gapped, zero-knowledge publication hub providing step-by-step user tutorials and deep cryptographic architecture disclosures.
+  - Integrated instant client-side multi-keyword search with keyboard navigation (`/` focus, `ESC` clear) and real-time counter updates.
+  - Implemented interactive category filter pills (`All Articles`, `How-To Guides`, `Security & Tradecraft`, `Architecture & Cryptography`) and responsive cybernetic card grid.
+  - Added top animated reading progress bar, copy-to-clipboard code headers, and scroll-spy table of contents.
+- `New` & `Security` (`blog/posts/`): 14 Authoritative Long-Form Knowledge & How-To Guides.
+  - Created 6 step-by-step practical guides: `01-beginners-zero-knowledge-guide.html` (locking/decrypting), `02-virtual-filesystem-live-editing.html` (VFS & live markdown editing), `03-zero-ram-cinema-deck-audio.html` (Video Player 4.0 & audio dock), `04-cold-storage-optical-paper-safe.html` (Guilloche emergency sheets & QR scanning), `05-usb-airgap-backup-kit.html` (pure-JS PKZIP & multi-OS launchers), and `06-passphrase-hygiene-autolock.html` (Diceware CSPRNG, Shannon entropy, and memory zeroization).
+  - Created 4 advanced operational tradecraft guides: `07-duress-decoy-coercion-defense.html` (dual-manifest plausible deniability), `08-forensic-polyglot-media-camouflage.html` (bicontextual JPEG/PNG steganography), `09-hardware-keyfile-2fa-kdf-hardening.html` (PBKDF2 work factors with embedded interactive calculator widget), and `10-vault-health-bitrot-salvage.html` (4 MB chunk fault containment & bit-rot salvage).
+  - Created 4 deep technical specifications: `11-zv3-stream-aead-specification.html` (57-byte header, 12B IV, 42B AAD, tail manifest with embedded interactive header inspector widget), `12-multi-worker-parallel-crypto-bounded-ram.html` (WorkerPool, zero-copy transferable buffers, flow control < 105 MB RAM), `13-multi-tier-mobile-streaming-storage.html` (FSA &rarr; OPFS &rarr; Service Worker &rarr; Memory fallback), and `14-zero-exfiltration-airgap-defense.html` (air-gapped CSP, Google Font decoupling, W3C Credential Management API).
+- `UI` (`index.html`, `knowledge/index.html`, `how-to-use-zevsafe/index.html`, `styles.css`): Ecosystem Cross-Navigation & Theme Integration.
+  - Added Blog navigation link to desktop navbar, Tools dropdown menu, mobile hamburger drawer, and footer across all main portals.
+  - Added `.nav-badge-pill--cyan` style token for the new Journal navbar pill in `styles.css`.
+- `PWA` & `Security` (`sw.js`, `_headers`, `sitemap.xml`): Service Worker Precache, Headers & Sitemap Update.
+  - Bumped Service Worker cache version to `v80` (`APP_VERSION = 'v80'`) and web release tag to `WEB-VERSION-80`.
+  - Added all 17 blog hub assets and post HTML files into `SHELL_ASSETS` for 100% offline airplane-mode reading.
+  - Added `'blog'` route and dynamic `/blog/posts/<slug>` matching in `SECTION_ROUTES` in `sw.js`.
+  - Configured Cloudflare Pages `_headers` with strict air-gapped CSP for `/blog/*`.
+  - Populated 15 new canonical URLs in `sitemap.xml` with priority and change frequency indicators.
+
 ## Version 8.28.3 (WEB-VERSION-79) — November 10, 2026
 
 - `Fix` & `UI` (`js/document-viewer.js`): PDF Preview Frame Display & Action Bar Controls.

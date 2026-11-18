@@ -7,8 +7,8 @@
 //    • Blob / data URLs → NEVER cached
 // ================================================================
 
-const APP_VERSION    = 'v79';
-const CONTENT_HASH   = '4aa18ef8';
+const APP_VERSION    = 'v80';
+const CONTENT_HASH   = '5bb29fa9';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -21,6 +21,24 @@ const SHELL_ASSETS = [
     './roadmap/index.html',
     './device-power/',
     './device-power/index.html',
+    './blog/',
+    './blog/index.html',
+    './blog/blog.css',
+    './blog/blog.js',
+    './blog/posts/01-beginners-zero-knowledge-guide.html',
+    './blog/posts/02-virtual-filesystem-live-editing.html',
+    './blog/posts/03-zero-ram-cinema-deck-audio.html',
+    './blog/posts/04-cold-storage-optical-paper-safe.html',
+    './blog/posts/05-usb-airgap-backup-kit.html',
+    './blog/posts/06-passphrase-hygiene-autolock.html',
+    './blog/posts/07-duress-decoy-coercion-defense.html',
+    './blog/posts/08-forensic-polyglot-media-camouflage.html',
+    './blog/posts/09-hardware-keyfile-2fa-kdf-hardening.html',
+    './blog/posts/10-vault-health-bitrot-salvage.html',
+    './blog/posts/11-zv3-stream-aead-specification.html',
+    './blog/posts/12-multi-worker-parallel-crypto-bounded-ram.html',
+    './blog/posts/13-multi-tier-mobile-streaming-storage.html',
+    './blog/posts/14-zero-exfiltration-airgap-defense.html',
     './knowledge/',
     './knowledge/index.html',
     './knowledge/knowledge.css',
@@ -217,6 +235,7 @@ const SECTION_ROUTES = [
     'how-to-use-zevsafe',
     'change-log',
     'security-audit',
+    'blog',
     'knowledge',
     'knowledge/airgap-usb-backup',
     'knowledge/core-vault',
@@ -244,6 +263,13 @@ async function matchSectionRoute(pathname, cacheName) {
         const slug = km[1];
         const subCached = await caches.match(`./knowledge/${slug}/index.html`, { cacheName })
                        || await caches.match(`./knowledge/${slug}/`, { cacheName });
+        if (subCached) return subCached;
+    }
+    // Dynamic fallback for any /blog/posts/<slug> route
+    const bm = pathname.match(/\/blog\/posts\/([a-z0-9_-]+)(?:\.html)?$/i);
+    if (bm) {
+        const postSlug = bm[1];
+        const subCached = await caches.match(`./blog/posts/${postSlug}.html`, { cacheName });
         if (subCached) return subCached;
     }
     return null;

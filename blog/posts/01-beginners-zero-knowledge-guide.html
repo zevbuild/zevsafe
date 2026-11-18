@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>The Beginner’s Zero-Knowledge Guide: How to Lock, Decrypt &amp; Explore Vaults — ZevSafe Blog</title>
+    <meta name="description" content="Step-by-step beginner guide to ZevSafe: learn how to lock files and folders into an authenticated .zev vault, set secure passphrases, and explore decrypted archives directly in your browser.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">Beginner’s Guide</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category guide blog-article-category-badge">🟢 How-To Guide #01</span>
+            <h1 class="blog-article-title">The Beginner’s Zero-Knowledge Guide: How to Lock, Decrypt &amp; Explore Vaults</h1>
+            <p class="blog-article-lead">
+                A complete visual manual for anyone who wants absolute privacy. Learn how to turn private files into encrypted .zev archives without touching the cloud or exposing passwords.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild security team</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 6 min read</span>
+                <span>🔒 100% Client-Side</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#what-is-zero-knowledge">1. What Does "Zero-Knowledge" Actually Mean?</a></li>
+                <li><a href="#step-1-locking">2. Step 1: Locking Your First Folder or Files</a></li>
+                <li><a href="#step-2-passphrase">3. Step 2: Choosing an Unbreakable Passphrase</a></li>
+                <li><a href="#step-3-emergency-sheet">4. Step 3: Generating the Paper-Safe Emergency Sheet</a></li>
+                <li><a href="#step-4-decrypting">5. Step 4: Unlocking &amp; Exploring Your Vault</a></li>
+                <li><a href="#security-invariants">6. Critical Rules for Safe Vault Management</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="what-is-zero-knowledge">1. What Does "Zero-Knowledge" Actually Mean?</h2>
+            <p>
+                In conventional cloud storage or web-based encryptors, your files or password hashes are transmitted across a network to a remote server. Even services that advertise "end-to-end encryption" often rely on remote key databases or closed-source backends.
+            </p>
+            <p>
+                <strong>ZevSafe is fundamentally different:</strong> It runs entirely inside your browser's local sandbox using the W3C Web Cryptography API (<code>crypto.subtle</code>). 
+            </p>
+            <div class="blog-callout security">
+                <div class="blog-callout-header">🛡️ The Zero-Knowledge Guarantee</div>
+                <p>
+                    Your files, passphrases, and decrypted contents <strong>never touch a server, disk, or remote API</strong>. You can disconnect your internet, turn on Airplane Mode, and ZevSafe will encrypt and decrypt 5 GB+ folders with zero network connectivity.
+                </p>
+            </div>
+
+            <h2 id="step-1-locking">2. Step 1: Locking Your First Folder or Files</h2>
+            <p>
+                To lock files or a complete directory structure:
+            </p>
+            <ol>
+                <li>Open the <a href="../../index.html" class="inline-code">ZevSafe Portal</a> on any computer, tablet, or smartphone.</li>
+                <li>Select the <strong>Lock a Folder</strong> tab (or <strong>Lock Single File</strong>).</li>
+                <li>Drag and drop your folder into the drop zone, or click <strong>Browse Folder</strong> to select your directory via the native operating system picker.</li>
+                <li>ZevSafe reads your files directly in memory and shows a summary of total file count and uncompressed byte size.</li>
+            </ol>
+
+            <h2 id="step-2-passphrase">3. Step 2: Choosing an Unbreakable Passphrase</h2>
+            <p>
+                Your encryption key is derived directly from your password using <strong>PBKDF2-HMAC-SHA512</strong> with a minimum of <strong>600,000 iterations</strong>.
+            </p>
+            <ul>
+                <li><strong>Manual Password:</strong> Type a master passphrase. The live entropy meter evaluates bit strength in real-time.</li>
+                <li><strong>CSPRNG Diceware Generator:</strong> Click the 🎲 icon to automatically generate a 6-word Diceware passphrase (e.g. <code>correct-horse-battery-staple-beacon-glory</code>) with over 77 bits of cryptographic entropy.</li>
+            </ul>
+
+            <div class="blog-callout tip">
+                <div class="blog-callout-header">💡 Pro Tip: Never Reuse Passwords</div>
+                <p>
+                    Because ZevSafe has no "Forgot Password" link and stores zero recovery data on any server, if you lose your password, your files are mathematically irrecoverable. Always store a backup!
+                </p>
+            </div>
+
+            <h2 id="step-3-emergency-sheet">4. Step 3: Generating the Paper-Safe Emergency Sheet</h2>
+            <p>
+                Before clicking encrypt, click the <strong>Generate Paper-Safe Recovery Sheet</strong> button. This generates a standalone, printable HTML cold-storage document containing:
+            </p>
+            <ul>
+                <li>The unique 32-byte CSPRNG salt fingerprint in formatted 8-character blocks.</li>
+                <li>Key derivation tier settings and container version indicators.</li>
+                <li>An encoded optical QR code that can be scanned by camera or clipboard to restore settings.</li>
+                <li>Handwriting boxes for your Diceware words so you can keep an offline physical backup in a safe.</li>
+            </ul>
+
+            <h2 id="step-4-decrypting">5. Step 4: Unlocking &amp; Exploring Your Vault</h2>
+            <p>
+                When encryption finishes, your browser downloads a single <code>.zev</code> file (e.g., <code>Financial_Archive.zev</code>). To inspect or extract its contents:
+            </p>
+            <ol>
+                <li>Switch to the <strong>Unlock Vault</strong> screen in ZevSafe.</li>
+                <li>Drag and drop your <code>.zev</code> file into the unlock drop zone.</li>
+                <li>Enter your master passphrase. If you configured a physical keyfile, attach it now.</li>
+                <li>Click <strong>Unlock Vault</strong>. ZevSafe verifies the 57-byte header and decrypts the tail manifest in under 300 ms.</li>
+                <li>The <strong>Web Vault Explorer</strong> opens, allowing you to browse directory trees, preview images in the lightbox, stream video without downloading, and extract individual files with 1-click.</li>
+            </ol>
+
+            <h2 id="security-invariants">6. Critical Rules for Safe Vault Management</h2>
+            <ul>
+                <li><strong>The .zev File is Portable:</strong> You can store it on Google Drive, Dropbox, USB flash drives, or external SSDs. Because AES-256-GCM is military-grade, cloud providers cannot read the contents.</li>
+                <li><strong>Safe Renaming:</strong> You can safely rename the <code>.zev</code> file on disk (e.g., from <code>secret.zev</code> to <code>backup.zev</code>) — the internal structure remains 100% intact.</li>
+                <li><strong>Lock Session When Done:</strong> When you finish browsing in Vault Explorer, click the <strong>Lock Session</strong> button to immediately scrub encryption keys and zero out plaintext RAM.</li>
+            </ul>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="../index.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Blog Hub</span>
+                    <span class="blog-nav-pagination-title">All 14 Knowledge &amp; How-To Guides</span>
+                </a>
+                <a href="02-virtual-filesystem-live-editing.html" class="blog-nav-pagination-card" style="text-align: right;">
+                    <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
+                    <span class="blog-nav-pagination-title">Virtual Filesystem &amp; In-Vault Live Editing</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog Hub</a></li>
+                <li><a href="../../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

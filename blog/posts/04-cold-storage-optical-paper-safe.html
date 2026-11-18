@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>Cold-Storage Optical Paper-Safe &amp; QR Recovery — ZevSafe Blog</title>
+    <meta name="description" content="Generate offline printable emergency recovery sheets with QR codes, handwritten Diceware boxes, and instant restoration via camera or clipboard.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">Optical Paper-Safe</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category guide blog-article-category-badge">🟢 How-To Guide #04</span>
+            <h1 class="blog-article-title">Cold-Storage Optical Paper-Safe &amp; QR Recovery</h1>
+            <p class="blog-article-lead">
+                How to create indestructible offline physical backups using pure-JS QR codes, security Guilloche certificates, and camera or clipboard restoration.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild security team</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 8 min read</span>
+                <span>📄 Cold Storage</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#why-paper-safe">1. Why Digital Backups Fail: The Cold-Storage Imperative</a></li>
+                <li><a href="#generating-certificate">2. Generating the Printable HTML Certificate</a></li>
+                <li><a href="#pure-js-qr-engine">3. Under the Hood: The Zero-Dependency QR Engine</a></li>
+                <li><a href="#salt-fingerprint">4. Understanding the 8-Group Salt Fingerprint</a></li>
+                <li><a href="#restoration-methods">5. Restoring Vaults: Camera Scanner &amp; Clipboard Paste</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="why-paper-safe">1. Why Digital Backups Fail: The Cold-Storage Imperative</h2>
+            <p>
+                Storing master encryption keys or recovery phrases in cloud notes, password managers, or text files on your desktop creates a single point of failure:
+            </p>
+            <ul>
+                <li>Malware, info-stealers, or browser session hijackers can exfiltrate text files.</li>
+                <li>Cloud accounts can be locked, compromised, or subject to credential stuffing.</li>
+                <li>Digital drives suffer from silent bit decay or electronic controller failure over years of storage.</li>
+            </ul>
+            <p>
+                <strong>The Ultimate Defense is Cold-Storage Paper:</strong> An archival physical document stored in a fireproof home safe or safety deposit box cannot be hacked remotely, infected with ransomware, or probed by automated bots.
+            </p>
+
+            <h2 id="generating-certificate">2. Generating the Printable HTML Certificate</h2>
+            <p>
+                When encrypting a folder in ZevSafe:
+            </p>
+            <ol>
+                <li>Click <strong>Generate Paper-Safe Recovery Sheet</strong> in the master passphrase card.</li>
+                <li>ZevSafe opens a high-contrast printable document modal with security Guilloche dashed borders.</li>
+                <li>Click <strong>Save Offline Certificate (.html)</strong> or <strong>Print Certificate</strong>.</li>
+                <li><strong>The Cold-Storage Rule:</strong> ZevSafe never renders your actual password into the printable HTML. Instead, it provides dedicated handwriting boxes so you can write your Diceware words using an archival indelible pen.</li>
+            </ol>
+
+            <div class="blog-callout security">
+                <div class="blog-callout-header">🛡️ Zero-Knowledge Printing Principle</div>
+                <p>
+                    Modern office and home wireless printers contain internal hard drives and print spool caches that log printed images. By requiring you to write your Diceware password by hand, ZevSafe guarantees that your master password is never spooled to a printer hard drive!
+                </p>
+            </div>
+
+            <h2 id="pure-js-qr-engine">3. Under the Hood: The Zero-Dependency QR Engine</h2>
+            <p>
+                Unlike standard web apps that call external Google Chart APIs or load heavy 150 KB third-party QR libraries from CDNs, ZevSafe includes an in-tree pure-JS engine (<code>js/qr-engine.js</code>):
+            </p>
+            <ul>
+                <li><strong>ISO/IEC 18004 Standard:</strong> Implements Byte Mode data encoding in pure JavaScript.</li>
+                <li><strong>Galois Field Arithmetic:</strong> Performs Galois Field GF(256) polynomial division for standard Reed-Solomon error correction.</li>
+                <li><strong>Dynamic Version Scaling:</strong> Scales automatically from Version 1 up to Version 14 based on payload size with 8-mask penalty scoring.</li>
+                <li><strong>Pure Vector SVG:</strong> Outputs clean, scalable SVG vector elements without canvas memory allocations.</li>
+            </ul>
+
+            <h2 id="salt-fingerprint">4. Understanding the 8-Group Salt Fingerprint</h2>
+            <p>
+                Every recovery sheet features an 8-group formatted salt fingerprint:
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>Cold Storage Parameter · Formatted Salt Fingerprint</span></div>
+                <pre><code>SALT FINGERPRINT:
+7A9B-4F12-88C0-E315-99A1-D42B-6F01-C73E
+
+KDF SPECIFICATION:
+PBKDF2-HMAC-SHA512 · 600,000 Rounds · 256-Bit Master Key</code></pre>
+            </div>
+            <p>
+                This allows you to visually verify whether a physical recovery sheet belongs to a specific <code>.zev</code> file without attempting decryption.
+            </p>
+
+            <h2 id="restoration-methods">5. Restoring Vaults: Camera Scanner &amp; Clipboard Paste</h2>
+            <p>
+                When restoring a vault from a printed recovery sheet:
+            </p>
+            <h3>Method A: In-App Optical Camera Scanner</h3>
+            <ul>
+                <li>On the Decrypt screen, click the <strong>📷 Scan QR</strong> button.</li>
+                <li>Grant camera access. The hardware-accelerated W3C <code>BarcodeDetector</code> (with pure-JS fallback) scans the QR code in under 100 ms.</li>
+                <li>Salt parameters, iteration counts, and vault bindings are instantly populated.</li>
+            </ul>
+
+            <h3>Method B: Optical Clipboard Paste (Ctrl+V)</h3>
+            <ul>
+                <li>If you took a photo or screenshot of the QR code (using Windows Snipping Tool, Win+Shift+S, or Mac Cmd+Shift+4), simply press <span class="blog-kbd">Ctrl+V</span> anywhere on the Decrypt screen.</li>
+                <li>ZevSafe inspects your clipboard image in local browser memory, extracts the QR code, decodes the parameters, and applies them immediately.</li>
+            </ul>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="03-zero-ram-cinema-deck-audio.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Previous Guide</span>
+                    <span class="blog-nav-pagination-title">Zero-RAM Cinema Deck &amp; Floating Audio Dock</span>
+                </a>
+                <a href="05-usb-airgap-backup-kit.html" class="blog-nav-pagination-card" style="text-align: right;">
+                    <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
+                    <span class="blog-nav-pagination-title">1-Click USB Air-Gap Backup Kit</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog Hub</a></li>
+                <li><a href="../../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

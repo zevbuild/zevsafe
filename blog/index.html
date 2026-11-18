@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ZevSafe Blog">
+    <meta name="theme-color" content="#08091a">
+    <meta name="msapplication-TileColor" content="#08091a">
+
+    <!-- Strict Air-Gapped Zero-Exfiltration Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="../assets/icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icon-192.png">
+
+    <title>ZevSafe Security Journal &amp; Knowledge Blog — Guides, Tutorials &amp; Cryptographic Architecture</title>
+    <link rel="canonical" href="https://zevsafe.pages.dev/blog/">
+    <meta name="description" content="Official knowledge base, tutorials, and security engineering blog for ZevSafe. Complete step-by-step guides for everyday users and cryptographic deep-dives for security researchers.">
+    <meta name="keywords" content="ZevSafe blog, zero-knowledge encryption guide, STREAM AEAD tutorial, duress decoy vaults, polyglot steganography, PBKDF2 brute force, offline file security">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ZevSafe">
+    <meta property="og:url" content="https://zevsafe.pages.dev/blog/">
+    <meta property="og:title" content="ZevSafe Security Journal &amp; Knowledge Blog">
+    <meta property="og:description" content="Official knowledge base, tutorials, and security engineering blog for ZevSafe. 100% client-side, zero-knowledge encryption guides.">
+    <meta property="og:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://zevsafe.pages.dev/blog/">
+    <meta name="twitter:title" content="ZevSafe Security Journal &amp; Knowledge Blog">
+    <meta name="twitter:description" content="Official knowledge base, tutorials, and security engineering blog for ZevSafe. 100% client-side, zero-knowledge encryption guides.">
+    <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="blog.css">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://zevsafe.pages.dev/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Blog & Knowledge Hub",
+              "item": "https://zevsafe.pages.dev/blog/"
+            }
+          ]
+        },
+        {
+          "@type": "Blog",
+          "@id": "https://zevsafe.pages.dev/blog/#blog",
+          "url": "https://zevsafe.pages.dev/blog/",
+          "name": "ZevSafe Security Journal & Knowledge Blog",
+          "description": "Step-by-step user tutorials and deep cryptographic architecture disclosures for 100% client-side offline folder encryption.",
+          "publisher": {
+            "@type": "Organization",
+            "name": "ZevSafe",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://zevsafe.pages.dev/assets/icon-512.png"
+            }
+          }
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="blog-reading-progress"></div>
+
+    <!-- Top Navigation -->
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Security Journal</span>
+                </div>
+            </a>
+            
+            <ul class="blog-nav-links">
+                <li><a href="../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="index.html" class="blog-nav-link active">Blog</a></li>
+                <li><a href="../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../security-audit/index.html" class="blog-nav-link">Security Audit</a></li>
+                <li><a href="../change-log/index.html" class="blog-nav-link">Changelog</a></li>
+                <li><a href="../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb Bar -->
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li class="current">Blog &amp; Knowledge Journal</li>
+        </ul>
+        <div class="blog-meta-item">
+            <span class="blog-kbd">14 Articles</span>
+            <span class="blog-kbd">100% Offline</span>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main id="main-content">
+        <!-- Hero Section -->
+        <header class="blog-hero">
+            <div class="blog-hero-eyebrow">
+                <span>🛡️</span> ZERO-KNOWLEDGE ARCHITECTURE &amp; HOW-TO GUIDES
+            </div>
+            <h1 class="blog-hero-title">ZevSafe Security Journal</h1>
+            <p class="blog-hero-lead">
+                Every feature, practical workflow, operational security strategy, and mathematical cryptographic guarantee disclosed with clarity for everyday users and rigour for auditors.
+            </p>
+
+            <!-- Search Bar -->
+            <div class="blog-search-container">
+                <input type="text" id="blog-search" class="blog-search-box" placeholder="Search guides, tutorials, cryptographic algorithms... (e.g., streaming, duress, keyfile, PBKDF2)" autocomplete="off" spellcheck="false" aria-label="Search all blog articles">
+                <svg class="blog-search-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <div class="blog-search-meta">
+                    <span id="blog-search-count">Showing 14 of 14 articles</span>
+                    <span>Press <span class="blog-kbd">/</span> to search, <span class="blog-kbd">ESC</span> to clear</span>
+                </div>
+            </div>
+
+            <!-- Filter Pills -->
+            <div class="blog-filter-pills" role="tablist" aria-label="Article Categories">
+                <button type="button" class="blog-filter-pill active" data-category="all">
+                    <span>✨ All Articles</span>
+                    <span class="blog-pill-badge">14</span>
+                </button>
+                <button type="button" class="blog-filter-pill" data-category="guide">
+                    <span>🟢 How-To Guides</span>
+                    <span class="blog-pill-badge">6</span>
+                </button>
+                <button type="button" class="blog-filter-pill" data-category="security">
+                    <span>🟣 Security &amp; Tradecraft</span>
+                    <span class="blog-pill-badge">4</span>
+                </button>
+                <button type="button" class="blog-filter-pill" data-category="architecture">
+                    <span>🔵 Architecture &amp; Crypto</span>
+                    <span class="blog-pill-badge">4</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Featured Article Spotlight -->
+        <section class="blog-featured-section" aria-label="Featured Story">
+            <a href="posts/01-beginners-zero-knowledge-guide.html" class="blog-featured-card" data-category="guide">
+                <div>
+                    <span class="blog-featured-badge">⭐ FEATURED MASTERCLASS</span>
+                    <h2 class="blog-featured-title">The Beginner’s Zero-Knowledge Guide: How to Lock, Decrypt &amp; Explore Vaults Without Cloud Uploads</h2>
+                    <p class="blog-featured-desc">
+                        A complete visual walkthrough of true zero-knowledge file encryption. Learn how to securely turn private folders into military-grade .zev vaults, set unbreakable Diceware passwords, generate emergency sheets, and explore decrypted archives directly in your browser.
+                    </p>
+                </div>
+                <div class="blog-featured-meta">
+                    <span class="blog-meta-item"><span>📖</span> 6 min read</span>
+                    <span class="blog-meta-item"><span>🟢</span> Beginner Friendly</span>
+                    <span class="blog-meta-item"><span>🔒</span> 100% Client-Side</span>
+                    <span class="blog-meta-item"><span>⚡</span> AES-256-GCM + STREAM AEAD</span>
+                </div>
+            </a>
+        </section>
+
+        <!-- Articles Grid -->
+        <section class="blog-grid-section" aria-label="All Blog Articles">
+            <div class="blog-grid" id="blog-articles-grid">
+
+                <!-- Article 01 -->
+                <article class="blog-card" data-category="guide" data-tags="beginner lock decrypt vault tutorial explore recovery sheet" data-search="beginners zero knowledge guide locking unlocking decrypting explore emergency sheet">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category guide">How-To Guide</span>
+                            <span class="blog-card-icon">🔐</span>
+                        </div>
+                        <h2 class="blog-card-title">The Beginner’s Zero-Knowledge Guide: How to Lock &amp; Decrypt</h2>
+                        <p class="blog-card-desc">
+                            Everything you need to know about locking folders into portable .zev archives, choosing unbreakable passwords, and exploring decrypted files offline.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Walkthrough</span>
+                            <span class="blog-tag">Locking</span>
+                            <span class="blog-tag">Unlocking</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 6 min read · Beginner</span>
+                        <a href="posts/01-beginners-zero-knowledge-guide.html" class="blog-card-action">Read Guide &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 02 -->
+                <article class="blog-card" data-category="guide" data-tags="virtual filesystem live editing notes markdown re-encrypt overlay" data-search="virtual filesystem live editing notes markdown text editor direct re-encryption">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category guide">How-To Guide</span>
+                            <span class="blog-card-icon">📁</span>
+                        </div>
+                        <h2 class="blog-card-title">Virtual Filesystem &amp; In-Vault Live Editing</h2>
+                        <p class="blog-card-desc">
+                            Learn how to create encrypted text notes, live-edit Markdown documents with line numbering, and re-encrypt vaults directly without downloading files to disk.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Live Editor</span>
+                            <span class="blog-tag">Notes</span>
+                            <span class="blog-tag">In-Place</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 7 min read · Practical</span>
+                        <a href="posts/02-virtual-filesystem-live-editing.html" class="blog-card-action">Read Guide &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 03 -->
+                <article class="blog-card" data-category="guide" data-tags="cinema audio player streaming zero-ram video media dock" data-search="cinema deck audio dock floating mini player streaming media zero-ram">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category guide">How-To Guide</span>
+                            <span class="blog-card-icon">🎬</span>
+                        </div>
+                        <h2 class="blog-card-title">Zero-RAM Cinema Deck &amp; Floating Audio Dock</h2>
+                        <p class="blog-card-desc">
+                            Stream multi-gigabyte decrypted video and listen to continuous background audio with a persistent mini-player dock while browsing vault contents safely.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Cinema Mode</span>
+                            <span class="blog-tag">Audio Dock</span>
+                            <span class="blog-tag">Zero Leak</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 5 min read · Practical</span>
+                        <a href="posts/03-zero-ram-cinema-deck-audio.html" class="blog-card-action">Read Guide &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 04 -->
+                <article class="blog-card" data-category="guide" data-tags="optical paper-safe recovery sheet qr scanner camera clipboard" data-search="optical paper safe emergency sheet qr code scanner camera clipboard paste">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category guide">How-To Guide</span>
+                            <span class="blog-card-icon">📄</span>
+                        </div>
+                        <h2 class="blog-card-title">Cold-Storage Optical Paper-Safe &amp; QR Recovery</h2>
+                        <p class="blog-card-desc">
+                            Generate offline printable recovery certificates with security Guilloche borders, handwritten Diceware boxes, and instant restoration via camera or clipboard.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Emergency Sheet</span>
+                            <span class="blog-tag">QR Engine</span>
+                            <span class="blog-tag">Clipboard</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 8 min read · Essential</span>
+                        <a href="posts/04-cold-storage-optical-paper-safe.html" class="blog-card-action">Read Guide &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 05 -->
+                <article class="blog-card" data-category="guide" data-tags="usb backup air-gap kit pkzip fsa direct drive launcher" data-search="usb air gap backup kit portable pkzip standalone launchers fsa direct drive">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category guide">How-To Guide</span>
+                            <span class="blog-card-icon">💾</span>
+                        </div>
+                        <h2 class="blog-card-title">1-Click USB Air-Gap Backup Kit</h2>
+                        <p class="blog-card-desc">
+                            Create self-contained offline vault packages for USB drives using pure JavaScript PKZIP, direct File System Access, and cross-platform offline launchers.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">USB Backup</span>
+                            <span class="blog-tag">Pure-JS ZIP</span>
+                            <span class="blog-tag">Multi-OS</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 7 min read · Practical</span>
+                        <a href="posts/05-usb-airgap-backup-kit.html" class="blog-card-action">Read Guide &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 06 -->
+                <article class="blog-card" data-category="guide" data-tags="diceware password generator auto-lock shannon entropy zeroization" data-search="diceware password generator shannon entropy auto-lock inactivity timer zeroization">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category guide">How-To Guide</span>
+                            <span class="blog-card-icon">🎲</span>
+                        </div>
+                        <h2 class="blog-card-title">Passphrase Hygiene &amp; Auto-Lock Protocol</h2>
+                        <p class="blog-card-desc">
+                            Master Diceware CSPRNG passphrase generation, Shannon entropy benchmarks, and idle session auto-lock timers with cryptographic memory zeroization.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Diceware</span>
+                            <span class="blog-tag">Entropy</span>
+                            <span class="blog-tag">Auto-Lock</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 6 min read · Essential</span>
+                        <a href="posts/06-passphrase-hygiene-autolock.html" class="blog-card-action">Read Guide &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 07 -->
+                <article class="blog-card" data-category="security" data-tags="duress decoy plausible deniability coercion fake vault dual manifest" data-search="duress decoy plausible deniability coercion fake password dual manifest ind-cpa">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category security">Security &amp; Tradecraft</span>
+                            <span class="blog-card-icon">🎭</span>
+                        </div>
+                        <h2 class="blog-card-title">Duress Decoy Vaults &amp; Coercion Defense</h2>
+                        <p class="blog-card-desc">
+                            Surviving forced disclosure: how dual-manifest plausible deniability unlocks innocent decoy files while keeping primary data cryptographically indistinguishable.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Plausible Deniability</span>
+                            <span class="blog-tag">Dual Manifest</span>
+                            <span class="blog-tag">IND-CPA</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 9 min read · Hardened</span>
+                        <a href="posts/07-duress-decoy-coercion-defense.html" class="blog-card-action">Read Deep Dive &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 08 -->
+                <article class="blog-card" data-category="security" data-tags="polyglot camouflage steganography jpeg png mp4 termination markers" data-search="polyglot camouflage steganography image disguise termination markers sliding window">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category security">Security &amp; Tradecraft</span>
+                            <span class="blog-card-icon">🖼️</span>
+                        </div>
+                        <h2 class="blog-card-title">Forensic Media Camouflage (Polyglot)</h2>
+                        <p class="blog-card-desc">
+                            Bicontextual file steganography: mask raw encrypted vaults behind genuine JPEG, PNG, or MP4 headers so standard photo viewers display normal images.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Steganography</span>
+                            <span class="blog-tag">Polyglot</span>
+                            <span class="blog-tag">FF D9 / IEND</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 8 min read · Hardened</span>
+                        <a href="posts/08-forensic-polyglot-media-camouflage.html" class="blog-card-action">Read Deep Dive &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 09 -->
+                <article class="blog-card" data-category="security" data-tags="pbkdf2 keyfile 2fa brute force gpu sha512 tiers" data-search="keyfile 2fa two factor pbkdf2 tiers 600k 1.2m 2.4m brute force defense">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category security">Security &amp; Tradecraft</span>
+                            <span class="blog-card-icon">🔑</span>
+                        </div>
+                        <h2 class="blog-card-title">Physical 2FA Keyfiles &amp; KDF Hardening</h2>
+                        <p class="blog-card-desc">
+                            Immunity against GPU cracking rigs: combine PBKDF2-SHA512 tiers up to 2.4 million iterations with SHA-256 physical keyfile entropy mixing for true 2FA vaults.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">PBKDF2-SHA512</span>
+                            <span class="blog-tag">Keyfile 2FA</span>
+                            <span class="blog-tag">GPU Defense</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 8 min read · Hardened</span>
+                        <a href="posts/09-hardware-keyfile-2fa-kdf-hardening.html" class="blog-card-action">Read Deep Dive &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 10 -->
+                <article class="blog-card" data-category="security" data-tags="health check bit rot salvage aead scan corruption quarantine" data-search="vault health bit rot salvage corrupted archive chunk isolation scorecard">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category security">Security &amp; Tradecraft</span>
+                            <span class="blog-card-icon">🩺</span>
+                        </div>
+                        <h2 class="blog-card-title">Vault Health &amp; Bit-Rot Salvage Engine</h2>
+                        <p class="blog-card-desc">
+                            Deep cryptographic audit and emergency salvage: scan every 4 MB chunk for bit-rot, quarantine corrupted blocks, and rescue surviving files into a clean archive.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Integrity Audit</span>
+                            <span class="blog-tag">Chunk Isolation</span>
+                            <span class="blog-tag">Data Salvage</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 9 min read · Hardened</span>
+                        <a href="posts/10-vault-health-bitrot-salvage.html" class="blog-card-action">Read Deep Dive &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 11 -->
+                <article class="blog-card" data-category="architecture" data-tags="zv3 stream aead 57b header wire framing manifest offsets" data-search="zv3 stream aead binary specification 57-byte header iv aad framing manifest">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category architecture">Architecture &amp; Crypto</span>
+                            <span class="blog-card-icon">📐</span>
+                        </div>
+                        <h2 class="blog-card-title">ZV3 STREAM AEAD Binary Specification</h2>
+                        <p class="blog-card-desc">
+                            Complete architectural specification of the 57-byte container header, 12-byte chunk IV layout, 42-byte chunk AAD, wire framing, and tail manifest envelope.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">ZV3 Format</span>
+                            <span class="blog-tag">57B Header</span>
+                            <span class="blog-tag">Wire Framing</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 12 min read · Deep Dive</span>
+                        <a href="posts/11-zv3-stream-aead-specification.html" class="blog-card-action">Read Spec &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 12 -->
+                <article class="blog-card" data-category="architecture" data-tags="web workers workerpool stream bounded ram 150mb zero copy flow control" data-search="multi-worker parallel encryption bounded ram 150mb workerpool credit flow control zero copy">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category architecture">Architecture &amp; Crypto</span>
+                            <span class="blog-card-icon">⚡</span>
+                        </div>
+                        <h2 class="blog-card-title">Multi-Worker Parallel Encryption (&lt;150MB RAM)</h2>
+                        <p class="blog-card-desc">
+                            How ZevSafe encrypts 5 GB+ datasets in pure JavaScript: elastic WorkerPool scaling, credit-based backpressure flow control, and zero-copy transferable buffers.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">WorkerPool</span>
+                            <span class="blog-tag">Flow Control</span>
+                            <span class="blog-tag">&lt;150MB RAM</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 11 min read · Deep Dive</span>
+                        <a href="posts/12-multi-worker-parallel-crypto-bounded-ram.html" class="blog-card-action">Read Spec &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 13 -->
+                <article class="blog-card" data-category="architecture" data-tags="mobile streaming fsa opfs service worker low ram storage tier" data-search="mobile streaming fsa opfs service worker memory fallback low-ram smartphones android ios">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category architecture">Architecture &amp; Crypto</span>
+                            <span class="blog-card-icon">📱</span>
+                        </div>
+                        <h2 class="blog-card-title">Multi-Tier Mobile Streaming Pipeline</h2>
+                        <p class="blog-card-desc">
+                            Four-tier storage fallback engine (FSA &rarr; OPFS &rarr; Service Worker &rarr; In-Memory) guaranteeing crash-free multi-gigabyte vaults on Android and iOS browsers.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Tier 1 FSA</span>
+                            <span class="blog-tag">Tier 3 OPFS</span>
+                            <span class="blog-tag">Mobile Memory</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 10 min read · Deep Dive</span>
+                        <a href="posts/13-multi-tier-mobile-streaming-storage.html" class="blog-card-action">Read Spec &rarr;</a>
+                    </div>
+                </article>
+
+                <!-- Article 14 -->
+                <article class="blog-card" data-category="architecture" data-tags="csp airgap credential api zero-exfiltration font decoupling security" data-search="zero exfiltration airgap csp google font decoupling w3c credential api defense in depth">
+                    <div>
+                        <div class="blog-card-header">
+                            <span class="blog-card-category architecture">Architecture &amp; Crypto</span>
+                            <span class="blog-card-icon">🛡️</span>
+                        </div>
+                        <h2 class="blog-card-title">Zero-Exfiltration Air-Gap Defense-in-Depth</h2>
+                        <p class="blog-card-desc">
+                            Formal defense-in-depth: strict CSP rules, complete Google Font decoupling for zero network calls, and native W3C Credential Management API password binding.
+                        </p>
+                        <div class="blog-card-tags">
+                            <span class="blog-tag">Strict CSP</span>
+                            <span class="blog-tag">Zero CDNs</span>
+                            <span class="blog-tag">Credential API</span>
+                        </div>
+                    </div>
+                    <div class="blog-card-footer">
+                        <span>⚡ 10 min read · Deep Dive</span>
+                        <a href="posts/14-zero-exfiltration-airgap-defense.html" class="blog-card-action">Read Spec &rarr;</a>
+                    </div>
+                </article>
+
+            </div>
+
+            <!-- Empty Search State -->
+            <div class="blog-empty-state" id="blog-empty-state">
+                <div class="blog-empty-icon">🔍</div>
+                <h3 class="blog-empty-title">No matching articles found</h3>
+                <p class="blog-empty-desc">
+                    Try different keywords or clear the category filter to explore all 14 knowledge and how-to guides.
+                </p>
+                <button type="button" class="blog-nav-btn" onclick="document.getElementById('blog-search').value=''; document.querySelector('.blog-filter-pill[data-category=all]').click();">Reset Search</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">
+                ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span>
+            </div>
+            <p>100% Client-Side · Zero Server Uploads · Zero Trackers · Formal Grade A+ Security Audit</p>
+            <ul class="blog-footer-links">
+                <li><a href="../index.html">Main Vault App</a></li>
+                <li><a href="../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../how-to-use-zevsafe/index.html">User Guide</a></li>
+                <li><a href="../security-audit/index.html">Security Audit Report</a></li>
+                <li><a href="../device-power/index.html">Device Power Benchmark</a></li>
+                <li><a href="../roadmap/index.html">Master Plan Roadmap</a></li>
+                <li><a href="../change-log/index.html">Changelog</a></li>
+                <li><a href="https://github.com/zevbuild" target="_blank" rel="noopener">GitHub ↗</a></li>
+            </ul>
+            <p style="margin-top: 1rem; font-size: 0.78rem;">&copy; 2026 zevbuild studio. Free &amp; Open Source Software (FOSS). Built for absolute offline privacy.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="blog.js"></script>
+</body>
+</html>

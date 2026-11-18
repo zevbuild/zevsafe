@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>Passphrase Hygiene &amp; Auto-Lock Protocol — ZevSafe Blog</title>
+    <meta name="description" content="Master cryptographic passphrase generation using Diceware CSPRNG, Shannon entropy calculation, and inactivity session auto-lock with memory zeroization.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">Passphrase Hygiene &amp; Auto-Lock</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category guide blog-article-category-badge">🟢 How-To Guide #06</span>
+            <h1 class="blog-article-title">Passphrase Hygiene &amp; Auto-Lock Protocol: Securing Keys in Memory</h1>
+            <p class="blog-article-lead">
+                A practical guide to generating unbreakable Diceware passphrases, measuring Shannon entropy, and safeguarding unlocked sessions with automatic memory zeroization.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild crypto team</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 6 min read</span>
+                <span>🎲 Passphrases &amp; RAM</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#why-passphrases">1. Complex Passwords vs. Diceware Passphrases</a></li>
+                <li><a href="#diceware-csprng">2. How the CSPRNG Diceware Generator Works</a></li>
+                <li><a href="#shannon-entropy">3. Measuring Shannon Entropy in Real-Time</a></li>
+                <li><a href="#autolock-protocol">4. The Inactivity Auto-Lock Protocol</a></li>
+                <li><a href="#memory-zeroization">5. Cryptographic Memory Zeroization (.fill(0))</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="why-passphrases">1. Complex Passwords vs. Diceware Passphrases</h2>
+            <p>
+                For decades, users were instructed to create passwords like <code>Tr0ub4dor&amp;3!</code>. Modern research has proven this approach flawed:
+            </p>
+            <ul>
+                <li>Short, complex passwords are difficult for humans to remember, leading users to write them on sticky notes or reuse them across accounts.</li>
+                <li>Attackers use rule-based password crackers (like Hashcat) that easily guess standard leetspeak substitutions (e.g. <code>@</code> for <code>a</code>, <code>0</code> for <code>o</code>).</li>
+            </ul>
+            <p>
+                <strong>The Solution is Multi-Word Passphrases:</strong> A phrase composed of 6 randomly chosen dictionary words (e.g., <code>correct horse battery staple beacon glory</code>) is effortlessly memorable for humans yet mathematically impossible for brute-force clusters to guess.
+            </p>
+
+            <h2 id="diceware-csprng">2. How the CSPRNG Diceware Generator Works</h2>
+            <p>
+                True cryptographic randomness cannot use <code>Math.random()</code>, which is a pseudo-random generator vulnerable to seed reconstruction.
+            </p>
+            <p>
+                ZevSafe's built-in generator exclusively queries <code>window.crypto.getRandomValues(new Uint32Array(1))</code>:
+            </p>
+            <ol>
+                <li>Click the 🎲 icon next to the master passphrase field.</li>
+                <li>The generator pulls hardware entropy from your system kernel (keystroke timing, thermal sensor noise, interrupt jitter).</li>
+                <li>It selects 6 distinct words from an audited 7,776-word EFF wordlist.</li>
+                <li>Each word provides exactly $\log_2(7776) \approx 12.917$ bits of entropy. A 6-word phrase delivers <strong>77.5 bits of true entropy</strong>.</li>
+            </ol>
+
+            <h2 id="shannon-entropy">3. Measuring Shannon Entropy in Real-Time</h2>
+            <p>
+                As you type a password, ZevSafe continuously evaluates the Shannon entropy:
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>Information Theory · Shannon Entropy Formula</span></div>
+                <pre><code>H(X) = - \sum_{i=1}^{n} P(x_i) \log_2 P(x_i)
+
+Pool Entropy = L \times \log_2(N)
+Where L = length of passphrase, N = character pool size</code></pre>
+            </div>
+            <p>
+                The strength meter displays both color cues and bit metrics:
+            </p>
+            <ul>
+                <li><strong>&lt; 40 bits (Red):</strong> Vulnerable to fast consumer GPU dictionaries.</li>
+                <li><strong>40 – 65 bits (Yellow):</strong> Moderate security; resist casual attacks.</li>
+                <li><strong>65 – 85 bits (Green):</strong> High security; immune to commercial cracking clusters.</li>
+                <li><strong>&gt; 85 bits (Emerald Glow):</strong> Military grade; mathematically resistant to nation-state supercomputers.</li>
+            </ul>
+
+            <h2 id="autolock-protocol">4. The Inactivity Auto-Lock Protocol</h2>
+            <p>
+                When you unlock a vault in Vault Explorer, decrypted files and encryption keys reside in browser memory. If you step away from your desk, an unauthorized person could view or export your files.
+            </p>
+            <p>
+                ZevSafe includes a configurable <strong>Inactivity Watcher</strong>:
+            </p>
+            <ul>
+                <li>Monitors user interaction events (<code>mousemove</code>, <code>keydown</code>, <code>pointerdown</code>, <code>touchstart</code>).</li>
+                <li>Supports customizable idle timeouts: <strong>5 minutes</strong>, <strong>15 minutes</strong>, or <strong>30 minutes</strong>.</li>
+                <li>When the timer expires, ZevSafe automatically executes <code>lockV3VaultSession()</code>, closes the explorer, and returns to the master lock screen.</li>
+            </ul>
+
+            <h2 id="memory-zeroization">5. Cryptographic Memory Zeroization (.fill(0))</h2>
+            <p>
+                Simply deleting an object in JavaScript (e.g. <code>key = null</code>) does not guarantee that the underlying memory is cleared; the raw bytes remain in the heap until garbage collection runs.
+            </p>
+            <div class="blog-callout security">
+                <div class="blog-callout-header">🛡️ Explicit Buffer Scrubbing</div>
+                <p>
+                    ZevSafe wraps all key derivations and session teardowns in <code>try...finally</code> blocks with explicit <code>.fill(0)</code> zeroization. Before dropping references, raw password bytes, salt buffers, keyfile hashes, and mixed key material are physically overwritten with zeros!
+                </p>
+            </div>
+
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>JavaScript Architecture · Memory Scrubbing Invariant</span></div>
+                <pre><code>function lockV3VaultSession() {
+    // 1. Overwrite volatile keyfile bytes
+    if (activeKeyfileBytes) {
+        activeKeyfileBytes.fill(0);
+        activeKeyfileBytes = null;
+    }
+    
+    // 2. Clear and scrub chunk cache
+    if (chunkCache) {
+        chunkCache.clear(); // Wipes all 4MB chunk buffers
+    }
+    
+    // 3. Nullify CryptoKey and catalog references
+    currentV3Vault = null;
+    
+    // 4. Reset password inputs
+    document.querySelectorAll('input[type="password"]').forEach(input => {
+        input.value = '';
+    });
+}</code></pre>
+            </div>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="05-usb-airgap-backup-kit.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Previous Guide</span>
+                    <span class="blog-nav-pagination-title">1-Click USB Air-Gap Backup Kit</span>
+                </a>
+                <a href="07-duress-decoy-coercion-defense.html" class="blog-nav-pagination-card" style="text-align: right;">
+                    <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
+                    <span class="blog-nav-pagination-title">Duress Decoy Vaults &amp; Coercion Defense</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog Hub</a></li>
+                <li><a href="../../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

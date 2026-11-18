@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>Vault Health &amp; Bit-Rot Salvage Engine — ZevSafe Blog</title>
+    <meta name="description" content="Detect silent bit-rot and media degradation in encrypted vaults: chunk-by-chunk AEAD tag scanning, quarantine, and partial file salvage.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../knowledge/index.html" class="blog-nav-link">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">Vault Health &amp; Salvage</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category security blog-article-category-badge">🟣 Security &amp; Tradecraft #10</span>
+            <h1 class="blog-article-title">Vault Health &amp; Bit-Rot Salvage Engine: Recovering Damaged Archives</h1>
+            <p class="blog-article-lead">
+                How ZevSafe detects silent hardware degradation, isolates corrupted 4 MB ciphertext blocks, and salvages surviving data from damaged archives.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild reliability lab</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 9 min read</span>
+                <span>🩺 Health &amp; Salvage</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#what-is-bitrot">1. The Reality of Silent Bit-Rot in Storage</a></li>
+                <li><a href="#aead-all-or-nothing">2. The "All-or-Nothing" Dilemma in Traditional Crypto</a></li>
+                <li><a href="#chunk-isolation">3. 4 MB Chunk Isolation: Fault Containment</a></li>
+                <li><a href="#running-health-check">4. How to Run the Deep Cryptographic Integrity Audit</a></li>
+                <li><a href="#salvage-workflow">5. The Emergency Salvage Workflow</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="what-is-bitrot">1. The Reality of Silent Bit-Rot in Storage</h2>
+            <p>
+                All digital storage media degrade over time:
+            </p>
+            <ul>
+                <li><strong>NAND Flash Memory (SSDs &amp; USB Drives):</strong> Trapped electrons slowly leak from floating-gate or charge-trap cells, causing stored bits to flip from 1 to 0. Unpowered USB drives can experience bit rot in as little as 1 to 3 years.</li>
+                <li><strong>Magnetic Hard Drives:</strong> Thermal fluctuations and magnetic domain decay cause silent sector read errors.</li>
+                <li><strong>Cosmic Rays:</strong> High-energy atmospheric neutrons flip bits in storage controllers and memory chips.</li>
+            </ul>
+
+            <h2 id="aead-all-or-nothing">2. The "All-or-Nothing" Dilemma in Traditional Crypto</h2>
+            <p>
+                Modern authenticated encryption (like AES-GCM or ChaCha20-Poly1305) contains a mathematical authentication tag. If even a <strong>single bit</strong> is altered or corrupted anywhere in the ciphertext, the tag check fails, and the cryptographic primitive rejects the entire payload.
+            </p>
+            <div class="blog-callout warning">
+                <div class="blog-callout-header">⚠️ The Total Data Loss Trap</div>
+                <p>
+                    In monolithic container architectures (where a 10 GB file is encrypted as a single continuous block), a single flipped bit in block 4 makes the entire 10 GB archive completely un-decryptable!
+                </p>
+            </div>
+
+            <h2 id="chunk-isolation">3. 4 MB Chunk Isolation: Fault Containment</h2>
+            <p>
+                ZevSafe circumvents this catastrophe through <strong>STREAM AEAD chunk isolation</strong>:
+            </p>
+            <ul>
+                <li>Files are broken into autonomous 4,194,304-byte (4 MB) plaintext blocks.</li>
+                <li>Each block is encrypted with an independent 12-byte IV and signed with its own 16-byte authentication tag.</li>
+                <li><strong>Fault Containment:</strong> If physical flash memory corrupts Byte 500,000,000, <strong>only Chunk 119 fails authentication</strong>. Chunks 0 through 118 and 120 through $N$ remain 100% authentic and decryptable!</li>
+            </ul>
+
+            <h2 id="running-health-check">4. How to Run the Deep Cryptographic Integrity Audit</h2>
+            <p>
+                Before relying on an archived vault for multi-year storage, you can run a complete cryptographic health scan in Vault Explorer:
+            </p>
+            <ol>
+                <li>Unlock the vault in ZevSafe.</li>
+                <li>Click <strong>🩺 Audit Vault Health</strong> in the explorer toolbar.</li>
+                <li>ZevSafe's parallel worker pool streams through every chunk in the file:
+                    <ul>
+                        <li>Verifies the 57-byte container header and magic bytes.</li>
+                        <li>Verifies PBKDF2 salt length ($\ge 32$ bytes) and iteration count floor ($\ge 100,000$).</li>
+                        <li>Reconstructs 12-byte IVs and 42-byte Associated Authenticated Data (AAD) for every chunk.</li>
+                        <li>Verifies the 16-byte GCM authentication tag for each 4 MB block.</li>
+                    </ul>
+                </li>
+                <li>Displays a detailed <strong>Cryptographic Scorecard</strong> showing verified chunk count, byte integrity percentage, and bit-rot status.</li>
+            </ol>
+
+            <h2 id="salvage-workflow">5. The Emergency Salvage Workflow</h2>
+            <p>
+                If a damaged vault with corrupted sectors is detected:
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>JavaScript Architecture · Fault-Tolerant Chunk Salvage</span></div>
+                <pre><code>// In js/stream-unpacker.js:
+try {
+    const chunkPlaintext = await decryptChunk(chunkIndex, ciphertext, tag);
+    salvagedStream.write(chunkPlaintext);
+} catch (authTagError) {
+    console.warn(`[Salvage Engine] Chunk ${chunkIndex} authentication failed. Quarantining block.`);
+    // Quarantine corrupted chunk, log byte range, and continue with next chunk
+    quarantinedRanges.push({ chunkIndex, offset: chunkIndex * 4194304 });
+}</code></pre>
+            </div>
+            <p>
+                The <strong>Salvage Engine</strong> isolates the damaged chunks, replaces missing bytes with null filler markers, rescues all surviving files, and downloads a clean, reconstructed ZIP archive.
+            </p>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="09-hardware-keyfile-2fa-kdf-hardening.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Previous Guide</span>
+                    <span class="blog-nav-pagination-title">Physical 2FA Keyfiles &amp; KDF Hardening</span>
+                </a>
+                <a href="11-zv3-stream-aead-specification.html" class="blog-nav-pagination-card" style="text-align: right;">
+                    <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
+                    <span class="blog-nav-pagination-title">ZV3 STREAM AEAD Binary Specification</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog Hub</a></li>
+                <li><a href="../../knowledge/index.html">Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>
