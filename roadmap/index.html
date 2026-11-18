@@ -243,7 +243,7 @@
 
         .rm-progress-fill {
             height: 100%;
-            width: 78.5%;
+            width: 85.7%;
             background: linear-gradient(90deg, #10b981, #06b6d4, #8b5cf6);
             border-radius: 9999px;
             box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
@@ -545,14 +545,14 @@
             <div class="rm-progress-card">
                 <div class="rm-progress-header">
                     <span style="color: #fff;">Roadmap Milestone Delivery</span>
-                    <span style="color: #34d399; font-family: var(--font-mono, monospace);">78.5% Complete (11 of 14 Shipped)</span>
+                    <span style="color: #34d399; font-family: var(--font-mono, monospace);">85.7% Complete (12 of 14 Shipped)</span>
                 </div>
                 <div class="rm-progress-track">
                     <div class="rm-progress-fill"></div>
                 </div>
                 <div class="rm-progress-footer">
-                    <span>✔ Delivered: Phases 1–7, 9, 11, 13, 14</span>
-                    <span>⚡ In-Flight: Phase 8 · 🔮 Planned: Phases 10, 12</span>
+                    <span>✔ Delivered: Phases 1–9, 11, 13, 14</span>
+                    <span>⚡ In-Flight: Phase 10 · 🔮 Planned: Phase 12</span>
                 </div>
             </div>
         </section>
@@ -563,23 +563,23 @@
                 <span>📋 All Phases</span> <span style="opacity: 0.7;">(14)</span>
             </button>
             <button type="button" class="rm-filter-pill pill-delivered" onclick="filterRoadmap('delivered', this)">
-                <span>✔ Shipped &amp; Active</span> <span style="opacity: 0.7;">(11)</span>
+                <span>✔ Shipped &amp; Active</span> <span style="opacity: 0.7;">(12)</span>
             </button>
             <button type="button" class="rm-filter-pill pill-next" onclick="filterRoadmap('next', this)">
                 <span>⚡ Up Next</span> <span style="opacity: 0.7;">(1)</span>
             </button>
             <button type="button" class="rm-filter-pill" onclick="filterRoadmap('planned', this)">
-                <span>🔮 Future Architecture</span> <span style="opacity: 0.7;">(2)</span>
+                <span>🔮 Future Architecture</span> <span style="opacity: 0.7;">(1)</span>
             </button>
         </div>
 
         <!-- 14-Phase Grid -->
         <main id="main-content" tabindex="-1" class="rm-grid" id="rm-phase-grid">
-            <!-- PHASE 08: UP NEXT -->
-            <article class="rm-phase-card active-next" data-status="next" onclick="openPhaseDrawer('p8')">
+            <!-- PHASE 08: DELIVERED (v8.29) -->
+            <article class="rm-phase-card delivered" data-status="delivered" onclick="openPhaseDrawer('p8')">
                 <div class="rm-card-top">
-                    <span class="rm-phase-id">Phase 08 · v8.12</span>
-                    <span class="rm-status-badge next">⚡ Up Next</span>
+                    <span class="rm-phase-id">Phase 08 · v8.29</span>
+                    <span class="rm-status-badge delivered">✔ Delivered</span>
                 </div>
                 <h2 class="rm-phase-title">Argon2id WASM Memory-Hard KDF</h2>
                 <p class="rm-phase-desc">
@@ -782,11 +782,11 @@
                 </div>
             </article>
 
-            <!-- PHASE 10: PLANNED -->
-            <article class="rm-phase-card planned" data-status="planned" onclick="openPhaseDrawer('p10')">
+            <!-- PHASE 10: UP NEXT -->
+            <article class="rm-phase-card active-next" data-status="next" onclick="openPhaseDrawer('p10')">
                 <div class="rm-card-top">
-                    <span class="rm-phase-id">Phase 10 · v8.13</span>
-                    <span class="rm-status-badge planned">🔮 Planned</span>
+                    <span class="rm-phase-id">Phase 10 · v8.30</span>
+                    <span class="rm-status-badge next">⚡ Up Next</span>
                 </div>
                 <h2 class="rm-phase-title">In-Vault Document Redaction</h2>
                 <p class="rm-phase-desc">
@@ -887,9 +887,9 @@
     <script>
         const phaseSpecs = {
             p8: {
-                badge: 'Phase 08 · Up Next',
-                badgeColor: 'rgba(251,191,36,0.15)',
-                badgeTextColor: '#fbbf24',
+                badge: 'Phase 08 · Delivered (v8.29)',
+                badgeColor: 'rgba(16,185,129,0.15)',
+                badgeTextColor: '#34d399',
                 title: 'Argon2id WASM Memory-Hard KDF',
                 desc: 'Integrates memory-hard password derivation via compiled WebAssembly runtime to render GPU and ASIC password cracking rigs economically infeasible, offering state-of-the-art protection alongside PBKDF2.',
                 algo: 'Argon2id (RFC 9106)',
@@ -952,9 +952,9 @@
                 fallback: 'Standard Web PWA Cache'
             },
             p10: {
-                badge: 'Phase 10 · Planned (v8.13)',
-                badgeColor: 'rgba(168,85,247,0.15)',
-                badgeTextColor: '#c084fc',
+                badge: 'Phase 10 · Up Next',
+                badgeColor: 'rgba(251,191,36,0.15)',
+                badgeTextColor: '#fbbf24',
                 title: 'In-Vault Document Redaction & Sanitizer',
                 desc: 'Client-side zero-knowledge document sanitizer and redactor that scrubs EXIF metadata, GPS coordinates, camera serials, and allows black-box redaction of PDFs and images before vault encryption.',
                 algo: 'Canvas Binarizer + PDF Token Scrub',

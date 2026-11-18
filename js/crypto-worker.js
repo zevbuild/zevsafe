@@ -33,9 +33,10 @@
     let StreamCrypto = null;
     let StreamPacker = null;
     let StreamUnpacker = null;
+    let Argon2id = null;
 
     function resolveDependencies() {
-        if (StreamCrypto && StreamPacker && StreamUnpacker) return;
+        if (StreamCrypto && StreamPacker && StreamUnpacker && Argon2id) return;
 
         if (typeof require === 'function') {
             try {
@@ -53,22 +54,28 @@
             } catch (_) {
                 try { StreamUnpacker = require('../js/stream-unpacker.js'); } catch (__) {}
             }
+            try {
+                if (!Argon2id) Argon2id = require('./argon2id.js');
+            } catch (_) {
+                try { Argon2id = require('../js/argon2id.js'); } catch (__) {}
+            }
         }
 
         if (typeof importScripts === 'function') {
             // Dedicated Web Worker scope
             const pathsToTry = [
-                ['stream-crypto.js', 'stream-packer.js', 'stream-unpacker.js'],
-                ['js/stream-crypto.js', 'js/stream-packer.js', 'js/stream-unpacker.js'],
-                ['../js/stream-crypto.js', '../js/stream-packer.js', '../js/stream-unpacker.js']
+                ['argon2id.js', 'stream-crypto.js', 'stream-packer.js', 'stream-unpacker.js'],
+                ['js/argon2id.js', 'js/stream-crypto.js', 'js/stream-packer.js', 'js/stream-unpacker.js'],
+                ['../js/argon2id.js', '../js/stream-crypto.js', '../js/stream-packer.js', '../js/stream-unpacker.js']
             ];
 
             for (const group of pathsToTry) {
-                if (StreamCrypto && StreamPacker && StreamUnpacker) break;
+                if (StreamCrypto && StreamPacker && StreamUnpacker && Argon2id) break;
                 try {
                     importScripts(...group);
                 } catch (_) {}
                 if (typeof self !== 'undefined') {
+                    if (!Argon2id && self.Argon2id) Argon2id = self.Argon2id;
                     if (!StreamCrypto && self.StreamCrypto) StreamCrypto = self.StreamCrypto;
                     if (!StreamPacker && self.StreamPacker) StreamPacker = self.StreamPacker;
                     if (!StreamUnpacker && self.StreamUnpacker) StreamUnpacker = self.StreamUnpacker;
@@ -78,6 +85,7 @@
 
         // Global fallback
         const globalScope = typeof self !== 'undefined' ? self : typeof globalThis !== 'undefined' ? globalThis : this;
+        if (!Argon2id && globalScope.Argon2id) Argon2id = globalScope.Argon2id;
         if (!StreamCrypto && globalScope.StreamCrypto) StreamCrypto = globalScope.StreamCrypto;
         if (!StreamPacker && globalScope.StreamPacker) StreamPacker = globalScope.StreamPacker;
         if (!StreamUnpacker && globalScope.StreamUnpacker) StreamUnpacker = globalScope.StreamUnpacker;
@@ -149,10 +157,10 @@
         try {
             switch (type) {
                 // -------------------------------------------------------------
-                // 1. INIT_KEY: Derives PBKDF2-SHA512 master key off main thread
+                // 1. INIT_KEY: Derives master key (PBKDF2 or Argon2id) off main thread
                 // -------------------------------------------------------------
                 case 'INIT_KEY': {
-                    const { password, salt, iterations = 600000, keyfile } = data;
+                    const { password, salt, iterations = 600000, keyfile, kdf = 'pbkdf2', argonParams = {} } = data;
                     if (typeof password !== 'string') {
                         throw new TypeError('password must be a string');
                     }
@@ -166,12 +174,24 @@
                         keyfileBytes = keyfile instanceof Uint8Array ? keyfile : new Uint8Array(keyfile);
                     }
 
-                    const masterKey = await StreamCrypto.deriveMasterKey(
-                        password,
-                        saltBytes,
-                        iterations,
-                        keyfileBytes
-                    );
+                    let masterKey;
+                    if (kdf === 'argon2id') {
+                        masterKey = await StreamCrypto.deriveMasterKeyArgon2id(
+                            password,
+                            saltBytes,
+                            argonParams,
+                            keyfileBytes
+                        );
+                        session.kdf = 'argon2id';
+                    } else {
+                        masterKey = await StreamCrypto.deriveMasterKey(
+                            password,
+                            saltBytes,
+                            iterations,
+                            keyfileBytes
+                        );
+                        session.kdf = 'pbkdf2';
+                    }
 
                     session.masterKey = masterKey;
                     session.salt = saltBytes;
@@ -226,6 +246,8 @@
                         salt,
                         iterations = 600000,
                         keyfile,
+                        kdf = 'pbkdf2',
+                        argonParams = {},
                         baseIVPrefix,
                         chunkSize
                     } = data;
@@ -237,7 +259,13 @@
                         if (!salt) throw new TypeError('salt is required for key derivation in INIT_SESSION');
                         const saltBytes = salt instanceof Uint8Array ? salt : new Uint8Array(salt);
                         const kfBytes = keyfile ? (keyfile instanceof Uint8Array ? keyfile : new Uint8Array(keyfile)) : null;
-                        session.masterKey = await StreamCrypto.deriveMasterKey(password, saltBytes, iterations, kfBytes);
+                        if (kdf === 'argon2id') {
+                            session.masterKey = await StreamCrypto.deriveMasterKeyArgon2id(password, saltBytes, argonParams, kfBytes);
+                            session.kdf = 'argon2id';
+                        } else {
+                            session.masterKey = await StreamCrypto.deriveMasterKey(password, saltBytes, iterations, kfBytes);
+                            session.kdf = 'pbkdf2';
+                        }
                         session.salt = saltBytes;
                         session.iterations = iterations;
                     }

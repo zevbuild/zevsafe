@@ -45,6 +45,18 @@ const EXCLUDED_FILES = new Set([
 const SUITE_CATALOG = [
     // ── Crypto Suites ────────────────────────────────────────────────────────
     {
+        file: 'test-argon2id.js',
+        category: 'crypto',
+        name: 'RFC 9106 Argon2id Memory-Hard KDF',
+        description: 'Official RFC 9106 KAT vector, 64MB memory-hard matrix, Blake2b-512 PRF, state zeroization'
+    },
+    {
+        file: 'test-argon2id-vault.js',
+        category: 'crypto',
+        name: 'Argon2id Vault E2E & Header Flags',
+        description: 'V3_FLAG_ARGON2ID container header bit 2 (0x04), unpacker auto-resolution, 2FA keyfile'
+    },
+    {
         file: 'test-stream-crypto.js',
         category: 'crypto',
         name: 'STREAM AEAD v3 Crypto Engine',

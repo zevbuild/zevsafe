@@ -1,5 +1,31 @@
 # Changelog
 
+## Version 8.29.0 (WEB-VERSION-80) — November 18, 2026
+
+- `New` & `Security` (`js/argon2id.js`, `test/crypto/test-argon2id.js`): RFC 9106 Argon2id Memory-Hard Key Derivation Engine.
+  - Implemented 100% pure client-side, zero-dependency Argon2id KDF ($m=64\text{ MB}$, $t=3$ iterations, $p=4$ parallel lanes, 256-bit AES-GCM output) conforming strictly to RFC 9106.
+  - Features high-performance Blake2b-512 PRF with 64-bit unsigned BigUint64 rotations, $H'$ variable output generation, $G$ round compression with 2D matrix indexing, and pre-allocated working arrays eliminating ~800,000 typed array allocations.
+  - Passes official RFC 9106 Section 5.3 Known-Answer Test (KAT) vector bit-identically (`0d640df58d78766c08c037a34a8b53c9d01ef0452d75b65eb52520e96b01e659`).
+  - Implements mandatory state zeroization (`zeroize(matrix)`) immediately following master key extraction.
+- `Security` & `Streaming` (`js/stream-crypto.js`, `js/crypto-worker.js`, `js/worker-bridge.js`): Container Header Bit 2 Flag & Off-Thread WorkerPool Integration.
+  - Defined container header flag bit 2 (`V3_FLAG_ARGON2ID = 0x04`) embedded in byte 5 of the 57-byte `ZV3\0` container header.
+  - Chunk AAD remains invariant (`Magic || Version || Salt || chunkIndex || isLast`), guaranteeing chunk AEAD decryption is decoupled from KDF.
+  - Integrated into off-thread `WorkerPool` in `js/crypto-worker.js` and `js/worker-bridge.js`, deriving master keys off the main thread to maintain 60 FPS UI responsiveness.
+  - Supports Duress decoy key derivation via Argon2id without public flag disclosure, strictly preserving plausible deniability.
+- `New` & `Fix` (`js/stream-unpacker.js`, `test/crypto/test-argon2id-vault.js`): Dual-Mode Unpacker Auto-Resolution & Backward Compatibility.
+  - `readVaultManifest` automatically checks `header.flags & V3_FLAG_ARGON2ID` to invoke `deriveMasterKeyArgon2id` or fallback to trialing PBKDF2 iterations `[600000, 1200000, 2400000]`.
+  - Updated selective extraction methods (`extractSingleFile`, `extractFileRange`, `verifyAllVaultChunks`, and `salvageVault`) to honor Argon2id header flags.
+  - Maintains 100% backward compatibility with all existing PBKDF2 vaults.
+- `UI` & `New` (`index.html`, `app.js`, `js/qr-engine.js`): UI Selection, Paper-Safe Certificate & Optical QR Integration.
+  - Added Argon2id as the default recommended option in `#encrypt-kdf-select`.
+  - Updated Paper-Safe certificate rendering and optical QR payload encoding (`k: 'argon2id'`) with "Argon2id (64MB)" and "RFC 9106 / NIST SP 800-38D" badges.
+  - Updated Max Security Collapsible pill active detection for non-default KDF selection.
+- `PWA` & `AirGap` (`sw.js`, `js/usb-backup-kit.js`): Service Worker Cache v80 & Offline USB Kit Inclusion.
+  - Added `'./js/argon2id.js'` to `SHELL_ASSETS` in `sw.js` and bumped `APP_VERSION` to `v80`.
+  - Added `'js/argon2id.js'` to `AIRGAP_ASSET_PATHS` in `js/usb-backup-kit.js` for 100% offline air-gap portability.
+- `Roadmap` (`roadmap/index.html`, `test/ui/test-roadmap-plan.js`): Phase 08 Delivered & Master Plan Progress to 85.7%.
+  - Updated Phase 08 status to Delivered (`v8.29`), Phase 10 status to Up Next, and overall progress to 85.7% Complete (12 of 14 Shipped).
+
 ## Version 8.28.3 (WEB-VERSION-79) — November 10, 2026
 
 - `Fix` & `UI` (`js/document-viewer.js`): PDF Preview Frame Display & Action Bar Controls.

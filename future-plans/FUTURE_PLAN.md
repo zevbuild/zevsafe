@@ -82,8 +82,8 @@ flowchart TD
 
 ## 🔮 Upcoming Engineering Milestones (v8.3 – v9.2)
 
-### Phase 8: Argon2id WebAssembly Memory-Hard Key Derivation (v8.3.0)
-*Target: Q4 2026 / Early 2027*
+### Phase 8: Argon2id Memory-Hard Key Derivation (v8.29.0) — ✔ SHIPPED & DELIVERED
+*Delivered: November 18, 2026 (RFC 9106, 64MB RAM, 3 Passes, 4 Lanes, Container Flag 0x04)*
 
 1. **Memory-Hard Password Hashing:**
    - Integrate an ultra-lightweight (~30 KB) compiled WebAssembly module for **Argon2id** (winner of the Password Hashing Competition).

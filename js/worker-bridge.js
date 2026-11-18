@@ -1207,7 +1207,9 @@
                         password,
                         salt: sCopy,
                         iterations: opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
-                        keyfile: kCopy
+                        keyfile: kCopy,
+                        kdf: opts.kdf || opts.kdfType || 'pbkdf2',
+                        argonParams: opts.argonParams || {}
                     };
                 }, (w, msg) => {
                     const xfers = [msg.salt];
@@ -1507,12 +1509,20 @@
                         fileCount: decoyCatalogFiles.length,
                         files: decoyCatalogFiles
                     };
-                    const decoyKey = await StreamCrypto.deriveMasterKey(
-                        opts.duress.decoyPassword,
-                        salt,
-                        opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
-                        null
-                    );
+                    const isArgon = (opts.kdf === 'argon2id' || opts.kdfType === 'argon2id');
+                    const decoyKey = isArgon
+                        ? await StreamCrypto.deriveMasterKeyArgon2id(
+                            opts.duress.decoyPassword,
+                            salt,
+                            opts.argonParams || {},
+                            null
+                        )
+                        : await StreamCrypto.deriveMasterKey(
+                            opts.duress.decoyPassword,
+                            salt,
+                            opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
+                            null
+                        );
                     const envelope1 = await StreamPacker.buildEncryptedManifest(decoyCatalog, decoyKey);
                     manifestEnvelope = concatBuffers(manifestEnvelope, envelope1);
                 }
@@ -1532,6 +1542,9 @@
                 // Plausible Deniability: NEVER broadcast presence of duress decoy in plaintext header flags.
                 // Dual-manifest parser decrypts Envelope 1 seamlessly without requiring public flag disclosure.
                 let containerFlags = hasKeyfile ? StreamCrypto.V3_FLAG_KEYFILE : 0x00;
+                if (opts.kdf === 'argon2id' || opts.kdfType === 'argon2id') {
+                    containerFlags |= StreamCrypto.V3_FLAG_ARGON2ID;
+                }
 
                 const header = StreamCrypto.createContainerHeader({
                     salt,
@@ -1878,13 +1891,16 @@
                         const kCopy = keyfileBytes
                             ? keyfileBytes.buffer.slice(keyfileBytes.byteOffset, keyfileBytes.byteOffset + keyfileBytes.byteLength)
                             : null;
+                        const hasArgon2idFlag = (header.flags & StreamCrypto.V3_FLAG_ARGON2ID) !== 0;
                         return {
                             type: 'INIT_KEY',
                             sessionId,
                             password,
                             salt: sCopy,
                             iterations: opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
-                            keyfile: kCopy
+                            keyfile: kCopy,
+                            kdf: (opts.kdf === 'argon2id' || hasArgon2idFlag) ? 'argon2id' : 'pbkdf2',
+                            argonParams: opts.argonParams || {}
                         };
                     }, (w, msg) => {
                         const xfers = [msg.salt];
@@ -2217,12 +2233,15 @@
                 const initTransfers = [saltBuf];
                 if (kfBuf) initTransfers.push(kfBuf);
 
+                const hasArgon2idFlag = (header.flags & StreamCrypto.V3_FLAG_ARGON2ID) !== 0;
                 await sendWorkerRequest(worker, {
                     type: 'INIT_KEY',
                     password,
                     salt: saltBuf,
                     iterations: opts.iterations || StreamCrypto.PBKDF2_ITERATIONS,
-                    keyfile: kfBuf
+                    keyfile: kfBuf,
+                    kdf: (opts.kdf === 'argon2id' || hasArgon2idFlag) ? 'argon2id' : 'pbkdf2',
+                    argonParams: opts.argonParams || {}
                 }, initTransfers);
             }
 

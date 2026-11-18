@@ -235,8 +235,8 @@
                 <div class="nav-links-group">
                     <a href="./knowledge/" class="nav-link-subtle" title="Comprehensive Knowledge Base & Complete Service Manual">Knowledge Hub <span class="nav-badge-pill nav-badge-pill--purple">Manual</span></a>
                     <a href="./security-audit/" class="nav-link-subtle" title="Formal Security Audit Report (Grade A+ 99.3/100)">Security Audit <span class="nav-badge-pill nav-badge-pill--green">99.3/100</span></a>
-                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-79)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.28.0</span></a>
-                    <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">11 / 14</span></a>
+                    <a href="./change-log/" class="nav-link-subtle" title="View Release Changelog (WEB-VERSION-80)">Changelog <span class="nav-badge-pill nav-badge-pill--muted">v8.29.0</span></a>
+                    <a href="./roadmap/" class="plan-pill-nav" id="nav-roadmap-pill" title="Explore ZevSafe Strategic Engineering Roadmap & Master Plan">🧭 Master Plan <span class="counter-badge">12 / 14</span></a>
                 </div>
                 <div class="nav-actions-divider" aria-hidden="true"></div>
                 <div class="nav-actions-deck">
@@ -316,7 +316,7 @@
                             <span class="mn-title">Knowledge Hub &amp; Manual</span>
                             <span class="mn-desc">10 In-Depth Service Specifications</span>
                         </div>
-                        <span class="mn-badge">v8.28.0</span>
+                        <span class="mn-badge">v8.29.0</span>
                     </a>
                     <a href="./how-to-use-zevsafe/" class="mobile-nav-link">
                         <span class="mn-icon">📖</span>
@@ -347,7 +347,7 @@
                             <span class="mn-title">Changelog &amp; Releases</span>
                             <span class="mn-desc">Full release history</span>
                         </div>
-                        <span class="mn-badge">v8.28.0</span>
+                        <span class="mn-badge">v8.29.0</span>
                     </a>
                     <a href="./roadmap/" class="mobile-nav-link">
                         <span class="mn-icon">🧭</span>
@@ -355,7 +355,7 @@
                             <span class="mn-title">Master Plan &amp; Roadmap</span>
                             <span class="mn-desc">14-phase blueprint</span>
                         </div>
-                        <span class="mn-badge mn-badge--teal u-style-ymfja2dy" >11/14 Shipped</span>
+                        <span class="mn-badge mn-badge--teal u-style-ymfja2dy" >12/14 Shipped</span>
                     </a>
                     <a href="https://github.com/zevbuild" target="_blank" rel="noopener" class="mobile-nav-link">
                         <span class="mn-icon">↗</span>
@@ -570,14 +570,15 @@
 
                     <!-- Collapsible Container for Max Security Features -->
                     <div id="max-security-collapsible" class="max-security-collapsible d-none" >
-                    <!-- Key Derivation Hardening (PBKDF2 Iterations) -->
+                    <!-- Key Derivation Hardening (Argon2id & PBKDF2 Iterations) -->
                     <div class="field-group u-style-bwfyz2lu" >
-                        <label class="field-label" for="encrypt-kdf-select">Key Derivation Hardening</label>
+                        <label class="field-label" for="encrypt-kdf-select">Key Derivation Algorithm</label>
                         <div class="field-wrap">
                             <select class="field-input style-encrypt-kdf-select" id="encrypt-kdf-select" >
-                                <option value="600000" selected>600,000 Rounds (PBKDF2-SHA512 - OWASP Standard)</option>
-                                <option value="1200000">1,200,000 Rounds (Hardened Anti-Brute-Force)</option>
-                                <option value="2400000">2,400,000 Rounds (Ultra Paranoid Hardware-Hard)</option>
+                                <option value="argon2id" selected>Argon2id (RFC 9106 · 64MB RAM Cost - GPU/ASIC Immune)</option>
+                                <option value="600000">600,000 Rounds (PBKDF2-SHA512 - Fast Standard)</option>
+                                <option value="1200000">1,200,000 Rounds (PBKDF2 Hardened)</option>
+                                <option value="2400000">2,400,000 Rounds (PBKDF2 Maximum Security)</option>
                             </select>
                         </div>
                         <div class="u-style-zglzcgxh" >
@@ -1074,7 +1075,7 @@
                 <span>·</span>
                 <a class="u-style-y29sb3i6" href="./roadmap/" >Master Plan &amp; Roadmap</a>
                 <span>·</span>
-                <a href="./change-log/">Changelog (v8.28.0 / WEB-VERSION-79)</a>
+                <a href="./change-log/">Changelog (v8.29.0 / WEB-VERSION-80)</a>
                 <span>·</span>
                 <a href="https://github.com/zevbuild" target="_blank">GitHub ↗</a>
                 <span>·</span>
@@ -1951,6 +1952,7 @@
         <script src="js/qr-engine.js"></script>
     </noscript>
     <!-- Core Streaming Cryptography & Application Shell (Deferred for instantaneous First Paint) -->
+    <script src="js/argon2id.js" defer></script>
     <script src="js/stream-crypto.js" defer></script>
     <script src="js/stream-packer.js" defer></script>
     <script src="js/stream-unpacker.js" defer></script>
