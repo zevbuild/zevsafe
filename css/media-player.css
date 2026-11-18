@@ -1087,6 +1087,7 @@ audio.media-player-element {
     cursor: grab;
     user-select: none;
     -webkit-user-select: none;
+    touch-action: none;
 }
 
 .image-viewport.is-dragging {

@@ -235,9 +235,10 @@ async function runBrowserVerification() {
     await new Promise(resolve => server.listen(PORT, resolve));
     console.log(`Server listening on http://localhost:${PORT}`);
 
-        const chromePath = findChrome();
+    const chromePath = findChrome();
     if (!chromePath) {
         console.log('Chrome binary not found, skipping CDP browser verification.');
+        server.close();
         return;
     }
     const cdpPort = 9223;
@@ -626,5 +627,6 @@ async function runBrowserVerification() {
 
 runBrowserVerification().catch(err => {
     console.error('Fatal verification failure:', err);
+    try { server.close(); } catch (_) {}
     process.exit(1);
 });

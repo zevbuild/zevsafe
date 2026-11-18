@@ -1170,22 +1170,34 @@
 
         const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
         let target = source;
+        let createdBitmap = null;
 
-        // If source is a Blob/File, convert to ImageBitmap
-        if (typeof Blob !== 'undefined' && source instanceof Blob) {
-            target = await createImageBitmap(source);
+        try {
+            // If source is a Blob/File, convert to ImageBitmap
+            if (typeof Blob !== 'undefined' && source instanceof Blob) {
+                if (typeof createImageBitmap === 'function') {
+                    createdBitmap = await createImageBitmap(source);
+                    target = createdBitmap;
+                }
+            }
+
+            const barcodes = await detector.detect(target);
+            if (!barcodes || barcodes.length === 0) {
+                return null;
+            }
+
+            const rawValue = barcodes[0].rawValue;
+            return {
+                rawValue,
+                paperSafe: parsePaperSafePayload(rawValue)
+            };
+        } finally {
+            if (createdBitmap && typeof createdBitmap.close === 'function') {
+                try {
+                    createdBitmap.close();
+                } catch (_) {}
+            }
         }
-
-        const barcodes = await detector.detect(target);
-        if (!barcodes || barcodes.length === 0) {
-            return null;
-        }
-
-        const rawValue = barcodes[0].rawValue;
-        return {
-            rawValue,
-            paperSafe: parsePaperSafePayload(rawValue)
-        };
     }
 
     // Export Public API

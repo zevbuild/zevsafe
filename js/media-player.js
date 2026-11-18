@@ -111,7 +111,7 @@
         };
     }
 
-    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+    if (typeof navigator !== 'undefined' && navigator.serviceWorker && typeof navigator.serviceWorker.addEventListener === 'function') {
         navigator.serviceWorker.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'RECONNECT_MEDIA_STREAM') {
                 const reqStreamId = event.data.streamId;
@@ -1399,7 +1399,8 @@
     }
 
     function rotateImage(deg = 90) {
-        imageRotationDeg = (imageRotationDeg + deg) % 360;
+        if (typeof deg !== 'number' || isNaN(deg)) deg = 90;
+        imageRotationDeg = (((imageRotationDeg || 0) + deg) % 360 + 360) % 360;
         applyImageTransform();
     }
 
@@ -2259,8 +2260,19 @@
         });
     }
 
+    let _isImageLightboxInitialized = false;
+
     function _initImageLightboxModalEvents() {
+        // Guard against duplicate event listener registration with dedicated image-viewer.js
+        const root = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : global);
+        if (root.ZevImageViewer && typeof root.ZevImageViewer.isLoaded === 'function' && root.ZevImageViewer.isLoaded()) return;
+        if (_isImageLightboxInitialized) return;
+        _isImageLightboxInitialized = true;
+
         const imageModal = document.getElementById('vault-image-modal');
+        if (imageModal && imageModal.dataset) {
+            imageModal.dataset.lightboxBound = 'media-player';
+        }
         const closeImageBtn = document.getElementById('btn-close-image-modal');
         const imageOpenTabBtn = document.getElementById('btn-image-open-tab');
         const imageDlBtn = document.getElementById('btn-image-download');
@@ -2273,12 +2285,24 @@
         const imageFullscreenBtn = document.getElementById('btn-image-fullscreen');
         const imageViewport = document.getElementById('image-viewport');
 
-        closeImageBtn?.addEventListener('click', closeImageViewer);
-        imageModal?.addEventListener('click', (e) => {
-            if (e.target.id === 'vault-image-modal') closeImageViewer();
-        });
+        const isSuperceded = () => {
+            const r = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : global);
+            return (r.ZevImageViewer && typeof r.ZevImageViewer.isLoaded === 'function' && r.ZevImageViewer.isLoaded()) ||
+                   (imageModal && imageModal.dataset && imageModal.dataset.lightboxBound === 'image-viewer');
+        };
 
-        imageOpenTabBtn?.addEventListener('click', () => {
+        const onImageClose = () => {
+            if (isSuperceded()) return;
+            closeImageViewer();
+        };
+
+        const onModalClick = (e) => {
+            if (isSuperceded()) return;
+            if (e.target.id === 'vault-image-modal') closeImageViewer();
+        };
+
+        const onOpenTab = () => {
+            if (isSuperceded()) return;
             if (currentImageBlobUrl) {
                 const isSvg = (currentImageFilename || '').toLowerCase().endsWith('.svg');
                 if (isSvg) {
@@ -2287,29 +2311,48 @@
                 }
                 window.open(currentImageBlobUrl, '_blank', 'noopener,noreferrer');
             }
-        });
+        };
 
-        imageDlBtn?.addEventListener('click', () => {
+        const onDownload = () => {
+            if (isSuperceded()) return;
             if (currentImageBlob && currentImageFilename) {
                 if (typeof global.triggerDownload === 'function') global.triggerDownload(currentImageBlob, currentImageFilename);
                 showToast(`Saved "${currentImageFilename}"`, 'success');
             }
-        });
+        };
 
-        imagePrevBtn?.addEventListener('click', () => {
+        const onPrev = () => {
+            if (isSuperceded()) return;
             if (currentImageIndex > 0) showImageByIndex(currentImageIndex - 1);
-        });
+        };
 
-        imageNextBtn?.addEventListener('click', () => {
+        const onNext = () => {
+            if (isSuperceded()) return;
             if (currentImageIndex < currentImagePlaylist.length - 1) showImageByIndex(currentImageIndex + 1);
-        });
+        };
 
-        imageZoomInBtn?.addEventListener('click', () => zoomImage(0.25));
-        imageZoomOutBtn?.addEventListener('click', () => zoomImage(-0.25));
-        imageZoomResetBtn?.addEventListener('click', resetImageZoom);
-        imageRotateBtn?.addEventListener('click', rotateImage);
+        const onZoomIn = () => {
+            if (isSuperceded()) return;
+            zoomImage(0.25);
+        };
 
-        imageFullscreenBtn?.addEventListener('click', () => {
+        const onZoomOut = () => {
+            if (isSuperceded()) return;
+            zoomImage(-0.25);
+        };
+
+        const onZoomReset = () => {
+            if (isSuperceded()) return;
+            resetImageZoom();
+        };
+
+        const onRotate = () => {
+            if (isSuperceded()) return;
+            rotateImage(90);
+        };
+
+        const onFullscreen = () => {
+            if (isSuperceded()) return;
             const container = document.querySelector('.image-modal-container') || imageViewport;
             if (!container) return;
             if (!document.fullscreenElement) {
@@ -2317,43 +2360,90 @@
             } else {
                 document.exitFullscreen?.() || document.webkitExitFullscreen?.();
             }
-        });
+        };
 
-        imageViewport?.addEventListener('mousedown', (e) => {
+        const onMouseDown = (e) => {
+            if (isSuperceded()) return;
             if (e.button !== 0) return;
             isPanningImage = true;
             panStartX = e.clientX - imagePanX;
             panStartY = e.clientY - imagePanY;
-            imageViewport.classList.add('is-dragging');
-        });
+            imageViewport?.classList.add('is-dragging');
+        };
 
-        window.addEventListener('mousemove', (e) => {
+        const onMouseMove = (e) => {
+            if (isSuperceded()) return;
             if (!isPanningImage) return;
             imagePanX = e.clientX - panStartX;
             imagePanY = e.clientY - panStartY;
             applyImageTransform();
-        });
+        };
 
-        window.addEventListener('mouseup', () => {
+        const onMouseUp = () => {
+            if (isSuperceded()) return;
             if (isPanningImage) {
                 isPanningImage = false;
                 imageViewport?.classList.remove('is-dragging');
             }
-        });
+        };
 
-        imageViewport?.addEventListener('wheel', (e) => {
+        const onWheel = (e) => {
+            if (isSuperceded()) return;
             const modal = document.getElementById('vault-image-modal');
             if (!modal || modal.classList.contains('d-none') || modal.style.display === 'none') return;
             e.preventDefault();
             if (e.deltaY < 0) zoomImage(0.15);
             else if (e.deltaY > 0) zoomImage(-0.15);
-        }, { passive: false });
+        };
 
-        imageViewport?.addEventListener('dblclick', (e) => {
+        const onDblClick = (e) => {
+            if (isSuperceded()) return;
             e.preventDefault();
             if (imageZoomLevel > 1.0) resetImageZoom();
             else zoomImage(1.5);
-        });
+        };
+
+        closeImageBtn?.addEventListener('click', onImageClose);
+        imageModal?.addEventListener('click', onModalClick);
+        imageOpenTabBtn?.addEventListener('click', onOpenTab);
+        imageDlBtn?.addEventListener('click', onDownload);
+        imagePrevBtn?.addEventListener('click', onPrev);
+        imageNextBtn?.addEventListener('click', onNext);
+        imageZoomInBtn?.addEventListener('click', onZoomIn);
+        imageZoomOutBtn?.addEventListener('click', onZoomOut);
+        imageZoomResetBtn?.addEventListener('click', onZoomReset);
+        imageRotateBtn?.addEventListener('click', onRotate);
+        imageFullscreenBtn?.addEventListener('click', onFullscreen);
+        imageViewport?.addEventListener('mousedown', onMouseDown);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+        imageViewport?.addEventListener('wheel', onWheel, { passive: false });
+        imageViewport?.addEventListener('dblclick', onDblClick);
+
+        function _detachImageLightboxModalEvents() {
+            closeImageBtn?.removeEventListener('click', onImageClose);
+            imageModal?.removeEventListener('click', onModalClick);
+            imageOpenTabBtn?.removeEventListener('click', onOpenTab);
+            imageDlBtn?.removeEventListener('click', onDownload);
+            imagePrevBtn?.removeEventListener('click', onPrev);
+            imageNextBtn?.removeEventListener('click', onNext);
+            imageZoomInBtn?.removeEventListener('click', onZoomIn);
+            imageZoomOutBtn?.removeEventListener('click', onZoomOut);
+            imageZoomResetBtn?.removeEventListener('click', onZoomReset);
+            imageRotateBtn?.removeEventListener('click', onRotate);
+            imageFullscreenBtn?.removeEventListener('click', onFullscreen);
+            imageViewport?.removeEventListener('mousedown', onMouseDown);
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+            imageViewport?.removeEventListener('wheel', onWheel);
+            imageViewport?.removeEventListener('dblclick', onDblClick);
+            _isImageLightboxInitialized = false;
+            if (root.__zevCleanupMediaPlayerLightbox === _detachImageLightboxModalEvents) {
+                root.__zevCleanupMediaPlayerLightbox = null;
+            }
+        }
+
+        root.__zevCleanupMediaPlayerLightbox = _detachImageLightboxModalEvents;
     }
 
     let _isMediaPlayerUIInitialized = false;
@@ -2369,7 +2459,10 @@
         _initMediaScrubberAndTimeline();
         _initMediaVideoStageGestures();
         _initMediaSecondaryControls();
-        _initImageLightboxModalEvents();
+        const root = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : global);
+        if (!(root.ZevImageViewer && typeof root.ZevImageViewer.isLoaded === 'function' && root.ZevImageViewer.isLoaded())) {
+            _initImageLightboxModalEvents();
+        }
     }
 
     // Auto-initialize when DOM is ready

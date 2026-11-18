@@ -436,17 +436,58 @@
                         ? envelope
                         : new Uint8Array(envelope);
 
-                    const catalog = await StreamPacker.parseEncryptedManifest(
-                        envelopeBytes,
-                        session.masterKey
-                    );
+                    const MANIFEST_SALT_LENGTH = 32;
+                    const MANIFEST_IV_LENGTH = 12;
+                    const MANIFEST_HEADER_SIZE = 48; // 32 + 12 + 4
+                    const TAG_LENGTH = 16;
+
+                    if (envelopeBytes.byteLength < MANIFEST_HEADER_SIZE + TAG_LENGTH) {
+                        throw new Error('Invalid manifest envelope: buffer too small for header and auth tag');
+                    }
+
+                    // Read declared payload length of Envelope 0 at offset 44 (BE uint32)
+                    const envView = new DataView(envelopeBytes.buffer, envelopeBytes.byteOffset, envelopeBytes.byteLength);
+                    const declaredLen0 = envView.getUint32(MANIFEST_SALT_LENGTH + MANIFEST_IV_LENGTH, false);
+                    const env0TotalLen = MANIFEST_HEADER_SIZE + declaredLen0 + TAG_LENGTH;
+
+                    let catalog;
+                    let isDuressDecoy = false;
+
+                    try {
+                        // Attempt Envelope 0 (Primary secret vault)
+                        const env0Bytes = (envelopeBytes.byteLength > env0TotalLen)
+                            ? envelopeBytes.subarray(0, env0TotalLen)
+                            : envelopeBytes;
+                        catalog = await StreamPacker.parseEncryptedManifest(
+                            env0Bytes,
+                            session.masterKey
+                        );
+                        isDuressDecoy = false;
+                    } catch (env0Err) {
+                        // If Envelope 0 fails and Envelope 1 exists, attempt Envelope 1 (Duress Decoy vault)
+                        if (envelopeBytes.byteLength >= env0TotalLen + MANIFEST_HEADER_SIZE + TAG_LENGTH) {
+                            const env1Bytes = envelopeBytes.subarray(env0TotalLen);
+                            catalog = await StreamPacker.parseEncryptedManifest(
+                                env1Bytes,
+                                session.masterKey
+                            );
+                            isDuressDecoy = true;
+                        } else {
+                            throw env0Err;
+                        }
+                    }
+
+                    if (typeof catalog === 'object' && catalog !== null && !Array.isArray(catalog)) {
+                        catalog.isDuressDecoy = isDuressDecoy;
+                    }
 
                     replyFn({
                         id,
                         type: 'ACK',
                         success: true,
                         manifest: catalog,
-                        files: Array.isArray(catalog) ? catalog : (catalog.files || [])
+                        files: Array.isArray(catalog) ? catalog : (catalog.files || []),
+                        isDuressDecoy
                     }, []);
                     break;
                 }
@@ -507,97 +548,111 @@
                         : session.salt;
                     const cSize = chunkSize || session.chunkSize || 4 * 1024 * 1024;
 
-                    // Decrypt each chunk in span
                     const decryptedList = [];
-                    for (const cb of chunkBuffers) {
-                        const raw = cb.buffer instanceof Uint8Array ? cb.buffer : new Uint8Array(cb.buffer);
-                        const plain = await StreamCrypto.decryptChunk(
-                            session.masterKey,
-                            raw,
-                            ivPrefix,
-                            cb.index,
-                            cb.isLast,
-                            s
-                        );
-                        decryptedList.push(plain);
-                    }
+                    let spanBytes = null;
 
-                    // Assemble decrypted span
-                    let spanBytes;
-                    if (decryptedList.length === 1) {
-                        spanBytes = decryptedList[0];
-                    } else {
-                        const totalLen = decryptedList.reduce((acc, c) => acc + c.byteLength, 0);
-                        spanBytes = new Uint8Array(totalLen);
-                        let offset = 0;
-                        for (const c of decryptedList) {
-                            spanBytes.set(c, offset);
-                            offset += c.byteLength;
-                        }
-                    }
-
-                    // Locate file payload within the decrypted span
-                    const chunkStart = entry.chunkStart !== undefined
-                        ? entry.chunkStart
-                        : Math.floor((entry.offset || entry.localHeaderOffset || 0) / cSize);
-                    const spanBasePlaintextOffset = BigInt(chunkStart) * BigInt(cSize);
-                    const localHeaderOffset = BigInt(
-                        entry.localHeaderOffset !== undefined ? entry.localHeaderOffset : (entry.offset || 0)
-                    );
-                    const relPos = Number(localHeaderOffset - spanBasePlaintextOffset);
-
-                    let payloadStart = relPos;
-                    const payloadLength = Number(entry.compressedSize !== undefined ? entry.compressedSize : entry.size);
-
-                    // Check for ZIP Local File Header (0x04034b50)
-                    if (relPos >= 0 && relPos + 30 <= spanBytes.byteLength) {
-                        const view = new DataView(spanBytes.buffer, spanBytes.byteOffset, spanBytes.byteLength);
-                        const sig = view.getUint32(relPos, true);
-                        if (sig === 0x04034b50) {
-                            const nameLen = view.getUint16(relPos + 26, true);
-                            const extraLen = view.getUint16(relPos + 28, true);
-                            payloadStart = relPos + 30 + nameLen + extraLen;
-                        }
-                    }
-
-                    if (payloadStart < 0 || payloadStart > spanBytes.byteLength) {
-                        throw new Error(`Invalid file payload position in decrypted chunk span for "${entry.path || entry.name}"`);
-                    }
-
-                    const payloadEnd = Math.min(spanBytes.byteLength, payloadStart + payloadLength);
-                    const rawPayload = spanBytes.subarray(payloadStart, payloadEnd);
-
-                    // Decompress if compressed (method 8)
-                    let extractedBytes;
-                    const isCompressed = entry.compressed || entry.compressionMethod === 8;
-                    if (isCompressed && rawPayload.byteLength > 0) {
-                        extractedBytes = await StreamUnpacker.decompressDeflateRaw(rawPayload);
-                    } else {
-                        extractedBytes = rawPayload;
-                    }
-
-                    // Verify CRC-32 checksum if present
-                    if (entry.crc32 !== undefined && entry.crc32 !== null) {
-                        const computedCrc = StreamPacker.crc32(extractedBytes);
-                        if ((computedCrc >>> 0) !== (entry.crc32 >>> 0)) {
-                            throw new Error(
-                                `CRC-32 checksum mismatch for "${entry.path || entry.name}": expected 0x${(entry.crc32 >>> 0).toString(16).padStart(8, '0')}, calculated 0x${(computedCrc >>> 0).toString(16).padStart(8, '0')}`
+                    try {
+                        // Decrypt each chunk in span
+                        for (const cb of chunkBuffers) {
+                            const raw = cb.buffer instanceof Uint8Array ? cb.buffer : new Uint8Array(cb.buffer);
+                            const plain = await StreamCrypto.decryptChunk(
+                                session.masterKey,
+                                raw,
+                                ivPrefix,
+                                cb.index,
+                                cb.isLast,
+                                s
                             );
+                            decryptedList.push(plain);
+                        }
+
+                        // Assemble decrypted span
+                        if (decryptedList.length === 1) {
+                            spanBytes = decryptedList[0];
+                        } else {
+                            const totalLen = decryptedList.reduce((acc, c) => acc + c.byteLength, 0);
+                            spanBytes = new Uint8Array(totalLen);
+                            let offset = 0;
+                            for (const c of decryptedList) {
+                                spanBytes.set(c, offset);
+                                offset += c.byteLength;
+                            }
+                        }
+
+                        // Locate file payload within the decrypted span
+                        const chunkStart = entry.chunkStart !== undefined
+                            ? entry.chunkStart
+                            : Math.floor((entry.offset || entry.localHeaderOffset || 0) / cSize);
+                        const spanBasePlaintextOffset = BigInt(chunkStart) * BigInt(cSize);
+                        const localHeaderOffset = BigInt(
+                            entry.localHeaderOffset !== undefined ? entry.localHeaderOffset : (entry.offset || 0)
+                        );
+                        const relPos = Number(localHeaderOffset - spanBasePlaintextOffset);
+
+                        let payloadStart = relPos;
+                        const payloadLength = Number(entry.compressedSize !== undefined ? entry.compressedSize : entry.size);
+
+                        // Check for ZIP Local File Header (0x04034b50)
+                        if (relPos >= 0 && relPos + 30 <= spanBytes.byteLength) {
+                            const view = new DataView(spanBytes.buffer, spanBytes.byteOffset, spanBytes.byteLength);
+                            const sig = view.getUint32(relPos, true);
+                            if (sig === 0x04034b50) {
+                                const nameLen = view.getUint16(relPos + 26, true);
+                                const extraLen = view.getUint16(relPos + 28, true);
+                                payloadStart = relPos + 30 + nameLen + extraLen;
+                            }
+                        }
+
+                        if (payloadStart < 0 || payloadStart > spanBytes.byteLength) {
+                            throw new Error(`Invalid file payload position in decrypted chunk span for "${entry.path || entry.name}"`);
+                        }
+
+                        const payloadEnd = Math.min(spanBytes.byteLength, payloadStart + payloadLength);
+                        const rawPayload = spanBytes.subarray(payloadStart, payloadEnd);
+
+                        // Decompress if compressed (method 8)
+                        let extractedBytes;
+                        const isCompressed = entry.compressed || entry.compressionMethod === 8;
+                        if (isCompressed && rawPayload.byteLength > 0) {
+                            extractedBytes = await StreamUnpacker.decompressDeflateRaw(rawPayload);
+                        } else {
+                            extractedBytes = rawPayload;
+                        }
+
+                        // Verify CRC-32 checksum if present
+                        if (entry.crc32 !== undefined && entry.crc32 !== null) {
+                            const computedCrc = StreamPacker.crc32(extractedBytes);
+                            if ((computedCrc >>> 0) !== (entry.crc32 >>> 0)) {
+                                throw new Error(
+                                    `CRC-32 checksum mismatch for "${entry.path || entry.name}": expected 0x${(entry.crc32 >>> 0).toString(16).padStart(8, '0')}, calculated 0x${(computedCrc >>> 0).toString(16).padStart(8, '0')}`
+                                );
+                            }
+                        }
+
+                        // Guarantee outBuf is a detached transferable buffer independent of spanBytes
+                        const outBuf = (isCompressed && extractedBytes.byteOffset === 0 && extractedBytes.byteLength === extractedBytes.buffer.byteLength)
+                            ? extractedBytes.buffer
+                            : extractedBytes.buffer.slice(extractedBytes.byteOffset, extractedBytes.byteOffset + extractedBytes.byteLength);
+
+                        replyFn({
+                            id,
+                            type: 'ACK',
+                            success: true,
+                            data: outBuf,
+                            path: entry.path || entry.name,
+                            size: extractedBytes.byteLength
+                        }, [outBuf]);
+                    } finally {
+                        // Plaintext Memory Hygiene: zeroize all decrypted chunk buffers and span buffers
+                        for (const c of decryptedList) {
+                            if (c && typeof c.fill === 'function') {
+                                try { c.fill(0); } catch (_) {}
+                            }
+                        }
+                        if (spanBytes && spanBytes !== decryptedList[0] && typeof spanBytes.fill === 'function') {
+                            try { spanBytes.fill(0); } catch (_) {}
                         }
                     }
-
-                    const outBuf = (extractedBytes.byteOffset === 0 && extractedBytes.byteLength === extractedBytes.buffer.byteLength)
-                        ? extractedBytes.buffer
-                        : extractedBytes.buffer.slice(extractedBytes.byteOffset, extractedBytes.byteOffset + extractedBytes.byteLength);
-
-                    replyFn({
-                        id,
-                        type: 'ACK',
-                        success: true,
-                        data: outBuf,
-                        path: entry.path || entry.name,
-                        size: extractedBytes.byteLength
-                    }, [outBuf]);
                     break;
                 }
 

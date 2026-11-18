@@ -2039,8 +2039,8 @@ body {
 
     /* Normal two-column grid */
     .cards-grid { grid-template-columns: 1fr 1fr; }
-    #encrypt-section,
-    #decrypt-section { display: flex !important; /* Retained: overrides JS inline style (display:none) set by switchTab() when expanding to desktop */ }
+    #encrypt-section:not(.d-none),
+    #decrypt-section:not(.d-none) { display: flex !important; /* Retained: overrides JS inline style (display:none) set by switchTab() when expanding to desktop */ }
 }
 
 /* =====================================================

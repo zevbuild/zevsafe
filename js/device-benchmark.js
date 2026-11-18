@@ -198,6 +198,106 @@
     }
 
     /**
+     * Resolves the Argon2id RFC 9106 engine across environments
+     */
+    function getArgon2idEngine() {
+        if (typeof Argon2id !== 'undefined') return Argon2id;
+        if (typeof globalThis !== 'undefined' && globalThis.Argon2id) return globalThis.Argon2id;
+        if (typeof window !== 'undefined' && window.Argon2id) return window.Argon2id;
+        if (typeof self !== 'undefined' && self.Argon2id) return self.Argon2id;
+        if (typeof require === 'function') {
+            try { return require('./argon2id.js'); } catch (_) {}
+            try { return require('../js/argon2id.js'); } catch (_) {}
+            try { return require('../../js/argon2id.js'); } catch (_) {}
+        }
+        return null;
+    }
+
+    /**
+     * Measures Argon2id (RFC 9106) key derivation performance and work factor capacity
+     * Evaluates memory-hard hashing latency using a bounded calibration matrix to prevent UI blocking.
+     *
+     * @param {Object} [options]
+     * @param {number} [options.m=1024] Calibration memory in KiB (default: 1024 KiB = 1 MiB)
+     * @param {number} [options.t=1] Calibration iterations (default: 1)
+     * @param {number} [options.p=4] Parallelism / lanes (default: 4)
+     * @returns {Promise<Object>} Argon2id benchmark results and recommendations
+     */
+    async function benchmarkArgon2id(options = {}) {
+        const argon = getArgon2idEngine();
+        if (!argon || typeof argon.hash !== 'function') {
+            return {
+                supported: false,
+                reason: 'Argon2id RFC 9106 engine is not available in this environment.'
+            };
+        }
+
+        const sampleM = options.m || 1024; // 1 MiB sample
+        const sampleT = options.t || 1;    // 1 pass sample
+        const sampleP = options.p || 4;    // 4 parallel lanes
+        const c = getCrypto();
+        const enc = new TextEncoder();
+        const testPassword = enc.encode('ZevSafe-Benchmark-Argon2id-2026!');
+        const testSalt = new Uint8Array(32);
+        c.getRandomValues(testSalt);
+
+        let tag = null;
+        let elapsedMs = 0;
+        try {
+            const start = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            tag = await argon.hash(testPassword, testSalt, {
+                m: sampleM,
+                t: sampleT,
+                p: sampleP,
+                hashLen: 32
+            });
+            const end = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            elapsedMs = Math.max(1, Math.round(end - start));
+        } finally {
+            if (tag && tag.fill) tag.fill(0);
+            testSalt.fill(0);
+        }
+
+        const sampleBlocks = sampleM * sampleT;
+        const blocksPerSec = Math.round((sampleBlocks / (elapsedMs / 1000)));
+
+        // Standard production target: 65536 KiB (64 MiB), 3 iterations = 196,608 blocks
+        const standardBlocks = 65536 * 3;
+        const estimatedStandardMs = Math.round((standardBlocks / (blocksPerSec || 1)) * 1000);
+
+        let recommendedMemoryKiB = 65536;
+        let recommendedIterations = 3;
+        let tierRating = 'Standard';
+
+        if (blocksPerSec >= 3000) {
+            recommendedMemoryKiB = 65536;
+            recommendedIterations = 3;
+            tierRating = 'Optimal';
+        } else if (blocksPerSec >= 1500) {
+            recommendedMemoryKiB = 65536;
+            recommendedIterations = 2;
+            tierRating = 'Standard';
+        } else {
+            recommendedMemoryKiB = 32768;
+            recommendedIterations = 2;
+            tierRating = 'Constrained';
+        }
+
+        return {
+            supported: true,
+            sampleMemoryKiB: sampleM,
+            sampleIterations: sampleT,
+            sampleLanes: sampleP,
+            elapsedMs,
+            blocksPerSec,
+            estimatedStandardMs,
+            recommendedMemoryKiB,
+            recommendedIterations,
+            tierRating
+        };
+    }
+
+    /**
      * Classifies device hardware into Class S, A, B, or C based on empirical measurements
      */
     function classifyHardware(aesResults, kdf600k) {
@@ -218,41 +318,56 @@
     /**
      * Generates a tailored recommendation for vault settings based on measured hardware power
      */
-    function generateRecommendation(tier, kdfResults) {
+    function generateRecommendation(tier, kdfResults, argon2idResult = null) {
         const kdf600k = kdfResults[600000] || { elapsedMs: 300 };
         const kdf1200k = kdfResults[1200000] || { elapsedMs: 600 };
         const kdf2400k = kdfResults[2400000] || { elapsedMs: 1200 };
+
+        let argon2idRecommendation = null;
+        if (argon2idResult && argon2idResult.supported) {
+            argon2idRecommendation = {
+                recommendedMemoryKiB: argon2idResult.recommendedMemoryKiB,
+                recommendedIterations: argon2idResult.recommendedIterations,
+                blocksPerSec: argon2idResult.blocksPerSec,
+                tierRating: argon2idResult.tierRating
+            };
+        }
 
         if (tier.id === 'S') {
             return {
                 recommendedRounds: 1200000,
                 recommendedTierName: '1,200,000 Rounds (Hardened)',
-                reason: `Your CPU computes 1.2M rounds in only ${kdf1200k.elapsedMs} ms. Enabling 1,200,000 rounds in Max Security gives you 2x brute-force resistance with virtually instant unlock.`
+                reason: `Your CPU computes 1.2M rounds in only ${kdf1200k.elapsedMs} ms. Enabling 1,200,000 rounds in Max Security gives you 2x brute-force resistance with virtually instant unlock.`,
+                argon2id: argon2idRecommendation
             };
         } else if (tier.id === 'A') {
             if (kdf1200k.elapsedMs <= 500) {
                 return {
                     recommendedRounds: 1200000,
                     recommendedTierName: '1,200,000 Rounds (Hardened)',
-                    reason: `Your system handles 1.2M rounds in ${kdf1200k.elapsedMs} ms (< 0.5s). 1,200,000 rounds is optimal for maximum protection without perceptible lag.`
+                    reason: `Your system handles 1.2M rounds in ${kdf1200k.elapsedMs} ms (< 0.5s). 1,200,000 rounds is optimal for maximum protection without perceptible lag.`,
+                    argon2id: argon2idRecommendation
                 };
             }
             return {
                 recommendedRounds: 600000,
                 recommendedTierName: '600,000 Rounds (OWASP Standard)',
-                reason: `Your machine unlocks 600,000 rounds in ${kdf600k.elapsedMs} ms. This satisfies OWASP cryptographic standards with crisp, responsive unlocking.`
+                reason: `Your machine unlocks 600,000 rounds in ${kdf600k.elapsedMs} ms. This satisfies OWASP cryptographic standards with crisp, responsive unlocking.`,
+                argon2id: argon2idRecommendation
             };
         } else if (tier.id === 'B') {
             return {
                 recommendedRounds: 600000,
                 recommendedTierName: '600,000 Rounds (OWASP Standard)',
-                reason: `Standard 600,000 rounds unlocks in ${kdf600k.elapsedMs} ms. Higher tiers may introduce noticeable delay when unlocking large vaults.`
+                reason: `Standard 600,000 rounds unlocks in ${kdf600k.elapsedMs} ms. Higher tiers may introduce noticeable delay when unlocking large vaults.`,
+                argon2id: argon2idRecommendation
             };
         } else {
             return {
                 recommendedRounds: 600000,
                 recommendedTierName: '600,000 Rounds (OWASP Standard)',
-                reason: `600,000 rounds is the recommended cryptographic floor. Higher settings (1.2M or 2.4M) could cause unlock pauses on low-power hardware.`
+                reason: `600,000 rounds is the recommended cryptographic floor. Higher settings (1.2M or 2.4M) could cause unlock pauses on low-power hardware.`,
+                argon2id: argon2idRecommendation
             };
         }
     }
@@ -273,11 +388,11 @@
         const kdf600 = await benchmarkPbkdf2(600000);
 
         // 2. Benchmark PBKDF2 1.2M rounds
-        onProgress('kdf-1200k', 35, { status: 'Testing 1,200,000 PBKDF2-SHA512 Rounds (Hardened)...' });
+        onProgress('kdf-1200k', 30, { status: 'Testing 1,200,000 PBKDF2-SHA512 Rounds (Hardened)...' });
         const kdf1200 = await benchmarkPbkdf2(1200000);
 
         // 3. Benchmark PBKDF2 2.4M rounds (or estimate if 1.2M took > 1500ms to avoid freezing low-power devices)
-        onProgress('kdf-2400k', 55, { status: 'Testing 2,400,000 PBKDF2-SHA512 Rounds (Paranoid)...' });
+        onProgress('kdf-2400k', 50, { status: 'Testing 2,400,000 PBKDF2-SHA512 Rounds (Paranoid)...' });
         let kdf2400;
         if (kdf1200.elapsedMs > 1800) {
             // Extrapolate safely to avoid browser hanging
@@ -291,11 +406,15 @@
             kdf2400 = await benchmarkPbkdf2(2400000);
         }
 
-        // 4. Benchmark AES-256-GCM Streaming Throughput
+        // 4. Benchmark Argon2id Memory-Hard KDF
+        onProgress('argon2id', 65, { status: 'Evaluating Argon2id memory-hard work factor capacity...' });
+        const argon2id = await benchmarkArgon2id();
+
+        // 5. Benchmark AES-256-GCM Streaming Throughput
         onProgress('aes-stream', 80, { status: 'Benchmarking AES-256-GCM Authenticated Encryption & Decryption...' });
         const aes = await benchmarkAesGcm(8 * 1024 * 1024, 1024 * 1024);
 
-        // 5. Synthesis & Classification
+        // 6. Synthesis & Classification
         onProgress('classify', 95, { status: 'Synthesizing hardware profile and vault recommendations...' });
         const tier = classifyHardware(aes, kdf600);
         const kdfResults = {
@@ -303,7 +422,7 @@
             1200000: kdf1200,
             2400000: kdf2400
         };
-        const recommendation = generateRecommendation(tier, kdfResults);
+        const recommendation = generateRecommendation(tier, kdfResults, argon2id);
 
         const report = {
             timestamp: new Date().toISOString(),
@@ -314,6 +433,7 @@
             tier,
             aes,
             kdf: kdfResults,
+            argon2id,
             recommendation
         };
 
@@ -325,6 +445,7 @@
         TIERS,
         benchmarkPbkdf2,
         benchmarkAesGcm,
+        benchmarkArgon2id,
         classifyHardware,
         generateRecommendation,
         runFullBenchmark

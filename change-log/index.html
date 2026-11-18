@@ -728,6 +728,160 @@
                     </header>
                     <ul class="cl-bullets">
                         <li>
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div>
+                                <strong>Duress Decoy Dual-Manifest Envelope Slicing (<code>js/crypto-worker.js</code>):</strong>
+                                Resolved trailer envelope length mismatch where <code>parseEncryptedManifest</code> threw on combined dual envelopes. Slices primary envelope using declared payload length at offset 44 with seamless fallback to decoy envelope when Envelope 0 decryption fails, correctly setting and propagating <code>isDuressDecoy: true</code>.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>LRU Chunk Eviction Safe Reference Dropping (<code>js/stream-unpacker.js</code>, <code>app.js</code>):</strong>
+                                Replaced <code>this.delete(oldestKey)</code> with <code>map.delete(oldestKey)</code> in <code>createBoundedChunkCache.set()</code>, eliminating in-place buffer zeroization of active multi-chunk extractions (&gt; 16 MB) while preserving strict <code>.fill(0)</code> byte zeroization on session lock.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div>
+                                <strong>Argon2id Range Streaming &amp; Vault Decryptor (<code>js/stream-unpacker.js</code>):</strong>
+                                Added <code>FLAG_ARGON2ID = 0x04</code> constant and exported <code>hasArgon2id</code> in <code>parseVaultHeader</code>. Added automatic Argon2id key derivation support (<code>deriveMasterKeyArgon2id</code>) to <code>extractFileRange</code> and <code>createStreamingVaultDecryptor</code> for string passwords.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>Multi-Chunk Spanned File Extraction Fallback (<code>js/worker-bridge.js</code>):</strong>
+                                Resolved multi-chunk truncation where undefined <code>entry.chunkEnd</code> defaulted to <code>chunkStart</code>. Properly computes chunk span using payload offset and compressed size, enabling seamless extraction of multi-chunk files (&gt; 4 MB).
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div>
+                                <strong>Worker Plaintext Memory Scrubbing &amp; Keyfile Normalization (<code>js/crypto-worker.js</code>, <code>app.js</code>):</strong>
+                                Wrapped worker extraction in <code>try...finally</code> with memory scrubbing across decrypted chunk buffers. Standardized v3 keyfile passing to raw bytes conforming to <code>StreamCrypto</code> single SHA-256 derivation, eliminating double-hashing divergence.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>Text Editor Mode Toggle &amp; Save Deduplication (<code>js/text-editor.js</code>, <code>js/document-viewer.js</code>):</strong>
+                                Pruned duplicate click listeners in <code>js/text-editor.js</code>, delegating edit and save operations cleanly through <code>js/document-viewer.js</code> to eliminate instantaneous mode reversals and duplicate saves. Exported <code>setEditingState</code> on <code>global.ZevTextEditor</code>.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>Document Viewer Dirty State Confirmation (<code>js/document-viewer.js</code>):</strong>
+                                Synchronized unsaved text editing state with <code>global.ZevTextEditor</code> before viewer dismissal. Triggers discard confirmation dialog to protect against accidental data loss and resets dirty/editing flags on close.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>Lightbox Event Listeners Deduplication &amp; Sequence Safety (<code>js/media-player.js</code>, <code>js/image-viewer.js</code>):</strong>
+                                Guarded image modal handlers against active <code>window.ZevImageViewer</code> with superceded guards and registered <code>__zevCleanupMediaPlayerLightbox</code> hook to purge prior listeners if media player loaded first (Sequence B), ensuring exact listener count = 1. Wrapped rotate button listener and added numeric step guard to eliminate <code>rotate(NaNdeg)</code> invalid transforms.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>ServiceWorker EventTarget Type Guard (<code>js/media-player.js</code>):</strong>
+                                Added function type check on <code>navigator.serviceWorker.addEventListener</code>, resolving uncaught TypeErrors in headless tests and non-standard webview environments.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>In-Vault File Renaming Playlist Sync (<code>app.js</code>):</strong>
+                                Updated <code>renameVaultFile</code> to map over <code>currentMediaPlaylist</code> and <code>currentImagePlaylist</code>, remapping paths and entry references to ensure uninterrupted media playback and image browsing after file renames.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div>
+                                <strong>Touch Drag &amp; Panning in Image Lightbox (<code>js/image-viewer.js</code>, <code>css/media-player.css</code>):</strong>
+                                Added touchstart, touchmove, and touchend handlers with <code>touch-action: none;</code> CSS to enable responsive 1:1 touch panning of zoomed images on smartphone and tablet screens.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div>
+                                <strong>URL.revokeObjectURL Fallback (<code>js/image-viewer.js</code>):</strong>
+                                Implemented direct <code>URL.revokeObjectURL</code> fallback for image previews when global blob registry tracking is unavailable, preventing memory leaks during continuous photo viewing.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>Desktop Specificity Inversion on Inactive Sections (<code>styles.css</code>):</strong>
+                                Updated media query rule <code>(min-width: 821px)</code> to <code>#encrypt-section:not(.d-none), #decrypt-section:not(.d-none) { display: flex !important; }</code>, resolving specificity conflict where ID selector overrode <code>.d-none</code> and ensuring inactive views are reliably hidden on desktop screens.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div>
+                                <strong>Universal Modal Escape Key Dismissal (<code>js/a11y-manager.js</code>):</strong>
+                                Expanded close button selector query across all 13 application dialogs (<code>.explorer-btn-close, .btn-modal-dismiss-subtle, .media-hotkeys-close, [id^="btn-close-"]</code>), restoring keyboard accessibility and Escape key dismissal throughout the entire app.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>Vault Autolock Inactivity Deferral During Media Playback (<code>app.js</code>):</strong>
+                                Added active playback detection for video and audio players (<code>#cinema-video</code>, <code>#cinema-audio</code>) in the idle watcher interval tick, continuously deferring the 5-minute inactivity timeout while media is playing and preventing disruptive lockouts.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div>
+                                <strong>Camera Scanner Frame Loop Leak Prevention (<code>app.js</code>):</strong>
+                                Added stream and playback verification guards before rescheduling <code>requestAnimationFrame</code> in the camera QR detection loop, preventing dangling animation frame callbacks after camera shutdown or modal closure.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div>
+                                <strong>QR ImageBitmap Texture &amp; Object URL Cleanup (<code>app.js</code>, <code>js/qr-engine.js</code>):</strong>
+                                Wrapped image QR scanning in <code>try...finally</code> blocks, guaranteeing immediate reclamation of GPU <code>ImageBitmap</code> textures via <code>.close()</code> and revocation of temporary blob URLs to prevent memory accumulation during QR file imports.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>CDP Test Server Clean Exit (<code>test/ui/browser-verification-phase3.js</code>):</strong>
+                                Ensured the test HTTP server is explicitly closed via <code>server.close()</code> when Google Chrome is absent and within unhandled rejection handlers, preventing test runner hangs in headless environments.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div>
+                                <strong>Argon2id Work Factor Evaluation &amp; Hardware Profiling (<code>js/device-benchmark.js</code>):</strong>
+                                Integrated <code>benchmarkArgon2id()</code> using calibrated non-blocking parameters ($m=1024\text{ KiB}, t=1, p=4$) to evaluate memory-hard hashing capacity and matrix throughput without blocking the browser UI, enriching hardware benchmark reports with tailored Argon2id memory settings.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <div>
+                                <strong>Standalone USB Air-Gap Kit Complete Modular Viewers &amp; Support Bundling (<code>js/usb-backup-kit.js</code>):</strong>
+                                Appended 9 missing viewer and runtime assets to <code>AIRGAP_ASSET_PATHS</code> (<code>css/media-player.css</code>, <code>404.html</code>, <code>js/init.js</code>, <code>js/a11y-manager.js</code>, <code>js/document-viewer.js</code>, <code>js/text-editor.js</code>, <code>js/image-viewer.js</code>, <code>js/media-player.js</code>, and <code>js/passphrase-words.js</code>), bringing the standalone air-gap package to 63 total assets with zero duplicates for 100% offline air-gapped usability.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>matchMedia Runtime Guarding &amp; Install Prompt Promise Rejection Safety (<code>js/init.js</code>):</strong>
+                                Added function type check <code>typeof window.matchMedia === 'function'</code> and safe <code>typeof window.navigator !== 'undefined'</code> evaluation, and wrapped PWA install prompt execution and <code>userChoice</code> in a <code>try...catch...finally</code> block guaranteeing prompt reference cleanup.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <div>
+                                <strong>OPFS (Tier 3) Streaming Prioritization &amp; Proactive Large-File Memory Protection (<code>js/stream-saver.js</code>):</strong>
+                                Prioritized direct <code>TIER_3_OPFS</code> handling ahead of <code>TIER_2_SW</code> in <code>createStreamWriter</code>, added proactive automatic upgrade from Tier 2 in-memory buffering to Tier 3 OPFS disk streaming when <code>expectedSize &gt; MAX_FALLBACK_GUARDRAIL_BYTES</code> (150 MB), and exported <code>detectStorageCapability</code> and <code>initStorageCapability</code> compatibility aliases.
+                            </div>
+                        </li>
+                        <li>
                             <span class="cl-bullet cl-bullet--new">New</span>
                             <div>
                                 <strong>Knowledge Hub &amp; Security Journal Consolidation (<code>blog/index.html</code>, <code>blog/blog.css</code>, <code>blog/blog.js</code>):</strong>

@@ -166,6 +166,12 @@
         currentEditingPath = filePath;
         isEditingText = false;
         hasUnsavedChanges = false;
+        if (global.ZevTextEditor && typeof global.ZevTextEditor.setUnsavedChanges === 'function') {
+            global.ZevTextEditor.setUnsavedChanges(false);
+        }
+        if (global.ZevTextEditor && typeof global.ZevTextEditor.setEditingState === 'function') {
+            global.ZevTextEditor.setEditingState(false);
+        }
 
         const ext = (fileItem.name || '').split('.').pop().toUpperCase();
         if (badge) badge.textContent = `📄 ${ext || 'TXT'}`;
@@ -308,6 +314,12 @@
         currentEditingPath = '';
         isEditingText = false;
         hasUnsavedChanges = false;
+        if (global.ZevTextEditor && typeof global.ZevTextEditor.setUnsavedChanges === 'function') {
+            global.ZevTextEditor.setUnsavedChanges(false);
+        }
+        if (global.ZevTextEditor && typeof global.ZevTextEditor.setEditingState === 'function') {
+            global.ZevTextEditor.setEditingState(false);
+        }
 
         if (badge) badge.textContent = '📄 PDF';
         if (title) title.textContent = fileItem.name;
@@ -364,8 +376,14 @@
     }
 
     function closeTextViewer() {
-        if (isEditingText && hasUnsavedChanges) {
-            if (!confirm('You have unsaved changes in this document. Discard them?')) {
+        const dirty = hasUnsavedChanges || Boolean(global.ZevTextEditor?.getState()?.hasUnsavedChanges);
+        if (dirty) {
+            const shouldDiscard = typeof confirm === 'function'
+                ? confirm('You have unsaved changes in this document. Discard them?')
+                : (typeof window !== 'undefined' && typeof window.confirm === 'function'
+                    ? window.confirm('You have unsaved changes in this document. Discard them?')
+                    : true);
+            if (!shouldDiscard) {
                 return;
             }
         }
@@ -439,6 +457,12 @@
         currentEditingPath = '';
         isEditingText = false;
         hasUnsavedChanges = false;
+        if (global.ZevTextEditor && typeof global.ZevTextEditor.setUnsavedChanges === 'function') {
+            global.ZevTextEditor.setUnsavedChanges(false);
+        }
+        if (global.ZevTextEditor && typeof global.ZevTextEditor.setEditingState === 'function') {
+            global.ZevTextEditor.setEditingState(false);
+        }
     }
 
     async function copyTextToClipboard() {

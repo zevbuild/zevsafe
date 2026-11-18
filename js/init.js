@@ -121,8 +121,8 @@
     const btnDismiss      = document.getElementById('pwa-btn-dismiss');
 
     // Skip showing banner if already installed
-    const isInstalled = window.matchMedia('(display-mode: standalone)').matches
-                     || window.navigator.standalone === true;
+    const isInstalled = (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches)
+                     || (typeof window.navigator !== 'undefined' && window.navigator.standalone === true);
 
     if (!isInstalled && installBanner) {
         window.addEventListener('beforeinstallprompt', e => {
@@ -144,10 +144,15 @@
         setTimeout(() => {
             installBanner.classList.add('d-none');
         }, 350);
-        deferredInstallPrompt.prompt();
-        const { outcome } = await deferredInstallPrompt.userChoice;
-        console.log('[ZevSafe PWA] Install prompt outcome:', outcome);
-        deferredInstallPrompt = null;
+        try {
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            console.log('[ZevSafe PWA] Install prompt outcome:', outcome);
+        } catch (promptErr) {
+            console.warn('[ZevSafe PWA] Install prompt rejected or failed:', promptErr);
+        } finally {
+            deferredInstallPrompt = null;
+        }
     });
 
     btnDismiss?.addEventListener('click', () => {

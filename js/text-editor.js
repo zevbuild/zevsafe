@@ -259,12 +259,7 @@
         if (_isInitialized) return;
         _isInitialized = true;
 
-        const textEditBtn = document.getElementById('btn-text-edit');
-        const textSaveBtn = document.getElementById('btn-text-save-changes');
         const textareaEl  = document.getElementById('text-code-textarea');
-
-        textEditBtn?.addEventListener('click', toggleTextEditMode);
-        textSaveBtn?.addEventListener('click', saveTextFileChanges);
 
         textareaEl?.addEventListener('input', () => {
             _hasUnsavedChanges = true;
@@ -291,7 +286,8 @@
             isEditingText:     _isEditingText,
             hasUnsavedChanges: _hasUnsavedChanges
         }),
-        setUnsavedChanges: (val) => { _hasUnsavedChanges = val; }
+        setUnsavedChanges: (val) => { _hasUnsavedChanges = val; },
+        setEditingState: (val) => { _isEditingText = Boolean(val); }
     };
 
 })(typeof window !== 'undefined' ? window : globalThis);

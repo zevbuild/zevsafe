@@ -2277,8 +2277,12 @@
             const totalFramedChunkSize = chunkSize + StreamCrypto.CHUNK_HEADER_SIZE + StreamCrypto.TAG_LENGTH;
             const lastChunkIndex = Number((manifestOffset - BigInt(StreamCrypto.V3_HEADER_SIZE) - 1n) / BigInt(totalFramedChunkSize));
 
-            const chunkStart = Math.max(0, entry.chunkStart !== undefined ? entry.chunkStart : Math.floor((entry.offset || 0) / chunkSize));
-            const chunkEnd = Math.min(lastChunkIndex, entry.chunkEnd !== undefined ? entry.chunkEnd : chunkStart);
+            const startOffset = Number(entry.offset !== undefined ? entry.offset : (entry.localHeaderOffset || 0));
+            const compSize = Number(entry.compressedSize !== undefined ? entry.compressedSize : (entry.size || 0));
+
+            const chunkStart = Math.max(0, entry.chunkStart !== undefined ? entry.chunkStart : Math.floor(startOffset / chunkSize));
+            const fallbackEnd = Math.max(chunkStart, Math.floor((startOffset + Math.max(0, compSize - 1)) / chunkSize));
+            const chunkEnd = Math.min(lastChunkIndex, entry.chunkEnd !== undefined ? entry.chunkEnd : fallbackEnd);
 
             const chunkBuffers = [];
             const transfers = [];

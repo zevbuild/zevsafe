@@ -2,6 +2,82 @@
 
 ## Version 8.30.0 (WEB-VERSION-81) — November 18, 2026
 
+- `Security` & `Fix` (`js/crypto-worker.js`): Duress Decoy Dual-Manifest Envelope Slicing (Bug 1.1).
+  - Resolved trailer envelope length mismatch where `parseEncryptedManifest` threw on combined dual envelopes.
+  - Sliced primary envelope (`envelopeBytes.subarray(0, env0TotalLen)`) using declared payload length at offset 44.
+  - Added seamless fallback to decoy envelope (`envelopeBytes.subarray(env0TotalLen)`) when Envelope 0 decryption fails, correctly setting and propagating `isDuressDecoy: true`.
+- `Security` & `Perf` (`js/stream-unpacker.js`, `app.js`): LRU Chunk Eviction Safe Reference Dropping (Bug 1.2).
+  - Replaced `this.delete(oldestKey)` with `map.delete(oldestKey)` in `createBoundedChunkCache.set()`, eliminating in-place buffer zeroization of active multi-chunk extractions (> 16 MB).
+  - Preserved strict byte zeroization with `.fill(0)` in `clear()` for vault lock and session cleanup.
+- `Security` & `New` (`js/stream-unpacker.js`): Argon2id Range Streaming & Vault Decryptor Support (Bugs 1.3 & 1.4).
+  - Added `FLAG_ARGON2ID = 0x04` export in `StreamUnpacker`.
+  - Updated `parseVaultHeader` to expose `hasArgon2id: (flags & FLAG_ARGON2ID) !== 0`.
+  - Added automatic Argon2id key derivation support (`deriveMasterKeyArgon2id`) to `extractFileRange` and `createStreamingVaultDecryptor` when string passwords are provided.
+- `Fix` & `Streaming` (`js/worker-bridge.js`): Multi-Chunk Spanned File End Chunk Calculation (Bug 1.5).
+  - Fixed fallback for undefined `entry.chunkEnd` in `WorkerBridge.extractSingleFile`, correctly calculating span `Math.floor((startOffset + Math.max(0, compSize - 1)) / chunkSize)` to prevent multi-chunk file truncation (> 4 MB).
+- `Security` (`js/crypto-worker.js`): Worker Plaintext Memory Hygiene & Scrubbing (Bug 1.6).
+  - Wrapped chunk extraction and assembly in `try...finally` blocks.
+  - Guaranteed `outBuf` detachment by slicing independent buffers before transfer.
+  - Zeroized intermediate chunk buffers in `decryptedList` and `spanBytes` with `.fill(0)` on completion or error.
+- `Security` & `Fix` (`app.js`): Single Keyfile Hashing Normalization (Bug 1.7).
+  - Standardized v3 keyfile ingestion to pass raw `Uint8Array` bytes directly from `file.arrayBuffer()` across encryption, decryption, and salvage paths.
+  - Conformed with `StreamCrypto` single SHA-256 digest, preventing double-hashing divergence between Web UI, Android, and CLI tools.
+- `Fix` & `UI` (`js/text-editor.js`, `js/document-viewer.js`): Text Editor Mode Toggle & Save Deduplication (Bug 2.1).
+  - Pruned duplicate `click` event listeners on `#btn-text-edit` and `#btn-text-save-changes` from `initTextEditorUI()` in `js/text-editor.js`.
+  - Consolidated event delegation exclusively within `js/document-viewer.js` to eliminate immediate mode reversal and duplicate save triggers.
+  - Exported `setEditingState: (val) => { _isEditingText = Boolean(val); }` on `global.ZevTextEditor`.
+- `Fix` & `Security` (`js/document-viewer.js`): Document Viewer Unsaved Dirty State Synchronization & Reset (Bug 2.2).
+  - Updated `closeTextViewer()` to evaluate both viewer `hasUnsavedChanges` and `global.ZevTextEditor.getState().hasUnsavedChanges`.
+  - Enforced discard confirmation modal before modal dismissal, safeguarding unsaved in-browser text edits against accidental loss.
+  - Synchronized state reset on modal closure and initial document open, ensuring `setUnsavedChanges(false)` and `setEditingState(false)` are cleanly propagated.
+- `Fix` & `UI` (`js/media-player.js`, `js/image-viewer.js`): Lightbox Event Listeners Deduplication & Sequence Safety (Bug 2.3).
+  - Guarded `_initImageLightboxModalEvents()` in `js/media-player.js` with active `window.ZevImageViewer.isLoaded()` guard and runtime superceded checks across all lightbox handlers.
+  - Added global cleanup handler `__zevCleanupMediaPlayerLightbox` invoked upon `image-viewer.js` initialization to detach any pre-existing listeners bound when media player loads first (Sequence B), ensuring exact listener count = 1 and eliminating duplicate zoom (+0.50x instead of +0.25x) or double rotation (180° flips).
+  - Wrapped rotate click event listener `imageRotateBtn?.addEventListener('click', () => rotateImage(90))` in `js/media-player.js` and added numeric type guarding in `rotateImage(deg = 90)` to prevent `MouseEvent` coercion to `NaN` and `rotate(NaNdeg)` invalid transforms.
+- `Fix` & `Streaming` (`js/media-player.js`): ServiceWorker EventTarget Type Guard (Bug 2.4).
+  - Added functional type check `typeof navigator.serviceWorker.addEventListener === 'function'` before attaching message listeners.
+  - Resolved fatal `TypeError: navigator.serviceWorker.addEventListener is not a function` in `test/ui/test-real-playback.js` and non-standard WebView runtimes.
+- `Fix` (`app.js`): In-Vault File Renaming Playlist Synchronization (Bug 2.5).
+  - Synchronized `currentMediaPlaylist` and `currentImagePlaylist` items matching `oldPath` on file rename, updating `path`, `name`, and underlying `entry.path`.
+  - Synchronized global `window.currentMediaPlaylist` and `window.currentImagePlaylist` references to maintain continuous audio/video playback and image lightbox navigation.
+- `UI` & `Fix` (`js/image-viewer.js`, `css/media-player.css`): Touch Drag & Panning Gestures on Image Lightbox (Bug 2.6).
+  - Attached `touchstart`, `touchmove`, `touchend`, and `touchcancel` event listeners on `imageViewport` and `window` with `{ passive: false }` and `e.cancelable` checks.
+  - Enabled smooth 1:1 touch panning of zoomed images on smartphone and tablet touchscreens.
+  - Added `touch-action: none;` to `.image-viewport` in `css/media-player.css` to prevent native page scrolling from intercepting pan gestures.
+- `Fix` & `Perf` (`js/image-viewer.js`): URL.revokeObjectURL Fallback Memory Leak Prevention (Bug 2.7).
+  - Added fallback `else if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(currentImageBlobUrl)` upon image transition and modal closure.
+  - Ensured reliable object URL garbage collection and zero memory leaks in environments lacking global blob tracking.
+- `Fix` & `UI` (`styles.css`): Desktop Specificity Inversion on Inactive Sections (Bug 3.1).
+  - Updated media query rule `(min-width: 821px)` to `#encrypt-section:not(.d-none), #decrypt-section:not(.d-none) { display: flex !important; }`.
+  - Resolved specificity conflict where ID selector overrode `.d-none { display: none !important; }`, ensuring inactive views are reliably hidden on desktop screens.
+- `Fix` & `UI` (`js/a11y-manager.js`): Universal Modal Escape Key Dismissal (Bug 3.2).
+  - Expanded close button selector query to `.explorer-btn-close, .btn-modal-dismiss-subtle, .media-hotkeys-close, [id^="btn-close-"], .modal-close-btn, .btn-close-modal, [data-modal-close]`.
+  - Restored keyboard accessibility (`Escape` key modal dismissal) across 100% of application dialogs (all 13 modals).
+- `Fix` & `UI` (`app.js`): Vault Autolock Inactivity Deferral During Media Playback (Bug 3.3).
+  - Enhanced `startExplorerIdleWatcher` periodic interval check to evaluate active playback in `#cinema-video` and `#cinema-audio` within `#vault-media-modal`.
+  - Continuously defers the 5-minute inactivity timeout while media is playing (`!paused && !ended`), preventing disruptive auto-lockouts during video watching or audio listening.
+- `Fix` & `Perf` (`app.js`): Camera Scanner Animation Frame Loop Leak Prevention (Bug 3.4).
+  - Guarded async `tick()` in `startDetectionLoop` with `if (currentScannerStream && video && !video.paused && !video.ended)` before rescheduling `requestAnimationFrame`.
+  - Nullified `scannerAnimFrameId` when stopped, preventing dangling post-shutdown detection loops and duplicate concurrent loops upon scanner restart.
+- `Fix` & `Perf` (`app.js`, `js/qr-engine.js`): QR ImageBitmap Texture & Object URL Cleanup (Bug 3.5).
+  - Wrapped image QR decoding in `try...finally` in `processImageFile` (`app.js`) and `scanImage` (`js/qr-engine.js`).
+  - Deterministically closes `ImageBitmap` hardware textures via `imgBitmap.close()` and revokes temporary object URLs via `URL.revokeObjectURL(objectUrl)`, preventing GPU memory leaks during QR file decoding.
+- `Fix` & `QA` (`test/ui/browser-verification-phase3.js`): CDP Test Server Clean Exit (Bug 3.6).
+  - Ensured test HTTP server is explicitly closed via `server.close()` when Chrome binary is not detected and inside unhandled rejection handler.
+  - Eliminated hanging process and active TCP handle, allowing automated Phase 3 test verification to terminate cleanly in headless environments.
+- `New` & `Perf` (`js/device-benchmark.js`): Argon2id Work Factor Evaluation & Hardware Profiling (Bug 3.7).
+  - Integrated `benchmarkArgon2id()` using calibrated parameters ($m=1024\text{ KiB}, t=1, p=4$) to evaluate memory-hard hashing capacity and matrix throughput without blocking the browser UI.
+  - Enriched `generateRecommendation()` and `runFullBenchmark()` with Argon2id work factor metrics and tailored memory recommendations.
+- `Fix` & `Security` (`js/usb-backup-kit.js`): Standalone USB Air-Gap Kit Complete Modular Viewers & Support Bundling (Bug 4.1).
+  - Appended 9 missing viewer and runtime assets to `AIRGAP_ASSET_PATHS`: `'css/media-player.css'`, `'404.html'`, `'js/init.js'`, `'js/a11y-manager.js'`, `'js/document-viewer.js'`, `'js/text-editor.js'`, `'js/image-viewer.js'`, `'js/media-player.js'`, and `'js/passphrase-words.js'`.
+  - Expanded offline bundle to 63 total assets with zero duplicates, guaranteeing complete offline air-gapped usability for decrypted media playback, document viewing, in-vault text editing, and Diceware passphrase generation.
+- `Fix` & `PWA` (`js/init.js`): `matchMedia` Runtime Guarding & Install Prompt Promise Rejection Safety (Bug 4.2).
+  - Added functional type check `typeof window.matchMedia === 'function'` and safe `typeof window.navigator !== 'undefined'` evaluation before checking standalone display mode.
+  - Wrapped `deferredInstallPrompt.prompt()` and `await deferredInstallPrompt.userChoice` in a robust `try...catch...finally` block, preventing unhandled promise rejections on prompt dismissal and guaranteeing `deferredInstallPrompt` reference nullification in `finally`.
+- `Perf` & `Fix` (`js/stream-saver.js`): OPFS (Tier 3) Streaming Prioritization & Proactive Large-File Memory Protection (Bug 4.3).
+  - Evaluated direct requested handler for `TIER_3_OPFS` before `TIER_2_SW` in `createStreamWriter`.
+  - Added proactive automatic upgrade from Tier 2 in-memory buffering to Tier 3 OPFS disk streaming when `expectedSize > MAX_FALLBACK_GUARDRAIL_BYTES` (150 MB) and OPFS is available, preventing fatal JavaScript heap exhaustion crashes during large vault creation.
+  - Exported compatibility aliases `detectStorageCapability: detectCapabilities` and `initStorageCapability: detectCapabilities` to fulfill storage capability interface contracts.
 - `New` & `UI` (`blog/index.html`, `blog/blog.css`, `blog/blog.js`): Comprehensive Knowledge Hub & Security Journal Consolidation.
   - Unified all technical documentation, service manuals, and architectural guides into the consolidated **Knowledge Hub & Security Journal** (`/blog/`).
   - Integrated the **10 Core Architectural Services** quick-access directory linking directly to corresponding deep-dive technical guides.

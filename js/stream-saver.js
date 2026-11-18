@@ -710,23 +710,30 @@
             }
         }
 
-        // Tier 2: Service Worker Stream Intercept (only on desktop browsers, never mobile)
-        if (requestedTier === TIER_2_SW && (opts.swController || isTier2Supported(opts.navigator)) && !caps.isAndroid && !caps.isIOS) {
-            try {
-                return await createTier2Writer(filename, expectedSize, opts);
-            } catch (t2Err) {
-                failedTiers.add(TIER_2_SW);
-                console.warn('[StreamSaver] Tier 2 SW failed, downgrading:', t2Err);
-            }
-        }
-
-        // Tier 3: OPFS Staging
+        // Tier 3: OPFS Staging (prioritized over in-memory Tier 2 buffers)
         if (requestedTier === TIER_3_OPFS && (opts.getDirectory || isTier3Supported(opts.navigator))) {
             try {
                 return await createTier3Writer(filename, expectedSize, opts);
             } catch (t3Err) {
                 failedTiers.add(TIER_3_OPFS);
                 console.warn('[StreamSaver] Tier 3 OPFS failed, downgrading:', t3Err);
+            }
+        }
+
+        // Tier 2: Service Worker Stream Intercept (in-memory buffer capped at 150 MB guardrail)
+        if (requestedTier === TIER_2_SW && (opts.swController || isTier2Supported(opts.navigator)) && !caps.isAndroid && !caps.isIOS) {
+            // If payload exceeds in-memory guardrail limit and OPFS is available, upgrade to Tier 3 to prevent OOM
+            if (expectedSize > (opts.maxGuardrailBytes || MAX_FALLBACK_GUARDRAIL_BYTES) && (opts.getDirectory || isTier3Supported(opts.navigator))) {
+                try {
+                    if (typeof opts.onTierSelected === 'function') opts.onTierSelected(TIER_3_OPFS);
+                    return await createTier3Writer(filename, expectedSize, opts);
+                } catch (_) {}
+            }
+            try {
+                return await createTier2Writer(filename, expectedSize, opts);
+            } catch (t2Err) {
+                failedTiers.add(TIER_2_SW);
+                console.warn('[StreamSaver] Tier 2 SW failed, downgrading:', t2Err);
             }
         }
 
@@ -764,6 +771,8 @@
     return {
         createStreamWriter,
         detectCapabilities,
+        detectStorageCapability: detectCapabilities,
+        initStorageCapability: detectCapabilities,
         sanitizeFilename,
         encodeRFC5987,
         encodeContentDisposition: encodeRFC5987,

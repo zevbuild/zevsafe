@@ -2650,11 +2650,12 @@ btnEncrypt.addEventListener('click', async () => {
             let keyfileBytes = null;
             if (v2KeyfileEncrypt) {
                 try {
-                    log('🗝️ Hashing keyfile (SHA-256)...', 'info');
-                    keyfileBytes = await hashKeyfile(v2KeyfileEncrypt);
+                    log('🗝️ Reading keyfile for 2FA...', 'info');
+                    keyfileBytes = new Uint8Array(await v2KeyfileEncrypt.arrayBuffer());
                     recoveryRecord.keyfileRequired = true;
                     recoveryRecord.keyfileName = v2KeyfileEncrypt.name;
-                    recoveryRecord.keyfileFingerprint = bytesToHex(keyfileBytes);
+                    const kfDigest = await window.crypto.subtle.digest('SHA-256', keyfileBytes);
+                    recoveryRecord.keyfileFingerprint = bytesToHex(new Uint8Array(kfDigest));
                     log('Keyfile hash mixed into key material.', 'info');
                 } catch (kfErr) {
                     if (streamWriter && typeof streamWriter.abort === 'function') {
@@ -2977,8 +2978,8 @@ btnDecrypt.addEventListener('click', async () => {
 
             let keyfileBytes = null;
             if (v2KeyfileDecrypt) {
-                log('🗝️ Hashing keyfile for key derivation...', 'info');
-                keyfileBytes = await hashKeyfile(v2KeyfileDecrypt);
+                log('🗝️ Reading keyfile for key derivation...', 'info');
+                keyfileBytes = new Uint8Array(await v2KeyfileDecrypt.arrayBuffer());
             }
 
             const catalog = await StreamUnpacker.readVaultManifest(selectedDecryptFile, password, keyfileBytes);
@@ -3606,7 +3607,7 @@ async function openQRScannerModal() {
         const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
 
         async function tick() {
-            if (!currentScannerStream || video.paused || video.ended) return;
+            if (!currentScannerStream || !video || video.paused || video.ended) return;
             try {
                 const barcodes = await detector.detect(video);
                 if (barcodes && barcodes.length > 0) {
@@ -3614,7 +3615,11 @@ async function openQRScannerModal() {
                     if (found) return;
                 }
             } catch (_) {}
-            scannerAnimFrameId = requestAnimationFrame(tick);
+            if (currentScannerStream && video && !video.paused && !video.ended) {
+                scannerAnimFrameId = requestAnimationFrame(tick);
+            } else {
+                scannerAnimFrameId = null;
+            }
         }
 
         scannerAnimFrameId = requestAnimationFrame(tick);
@@ -3661,20 +3666,22 @@ async function openQRScannerModal() {
     }
 
     async function processImageFile(file) {
+        if (!window.BarcodeDetector) {
+            showToast('Image QR decoding requires Chrome, Edge, or Android Webview. In Firefox, please paste the Paper-Safe code as text (Ctrl+V).', 'warning');
+            return;
+        }
+        let imgBitmap = null;
+        let objectUrl = null;
         try {
-            if (!window.BarcodeDetector) {
-                showToast('Image QR decoding requires Chrome, Edge, or Android Webview. In Firefox, please paste the Paper-Safe code as text (Ctrl+V).', 'warning');
-                return;
-            }
-            let imgBitmap;
             if (typeof createImageBitmap === 'function') {
                 imgBitmap = await createImageBitmap(file);
             } else {
+                objectUrl = URL.createObjectURL(file);
                 imgBitmap = await new Promise((resolve, reject) => {
                     const img = new Image();
                     img.onload = () => resolve(img);
-                    img.onerror = reject;
-                    img.src = URL.createObjectURL(file);
+                    img.onerror = (err) => reject(err || new Error('Image load failed'));
+                    img.src = objectUrl;
                 });
             }
             const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
@@ -3687,6 +3694,17 @@ async function openQRScannerModal() {
         } catch (err) {
             console.error('[QR File Process Error]', err);
             showToast('Failed to decode image. Ensure image is clear and well-lit.', 'warning');
+        } finally {
+            if (imgBitmap && typeof imgBitmap.close === 'function') {
+                try {
+                    imgBitmap.close();
+                } catch (_) {}
+            }
+            if (objectUrl) {
+                try {
+                    URL.revokeObjectURL(objectUrl);
+                } catch (_) {}
+            }
         }
     }
 
@@ -6064,7 +6082,7 @@ async function launchVaultSalvage(explicitFile = null, explicitPw = null) {
     if (actionsPanel) actionsPanel.style.display = 'none';
 
     try {
-        const keyfile = (v2KeyfileDecrypt) ? await hashKeyfile(v2KeyfileDecrypt) : (currentV3Vault ? currentV3Vault.keyfileBytes : null);
+        const keyfile = (v2KeyfileDecrypt) ? new Uint8Array(await v2KeyfileDecrypt.arrayBuffer()) : (currentV3Vault ? currentV3Vault.keyfileBytes : null);
 
         const results = await StreamUnpacker.salvageVault(file, password, {
             keyfileBytes: keyfile,
@@ -6343,6 +6361,43 @@ async function renameVaultFile(oldPath) {
         item.name = cleanNewName;
         item.path = newPath;
         item.dirPath = parentDir;
+        if (item.entry) {
+            item.entry.path = newPath;
+            if ('name' in item.entry) item.entry.name = cleanNewName;
+        }
+
+        // Synchronize currentMediaPlaylist
+        if (Array.isArray(currentMediaPlaylist)) {
+            for (const m of currentMediaPlaylist) {
+                if (m.path === oldPath) {
+                    m.path = newPath;
+                    m.name = cleanNewName;
+                    if (m.entry) {
+                        m.entry.path = newPath;
+                        if ('name' in m.entry) m.entry.name = cleanNewName;
+                    }
+                }
+            }
+        }
+
+        // Synchronize currentImagePlaylist
+        if (Array.isArray(currentImagePlaylist)) {
+            for (const img of currentImagePlaylist) {
+                if (img.path === oldPath) {
+                    img.path = newPath;
+                    img.name = cleanNewName;
+                    if (img.entry) {
+                        img.entry.path = newPath;
+                        if ('name' in img.entry) img.entry.name = cleanNewName;
+                    }
+                }
+            }
+        }
+
+        if (typeof window !== 'undefined') {
+            window.currentMediaPlaylist = currentMediaPlaylist;
+            window.currentImagePlaylist = currentImagePlaylist;
+        }
 
         updateCategoryFilterCounts();
         updateBatchBar();
@@ -6641,6 +6696,21 @@ function startExplorerIdleWatcher() {
             return;
         }
         if (explorerAutoLockMinutes <= 0) return;
+
+        // Defer vault autolock during active video or audio playback
+        const mediaModal = document.getElementById('vault-media-modal');
+        const isMediaModalOpen = Boolean(mediaModal && !mediaModal.classList.contains('d-none') && (mediaModal.style.display === 'flex' || mediaModal.style.display === 'block'));
+        const videoEl = document.getElementById('cinema-video');
+        const audioEl = document.getElementById('cinema-audio');
+        const isMediaPlaying = isMediaModalOpen && (
+            (videoEl && !videoEl.paused && !videoEl.ended) ||
+            (audioEl && !audioEl.paused && !audioEl.ended)
+        );
+        if (isMediaPlaying) {
+            lastExplorerActivityTime = Date.now();
+            return;
+        }
+
         const idleMs = Date.now() - lastExplorerActivityTime;
         const maxIdleMs = explorerAutoLockMinutes * 60 * 1000;
         if (idleMs >= maxIdleMs) {

@@ -89,8 +89,12 @@
 
         resetImageZoom();
 
-        if (currentImageBlobUrl && currentImageBlobUrl.startsWith('blob:') && typeof global.revokeTrackedBlobUrl === 'function') {
-            global.revokeTrackedBlobUrl(currentImageBlobUrl);
+        if (currentImageBlobUrl && currentImageBlobUrl.startsWith('blob:')) {
+            if (typeof global.revokeTrackedBlobUrl === 'function') {
+                global.revokeTrackedBlobUrl(currentImageBlobUrl);
+            } else if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+                URL.revokeObjectURL(currentImageBlobUrl);
+            }
             currentImageBlobUrl = null;
         }
 
@@ -176,8 +180,12 @@
             img.removeAttribute('src');
             img.style.display = 'none';
         }
-        if (currentImageBlobUrl && currentImageBlobUrl.startsWith('blob:') && typeof global.revokeTrackedBlobUrl === 'function') {
-            global.revokeTrackedBlobUrl(currentImageBlobUrl);
+        if (currentImageBlobUrl && currentImageBlobUrl.startsWith('blob:')) {
+            if (typeof global.revokeTrackedBlobUrl === 'function') {
+                global.revokeTrackedBlobUrl(currentImageBlobUrl);
+            } else if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+                URL.revokeObjectURL(currentImageBlobUrl);
+            }
             currentImageBlobUrl = null;
         }
         currentImageBlob = null;
@@ -188,7 +196,18 @@
         if (_isInitialized) return;
         _isInitialized = true;
 
+        const root = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : global);
+        if (typeof root.__zevCleanupMediaPlayerLightbox === 'function') {
+            try {
+                root.__zevCleanupMediaPlayerLightbox();
+            } catch (_) {}
+            root.__zevCleanupMediaPlayerLightbox = null;
+        }
+
         const imageModal = document.getElementById('vault-image-modal');
+        if (imageModal && imageModal.dataset) {
+            imageModal.dataset.lightboxBound = 'image-viewer';
+        }
         const closeImageBtn = document.getElementById('btn-close-image-modal');
         const imageOpenTabBtn = document.getElementById('btn-image-open-tab');
         const imageDlBtn = document.getElementById('btn-image-download');
@@ -268,6 +287,40 @@
                 imageViewport?.classList.remove('is-dragging');
             }
         });
+
+        // Touch drag/panning gestures for touchscreen and mobile devices
+        if (imageViewport) {
+            imageViewport.style.touchAction = 'none';
+        }
+
+        imageViewport?.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length === 1) {
+                isPanningImage = true;
+                panStartX = e.touches[0].clientX - imagePanX;
+                panStartY = e.touches[0].clientY - imagePanY;
+                imageViewport.classList.add('is-dragging');
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isPanningImage) return;
+            if (e.touches && e.touches.length === 1) {
+                if (e.cancelable) e.preventDefault();
+                imagePanX = e.touches[0].clientX - panStartX;
+                imagePanY = e.touches[0].clientY - panStartY;
+                applyImageTransform();
+            }
+        }, { passive: false });
+
+        const endTouchPan = (e) => {
+            if (isPanningImage && (!e.touches || e.touches.length === 0)) {
+                isPanningImage = false;
+                imageViewport?.classList.remove('is-dragging');
+            }
+        };
+
+        window.addEventListener('touchend', endTouchPan);
+        window.addEventListener('touchcancel', endTouchPan);
 
         imageViewport?.addEventListener('wheel', (e) => {
             const modal = document.getElementById('vault-image-modal');

@@ -205,8 +205,8 @@
                     if (window.ZevMedia.isZoomed && window.ZevMedia.isZoomed()) return;
                 }
 
-                // Trigger modal close button
-                const closeBtn = modalEl.querySelector('.modal-close-btn, .btn-close-modal, .media-btn-close, [data-modal-close]');
+                // Trigger modal close button across all 13 dialogs
+                const closeBtn = modalEl.querySelector('.explorer-btn-close, .btn-modal-dismiss-subtle, .media-hotkeys-close, [id^="btn-close-"], .modal-close-btn, .btn-close-modal, [data-modal-close]');
                 if (closeBtn) {
                     e.preventDefault();
                     closeBtn.click();

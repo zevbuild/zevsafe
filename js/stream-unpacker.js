@@ -66,6 +66,7 @@
     /** Flags bitfield */
     const FLAG_KEYFILE = 0x01;
     const FLAG_DURESS = 0x02;
+    const FLAG_ARGON2ID = 0x04;
 
     /** Standard PKWARE ZIP signatures */
     const ZIP_SIGNATURES = {
@@ -451,6 +452,7 @@
             const flags = initial[5];
             const hasKeyfile = (flags & FLAG_KEYFILE) !== 0;
             const isDuress = (flags & FLAG_DURESS) !== 0;
+            const hasArgon2id = (flags & FLAG_ARGON2ID) !== 0;
             const view = new DataView(initial.buffer, initial.byteOffset, initial.byteLength);
             const chunkSize = view.getUint32(6, false);
             const salt = initial.slice(10, 42);
@@ -468,6 +470,7 @@
                 flags,
                 hasKeyfile,
                 isDuress,
+                hasArgon2id,
                 chunkSize,
                 salt,
                 baseIVPrefix,
@@ -1128,10 +1131,10 @@
             },
             set(key, val) {
                 if (map.has(key)) {
-                    this.delete(key);
+                    map.delete(key);
                 } else if (map.size >= limit) {
                     const oldestKey = map.keys().next().value;
-                    this.delete(oldestKey);
+                    map.delete(oldestKey);
                 }
                 map.set(key, val);
                 return this;
@@ -1448,12 +1451,15 @@
         if (actualKey && typeof actualKey === 'object' && actualKey.algorithm) {
             masterKey = actualKey;
         } else if (typeof actualKey === 'string') {
-            masterKey = await StreamCrypto.deriveMasterKey(
-                actualKey,
-                header.salt,
-                opts.iterations || 600000,
-                opts.keyfileBytes || null
-            );
+            const isArgon = (header.flags & FLAG_ARGON2ID) !== 0 || opts.kdf === 'argon2id';
+            masterKey = isArgon
+                ? await StreamCrypto.deriveMasterKeyArgon2id(actualKey, header.salt, opts.argonParams || {}, opts.keyfileBytes || null)
+                : await StreamCrypto.deriveMasterKey(
+                    actualKey,
+                    header.salt,
+                    opts.iterations || 600000,
+                    opts.keyfileBytes || null
+                );
         } else {
             throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
         }
@@ -2046,12 +2052,15 @@
             if (passwordOrKey && typeof passwordOrKey === 'object' && passwordOrKey.algorithm) {
                 masterKey = passwordOrKey;
             } else if (typeof passwordOrKey === 'string') {
-                masterKey = await StreamCrypto.deriveMasterKey(
-                    passwordOrKey,
-                    header.salt,
-                    opts.iterations || 600000,
-                    opts.keyfileBytes
-                );
+                const isArgon = (header.flags & FLAG_ARGON2ID) !== 0 || opts.kdf === 'argon2id';
+                masterKey = isArgon
+                    ? await StreamCrypto.deriveMasterKeyArgon2id(passwordOrKey, header.salt, opts.argonParams || {}, opts.keyfileBytes)
+                    : await StreamCrypto.deriveMasterKey(
+                        passwordOrKey,
+                        header.salt,
+                        opts.iterations || 600000,
+                        opts.keyfileBytes
+                    );
             } else {
                 throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
             }
@@ -2245,6 +2254,9 @@
         MIN_VAULT_SIZE,
         DEFAULT_CHUNK_SIZE,
         MANIFEST_HEADER_SIZE,
+        FLAG_KEYFILE,
+        FLAG_DURESS,
+        FLAG_ARGON2ID,
 
         // CRC-32 & Decompression Primitives
         CRC32,
