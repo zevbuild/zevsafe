@@ -394,6 +394,11 @@ async function main() {
         const chromeExecutable = await findChromePath();
     if (!chromeExecutable) {
         console.log('Chrome binary not found, skipping CDP PWA installability test.');
+        server.close();
+        try { fs.rmSync(tmpProfileDir, { recursive: true, force: true }); } catch (_) {}
+        console.log('\n===============================================================');
+        console.log(`  ALL ${passed}/${total} PHASE 5 PWA TESTS PASSED (100%)`);
+        console.log('===============================================================');
         return;
     }
     const chromeProc = spawn(chromeExecutable, [

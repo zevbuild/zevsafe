@@ -32,6 +32,7 @@ const DIRS_TO_COPY = [
     'js',
     'css',
     'assets',
+    'blog',
     'change-log',
     'device-power',
     'future-plans',
@@ -77,6 +78,7 @@ function computeShellAssets(rootDir) {
     const subpages = [
         'roadmap',
         'device-power',
+        'blog',
         'knowledge',
         'how-to-use-zevsafe',
         'change-log',
@@ -86,6 +88,22 @@ function computeShellAssets(rootDir) {
     for (const sub of subpages) {
         assets.push(`./${sub}/`);
         assets.push(`./${sub}/index.html`);
+        if (sub === 'blog') {
+            const bCss = path.join(rootDir, 'blog', 'blog.css');
+            const bJs = path.join(rootDir, 'blog', 'blog.js');
+            if (fs.existsSync(bCss)) assets.push('./blog/blog.css');
+            if (fs.existsSync(bJs)) assets.push('./blog/blog.js');
+
+            const pDir = path.join(rootDir, 'blog', 'posts');
+            if (fs.existsSync(pDir)) {
+                const posts = fs.readdirSync(pDir).sort();
+                for (const post of posts) {
+                    if (post.endsWith('.html')) {
+                        assets.push(`./blog/posts/${post}`);
+                    }
+                }
+            }
+        }
         if (sub === 'knowledge') {
             const kCss = path.join(rootDir, 'knowledge', 'knowledge.css');
             const kJs = path.join(rootDir, 'knowledge', 'knowledge.js');
@@ -171,6 +189,7 @@ function computeSectionRoutes(rootDir) {
         'how-to-use-zevsafe',
         'change-log',
         'security-audit',
+        'blog',
         'knowledge'
     ];
 
