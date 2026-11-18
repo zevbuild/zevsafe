@@ -728,6 +728,13 @@
                     </header>
                     <ul class="cl-bullets">
                         <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>Drop Zone Uploaded File Summary &amp; Metadata Visibility (<code>index.html</code>, <code>app.js</code>):</strong>
+                                Fixed specificity conflict where <code>.d-none</code> (<code>display: none !important;</code>) suppressed the uploaded file summary card when dropping a <code>.zev</code> vault or folders. Replaced class with <code>style="display: none;"</code> and added explicit <code>classList.remove('d-none')</code> in <code>app.js</code>, restoring immediate visibility of the file icon, file name, and formatted size badge (e.g. <code>cow.zev</code> · <code>11.2 MB</code>).
+                            </div>
+                        </li>
+                        <li>
                             <span class="cl-bullet cl-bullet--ui">UI</span>
                             <div>
                                 <strong>4-Tier Security Hierarchy &amp; Fast Standard Default (<code>index.html</code>, <code>app.js</code>):</strong>

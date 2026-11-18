@@ -2,6 +2,12 @@
 
 ## Version 8.30.0 (WEB-VERSION-81) — November 18, 2026
 
+- `Fix` & `UI` (`index.html`, `app.js`): Drop Zone Uploaded File Summary & Metadata Visibility Resolution.
+  - Resolved UI bug where uploading a `.zev` vault or source files rendered the drop zone blank and failed to display the file name and size.
+  - Fixed specificity override where `class="d-none"` (`display: none !important;`) suppressed inline JavaScript `display: flex;` on `#decrypt-selected-widget` and `#encrypt-selected-widget`.
+  - Replaced hardcoded `d-none` classes in `index.html` with standard `style="display: none;"` and added explicit `classList.remove('d-none')` on file selection and `classList.add('d-none')` on clear in `app.js`.
+  - Verified in live browser session that uploading `cow.zev` immediately displays the teal card widget with file name `cow.zev` and formatted size `11.2 MB`.
+
 - `UI` & `Security` (`index.html`, `app.js`): 4-Tier Security Hierarchy & Fast Standard Default (Option 2).
   - Restored **Standard Security (600,000 Rounds PBKDF2-SHA512 · Instant ~0.2s)** as the pre-selected default in `#encrypt-kdf-select`, ensuring snappy, sub-second encryption out-of-the-box.
   - Re-branded key derivation options into transparent, self-explanatory defense levels to avoid commercial paywall confusion:

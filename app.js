@@ -664,6 +664,7 @@ function onEncryptSelected(files, folderName) {
 
     if (encryptDzInner && encryptSelectedWidget) {
         encryptDzInner.style.display = 'none';
+        encryptSelectedWidget.classList.remove('d-none');
         encryptSelectedWidget.style.display = 'flex';
         encryptSelectedName.textContent = folderName;
         encryptSelectedMeta.textContent = `${files.length} file(s) · ${formatBytes(totalSize)}`;
@@ -686,6 +687,7 @@ function clearEncryptSelection() {
 
     if (encryptDzInner && encryptSelectedWidget) {
         encryptDzInner.style.display = '';
+        encryptSelectedWidget.classList.add('d-none');
         encryptSelectedWidget.style.display = 'none';
     }
     encryptSelectedInfo.style.display = '';
@@ -1019,6 +1021,7 @@ async function onDecryptSelected(files) {
 
     if (decryptDzInner && decryptSelectedWidget) {
         decryptDzInner.style.display = 'none';
+        decryptSelectedWidget.classList.remove('d-none');
         decryptSelectedWidget.style.display = 'flex';
         decryptSelectedName.textContent = selectedDecryptFile.name;
         decryptSelectedMeta.textContent = formatBytes(selectedDecryptFile.size || 0);
@@ -1042,6 +1045,7 @@ function clearDecryptSelection() {
 
     if (decryptDzInner && decryptSelectedWidget) {
         decryptDzInner.style.display = '';
+        decryptSelectedWidget.classList.add('d-none');
         decryptSelectedWidget.style.display = 'none';
     }
     decryptSelectedInfo.style.display = '';
