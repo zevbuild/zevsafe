@@ -127,6 +127,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 ### 3.10 Collapsible Max Security Options Bar & Pill Button
 - **Minimalist Encryption Card Redesign (`#max-security-bar`, `#btn-toggle-max-security`, `#max-security-collapsible`):** Tucks the advanced security panels (Key Derivation Hardening select, Polyglot Media Camouflage, Duress Decoy Vault) behind an understated, cybernetic pill button.
 - **Dynamic Active State Highlighting (`.btn-max-security-pill.is-active`):** If any non-default security feature is engaged (e.g. 1.2M or 2.4M PBKDF2 rounds, polyglot cover enabled, or decoy vault armed), the pill button glows emerald and automatically expands.
+- **Atomic `.d-none` & Display State Synchronization (`app.js`, `index.html`):** `setExpanded(expanded)` atomically toggles `container.classList.remove('d-none')` on expand and `container.classList.add('d-none')` on collapse alongside `style.display = 'flex' / 'none'`, eliminating specificity masking by `.d-none { display: none !important; }`. Initial markup in `index.html` uses `.max-security-collapsible` with native `display: none` without `!important`.
 
 ### 3.11 Phase 11: Know Your Device Power — Cryptographic Hardware Benchmark & Profiler (`device-power/index.html`, `js/device-benchmark.js`)
 - **100% Client-Side Cryptographic Profiler:** Benchmarks raw WebCrypto hardware acceleration (AES-NI / NEON instructions), measuring parallel chunk streaming throughput (MB/s) and PBKDF2-SHA512 key derivation latency across standard and hardened tiers (600,000, 1,200,000, and 2,400,000 rounds).
@@ -650,8 +651,11 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - `test/crypto/test-argon2id.js` (8 tests: RFC 9106 KAT, memory bounds, error handling, parameter validation).
   - `test/crypto/test-argon2id-vault.js` (4 tests: full vault packaging, unpacker auto-resolution, selective extraction, wrong password rejection).
 
-### 3.33 Comprehensive Knowledge & Security Journal Blog Platform [v8.30.0 / WEB-VERSION-81 / SW v81]
-- **100% Client-Side Knowledge & Security Blog Hub (`blog/index.html`, `blog/blog.css`, `blog/blog.js`):**
+### 3.33 Consolidated Knowledge Hub & Security Journal Platform [v8.30.0 / WEB-VERSION-81 / SW v81]
+- **Unified Knowledge Hub & Security Blog Hub (`blog/index.html`, `blog/blog.css`, `blog/blog.js`):**
+  - Unified all architectural service manuals, technical disclosures, and how-to guides into the authoritative **Knowledge Hub & Security Journal** (`/blog/`).
+  - Integrated the **10 Core Architectural Services** quick-access directory linking directly to the corresponding deep-dive technical articles.
+  - Added the **Security Invariants & Cryptographic Matrix** table disclosing primitives, parameters, memory bounds, and threat models across all 10 core services (Core Streaming Vault, VFS & Live Editing, Duress Decoys, Polyglot Camouflage, Vault Health & Salvage, Cinema Deck & Audio Dock, Passphrase Hygiene, Key Derivation & 2FA, Mobile Streaming Storage, and Air-Gap USB Backup Kit).
   - Instant client-side search engine with keyboard shortcut `/` and `ESC` clearing, combined with dynamic category filter pills (`All Articles`, `How-To Guides`, `Security & Tradecraft`, `Architecture & Cryptography`).
   - Active top reading progress bar, responsive cybernetic design tokens, copy-to-clipboard code headers, and scroll-spy table of contents.
 - **Fourteen Authoritative Long-Form Knowledge & How-To Guides (`blog/posts/`):**
@@ -665,16 +669,20 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - **Pillar 2: Security & Tradecraft:**
     - `07-duress-decoy-coercion-defense.html`: Surviving physical/legal coercion with dual-manifest envelopes, `V3_FLAG_DURESS` suppression, and IND-CPA indistinguishability.
     - `08-forensic-polyglot-media-camouflage.html`: Bicontextual JPEG/PNG steganography, termination markers (`FF D9`, `IEND`), and sliding-window container detection.
-    - `09-hardware-keyfile-2fa-kdf-hardening.html`: Scaling PBKDF2-SHA512 (600k/1.2M/2.4M), SHA-256 keyfile XOR mixing, and embedded interactive brute-force estimator widget.
+    - `09-hardware-keyfile-2fa-kdf-hardening.html`: Scaling RFC 9106 Argon2id WASM (64MB, $t=3, p=4$) and PBKDF2-SHA512 (600k/1.2M/2.4M), SHA-256 keyfile XOR mixing, and embedded interactive brute-force estimator widget.
     - `10-vault-health-bitrot-salvage.html`: 4 MB chunk fault containment, silent bit-rot detection, and partial emergency file salvage.
   - **Pillar 3: Architecture & Cryptography:**
-    - `11-zv3-stream-aead-specification.html`: 57-byte header breakdown, 12-byte IV layout, 42-byte AAD invariant, tail manifest envelope, and embedded interactive header inspector widget.
+    - `11-zv3-stream-aead-specification.html`: 57-byte header breakdown (including byte 5 flag `0x04` for Argon2id), 12-byte IV layout, 42-byte AAD invariant, tail manifest envelope, and embedded interactive header inspector widget.
     - `12-multi-worker-parallel-crypto-bounded-ram.html`: Elastic `WorkerPool`, `OrderedReassemblyQueue`, transferable zero-copy `ArrayBuffer` handoffs, and credit-based flow control (< 105 MB peak heap).
     - `13-multi-tier-mobile-streaming-storage.html`: Four-tier storage fallback state machine (FSA &rarr; OPFS &rarr; Service Worker &rarr; Memory) eliminating mobile browser crashes.
     - `14-zero-exfiltration-airgap-defense.html`: Strict CSP headers, 100% Google Font decoupling, W3C Credential Management API, and formal Grade A+ security audit attestation.
-- **PWA Service Worker Precache & Routing Hardening (`sw.js`, `_headers`, `sitemap.xml`):**
-  - Added all 17 blog assets to `SHELL_ASSETS` and registered `'blog'` route + dynamic `/blog/posts/<slug>` match in `SECTION_ROUTES`.
-  - Bumped `APP_VERSION = 'v81'`, updated Cloudflare `_headers` with strict CSP for `/blog/*`, and populated 15 new URLs in `sitemap.xml`.
+  - Purged obsolete `knowledge/index.html` navigation links across all 14 blog articles.
+- **Cross-Portal Navigation Consolidation & Backward Compatibility:**
+  - Consolidated redundant separate Knowledge Hub and Blog links across all pages (`index.html`, `how-to-use-zevsafe/`, `security-audit/`, `roadmap/`, `device-power/`, `change-log/`) into unified "Knowledge & Blog" links pointing to `/blog/`.
+  - Added migration notice banner in `knowledge/index.html` while preserving physical service manual HTML files on disk to maintain backward compatibility and 100% regression test suite pass rate.
+- **PWA Service Worker Precache, USB Air-Gap Kit & Routing Hardening (`sw.js`, `js/usb-backup-kit.js`, `_headers`, `sitemap.xml`):**
+  - Added all 14 blog articles and blog hub assets into `AIRGAP_ASSET_PATHS` in `js/usb-backup-kit.js` for 1-click air-gap USB flash drive deployment.
+  - Bumped `APP_VERSION = 'v81'`, precached 86 shell assets (hash `34f785c3`), configured dynamic 19-route section routing in `sw.js`, strict CSP for `/blog/*` in `_headers`, and 15 canonical URLs in `sitemap.xml`.
 
 ---
 

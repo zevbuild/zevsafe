@@ -1327,6 +1327,8 @@ const catalogFiles = [
     // Verify app.js controller
     assert.strictEqual(appJs.includes('function initMaxSecurityCollapsible()'), true, 'app.js defines initMaxSecurityCollapsible');
     assert.strictEqual(appJs.includes('initMaxSecurityCollapsible();'), true, 'app.js initializes controller on DOM load');
+    assert.strictEqual(appJs.includes("container.classList.remove('d-none')"), true, 'app.js removes d-none on expand');
+    assert.strictEqual(appJs.includes("container.classList.add('d-none')"), true, 'app.js adds d-none on collapse');
 
     console.log('  ✔ 38. Collapsible Max Security Options Bar & Pill Button (Design 2) verified');
 

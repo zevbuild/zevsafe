@@ -7666,9 +7666,11 @@ function initMaxSecurityCollapsible() {
         isExpanded = expanded;
         btn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
         if (isExpanded) {
+            container.classList.remove('d-none');
             container.style.display = 'flex';
             if (chevron) chevron.textContent = '▴';
         } else {
+            container.classList.add('d-none');
             container.style.display = 'none';
             if (chevron) chevron.textContent = '▾';
         }

@@ -647,7 +647,7 @@
         <div class="navbar-links">
             <a href="https://github.com/zevbuild/app-zevsafe/releases/latest" target="_blank" rel="noopener" class="nav-pill nav-pill--android" title="Download Dedicated Native Android App (APK)">🤖 Android APK</a>
             <a href="../" class="nav-pill">← Back to App</a>
-            <a href="../knowledge/" class="nav-pill">📚 Knowledge Hub</a>
+            <a href="../blog/" class="nav-pill">📚 Knowledge &amp; Blog</a>
             <a href="../how-to-use-zevsafe/" class="nav-pill">📖 User Guide</a>
             <a href="../security-audit/" class="nav-pill">🛡️ Security Audit</a>
             <a href="https://github.com/zevbuild/zevsafe" target="_blank" class="nav-pill nav-pill-ghost">GitHub ↗</a>
@@ -719,39 +719,47 @@
                             <span class="cl-badge cl-badge--date">November 18, 2026</span>
                         </div>
                         <div class="cl-tags">
-                            <span class="cl-tag">Knowledge Blog</span>
+                            <span class="cl-tag">Knowledge &amp; Blog Hub</span>
+                            <span class="cl-tag">10 Services Directory</span>
+                            <span class="cl-tag">Security Matrix</span>
                             <span class="cl-tag">14 Long-Form Guides</span>
-                            <span class="cl-tag">Interactive Widgets</span>
-                            <span class="cl-tag">PWA Offline Precache</span>
+                            <span class="cl-tag">USB Air-Gap Kit</span>
                         </div>
                     </header>
                     <ul class="cl-bullets">
                         <li>
                             <span class="cl-bullet cl-bullet--new">New</span>
                             <div>
-                                <strong>Comprehensive Knowledge &amp; Security Journal Blog Hub (<code>blog/index.html</code>, <code>blog/blog.css</code>, <code>blog/blog.js</code>):</strong>
-                                Launched an air-gapped publication hub featuring instant client-side search with keyboard shortcuts (<kbd>/</kbd>, <kbd>ESC</kbd>), interactive category filter pills (How-To Guides, Security &amp; Tradecraft, Architecture &amp; Cryptography), top reading progress bar, copy-to-clipboard code blocks, and scroll-spy TOC.
+                                <strong>Knowledge Hub &amp; Security Journal Consolidation (<code>blog/index.html</code>, <code>blog/blog.css</code>, <code>blog/blog.js</code>):</strong>
+                                Unified all technical knowledge documentation into the authoritative <strong>Knowledge Hub &amp; Security Journal</strong> (<code>/blog/</code>). Features the <strong>10 Core Architectural Services</strong> directory grid, the comprehensive <strong>Security Invariants &amp; Cryptographic Matrix</strong>, instant multi-keyword client-side search (<kbd>/</kbd>, <kbd>ESC</kbd>), interactive category filters, reading progress bar, and copyable code headers.
                             </div>
                         </li>
                         <li>
                             <span class="cl-bullet cl-bullet--sec">Security</span>
                             <div>
-                                <strong>14 Authoritative Knowledge &amp; How-To Guides (<code>blog/posts/</code>):</strong>
-                                Published 6 practical walkthroughs (beginner locking, VFS live editing, cinema deck streaming, optical paper-safe, USB air-gap backup kit, passphrase hygiene) and 8 deep cryptographic disclosures (duress decoys, polyglot steganography, PBKDF2 2.4M hardening, bit-rot salvage, ZV3 57-byte header specification, multi-worker parallel crypto, multi-tier mobile streaming, and zero-exfiltration air-gap defense).
+                                <strong>14 Authoritative Knowledge Guides &amp; Argon2id Invariants (<code>blog/posts/</code>):</strong>
+                                Published 6 practical walkthroughs and 8 deep cryptographic disclosures. Updated <code>09-hardware-keyfile-2fa-kdf-hardening.html</code> and <code>11-zv3-stream-aead-specification.html</code> with RFC 9106 Argon2id WASM KDF (64MB, $t=3, p=4$) and container header flag <code>0x04</code>. Cleaned all obsolete <code>knowledge/</code> links across all posts.
                             </div>
                         </li>
                         <li>
                             <span class="cl-bullet cl-bullet--ui">UI</span>
                             <div>
-                                <strong>Interactive Client-Side Demonstrators &amp; Cross-Platform Navigation:</strong>
-                                Embedded an interactive PBKDF2 Work Factor &amp; Brute-Force Estimator and an interactive ZV3 57-Byte Container Header Inspector. Added Blog links across desktop nav, tools dropdown, mobile drawer, and footer.
+                                <strong>Ecosystem Cross-Navigation Consolidation:</strong>
+                                Replaced redundant Knowledge Hub and Blog links with unified "Knowledge &amp; Blog" links pointing to <code>/blog/</code> across all pages (<code>index.html</code>, <code>how-to-use-zevsafe/</code>, <code>security-audit/</code>, <code>roadmap/</code>, <code>device-power/</code>, <code>change-log/</code>). Added a cybernetic notice banner to <code>knowledge/index.html</code> while preserving physical files for backward compatibility.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>Max Security Options Collapsible Visibility Fix (<code>app.js</code>, <code>index.html</code>):</strong>
+                                Resolved bug where clicking the "Max Security Options" pill button failed to display the hardening panel due to <code>.d-none { display: none !important; }</code> overriding inline <code>style.display = 'flex'</code>. Added explicit <code>container.classList.remove('d-none')</code> on expand and pruned initial <code>d-none</code> from HTML.
                             </div>
                         </li>
                         <li>
                             <span class="cl-bullet cl-bullet--perf">PWA</span>
                             <div>
-                                <strong>Service Worker v81 &amp; Offline Air-Gap Hardening (<code>sw.js</code>, <code>_headers</code>, <code>sitemap.xml</code>):</strong>
-                                Precached all 17 blog assets in <code>SHELL_ASSETS</code>, added dynamic <code>/blog/posts/</code> routing in <code>SECTION_ROUTES</code>, configured Cloudflare Pages strict CSP in <code>_headers</code>, and added 15 new canonical URLs to <code>sitemap.xml</code>.
+                                <strong>Service Worker v81 &amp; USB Air-Gap Kit Inclusion (<code>sw.js</code>, <code>js/usb-backup-kit.js</code>):</strong>
+                                Precached all 17 blog assets in <code>SHELL_ASSETS</code> with 19 section routes (hash <code>34f785c3</code>), packaged all blog guides into <code>AIRGAP_ASSET_PATHS</code> in <code>js/usb-backup-kit.js</code> for 1-click air-gap USB flash drive deployment, and synchronized 15 canonical URLs in <code>sitemap.xml</code>.
                             </div>
                         </li>
                     </ul>
@@ -4027,8 +4035,8 @@
             </div>
             <p class="footer-tagline">Your files stay on your device. Always.</p>
             <div class="footer-links">
-            <a href="../knowledge/">Knowledge Hub</a>
-            <span>·</span>
+                <a href="../blog/">Knowledge &amp; Blog</a>
+                <span>·</span>
                 <a href="../">App</a>
                 <span>·</span>
                 <a href="../security-audit/" style="color: #34d399; font-weight: 600;">Security Audit</a>
