@@ -1431,7 +1431,7 @@ const catalogFiles = [
 
     const indexForRoadmap = fs.readFileSync(indexPath, 'utf8');
     assert.strictEqual(indexForRoadmap.includes('id="nav-roadmap-pill"'), true, 'index.html has #nav-roadmap-pill');
-    assert.strictEqual(indexForRoadmap.includes('11 / 14'), true, 'index.html displays 11 / 14');
+    assert.strictEqual(indexForRoadmap.includes('12 / 14'), true, 'index.html displays 12 / 14');
     assert.strictEqual(indexForRoadmap.includes('href="./roadmap/"'), true, 'index.html links to ./roadmap/');
 
     const swForRoadmap = fs.readFileSync(swPath, 'utf8');

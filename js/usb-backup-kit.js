@@ -62,6 +62,7 @@
         'sw.js',
         'manifest.json',
         'jszip.min.js',
+        'js/argon2id.js',
         'js/stream-crypto.js',
         'js/stream-packer.js',
         'js/stream-unpacker.js',

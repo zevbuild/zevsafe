@@ -978,15 +978,15 @@
             }
         } else if (typeof passwordOrKey === 'string') {
             const StreamCrypto = getStreamCrypto();
-            const candidateTiers = opts.iterations ? [opts.iterations] : [600000, 1200000, 2400000];
+            const isArgon = (header.flags & StreamCrypto.V3_FLAG_ARGON2ID) !== 0 || opts.kdf === 'argon2id';
             let lastAuthError = null;
 
-            for (const tierRounds of candidateTiers) {
+            if (isArgon) {
                 try {
-                    const testKey = await StreamCrypto.deriveMasterKey(
+                    const testKey = await StreamCrypto.deriveMasterKeyArgon2id(
                         passwordOrKey,
                         header.salt,
-                        tierRounds,
+                        opts.argonParams || {},
                         keyfileBytes
                     );
 
@@ -998,7 +998,6 @@
                         parsedRaw = await parseManifestEnvelope(env0Bytes, testKey);
                         isDuressDecoy = false;
                         masterKey = testKey;
-                        break;
                     } catch (env0Err) {
                         // Test Envelope 1 (Duress Decoy)
                         if (envelopeBytes.byteLength >= env0TotalLen + MANIFEST_HEADER_SIZE + TAG_LENGTH) {
@@ -1007,7 +1006,6 @@
                                 parsedRaw = await parseManifestEnvelope(env1Bytes, testKey);
                                 isDuressDecoy = true;
                                 masterKey = testKey;
-                                break;
                             } catch (env1Err) {
                                 lastAuthError = env0Err;
                             }
@@ -1017,6 +1015,47 @@
                     }
                 } catch (dErr) {
                     lastAuthError = dErr;
+                }
+            } else {
+                const candidateTiers = opts.iterations ? [opts.iterations] : [600000, 1200000, 2400000];
+
+                for (const tierRounds of candidateTiers) {
+                    try {
+                        const testKey = await StreamCrypto.deriveMasterKey(
+                            passwordOrKey,
+                            header.salt,
+                            tierRounds,
+                            keyfileBytes
+                        );
+
+                        // Test Envelope 0 (Primary)
+                        try {
+                            const env0Bytes = (envelopeBytes.byteLength > env0TotalLen)
+                                ? envelopeBytes.subarray(0, env0TotalLen)
+                                : envelopeBytes;
+                            parsedRaw = await parseManifestEnvelope(env0Bytes, testKey);
+                            isDuressDecoy = false;
+                            masterKey = testKey;
+                            break;
+                        } catch (env0Err) {
+                            // Test Envelope 1 (Duress Decoy)
+                            if (envelopeBytes.byteLength >= env0TotalLen + MANIFEST_HEADER_SIZE + TAG_LENGTH) {
+                                try {
+                                    const env1Bytes = envelopeBytes.subarray(env0TotalLen);
+                                    parsedRaw = await parseManifestEnvelope(env1Bytes, testKey);
+                                    isDuressDecoy = true;
+                                    masterKey = testKey;
+                                    break;
+                                } catch (env1Err) {
+                                    lastAuthError = env0Err;
+                                }
+                            } else {
+                                lastAuthError = env0Err;
+                            }
+                        }
+                    } catch (dErr) {
+                        lastAuthError = dErr;
+                    }
                 }
             }
 
@@ -1196,12 +1235,15 @@
         if (passwordOrKey && typeof passwordOrKey === 'object' && passwordOrKey.algorithm) {
             masterKey = passwordOrKey;
         } else if (typeof passwordOrKey === 'string') {
-            masterKey = await StreamCrypto.deriveMasterKey(
-                passwordOrKey,
-                header.salt,
-                opts.iterations || 600000,
-                opts.keyfileBytes
-            );
+            const isArgon = (header.flags & StreamCrypto.V3_FLAG_ARGON2ID) !== 0 || opts.kdf === 'argon2id';
+            masterKey = isArgon
+                ? await StreamCrypto.deriveMasterKeyArgon2id(passwordOrKey, header.salt, opts.argonParams || {}, opts.keyfileBytes)
+                : await StreamCrypto.deriveMasterKey(
+                    passwordOrKey,
+                    header.salt,
+                    opts.iterations || 600000,
+                    opts.keyfileBytes
+                );
         } else {
             throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
         }
@@ -1609,12 +1651,15 @@
         if (passwordOrKey && typeof passwordOrKey === 'object' && passwordOrKey.algorithm) {
             masterKey = passwordOrKey;
         } else if (typeof passwordOrKey === 'string') {
-            masterKey = await StreamCrypto.deriveMasterKey(
-                passwordOrKey,
-                header.salt,
-                opts.iterations || 600000,
-                opts.keyfileBytes
-            );
+            const isArgon = (header.flags & StreamCrypto.V3_FLAG_ARGON2ID) !== 0 || opts.kdf === 'argon2id';
+            masterKey = isArgon
+                ? await StreamCrypto.deriveMasterKeyArgon2id(passwordOrKey, header.salt, opts.argonParams || {}, opts.keyfileBytes)
+                : await StreamCrypto.deriveMasterKey(
+                    passwordOrKey,
+                    header.salt,
+                    opts.iterations || 600000,
+                    opts.keyfileBytes
+                );
         } else {
             throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
         }
@@ -1698,12 +1743,15 @@
         if (passwordOrKey && typeof passwordOrKey === 'object' && passwordOrKey.algorithm) {
             masterKey = passwordOrKey;
         } else if (typeof passwordOrKey === 'string') {
-            masterKey = await StreamCrypto.deriveMasterKey(
-                passwordOrKey,
-                header.salt,
-                opts.iterations || 600000,
-                opts.keyfileBytes
-            );
+            const isArgon = (header.flags & StreamCrypto.V3_FLAG_ARGON2ID) !== 0 || opts.kdf === 'argon2id';
+            masterKey = isArgon
+                ? await StreamCrypto.deriveMasterKeyArgon2id(passwordOrKey, header.salt, opts.argonParams || {}, opts.keyfileBytes)
+                : await StreamCrypto.deriveMasterKey(
+                    passwordOrKey,
+                    header.salt,
+                    opts.iterations || 600000,
+                    opts.keyfileBytes
+                );
         } else {
             throw new TypeError('passwordOrKey must be a string password or AES-GCM CryptoKey');
         }

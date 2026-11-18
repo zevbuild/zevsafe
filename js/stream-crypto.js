@@ -67,6 +67,9 @@
     /** Header Flag bit 1: Duress Decoy Vault enabled (Plausible Deniability) */
     const V3_FLAG_DURESS = 0x02;
 
+    /** Header Flag bit 2: Argon2id Memory-Hard Key Derivation (RFC 9106) */
+    const V3_FLAG_ARGON2ID = 0x04;
+
     // Resolve Web Crypto SubtleCrypto implementation
     function getSubtleCrypto() {
         if (typeof crypto !== 'undefined' && crypto.subtle) {
@@ -166,6 +169,89 @@
             );
 
             rawKeyBytes = new Uint8Array(derivedBits);
+
+            // Optional 2FA Keyfile XOR mixing
+            if (keyfileBytes !== null && keyfileBytes !== undefined) {
+                const keyfileBuf = keyfileBytes instanceof Uint8Array
+                    ? keyfileBytes
+                    : new Uint8Array(keyfileBytes);
+
+                const hashBuffer = await subtle.digest('SHA-256', keyfileBuf);
+                keyfileHash = new Uint8Array(hashBuffer);
+
+                mixedKey = new Uint8Array(32);
+                for (let i = 0; i < 32; i++) {
+                    mixedKey[i] = rawKeyBytes[i] ^ keyfileHash[i];
+                }
+                rawKeyBytes.fill(0);
+                rawKeyBytes = mixedKey;
+            }
+
+            // Import as non-extractable 256-bit AES-GCM CryptoKey
+            return await subtle.importKey(
+                'raw',
+                rawKeyBytes,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+        } finally {
+            passwordBytes.fill(0);
+            if (rawKeyBytes) rawKeyBytes.fill(0);
+            if (mixedKey && mixedKey !== rawKeyBytes) mixedKey.fill(0);
+            if (keyfileHash) keyfileHash.fill(0);
+        }
+    }
+
+    // Resolve Argon2id engine
+    function getArgon2id() {
+        if (typeof Argon2id !== 'undefined') return Argon2id;
+        if (typeof globalThis !== 'undefined' && globalThis.Argon2id) return globalThis.Argon2id;
+        if (typeof window !== 'undefined' && window.Argon2id) return window.Argon2id;
+        if (typeof self !== 'undefined' && self.Argon2id) return self.Argon2id;
+        if (typeof require === 'function') {
+            try { return require('./argon2id.js'); } catch (_) {}
+            try { return require('../js/argon2id.js'); } catch (_) {}
+        }
+        throw new Error('Argon2id engine is not available in this environment');
+    }
+
+    /**
+     * Derives a 256-bit AES-GCM CryptoKey using Argon2id (RFC 9106).
+     * Optionally mixes SHA-256(keyfileBytes) via bitwise XOR into raw key material.
+     *
+     * @param {string} password - Master password
+     * @param {Uint8Array} salt - 32-byte cryptographically random salt
+     * @param {Object} [options] - Argon2id parameters (m, t, p, hashLen)
+     * @param {Uint8Array|ArrayBuffer|null} [keyfileBytes=null] - Optional keyfile bytes for 2FA
+     * @returns {Promise<CryptoKey>} Non-extractable AES-GCM-256 CryptoKey
+     */
+    async function deriveMasterKeyArgon2id(password, salt, options = {}, keyfileBytes = null) {
+        if (typeof password !== 'string') {
+            throw new TypeError('Password must be a string');
+        }
+        if (!salt || salt.byteLength < SALT_LENGTH) {
+            throw new TypeError(`Salt must be at least ${SALT_LENGTH} bytes`);
+        }
+
+        const argon2idEngine = getArgon2id();
+        const subtle = getSubtleCrypto();
+        const enc = new TextEncoder();
+        const passwordBytes = enc.encode(password);
+        let rawKeyBytes = null;
+        let mixedKey = null;
+        let keyfileHash = null;
+
+        try {
+            rawKeyBytes = await argon2idEngine.hash(passwordBytes, salt, {
+                m: options.m || 65536,
+                t: options.t || 3,
+                p: options.p || 4,
+                hashLen: options.hashLen || 32,
+                key: options.key || null,
+                ad: options.ad || null,
+                onProgress: options.onProgress || null
+            });
 
             // Optional 2FA Keyfile XOR mixing
             if (keyfileBytes !== null && keyfileBytes !== undefined) {
@@ -660,6 +746,9 @@
             magic: header.slice(0, 4),
             version,
             flags,
+            hasKeyfile: (flags & V3_FLAG_KEYFILE) !== 0,
+            hasDuress: (flags & V3_FLAG_DURESS) !== 0,
+            hasArgon2id: (flags & V3_FLAG_ARGON2ID) !== 0,
             chunkSize,
             salt,
             baseIVPrefix,
@@ -720,9 +809,11 @@
         CHUNK_HEADER_SIZE,
         V3_FLAG_KEYFILE,
         V3_FLAG_DURESS,
+        V3_FLAG_ARGON2ID,
 
         // Core Crypto
         deriveMasterKey,
+        deriveMasterKeyArgon2id,
         computeChunkIV,
         computeChunkAAD,
         encryptChunk,

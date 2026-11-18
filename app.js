@@ -2669,7 +2669,9 @@ btnEncrypt.addEventListener('click', async () => {
             const progActions = document.getElementById('progress-actions');
             if (progActions) progActions.style.display = 'flex';
 
-            const kdfIterations = parseInt(document.getElementById('encrypt-kdf-select')?.value || '600000', 10);
+            const kdfVal = document.getElementById('encrypt-kdf-select')?.value || 'argon2id';
+            const isArgon2id = (kdfVal === 'argon2id');
+            const kdfIterations = isArgon2id ? 600000 : parseInt(kdfVal, 10);
             const isPolyglot = !!(document.getElementById('polyglot-mode-toggle')?.checked && polyglotCoverBytes);
 
             let totalVaultBytes = 0;
@@ -2681,6 +2683,9 @@ btnEncrypt.addEventListener('click', async () => {
                     options: {
                         writable: streamWriter ? (streamWriter.writable || streamWriter) : null,
                         bufferChunks: !streamWriter,
+                        kdf: isArgon2id ? 'argon2id' : 'pbkdf2',
+                        kdfType: isArgon2id ? 'argon2id' : 'pbkdf2',
+                        argonParams: { m: 65536, t: 3, p: 4 },
                         iterations: kdfIterations,
                         coverBytes: isPolyglot ? polyglotCoverBytes : null,
                         duress: duressDecoyOptions
@@ -2708,6 +2713,7 @@ btnEncrypt.addEventListener('click', async () => {
                             } else if (result.header && result.header.byteLength >= 42) {
                                 recoveryRecord.saltHex = bytesToHex(result.header.subarray(10, 42));
                             }
+                            recoveryRecord.kdf = isArgon2id ? 'argon2id' : 'pbkdf2';
                             recoveryRecord.kdfIterations = kdfIterations;
                             if (streamWriter && typeof streamWriter.finalize === 'function') {
                                 await streamWriter.finalize();
@@ -3307,7 +3313,9 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
         saltHex = bytesToHex(tmpSalt);
         if (record) record.saltHex = saltHex;
     }
-    const kdfIterations = record?.kdfIterations || parseInt(document.getElementById('encrypt-kdf-select')?.value || '600000', 10);
+    const rawKdfVal = record?.kdf || (record?.kdfIterations ? String(record.kdfIterations) : (document.getElementById('encrypt-kdf-select')?.value || 'argon2id'));
+    const isArgon2id = (rawKdfVal === 'argon2id');
+    const kdfIterations = isArgon2id ? 600000 : (record?.kdfIterations || parseInt(document.getElementById('encrypt-kdf-select')?.value || '600000', 10));
     const keyfileRequired = !!record?.keyfileRequired;
     const initialHint = hintInput?.value?.trim() || record?.hint || '';
 
@@ -3317,6 +3325,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
         const payloadData = {
             vaultName,
             saltHex,
+            kdf: isArgon2id ? 'argon2id' : 'pbkdf2',
             kdfIterations,
             hint: currentHint,
             keyfileRequired,
@@ -3331,7 +3340,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
             ? QREngine.createSVG(payload, { size: 180, margin: 2, color: '#0f172a', bgColor: '#ffffff' })
             : '<div class="paper-qr-loading">QR Engine Loading...</div>';
         const saltFormatted = typeof QREngine !== 'undefined' ? QREngine.formatSaltFingerprint(saltHex) : saltHex.slice(0, 32);
-        const kdfFormatted = kdfIterations.toLocaleString('en-US');
+        const kdfFormatted = isArgon2id ? 'Argon2id (64MB)' : `${kdfIterations.toLocaleString('en-US')} Rounds (PBKDF2)`;
 
         container.innerHTML = `
             <div class="paper-safe-sheet">
@@ -3344,7 +3353,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                     </div>
                     <div class="paper-sheet-badge">
                         <div>${(isMasterKey && passwordVal) ? '⚡ ZV3 MASTER KEYCARD' : 'ZV3 STREAM AEAD'}</div>
-                        <div class="paper-badge-standard">RFC 8018 / NIST SP 800-38D</div>
+                        <div class="paper-badge-standard">${isArgon2id ? 'RFC 9106 / NIST SP 800-38D' : 'RFC 8018 / NIST SP 800-38D'}</div>
                     </div>
                 </div>
 
@@ -3363,7 +3372,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                         <div class="paper-grid-two-col">
                             <div class="paper-sheet-field u-m-0">
                                 <span class="paper-sheet-label">Key Derivation</span>
-                                <div class="paper-sheet-val paper-val-md">${kdfFormatted} Rounds (PBKDF2)</div>
+                                <div class="paper-sheet-val paper-val-md">${kdfFormatted}</div>
                             </div>
                             <div class="paper-sheet-field u-m-0">
                                 <span class="paper-sheet-label">2FA Keyfile Status</span>
@@ -7677,7 +7686,7 @@ function initMaxSecurityCollapsible() {
     function checkActiveState() {
         const hasActive = (polyToggle && polyToggle.checked) || 
                           (duressToggle && duressToggle.checked) || 
-                          (kdfSelect && kdfSelect.value !== '600000');
+                          (kdfSelect && kdfSelect.value !== 'argon2id');
         if (hasActive) {
             btn.classList.add('is-active');
             setExpanded(true);

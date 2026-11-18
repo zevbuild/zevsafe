@@ -669,12 +669,12 @@
             <!-- Quick Stats -->
             <div class="cl-stats-grid">
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--teal">v8.29.0</span>
+                    <span class="cl-stat-val cl-stat-val--teal">v8.30.0</span>
                     <span class="cl-stat-lbl">Latest Version</span>
                 </div>
                 <div class="cl-stat-card">
-                    <span class="cl-stat-val cl-stat-val--purple">600K</span>
-                    <span class="cl-stat-lbl">PBKDF2 Rounds</span>
+                    <span class="cl-stat-val cl-stat-val--purple">Argon2id + 600K</span>
+                    <span class="cl-stat-lbl">Memory-Hard KDF</span>
                 </div>
                 <div class="cl-stat-card">
                     <span class="cl-stat-val cl-stat-val--green">5 GB</span>
@@ -708,13 +708,13 @@
         <!-- Release Timeline -->
         <main id="main-content" tabindex="-1" class="cl-timeline">
 
-            <!-- ── VERSION 8.29.0 (WEB-VERSION-80) ── -->
+            <!-- ── VERSION 8.30.0 (WEB-VERSION-81) ── -->
             <article class="cl-card cl-card--latest" data-version="v8">
                 <div class="cl-marker">✍️</div>
                 <div class="cl-content">
                     <header class="cl-card-header">
                         <div class="cl-card-title-group">
-                            <h2 class="cl-version-title">Version 8.29.0 (WEB-VERSION-80)</h2>
+                            <h2 class="cl-version-title">Version 8.30.0 (WEB-VERSION-81)</h2>
                             <span class="cl-badge cl-badge--latest">Latest Release</span>
                             <span class="cl-badge cl-badge--date">November 18, 2026</span>
                         </div>
@@ -750,9 +750,56 @@
                         <li>
                             <span class="cl-bullet cl-bullet--perf">PWA</span>
                             <div>
-                                <strong>Service Worker v80 &amp; Offline Air-Gap Hardening (<code>sw.js</code>, <code>_headers</code>, <code>sitemap.xml</code>):</strong>
+                                <strong>Service Worker v81 &amp; Offline Air-Gap Hardening (<code>sw.js</code>, <code>_headers</code>, <code>sitemap.xml</code>):</strong>
                                 Precached all 17 blog assets in <code>SHELL_ASSETS</code>, added dynamic <code>/blog/posts/</code> routing in <code>SECTION_ROUTES</code>, configured Cloudflare Pages strict CSP in <code>_headers</code>, and added 15 new canonical URLs to <code>sitemap.xml</code>.
                             </div>
+                        </li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- ── VERSION 8.29.0 (WEB-VERSION-80) ── -->
+            <article class="cl-card" data-version="v8">
+                <div class="cl-marker">🛡️</div>
+                <div class="cl-content">
+                    <header class="cl-card-header">
+                        <div class="cl-card-title-group">
+                            <h2 class="cl-version-title">Version 8.29.0 (WEB-VERSION-80)</h2>
+                            <span class="cl-badge cl-badge--date">November 18, 2026</span>
+                        </div>
+                        <div class="cl-tags">
+                            <span class="cl-tag">Argon2id KDF</span>
+                            <span class="cl-tag">RFC 9106</span>
+                            <span class="cl-tag">64MB Memory-Hard</span>
+                            <span class="cl-tag">Container Flag 0x04</span>
+                            <span class="cl-tag">WorkerPool Off-Thread</span>
+                        </div>
+                    </header>
+
+                    <p class="cl-lead">
+                        Shipped Phase 08: RFC 9106 Argon2id memory-hard key derivation engine (64MB RAM, 3 passes, 4 lanes, 256-bit AES-GCM output), rendering GPU and ASIC brute-force clusters economically infeasible while maintaining 100% backward compatibility for existing PBKDF2 vaults.
+                    </p>
+
+                    <ul class="cl-bullets">
+                        <li>
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <span><strong>Pure Client-Side Argon2id Core (<code>js/argon2id.js</code>):</strong> Fully RFC 9106-compliant implementation with 64-bit Blake2b-512 PRF, variable-length output H-prime, 2D index addressing, and internal working array recycling eliminating ~800,000 typed array allocations. Passes official RFC 9106 Section 5.3 Known-Answer Test (KAT) bit-identically with mandatory matrix zeroization on key extraction.</span>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--sec">Security</span>
+                            <span><strong>Container Header Flag Bit 2 (<code>0x04</code> = <code>V3_FLAG_ARGON2ID</code>):</strong> Embedded in byte 5 of the 57-byte <code>ZV3\0</code> header. Chunk AAD layout remains invariant (<code>Magic || Version || Salt || chunkIndex || isLast</code>), cleanly decoupling chunk AEAD decryption from key derivation. Off-thread multi-worker derivation in <code>js/crypto-worker.js</code> preserves 60 FPS UI responsiveness and plausible deniability for duress decoy vaults.</span>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--perf">Perf</span>
+                            <span><strong>Dual-Mode Unpacker Auto-Resolution (<code>js/stream-unpacker.js</code>):</strong> <code>readVaultManifest</code> inspects header bit 2 to dynamically invoke <code>deriveMasterKeyArgon2id</code> or fallback to trialing PBKDF2 iterations [600k, 1.2M, 2.4M], ensuring seamless backward compatibility for all legacy vaults.</span>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <span><strong>UI Defaults &amp; Paper-Safe Recovery Certificate:</strong> Added Argon2id as the default recommended KDF in <code>#encrypt-kdf-select</code> and embedded <code>k: 'argon2id'</code> into Paper-Safe optical QR codes and printable cold-storage certificates.</span>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--pwa">PWA</span>
+                            <span><strong>Service Worker &amp; USB Kit Inclusion:</strong> Precached <code>./js/argon2id.js</code> in <code>sw.js</code> (Service Worker <code>v80</code>) and bundled into 1-Click USB Air-Gap Backup Kit (<code>js/usb-backup-kit.js</code>).</span>
                         </li>
                     </ul>
                 </div>

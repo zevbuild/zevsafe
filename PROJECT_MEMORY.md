@@ -1,9 +1,9 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.29.0` (`WEB-VERSION-80`, Service Worker `v80`)  
+> **Web Portal Version:** `v8.30.0` (`WEB-VERSION-81`, Service Worker `v81`)  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
-> **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–7, 9, 11, 13, 14 & Knowledge Blog Suite; Upcoming Phase 8 [Argon2id WASM KDF], Phases 10 & 12 [In-Vault Redaction & Offline i18n]).
+> **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–9, 11, 13 & 14 [85.7% Delivered] & Comprehensive Knowledge Blog Suite; Upcoming Phase 10 [In-Vault Redaction], Phase 12 [Offline i18n]).
 
 > **🤖 MANDATORY AI AGENT RULE:**  
 > Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
@@ -29,14 +29,14 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 |---|---|---|---|---|
 | `0..3` | 4 B | ASCII | `MAGIC` | `ZV3\0` (`0x5A 0x56 0x33 0x00`) |
 | `4` | 1 B | Uint8 | `VERSION` | `0x03` (Container format version 3) |
-| `5` | 1 B | Uint8 | `FLAGS` | Bit 0 (`0x01`): Keyfile 2FA active; Bit 1 (`0x02`): Duress Decoy (suppressed) |
+| `5` | 1 B | Uint8 | `FLAGS` | Bit 0 (`0x01`): Keyfile 2FA active; Bit 1 (`0x02`): Duress Decoy (suppressed); Bit 2 (`0x04`): Argon2id KDF active (`V3_FLAG_ARGON2ID`) |
 | `6..9` | 4 B | Uint32 BE | `CHUNK_SIZE` | `4,194,304` bytes (4 MB default) |
-| `10..41` | 32 B | Raw Bytes | `SALT` | 32-byte CSPRNG salt for PBKDF2-HMAC-SHA512 (600,000–2,400,000 iterations) |
+| `10..41` | 32 B | Raw Bytes | `SALT` | 32-byte CSPRNG salt for Argon2id (64MB) or PBKDF2-HMAC-SHA512 (600k–2.4M rounds) |
 | `42..48` | 7 B | Raw Bytes | `BASE_IV_PREFIX` | 7-byte CSPRNG base IV prefix |
 | `49..56` | 8 B | Uint64 BE | `MANIFEST_OFFSET` | Big-endian byte offset of the encrypted tail manifest |
 
 * **Total Header Size:** Exactly 57 bytes (`V3_HEADER_SIZE = 57`).
-* **Key Derivation:** `PBKDF2-HMAC-SHA512` with `600,000` default iterations (standard), `1,200,000` (hardened), or `2,400,000` (maximum security), producing a 256-bit (32-byte) AES key.
+* **Key Derivation:** RFC 9106 Argon2id memory-hard KDF ($m=64\text{ MB}$, $t=3$, $p=4$, producing 256-bit AES key; default) or `PBKDF2-HMAC-SHA512` with `600,000` standard, `1,200,000` hardened, or `2,400,000` maximum security iterations. Automatically resolved via container header flag bit 2 (`0x04`).
 * **Optional Keyfile 2FA:** `MasterKey = DerivedKey ⊕ SHA-256(KeyfileBytes)`.
 * **Chunk IV Layout (12 B):** `BaseIVPrefix(7B) ‖ Uint32BE(chunkIndex)(4B) ‖ isLast(1B)`.
 * **Chunk AAD Layout (42 B):** `Magic(4B) ‖ Version(1B) ‖ Salt(32B) ‖ Uint32BE(chunkIndex)(4B) ‖ isLast(1B)`.
@@ -139,10 +139,10 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Standalone Air-Gapped Printable Recovery Certificate (.html):** One-click download of a self-contained HTML cold-storage certificate featuring security Guilloche dashed borders, high-contrast `@media print` rules, embedded SVG QR, and offline restoration manuals.
 - **In-App Optical QR Scanner & Image Drop Decoder (`#qr-scanner-modal`):** Integrated a camera viewfinder (`navigator.mediaDevices.getUserMedia`) with animated laser targeting utilizing native W3C `BarcodeDetector`, plus drag-and-drop image decoding.
 
-### 3.13 Master Plan & Strategic Roadmap Portal (`roadmap/index.html`) [v8.27.0]
+### 3.13 Master Plan & Strategic Roadmap Portal (`roadmap/index.html`) [v8.29.0]
 - **Interactive 14-Phase Ecosystem Blueprint (`roadmap/index.html`):** A dedicated, zero-external-network portal documenting the 14-phase engineering roadmap that evolves ZevSafe from an authenticated streaming container into a zero-footprint ephemeral virtual operating environment.
-- **Desktop & Mobile Navbar Pill UI (`#nav-roadmap-pill`, `.plan-pill-nav`):** Cybernetic pill button embedded in the main navigation bar, mobile hamburger drawer, and footer, displaying a real-time progress counter badge (`11 / 14`).
-- **Filterable Status Matrix & Live Progress HUD:** Instant client-side status filtering (`All 14`, `Shipped 11`, `Up Next 1`, `Planned 2`) and visual progress bar (`78.5% Complete`).
+- **Desktop & Mobile Navbar Pill UI (`#nav-roadmap-pill`, `.plan-pill-nav`):** Cybernetic pill button embedded in the main navigation bar, mobile hamburger drawer, and footer, displaying a real-time progress counter badge (`12 / 14`).
+- **Filterable Status Matrix & Live Progress HUD:** Instant client-side status filtering (`All 14`, `Shipped 12`, `Up Next 1`, `Planned 1`) and visual progress bar (`85.7% Complete`).
 
 ### 3.14 Optical Paper-Safe Clipboard & Screenshot Paste System (`js/qr-engine.js`, `app.js`) [v8.27.0]
 - **Unified Clipboard & Screenshot Paste System:** Users can press `Ctrl+V` (or `Cmd+V`) anywhere on the Decrypt screen or within the Optical QR Scanner modal with an image/screenshot in their clipboard (from Snipping Tool, Win+Shift+S, PrtScn) to decode and apply Paper-Safe parameters in client-side RAM.
@@ -627,7 +627,30 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Unified Test Harness Scale:** Total test suite expanded to 32 suites and 1,245+ automated assertions with 100% pass rate.
 - **Service Worker Cache v79:** Bumped `APP_VERSION = 'v79'` in `sw.js` and application shell tags to `WEB-VERSION-79` / `v8.28.0`.
 
-### 3.32 Comprehensive Knowledge & Security Journal Blog Platform (v8.29.0 / WEB-VERSION-80 / SW v80)
+### 3.32 Phase 8: Argon2id Memory-Hard Key Derivation (RFC 9106) [v8.29.0 / WEB-VERSION-80 / SW v80]
+- **Pure Zero-Dependency Client-Side Argon2id Core (`js/argon2id.js`):**
+  - Fully compliant RFC 9106 implementation with Blake2b-512 PRF, variable-length output $H'$ generator, $G$ round compression with 64-bit unsigned BigUint64 rotations, and 2D indexing addressing.
+  - Passes official RFC 9106 Section 5.3 Known-Answer Test (KAT) vector bit-identically (`0d640df58d78766c08c037a34a8b53c9d01ef0452d75b65eb52520e96b01e659`).
+  - Pre-allocated internal working buffers eliminate ~800,000 array allocations during memory-hard calculation.
+  - Implements state zeroization (`zeroize(matrix)`) immediately upon key extraction.
+- **Container Flag Bit 2 (`V3_FLAG_ARGON2ID = 0x04`):**
+  - Embedded into byte 5 of 57-byte `ZV3\0` header when Argon2id is selected.
+  - Chunk AAD remains invariant (`Magic || Version || Salt || chunkIndex || isLast`), ensuring chunk AEAD decryption is decoupled from KDF.
+- **Off-Thread Multi-Worker Key Derivation (`js/crypto-worker.js`, `js/worker-bridge.js`):**
+  - WorkerPool workers compute Argon2id off the main thread, keeping UI at 60 FPS during memory-hard calculation.
+  - Supports Duress decoy key derivation via Argon2id without public flag disclosure (plausible deniability preserved).
+- **Dual-Mode Unpacker Auto-Resolution (`js/stream-unpacker.js`):**
+  - Auto-detects `header.flags & V3_FLAG_ARGON2ID` to invoke `deriveMasterKeyArgon2id` or fallback to trialing PBKDF2 iterations `[600000, 1200000, 2400000]`.
+  - Maintains 100% backward compatibility with all legacy PBKDF2 vaults.
+- **Paper-Safe & QR Sheet Integration (`js/qr-engine.js`, `app.js`):**
+  - Recovery certificate encodes `k: 'argon2id'` into optical QR code and visual certificate ("Argon2id (64MB)" / "RFC 9106 / NIST SP 800-38D").
+- **Offline Air-Gap USB Backup Kit & PWA Cache:**
+  - Added `'js/argon2id.js'` to `AIRGAP_ASSET_PATHS` in `js/usb-backup-kit.js` and `SHELL_ASSETS` in `sw.js` (bumped to `v80`).
+- **Comprehensive Automated Test Coverage:**
+  - `test/crypto/test-argon2id.js` (8 tests: RFC 9106 KAT, memory bounds, error handling, parameter validation).
+  - `test/crypto/test-argon2id-vault.js` (4 tests: full vault packaging, unpacker auto-resolution, selective extraction, wrong password rejection).
+
+### 3.33 Comprehensive Knowledge & Security Journal Blog Platform [v8.30.0 / WEB-VERSION-81 / SW v81]
 - **100% Client-Side Knowledge & Security Blog Hub (`blog/index.html`, `blog/blog.css`, `blog/blog.js`):**
   - Instant client-side search engine with keyboard shortcut `/` and `ESC` clearing, combined with dynamic category filter pills (`All Articles`, `How-To Guides`, `Security & Tradecraft`, `Architecture & Cryptography`).
   - Active top reading progress bar, responsive cybernetic design tokens, copy-to-clipboard code headers, and scroll-spy table of contents.
@@ -651,7 +674,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
     - `14-zero-exfiltration-airgap-defense.html`: Strict CSP headers, 100% Google Font decoupling, W3C Credential Management API, and formal Grade A+ security audit attestation.
 - **PWA Service Worker Precache & Routing Hardening (`sw.js`, `_headers`, `sitemap.xml`):**
   - Added all 17 blog assets to `SHELL_ASSETS` and registered `'blog'` route + dynamic `/blog/posts/<slug>` match in `SECTION_ROUTES`.
-  - Bumped `APP_VERSION = 'v80'`, updated Cloudflare `_headers` with strict CSP for `/blog/*`, and populated 15 new URLs in `sitemap.xml`.
+  - Bumped `APP_VERSION = 'v81'`, updated Cloudflare `_headers` with strict CSP for `/blog/*`, and populated 15 new URLs in `sitemap.xml`.
 
 ---
 
@@ -665,12 +688,14 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 
 ## 5. Mandatory Verification & Automated Test Battery
 
-The ZevSafe test suite comprises **32 test suites** and **1,245+ passing automated assertions** across low-level cryptographic streaming, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, and WCAG accessibility.
+The ZevSafe test suite comprises **34 test suites** and **1,257+ passing automated assertions** across low-level cryptographic streaming, memory-hard Argon2id KDF, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, and WCAG accessibility.
 
 Whenever ANY code or documentation is touched, run the automated test suites and ensure **100% pass rate**:
 
 ```bash
 # === Cryptographic Streaming & Core Pipeline Suites ===
+node test/crypto/test-argon2id.js                  #   8 tests: RFC 9106 Argon2id KAT & Zeroization
+node test/crypto/test-argon2id-vault.js            #   4 tests: Argon2id Vault Packaging & Unpacker Auto-Resolution
 node test/e2e-runner.js                            # Wrapper: End-to-End Test Suite Runner
 node test/e2e-tests.js                             # 250 tests: End-to-End Opaque-Box Streaming
 node test/test-stream-crypto.js                    #  95 tests: STREAM AEAD Primitives & Wire Framing
@@ -711,7 +736,7 @@ node test/test-simulate-pwa-upgrade.js             #   8 tests: Headless Chrome 
 node test/test-phase7-a11y.js                     #  15 tests: WCAG 2.1 AA/AAA, Roving Tabindex & Axe-Core
 node test/browser-verification-phase2.js           #   6 tests: Headless Chrome Phase 2 Media Player CDP
 node test/browser-verification-phase3.js           #  10 tests: Headless Chrome Phase 3 Strict CSP & 13 Modals
-# Total: 32 Test Suites | 1,245 Passing Tests (100% Pass)
+# Total: 34 Test Suites | 1,257 Passing Tests (100% Pass)
 ```
 
 Ensure 100% of tests pass before committing any changes.

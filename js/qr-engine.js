@@ -745,12 +745,13 @@
         if (!data || !data.vaultName || !data.saltHex) {
             throw new Error('vaultName and saltHex are required to build Paper-Safe payload');
         }
+        const isArgon = (data.kdf === 'argon2id' || data.kdfType === 'argon2id' || data.kdfIterations === 'argon2id');
         const payload = {
             app: 'ZevSafe',
             v: 3,
             n: String(data.vaultName).trim(),
             s: String(data.saltHex).trim().replace(/^0x/i, '').toLowerCase().replace(/[^0-9a-f]/g, ''),
-            k: Number(data.kdfIterations) || 600000,
+            k: isArgon ? 'argon2id' : (Number(data.kdfIterations) || 600000),
             h: data.hint ? String(data.hint).trim().slice(0, 100) : '',
             kf: data.keyfileRequired ? 1 : 0,
             d: data.createdDate || new Date().toISOString().split('T')[0]
@@ -818,7 +819,8 @@
                 version: parsed.v || 3,
                 vaultName: parsed.n || 'Unnamed-Vault.zev',
                 saltHex: cleanSalt,
-                kdfIterations: Number(parsed.k) || 600000,
+                kdf: parsed.k === 'argon2id' ? 'argon2id' : 'pbkdf2',
+                kdfIterations: parsed.k === 'argon2id' ? 'argon2id' : (Number(parsed.k) || 600000),
                 hint: parsed.h || '',
                 keyfileRequired: Boolean(parsed.kf),
                 createdDate: parsed.d || '',
@@ -847,7 +849,10 @@
         const qrSVG = createSVG(payload, { size: 180, margin: 2, color: '#0f172a', bgColor: '#ffffff' });
         const saltFormatted = escapeHtml(formatSaltFingerprint(data.saltHex));
         const saltHexFull = escapeHtml((data.saltHex || '').toUpperCase());
-        const kdfRounds = Number(data.kdfIterations || 600000).toLocaleString('en-US');
+        const isArgon = (data.kdf === 'argon2id' || data.kdfType === 'argon2id' || data.kdfIterations === 'argon2id');
+        const kdfRounds = isArgon
+            ? 'Argon2id (RFC 9106 · 64MB RAM / 3 Passes / 4 Lanes)'
+            : `${Number(data.kdfIterations || 600000).toLocaleString('en-US')} Rounds (PBKDF2-SHA512)`;
         const vaultName = escapeHtml(data.vaultName || 'ZevSafe-Vault.zev');
         const hintText = escapeHtml(data.hint ? data.hint : 'None provided');
         const keyfileText = data.keyfileRequired ? 'REQUIRED (2FA Keyfile)' : 'Not Required (Password Only)';

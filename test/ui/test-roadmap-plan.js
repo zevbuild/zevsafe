@@ -44,16 +44,16 @@ for (let i = 1; i <= 14; i++) {
 
 console.log('  ✔ 3. All 14 Strategic Phases (Phase 01 to Phase 14) present in roadmap');
 
-// 4. Status distribution: 11 delivered, 1 next, 2 planned
+// 4. Status distribution: 12 delivered, 1 next, 1 planned
 const deliveredMatches = roadmapHtml.match(/data-status="delivered"/g) || [];
 const nextMatches = roadmapHtml.match(/data-status="next"/g) || [];
 const plannedMatches = roadmapHtml.match(/data-status="planned"/g) || [];
 
-assert.strictEqual(deliveredMatches.length, 11, '11 phases are marked delivered / shipped');
-assert.strictEqual(nextMatches.length, 1, '1 phase is marked next (Phase 08 Argon2id)');
-assert.strictEqual(plannedMatches.length, 2, '2 phases are marked planned (Phase 10 & Phase 12)');
+assert.strictEqual(deliveredMatches.length, 12, '12 phases are marked delivered / shipped');
+assert.strictEqual(nextMatches.length, 1, '1 phase is marked next (Phase 10 Document Redaction)');
+assert.strictEqual(plannedMatches.length, 1, '1 phase is marked planned (Phase 12 i18n)');
 
-console.log('  ✔ 4. Status distribution verified (11 delivered, 1 next, 2 planned = 14 total)');
+console.log('  ✔ 4. Status distribution verified (12 delivered, 1 next, 1 planned = 14 total)');
 
 // 5. Filter pills & UI controls
 assert.strictEqual(roadmapHtml.includes("filterRoadmap('all'"), true, 'Filter pill for "all" exists');
@@ -83,7 +83,7 @@ console.log('  ✔ 6. Deep-Dive Technical Spec Inspector Drawer verified');
 const indexHtml = fs.readFileSync(indexPath, 'utf8');
 assert.strictEqual(indexHtml.includes('id="nav-roadmap-pill"'), true, 'index.html desktop navbar has #nav-roadmap-pill');
 assert.strictEqual(indexHtml.includes('href="./roadmap/"'), true, 'index.html links to ./roadmap/');
-assert.strictEqual(indexHtml.includes('11 / 14'), true, 'index.html displays 11 / 14 progress counter');
+assert.strictEqual(indexHtml.includes('12 / 14'), true, 'index.html displays 12 / 14 progress counter');
 assert.strictEqual(indexHtml.includes('Master Plan &amp; Roadmap'), true, 'index.html includes Master Plan & Roadmap in mobile drawer and footer');
 
 console.log('  ✔ 7. Primary App Navbar, Mobile Drawer & Footer integration verified');
