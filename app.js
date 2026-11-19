@@ -1424,10 +1424,15 @@ async function readDirectoryHandleAsync(dirHandle, pathPrefix = '') {
 
 /**
  * Universal local folder picker:
- * 1. Uses modern window.showDirectoryPicker() if available (Chrome, Edge, Opera on desktop).
- * 2. Seamlessly falls back to HTML5 <input webkitdirectory directory multiple> (Firefox, Safari, non-secure context, mobile).
+ * 1. On mobile devices, directory picking is unsupported by the mobile OS; gracefully route to file picker.
+ * 2. On desktop, uses modern window.showDirectoryPicker() if available (Chrome, Edge, Opera on secure context).
+ * 3. Seamlessly falls back to HTML5 <input webkitdirectory directory multiple> (Firefox, Safari, non-secure context).
  */
 async function openFolderPicker() {
+    if (isMobile()) {
+        return openFilesPicker();
+    }
+
     // 1. Try modern File System Access API
     if (typeof window.showDirectoryPicker === 'function' && window.isSecureContext) {
         try {
@@ -1450,10 +1455,47 @@ async function openFolderPicker() {
     }
 
     // 2. Standard HTML5 webkitdirectory input fallback
-    const folderInput = encryptFolderInputDz || encryptFolderInput;
+    const folderInput = encryptFolderInputDz || encryptFolderInput || document.getElementById('encrypt-folder-input-dz');
     if (folderInput) {
         folderInput.value = '';
         folderInput.click();
+    }
+}
+
+/**
+ * Universal local files picker:
+ * 1. Uses modern window.showOpenFilePicker({ multiple: true }) if available on desktop.
+ * 2. Standard HTML5 <input type="file" multiple> fallback for mobile & all browsers.
+ */
+async function openFilesPicker() {
+    // 1. Try modern File System Access API for multiple files on desktop
+    if (typeof window.showOpenFilePicker === 'function' && window.isSecureContext && !isMobile()) {
+        try {
+            const fileHandles = await window.showOpenFilePicker({ multiple: true });
+            if (fileHandles && fileHandles.length > 0) {
+                const files = [];
+                for (const h of fileHandles) {
+                    const f = await h.getFile();
+                    f.relativeDir = f.name;
+                    files.push(f);
+                }
+                const folderName = files.length === 1
+                    ? (files[0].name.replace(/\.[^/.]+$/, '') || files[0].name)
+                    : 'secured_files';
+                onEncryptSelected(files, folderName);
+                return;
+            }
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+            console.warn('[OpenFilePicker fallback to input]', err);
+        }
+    }
+
+    // 2. Standard HTML5 multiple file input fallback
+    const filesInput = encryptFilesInputDz || document.getElementById('encrypt-files-input-dz');
+    if (filesInput) {
+        filesInput.value = '';
+        filesInput.click();
     }
 }
 
@@ -1562,9 +1604,13 @@ function setupDragAndDrop(dropZone, primaryInput, onFilesSelected) {
     dropZone.addEventListener('click', (e) => {
         if (e.target.closest('.btn-browse') || e.target.closest('.btn-browse--teal') || e.target.closest('.sf-clear-btn')) return;
         if (dropZone === encryptDropZone) {
-            openFolderPicker();
+            if (isMobile()) {
+                openFilesPicker();
+            } else {
+                openFolderPicker();
+            }
         } else {
-            const activeInput = decryptFileInputDz || decryptFileInput;
+            const activeInput = decryptFileInputDz || decryptFileInput || document.getElementById('decrypt-file-input-dz');
             if (activeInput) {
                 activeInput.value = '';
                 activeInput.click();
@@ -1577,9 +1623,13 @@ function setupDragAndDrop(dropZone, primaryInput, onFilesSelected) {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             if (dropZone === encryptDropZone) {
-                openFolderPicker();
+                if (isMobile()) {
+                    openFilesPicker();
+                } else {
+                    openFolderPicker();
+                }
             } else {
-                const activeInput = decryptFileInputDz || decryptFileInput;
+                const activeInput = decryptFileInputDz || decryptFileInput || document.getElementById('decrypt-file-input-dz');
                 if (activeInput) {
                     activeInput.value = '';
                     activeInput.click();
@@ -1606,11 +1656,7 @@ btnBrowseFolder?.addEventListener('click', (e) => {
 
 btnBrowseFiles?.addEventListener('click', (e) => {
     e.stopPropagation();
-    const input = encryptFilesInputDz || encryptFolderInput;
-    if (input) {
-        input.value = '';
-        input.click();
-    }
+    openFilesPicker();
 });
 
 btnBrowseDecrypt?.addEventListener('click', (e) => {
@@ -1916,40 +1962,66 @@ function escapeHtml(value) {
 
 function buildPasswordRecoveryText(record) {
     const generatedAt = new Date().toLocaleString();
-    const keyfileLine = record.keyfileRequired
-        ? `Required keyfile: ${record.keyfileName || 'Selected keyfile'}\nKeyfile SHA-256 fingerprint: ${record.keyfileFingerprint || 'Unavailable'}\n`
-        : 'Required keyfile: None\n';
+    const NL = '\r\n'; // Windows-compatible line endings (works in Notepad + all editors)
+
+    // ── Vault format line (never show 'undefined') ─────────────────────────
+    const versionLine  = record.version       || 'v3 streaming';
+    const folderLine   = record.folderName    || 'ZevSafe vault';
+    const vaultLine    = record.vaultFilename || `${folderLine}.zev`;
+    const passwordLine = record.password      || '(not recorded)';
+
+    // ── KDF / cryptographic details ────────────────────────────────────────
+    let kdfLine = '';
+    if (record.kdf === 'argon2id') {
+        kdfLine = NL + 'KDF: Argon2id (RFC 9106 · 64 MB RAM · GPU/ASIC-immune)';
+    } else if (record.kdfIterations) {
+        kdfLine = NL + `KDF: PBKDF2-SHA512 · ${record.kdfIterations.toLocaleString()} rounds`;
+    }
+    const saltLine = record.saltHex
+        ? NL + `Salt (hex): ${record.saltHex}`
+        : '';
+
+    // ── Keyfile section ────────────────────────────────────────────────────
+    const keyfileSection = record.keyfileRequired
+        ? [
+            'Status: REQUIRED — vault cannot be opened without it',
+            `File name: ${record.keyfileName || 'Selected keyfile'}`,
+            `SHA-256 fingerprint: ${record.keyfileFingerprint || 'Unavailable'}`
+          ].join(NL)
+        : 'Status: None (password-only vault)';
 
     return [
-        'ZevSafe Password Recovery Sheet',
-        '================================',
+        '================================================',
+        '   ZevSafe Password Recovery Sheet',
+        '================================================',
         '',
-        'WARNING',
+        '⚠ WARNING',
         PASSWORD_RECOVERY_WARNING,
-        'There is no password recovery, reset, or backdoor.',
+        'There is NO password recovery, reset, or backdoor.',
         '',
-        'Vault Details',
-        '-------------',
-        `Encrypted folder/project: ${record.folderName}`,
-        `Vault file: ${record.vaultFilename}`,
-        `Vault format: ${record.version}`,
-        `Created: ${generatedAt}`,
+        '── Vault Details ───────────────────────────────',
+        `Folder / Project : ${folderLine}`,
+        `Vault file       : ${vaultLine}`,
+        `Format           : ${versionLine}`,
+        `Created          : ${generatedAt}`,
+        kdfLine ? `Encryption       :${kdfLine}` : '',
+        saltLine ? `${saltLine}` : '',
         '',
-        'Password / Encryption Key',
-        '-------------------------',
-        record.password,
+        '── Password / Encryption Key ───────────────────',
+        passwordLine,
         '',
-        'Second Factor',
-        '-------------',
-        keyfileLine.trimEnd(),
+        '── Second Factor (Keyfile 2FA) ─────────────────',
+        keyfileSection,
         '',
-        'Storage Instructions',
-        '--------------------',
-        'Print this sheet or store it offline in a secure place.',
-        'Keep it separate from the encrypted vault file.',
-        'Anyone with this password and required keyfile can decrypt the vault.',
+        '── Storage Instructions ────────────────────────',
+        '• Print this sheet and store it in a secure physical location.',
+        '• Keep it SEPARATE from the encrypted vault file.',
+        '• Anyone with this password (+ keyfile if required) can decrypt.',
+        '• ZevSafe has no server, no cloud, no recovery backdoor.',
+        '',
+        '================================================',
         ''
-    ].join('\n');
+    ].join(NL);
 }
 
 function downloadPasswordRecoverySheet(record = lastPasswordRecoveryRecord) {
@@ -4002,7 +4074,7 @@ function updateKeyfileBadge(side, file) {
  * if DOM is already loaded.
  */
 function initV2UI() {
-    // ── V2 mode toggle ───────────────────────────────────────────────────
+    // ── V2 mode toggle (hidden, always ON) ───────────────────────────────
     const v2Toggle   = document.getElementById('v2-mode-toggle');
     const v2Panel    = document.getElementById('v2-options-panel');
 
@@ -4020,6 +4092,26 @@ function initV2UI() {
         });
     }
 
+    // ── Keyfile section toggle pill (collapsed by default) ────────────────
+    const keyfileToggleBtn  = document.getElementById('btn-keyfile-toggle');
+    const keyfileBody       = document.getElementById('v2-keyfile-body');
+    if (keyfileToggleBtn && keyfileBody) {
+        keyfileToggleBtn.addEventListener('click', () => {
+            const isOpen = keyfileToggleBtn.getAttribute('aria-expanded') === 'true';
+            const nowOpen = !isOpen;
+            keyfileToggleBtn.setAttribute('aria-expanded', String(nowOpen));
+            keyfileBody.style.display = nowOpen ? 'block' : 'none';
+            // Clear keyfile state when user collapses the section
+            if (!nowOpen) {
+                v2KeyfileEncrypt = null;
+                const encKeyfileInput = document.getElementById('v2-keyfile-input-encrypt');
+                if (encKeyfileInput) encKeyfileInput.value = '';
+                updateKeyfileBadge('encrypt', null);
+                log('Keyfile section closed — keyfile cleared.', 'info');
+            }
+        });
+    }
+
     // ── Encrypt keyfile picker ────────────────────────────────────────────
     const encKeyfileInput = document.getElementById('v2-keyfile-input-encrypt');
     if (encKeyfileInput) {
@@ -4029,6 +4121,11 @@ function initV2UI() {
             if (v2KeyfileEncrypt) log(`🗝️ Keyfile selected: "${v2KeyfileEncrypt.name}" (${formatBytes(v2KeyfileEncrypt.size)})`, 'info');
         });
     }
+
+    // ── Generate Keyfile (in-browser, no device file needed) ──────────────
+    document.getElementById('btn-generate-keyfile-encrypt')?.addEventListener('click', () => {
+        generateKeyfileEncrypt();
+    });
 
     // ── Decrypt keyfile picker ────────────────────────────────────────────
     const decKeyfileInput = document.getElementById('v2-keyfile-input-decrypt');
@@ -4053,6 +4150,35 @@ function initV2UI() {
         updateKeyfileBadge('decrypt', null);
         log('Keyfile cleared.', 'info');
     });
+}
+
+// ── Generate Keyfile: creates a 512-bit secure random key in-browser ──────────
+// Plugs directly into the existing v2KeyfileEncrypt system (same as selecting a file from disk).
+function generateKeyfileEncrypt() {
+    // 1. Generate 64 cryptographically random bytes (512-bit)
+    const bytes = window.crypto.getRandomValues(new Uint8Array(64));
+
+    // 2. Build filename with timestamp so each generated key is unique
+    const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const name = `zevsafe-keyfile-${ts}.key`;
+
+    // 3. Wrap raw bytes into a File object — the encryption engine reads .arrayBuffer()
+    //    so this is 100% compatible with the existing keyfile pipeline
+    const file = new File([bytes], name, { type: 'application/octet-stream' });
+
+    // 4. Set as the active encrypt keyfile (same as picking a file from disk)
+    v2KeyfileEncrypt = file;
+    updateKeyfileBadge('encrypt', file);
+
+    // 5. Auto-download the key so the user can save it for decryption later
+    const url = URL.createObjectURL(file);
+    const a   = document.createElement('a');
+    a.href     = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    log(`⚡ Generated keyfile: "${name}" (512-bit / 64 bytes) — downloaded automatically. Keep it safe — required for decryption.`, 'info');
 }
 
 // Run v2 UI init
@@ -7754,11 +7880,9 @@ function initMaxSecurityCollapsible() {
         if (isExpanded) {
             container.classList.remove('d-none');
             container.style.display = 'flex';
-            if (chevron) chevron.textContent = '▴';
         } else {
             container.classList.add('d-none');
             container.style.display = 'none';
-            if (chevron) chevron.textContent = '▾';
         }
     }
 

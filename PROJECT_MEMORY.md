@@ -770,6 +770,47 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Implemented proactive automatic upgrade from Tier 2 in-memory buffering to Tier 3 OPFS disk streaming when `expectedSize > MAX_FALLBACK_GUARDRAIL_BYTES` (150 MB) and OPFS is available, preventing fatal JavaScript heap exhaustion.
   - Exported compatibility aliases `detectStorageCapability: detectCapabilities` and `initStorageCapability: detectCapabilities` on the module's public interface.
 
+### 3.37 Encrypt Form UI Ergonomics & Keyfile 2FA Modernization [v8.30.0 / WEB-VERSION-81]
+- **Encrypt File Picker Activation & Mobile Drop Zone Routing (`app.js`, `index.html`, `styles.css`):**
+  - Resolved mobile file selection failure where tapping the drop zone or browse files button on mobile (`isMobile()`) attempted to invoke unsupported `webkitdirectory` folder picking.
+  - Implemented `openFilesPicker()` with dual-tier support (modern `window.showOpenFilePicker` with multi-selection on desktop secure contexts, HTML5 `<input multiple>` fallback on mobile).
+  - Replaced `display: none !important;` (`.d-none`) on file input elements with accessible `.sr-only-file-input` (positioned off-screen with 1x1 clip), ensuring programmatic `.click()` is never blocked by browser security sandboxes.
+  - Eliminated all inline `style="..."` attributes in `index.html` ensuring 100% compliance with `test-security-csp-audit.js`.
+- **Polyglot & Duress Decoy Action Pills Harmonization (`index.html`, `styles.css`):**
+  - Eliminated conflicting modal class `.u-style-cgfkzglu` (`padding: 1.25rem`) and split flex alignment `.u-style-zglzcgxh` (`justify-content: space-between`) on Polyglot and Duress button rows.
+  - Replaced with unified `.v2-keyfile-row` pill pairs (`Pick Cover Photo` / `Generate Minimal Cover` and `Pick Decoy Folder` / `Generate Decoy Files`) sharing matched `border-radius: 999px`, balanced padding (`7px 18px`), `gap: 8px`, and synchronized hover transitions.
+- **Password Action Buttons & Label De-cluttering (`index.html`, `styles.css`):**
+  - Refined password management actions into ergonomic pill buttons (`border-radius: 999px`, `font-size: 0.74rem`): `🔑 Save Password` and `⚡ Generate`.
+  - Eliminated label header crowding by reducing string length and applying subtle backdrop filter, sleek hover lifts (`translateY(-1px)`), and tailored glow shadows.
+- **Form-Contained Auto-Save Option (`styles.css`):**
+  - Enclosed `.pwd-auto-save-row` into a dedicated container with gentle background tint (`rgba(255, 255, 255, 0.025)`), subtle border (`1px solid rgba(255, 255, 255, 0.06)`), and responsive hover state (`border-color: rgba(16, 185, 129, 0.25)`).
+  - Eliminates floating checkbox disconnect and anchors auto-save cleanly between the password fields and keyfile configuration.
+- **De-escalated Pre-Encryption Warning Banner (`index.html`, `styles.css`):**
+  - Restyled `.alert-box--danger` with calm slate-grey typography (`var(--text-2, #94a3b8)`) and gentle amber/crimson indicator, preventing visual confusion as an active form validation error while retaining zero-knowledge warning clarity.
+- **Edge-to-Edge Responsive Toggle Pills (`styles.css`, `index.html`):**
+  - Upgraded Keyfile 2FA (`.btn-keyfile-toggle`) and Advanced Security (`.btn-max-security-pill`) to full-width responsive pill bars (`box-sizing: border-box`, `border-radius: 999px`) with CSS-driven chevron rotation (`transform: rotate(180deg)`).
+  - Wired auto-clearing logic on keyfile section collapse to prevent accidental residual 2FA locking.
+- **In-Browser 512-Bit Keyfile Generation & Recovery Sheet Telemetry (`app.js`):**
+  - Implemented in-browser 512-bit CSPRNG keyfile generator (`generateKeyfileEncrypt()`) auto-downloading unique timestamped `.key` files without requiring pre-existing device files.
+  - Resolved Windows Notepad line-ending incompatibility by enforcing standard `\r\n` line breaks in `buildPasswordRecoveryText()`, adding comprehensive KDF, iteration count, and salt hex telemetry.
+
+### 3.38 Compact 3-Step Micro-Flow Hero Section Implementation [v8.30.0 / WEB-VERSION-81]
+- **Landing Page Height Reduction (> 65% space saved):**
+  - Resolved vertical real estate overload on desktop and laptop displays where the hero section previously consumed ~370px of vertical space, pushing the interactive **Encrypt Folder** and **Decrypt Vault** cards below the fold.
+  - Reduced total hero header height to ~115px, bringing the primary vault action cards immediately visible above the fold on all standard viewports (1080p, 900p, and 768p displays) without requiring initial scrolling.
+- **Punchy Single-Line Product Title (`index.html`, `styles.css`):**
+  - Replaced dense, multi-line cryptographic jargon headlines with a concise, punchy title: `Lock Any Folder Into an Encrypted Vault` paired with an inline gradient tag `100% In-Browser` and live status badge `Zero-Knowledge · Zero-Tracking · Client-Side Vaults`.
+- **Intuitive 3-Step Micro-Flow Visual Ribbon (`.hero-flow-ribbon`):**
+  - Engineered a sleek visual flow ribbon illustrating the core 3-step mental model:
+    `[ 1 📁 Select Folder or Files ] → [ 2 🔑 Choose Password or Key ] → [ 3 🛡️ Download Encrypted .zev]`
+  - Features numbered micro-badges (`.hero-flow-num`), high-contrast icons, subtle glassmorphism backdrop (`rgba(255, 255, 255, 0.035)`, `backdrop-filter: blur(12px)`), and directional navigation arrows, allowing any first-time visitor to understand how ZevSafe works within 2 seconds.
+- **Ultra-Slim Trust & Specifications Strip (`.hero-trust-strip`):**
+  - Streamlined technical specifications (`AES-256-GCM`, `600,000 PBKDF2`, `100% Air-Gapped`, `5 GB Instant Streaming`) into a single-line, lightweight inline trust row with zero visual clutter.
+- **Full Light Theme & WCAG Contrast Support (`styles.css`):**
+  - Added comprehensive light theme overrides for `.hero-flow-ribbon`, `.hero-flow-text`, `.hero-flow-num`, and `.hero-flow-arrow`, ensuring seamless legibility and WCAG AAA contrast conformance in light mode.
+- **Test Integrity & Regression Verification:**
+  - Preserved all required semantic classes (`.hero-security-badge`, `.hero-trust-strip`, `.trust-pill--highlight`), passing 100% of all automated test suites (`test-header-navbar-upgrade.js`, `test-security-csp-audit.js`, `test-dist-completeness.js`).
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]

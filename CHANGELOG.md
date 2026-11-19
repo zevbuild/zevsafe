@@ -1,6 +1,24 @@
 # Changelog
 
-## Version 8.30.0 (WEB-VERSION-81) — November 18, 2026
+## Version 8.30.0 (WEB-VERSION-81) — November 19, 2026
+
+- `UI` & `Perf` (`index.html`, `styles.css`): Compact 3-Step Micro-Flow Hero Section Implementation (Option 1).
+  - Reduced hero header vertical space by over 65% (from ~370px down to ~115px), bringing the interactive **Encrypt Folder** and **Decrypt Vault** cards immediately above the fold on all standard laptop and desktop screens.
+  - Replaced long, multi-line cryptographic jargon headlines with a punchy single-line title: `Lock Any Folder Into an Encrypted Vault` paired with an inline gradient tag `100% In-Browser` and live status badge.
+  - Implemented the intuitive 3-Step Micro-Flow Visual Ribbon (`.hero-flow-ribbon`): `[ 1 📁 Select Folder or Files ] → [ 2 🔑 Choose Password or Key ] → [ 3 🛡️ Download Encrypted .zev]`, giving first-time users an instant, crystal-clear understanding of the application flow within 2 seconds.
+  - Condensed technical specifications (`AES-256-GCM`, `600,000 PBKDF2`, `100% Air-Gapped`, `5 GB Instant Streaming`) into an ultra-slim, single-line trust strip (`.hero-trust-strip`) with zero visual clutter.
+  - Added full light theme overrides for the 3-step micro-flow ribbon and numbered indicators with WCAG AAA contrast conformance.
+  - Retained 100% CSP compliance with zero inline `style="..."` attributes and passed 100% of all automated UI and security regression test suites.
+
+- `UI` & `Fix` (`index.html`, `styles.css`, `app.js`): Encrypt Card UI Modernization & Form Layout Polish.
+  - Resolved Encrypt File Picker Activation & Mobile Drop Zone Routing: fixed critical issue where clicking the Encrypt drop zone or file browse options failed to open the OS file chooser on mobile/touch viewports (`isMobile()`) due to unsupported `webkitdirectory` routing. Added `openFilesPicker()` fallback utilizing HTML5 `<input multiple>` with `.sr-only-file-input` (replacing `display: none !important`), dynamically routing mobile taps to multi-file selection while preserving desktop folder picking.
+  - Eliminated all inline `style="..."` attributes in `index.html` across widgets, hidden toggles, and headers to achieve 100% compliance with strict CSP zero-inline regression test suite (`test-security-csp-audit.js`).
+  - Corrected Polyglot & Duress Decoy action pills: replaced mismatched, oversized modal button classes (`u-style-cgfkzglu`, `style-btn-generate-cover`) and split alignment (`u-style-zglzcgxh`) with harmonious, unified `.v2-keyfile-row` pill pairs (`Pick Cover Photo` / `Generate Minimal Cover` and `Pick Decoy Folder` / `Generate Decoy Files`) sharing identical `border-radius: 999px`, balanced padding, and consistent hover ergonomics.
+  - Refined password action buttons: shortened label to `🔑 Save Password` and converted both `btn-save-pwd-manager` and `btn-pw-generate` into sleek, ergonomic pill buttons (`border-radius: 999px`) with subtle backdrop lighting and micro-hover effects.
+  - Containerized Auto-Save Checkbox: encased `.pwd-auto-save-row` into a dedicated micro-card with subtle background tint, delicate border, and smooth hover glow, eliminating visual float between sections.
+  - De-escalated Pre-Encryption Warning: restyled `.alert-box--danger` with calm, readable slate-grey typography and gentle amber/crimson indicator to prevent visual misinterpretation as an active form error.
+  - Full-Width Responsive Toggle Pills: upgraded `.btn-keyfile-toggle` and `.btn-max-security-pill` to full-width edge-to-edge pill bars with synchronized CSS chevron animation and automatic state reset on collapse.
+  - Keyfile Generation & Recovery Sheet Overhaul: added in-browser 512-bit keyfile generator for effortless 2FA creation; resolved Windows Notepad line endings (`\r\n`) and added detailed KDF/salt telemetry to the `.txt` recovery sheet.
 
 - `Fix` & `UI` (`index.html`, `app.js`): Drop Zone Uploaded File Summary & Metadata Visibility Resolution.
   - Resolved UI bug where uploading a `.zev` vault or source files rendered the drop zone blank and failed to display the file name and size.

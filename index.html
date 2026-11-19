@@ -390,38 +390,63 @@
             </div>
         </div>
 
-        <!-- ── HERO ── -->
-        <header class="hero">
+        <!-- ── HERO (Option 1: 3-Step Micro-Flow) ── -->
+        <header class="hero hero--compact" aria-label="ZevSafe Overview">
             <div class="hero-content">
-                <div class="hero-security-badge">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="#a78bfa"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 18c-4.23-1.07-7-5.06-7-9.5V8.3l7-3.89 7 3.89v4.2c0 4.44-2.77 8.43-7 9.5z"/></svg>
-                    <span>Zero-Knowledge · Zero-Tracking · Client-Side Vaults</span>
+                <div class="hero-header-bar">
+                    <h1 class="hero-title-refined">
+                        Lock Any Folder Into an Encrypted Vault
+                        <span class="hero-gradient-text">100% In-Browser</span>
+                    </h1>
+                    <div class="hero-security-badge" title="All encryption executes client-side with zero telemetry">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="#a78bfa"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 18c-4.23-1.07-7-5.06-7-9.5V8.3l7-3.89 7 3.89v4.2c0 4.44-2.77 8.43-7 9.5z"/></svg>
+                        <span>Zero-Knowledge · Zero-Tracking · Client-Side Vaults</span>
+                    </div>
                 </div>
-                <h1 class="hero-title-refined">
-                    Encrypt Anything. Expose Nothing.
-                    <span class="hero-gradient-text">Private Folder Vaults Running 100% In-Browser.</span>
-                </h1>
-                <p class="hero-sub-refined">
-                    Military-grade AES-256-GCM encryption with PBKDF2-SHA512. Your files, keys, and passwords never leave your device.
+                <p class="hero-sub-refined sr-only">
+                    Your files, keys, and passwords never leave your device.
                 </p>
+
+                <!-- 3-Step Micro-Flow Visual Ribbon -->
+                <div class="hero-flow-ribbon" role="region" aria-label="How ZevSafe Works in 3 Steps">
+                    <div class="hero-flow-step">
+                        <span class="hero-flow-num">1</span>
+                        <span class="hero-flow-icon">📁</span>
+                        <span class="hero-flow-text">Select Folder or Files</span>
+                    </div>
+                    <span class="hero-flow-arrow" aria-hidden="true">→</span>
+                    <div class="hero-flow-step">
+                        <span class="hero-flow-num">2</span>
+                        <span class="hero-flow-icon">🔑</span>
+                        <span class="hero-flow-text">Choose Password or Key</span>
+                    </div>
+                    <span class="hero-flow-arrow" aria-hidden="true">→</span>
+                    <div class="hero-flow-step">
+                        <span class="hero-flow-num">3</span>
+                        <span class="hero-flow-icon">🛡️</span>
+                        <span class="hero-flow-text">Download Encrypted .zev</span>
+                    </div>
+                </div>
+
+                <!-- Compact Security & Performance Highlights -->
                 <div class="hero-trust-strip" role="region" aria-label="Security and Performance Highlights">
                     <div class="trust-pill" title="Authenticated 256-bit Galois/Counter Mode Cipher">
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#2dd4bf" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#2dd4bf" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         <span>AES-256-GCM</span>
                     </div>
                     <div class="trust-pill-sep"></div>
                     <div class="trust-pill" title="Cryptographic Key Stretching Protection">
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#2dd4bf" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#2dd4bf" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <span>600,000 PBKDF2</span>
                     </div>
                     <div class="trust-pill-sep"></div>
                     <div class="trust-pill" title="Completely Isolated from Remote Network Connections">
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#2dd4bf" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#2dd4bf" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
                         <span>100% Air-Gapped</span>
                     </div>
                     <div class="trust-pill-sep"></div>
                     <div class="trust-pill trust-pill--highlight" title="Instant On-Demand Decryption with Zero Full-File Buffering">
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#a78bfa" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#a78bfa" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         <span>5 GB Instant Streaming</span>
                     </div>
                 </div>
@@ -469,12 +494,12 @@
                                 <button type="button" class="btn-browse btn-browse--ghost" id="btn-browse-files">📄 Browse Files</button>
                             </div>
                             <!-- Hidden File Inputs -->
-                            <input class="d-none" type="file" id="encrypt-folder-input-dz" webkitdirectory directory multiple autocomplete="off" aria-label="Select folder to encrypt">
-                            <input class="d-none" type="file" id="encrypt-files-input-dz" multiple autocomplete="off" aria-label="Select individual files to encrypt">
-                            <input class="d-none" type="file" id="encrypt-folder-input" webkitdirectory directory multiple autocomplete="off" aria-label="Choose folder to encrypt">
+                            <input class="sr-only-file-input" type="file" id="encrypt-folder-input-dz" webkitdirectory directory multiple autocomplete="off" aria-label="Select folder to encrypt">
+                            <input class="sr-only-file-input" type="file" id="encrypt-files-input-dz" multiple autocomplete="off" aria-label="Select individual files to encrypt">
+                            <input class="sr-only-file-input" type="file" id="encrypt-folder-input" webkitdirectory directory multiple autocomplete="off" aria-label="Choose folder to encrypt">
                         </div>
                         <!-- Uploaded files summary widget -->
-                        <div class="selected-files-widget" id="encrypt-selected-widget" style="display: none;">
+                        <div class="selected-files-widget is-hidden" id="encrypt-selected-widget">
                             <span class="sf-icon">📁</span>
                             <div class="sf-info">
                                 <span class="sf-name" id="encrypt-selected-name">folder_name</span>
@@ -489,7 +514,7 @@
                         <div class="field-label-row">
                             <label class="field-label" for="encrypt-password">Password or PIN</label>
                             <div class="field-label-actions">
-                                <button class="btn-pw-mgr" id="btn-save-pwd-manager" type="button" title="Save password labeled with vault/folder name to your browser or password manager (Chrome, Bitwarden, 1Password, Apple Keychain)">🔑 Save to Password Manager</button>
+                                <button class="btn-pw-mgr" id="btn-save-pwd-manager" type="button" title="Save password labeled with vault/folder name to your browser or password manager (Chrome, Bitwarden, 1Password, Apple Keychain)">🔑 Save Password</button>
                                 <button class="btn-pw-generate" id="btn-generate-pw" type="button" title="Generate strong random password or passphrase">⚡ Generate</button>
                             </div>
                         </div>
@@ -533,12 +558,12 @@
                         </label>
                     </div>
 
-                    <!-- ── V3 STREAMING ENCRYPTION TOGGLE (DEFAULT) ── -->
-                    <div class="v2-toggle-row">
+                    <!-- ── V3 STREAMING ENCRYPTION TOGGLE (DEFAULT) — hidden, always ON ── -->
+                    <div class="v2-toggle-row is-hidden" aria-hidden="true">
                         <label class="v2-toggle-label" for="v2-mode-toggle">
-                            <span class="v2-badge">v3 Streaming (5 GB)</span>
+                            <span class="v2-badge"></span>
                             <span class="v2-toggle-text">Military-Grade 5 GB Streaming Mode</span>
-                            <span class="v2-toggle-hint">PBKDF2-SHA512 (600k rounds) · 4 MB STREAM AEAD · Low RAM &lt; 150 MB</span>
+                            <span class="v2-toggle-hint"> </span>
                         </label>
                         <label class="toggle-switch" aria-label="Toggle v2 standard military-grade mode">
                             <input type="checkbox" id="v2-mode-toggle" role="switch" aria-checked="true" checked>
@@ -547,27 +572,33 @@
                     </div>
 
                     <!-- ── V2 OPTIONS (Keyfile second factor) ── -->
-                    <div id="v2-options-panel" class="v2-panel d-block" >
-                        <div class="v2-panel-header">Keyfile (Optional Second Factor)</div>
-                        <p class="v2-panel-desc">Any file acts as a physical key. Without it, the vault cannot be unlocked.</p>
-                        <div class="v2-keyfile-row">
-                            <label id="v2-keyfile-label-encrypt" class="btn-keyfile">
-                                Select Keyfile
-                                <input class="d-none" type="file" id="v2-keyfile-input-encrypt" aria-label="Select hardware or offline keyfile for encryption">
-                            </label>
-                            <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-encrypt" title="Remove keyfile"  aria-label="Remove encryption keyfile">✕</button>
+                    <div id="v2-options-panel" class="v2-panel" >
+                        <!-- Toggle trigger pill -->
+                        <button type="button" id="btn-keyfile-toggle" class="btn-keyfile-toggle" aria-expanded="false" aria-controls="v2-keyfile-body">
+                            <span class="btn-keyfile-toggle-icon">🔑</span>
+                            <span class="btn-keyfile-toggle-label">Use Keyfile (Optional 2nd Factor)</span>
+                            <span class="btn-keyfile-toggle-chevron" id="keyfile-toggle-chevron">▾</span>
+                        </button>
+                        <!-- Collapsible body — hidden by default -->
+                        <div id="v2-keyfile-body" class="is-hidden">
+                            <div class="v2-keyfile-row v2-keyfile-row--spaced">
+                                <label id="v2-keyfile-label-encrypt" class="btn-keyfile">
+                                    📄Select File
+                                    <input class="d-none" type="file" id="v2-keyfile-input-encrypt" aria-label="Select hardware or offline keyfile for encryption">
+                                </label>
+                                <button type="button" class="btn-keyfile btn-keyfile--generate" id="btn-generate-keyfile-encrypt" title="Generate a secure 512-bit random keyfile in-browser" aria-label="Generate secure keyfile">⚡Generate Key</button>
+                                <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-encrypt" title="Remove keyfile" aria-label="Remove encryption keyfile">✕</button>
+                            </div>
+                            <span class="v2-keyfile-badge d-none" id="v2-keyfile-badge-encrypt"></span>
                         </div>
-                        <span class="v2-keyfile-badge d-none" id="v2-keyfile-badge-encrypt" ></span>
                     </div>
 
-                    <!-- Max Security Options Header & Pill Button (Design 2) -->
+                    <!-- Max Security Options — pill toggle, same pattern as keyfile -->
                     <div class="max-security-bar" id="max-security-bar">
-                        <div class="max-security-bar-left">
-                            <span class="max-security-bar-icon">🛡️</span>
-                            <span class="max-security-bar-hint">Need forensic decoy or High / Max / Ultra security?</span>
-                        </div>
                         <button type="button" id="btn-toggle-max-security" class="btn-max-security-pill" aria-expanded="false" aria-controls="max-security-collapsible" title="Toggle advanced hardening options">
-                            <span>Max Security Options</span>
+                            <span class="max-security-bar-icon">🛡️</span>
+                            <span class="btn-keyfile-toggle-label">Advanced Security Options</span>
+                            <span class="u-text-muted max-security-pill-hint">Only for advanced users</span>
                             <span id="max-security-chevron" class="max-security-chevron">▾</span>
                         </button>
                     </div>
@@ -579,15 +610,15 @@
                         <label class="field-label" for="encrypt-kdf-select">Key Derivation Security Level</label>
                         <div class="field-wrap">
                             <select class="field-input style-encrypt-kdf-select" id="encrypt-kdf-select" >
-                                <option value="600000" selected>⚡ Standard Security (Default) — 600,000 Rounds (PBKDF2 · Instant ~0.2s)</option>
-                                <option value="1200000">🛡️ High Security — 1,200,000 Rounds (PBKDF2 · Double Resistance)</option>
-                                <option value="2400000">🔒 Maximum Security — 2,400,000 Rounds (PBKDF2 · Extreme Hardening)</option>
-                                <option value="argon2id">🧬 Ultra Security (Argon2id) — RFC 9106 · 64MB RAM (GPU/ASIC-Immune)</option>
+                                <option value="600000" selected>Standard Security (Default) — 6 Lakh</option>
+                                <option value="1200000">High Security — 12 Lakh</option>
+                                <option value="2400000">Maximum Security — 24 Lakh</option>
+                                <option value="argon2id">Ultra Security (Argon2id)</option>
                             </select>
                         </div>
                         <div class="u-style-zglzcgxh" >
                             <a class="u-style-zm9udc1z" href="./device-power/" >
-                                <span>⚡ Test your CPU encryption power &amp; get recommended rounds ↗</span>
+                                <span>Test your CPU encryption power↗</span>
                             </a>
                         </div>
                     </div>
@@ -596,8 +627,8 @@
                     <div class="v2-panel style-polyglot-panel" id="polyglot-panel" >
                         <div class="u-flex-between" >
                             <div>
-                                <div class="u-style-zm9udc13" >🎭 Forensic Media Camouflage (Polyglot)</div>
-                                <div class="u-style-zm9udc1z" >Embeds vault into photo/video so it opens as an authentic image in photo viewers</div>
+                                <div class="u-style-zm9udc13" >Forensic Media Camouflage (Polyglot)</div>
+                                <div class="u-style-zm9udc1z" >Embeds vault into photo/video</div>
                             </div>
                             <label class="toggle-switch" aria-label="Toggle forensic camouflage mode">
                                 <input type="checkbox" id="polyglot-mode-toggle" role="switch" aria-label="Toggle polyglot steganography mode">
@@ -605,13 +636,13 @@
                             </label>
                         </div>
                         <div class="style-polyglot-options" id="polyglot-options" >
-                            <div class="u-style-zglzcgxh" >
-                                <label class="btn-browse u-style-cgfkzglu" >
-                                    <span>🖼️ Pick Cover Photo</span>
+                            <div class="v2-keyfile-row" >
+                                <label class="btn-keyfile" >
+                                    <span>Pick Cover Photo</span>
                                     <input class="d-none" type="file" id="polyglot-cover-input" accept="image/jpeg,image/png,image/webp,video/mp4,audio/mpeg" aria-label="Select polyglot cover carrier file">
                                 </label>
-                                <button type="button" class="pw-modal-btn pw-modal-btn--secondary style-btn-generate-cover" id="btn-generate-cover" >
-                                    🎨 Generate Minimal Cover
+                                <button type="button" class="btn-keyfile btn-keyfile--generate" id="btn-generate-cover" >
+                                    Generate Minimal Cover
                                 </button>
                             </div>
                             <div class="style-cover-preview-widget" id="cover-preview-widget" >
@@ -629,8 +660,8 @@
                     <div class="v2-panel style-duress-panel" id="duress-panel" >
                         <div class="u-flex-between" >
                             <div>
-                                <div class="u-style-zm9udc13" >🎭 Duress Decoy Vault (Plausible Deniability)</div>
-                                <div class="u-style-zm9udc1z" >Secondary decoy password unlocks harmless decoy files under duress/coercion</div>
+                                <div class="u-style-zm9udc13" >Duress Decoy Vault (Plausible Deniability)</div>
+                                <div class="u-style-zm9udc1z" ></div>
                             </div>
                             <label class="toggle-switch" aria-label="Toggle duress decoy vault mode">
                                 <input type="checkbox" id="duress-mode-toggle" role="switch" aria-label="Toggle duress decoy vault mode">
@@ -652,13 +683,13 @@
                                     <button class="toggle-pw" type="button" aria-pressed="false" data-target="duress-confirm" aria-label="Show password">👁</button>
                                 </div>
                             </div>
-                            <div class="u-style-zglzcgxh" >
-                                <label class="btn-browse u-style-cgfkzglu" >
+                            <div class="v2-keyfile-row" >
+                                <label class="btn-keyfile" >
                                     <span>📁 Pick Decoy Folder</span>
                                     <input class="d-none" type="file" id="duress-folder-input" webkitdirectory directory multiple aria-label="Select decoy files folder for duress vault">
                                 </label>
-                                <button type="button" class="pw-modal-btn pw-modal-btn--secondary style-btn-generate-cover" id="btn-generate-decoy" >
-                                    ⚡ Generate Realistic Decoy (Travel &amp; Recipes)
+                                <button type="button" class="btn-keyfile btn-keyfile--generate" id="btn-generate-decoy" >
+                                    ⚡ Generate Realistic Decoy
                                 </button>
                             </div>
                             <div class="style-cover-preview-widget" id="duress-selected-widget" >
@@ -675,7 +706,7 @@
 
                     <div class="alert-box alert-box--danger">
                         <span class="alert-icon">⚠️</span>
-                        <p>If you lose the password or required keyfile, files may be permanently inaccessible.</p>
+                        <p>If you lose the password or required keyfile, files may be <strong>permanently inaccessible</strong>.</p>
                     </div>
 
                     <button class="btn btn--purple" id="btn-encrypt">
@@ -709,11 +740,11 @@
                             <p class="drop-secondary">or</p>
                             <button type="button" class="btn-browse btn-browse--teal" id="btn-browse-decrypt">📦 Select .zev File</button>
                             <!-- Hidden File Inputs -->
-                            <input class="d-none" type="file" id="decrypt-file-input-dz" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Select .zev vault file to decrypt">
-                            <input class="d-none" type="file" id="decrypt-file-input" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Choose .zev vault file to decrypt">
+                            <input class="sr-only-file-input" type="file" id="decrypt-file-input-dz" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Select .zev vault file to decrypt">
+                            <input class="sr-only-file-input" type="file" id="decrypt-file-input" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Choose .zev vault file to decrypt">
                         </div>
                         <!-- Decrypt file summary widget -->
-                        <div class="selected-files-widget selected-files-widget--teal" id="decrypt-selected-widget" style="display: none;">
+                        <div class="selected-files-widget selected-files-widget--teal is-hidden" id="decrypt-selected-widget">
                             <span class="sf-icon">📦</span>
                             <div class="sf-info">
                                 <span class="sf-name" id="decrypt-selected-name">vault_name.zev</span>
@@ -761,7 +792,7 @@
                         <p class="v2-panel-desc">If this vault requires a keyfile, select it here. Standard vaults auto-detect.</p>
                         <div class="v2-keyfile-row">
                             <label id="v2-keyfile-label-decrypt" class="btn-keyfile btn-keyfile--teal">
-                                Select Keyfile
+                                📄Select Keyfile
                                 <input class="d-none" type="file" id="v2-keyfile-input-decrypt" aria-label="Select hardware or offline keyfile for decryption">
                             </label>
                             <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-decrypt" title="Remove keyfile"  aria-label="Remove decryption keyfile">✕</button>
