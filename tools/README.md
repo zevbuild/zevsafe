@@ -8,8 +8,8 @@ Zero-RAM, zero-dependency streaming encryption and decryption tools for Windows 
 
 | File | Purpose | Usage |
 |---|---|---|
-| **`Encrypt-Vault.bat`** | 1-Click Folder Encryptor | Drag & drop any folder onto this `.bat` file (or double-click to enter path). Encrypts with zero RAM limit into a `.zev` vault. |
-| **`Decrypt-Vault.bat`** | 1-Click Vault Decryptor | Drag & drop any `.zev` vault onto this `.bat` file (or double-click to enter path). Decrypts directly to the original folder structure. |
+| **`Encrypt-Vault.bat`** | 1-Click Folder Encryptor | Drag & drop any folder onto this `.bat` file (or double-click to enter path). Encrypts with zero RAM limit into a `.zsafe` vault. |
+| **`Decrypt-Vault.bat`** | 1-Click Vault Decryptor | Drag & drop any `.zsafe` or `.zev` vault onto this `.bat` file (or double-click to enter path). Decrypts directly to the original folder structure. |
 | **`encrypt.ps1`** | PowerShell Streaming Encryptor | Under-the-hood PowerShell script using AES-256-GCM and PBKDF2-SHA512. |
 | **`decrypt.ps1`** | PowerShell Streaming Decryptor | Under-the-hood PowerShell script performing chunked streaming decryption. |
 

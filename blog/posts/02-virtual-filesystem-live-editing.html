@@ -51,7 +51,7 @@
             <span class="blog-card-category guide blog-article-category-badge">🟢 How-To Guide #02</span>
             <h1 class="blog-article-title">Virtual Filesystem &amp; In-Vault Live Editing: The Complete Guide</h1>
             <p class="blog-article-lead">
-                How to edit text documents, write notes, and re-encrypt an entire .zev vault in-browser without leaving temporary files on your hard drive.
+                How to edit text documents, write notes, and re-encrypt an entire .zsafe vault in-browser without leaving temporary files on your hard drive.
             </p>
             <div class="blog-article-meta-row">
                 <div class="blog-author-group">
@@ -71,7 +71,7 @@
                 <li><a href="#editing-files">2. Opening &amp; Editing Code, Text, and Markdown</a></li>
                 <li><a href="#creating-notes">3. Creating New Encrypted Notes On the Fly</a></li>
                 <li><a href="#overlay-map">4. Under the Hood: The In-Memory Overlay Map</a></li>
-                <li><a href="#direct-re-encrypt">5. Direct Re-Encryption: Packaging Edits Back into .zev</a></li>
+                <li><a href="#direct-re-encrypt">5. Direct Re-Encryption: Packaging Edits Back into .zsafe</a></li>
                 <li><a href="#security-forensics">6. Anti-Forensic Benefits: Zero Disk Traces</a></li>
             </ul>
         </nav>
@@ -121,7 +121,7 @@
 
             <h2 id="overlay-map">4. Under the Hood: The In-Memory Overlay Map</h2>
             <p>
-                How does ZevSafe keep track of your changes while the original <code>.zev</code> file remains sealed?
+                How does ZevSafe keep track of your changes while the original <code>.zsafe</code> (or <code>.zev</code>) file remains sealed?
             </p>
             <div class="blog-code-container">
                 <div class="blog-code-header"><span>JavaScript Architecture · In-Session Overlay Map</span></div>
@@ -146,15 +146,15 @@ function saveEditedDocument(filePath, contentString) {
                 Whenever you preview, download, or re-encrypt, ZevSafe checks the <code>editedFiles</code> overlay map first. If a file path matches, it serves the modified in-RAM version; otherwise, it extracts the original stream chunk.
             </p>
 
-            <h2 id="direct-re-encrypt">5. Direct Re-Encryption: Packaging Edits Back into .zev</h2>
+            <h2 id="direct-re-encrypt">5. Direct Re-Encryption: Packaging Edits Back into .zsafe</h2>
             <p>
                 Once you finish editing, you don't need to export a ZIP and go back to the Lock screen.
             </p>
             <ol>
-                <li>Click the <strong>🔒 Direct Re-Encrypt</strong> button in the Vault Explorer top bar.</li>
+                <li>Click the <strong>🔒 Direct Re-Encrypt (.zsafe)</strong> button in the Vault Explorer top bar.</li>
                 <li>ZevSafe prompts you to confirm your master passphrase (or set a new one).</li>
                 <li>The parallel worker pipeline streams both the original unmodified files and the edited overlay blobs into a fresh, authenticated <code>ZV3\0</code> STREAM AEAD container.</li>
-                <li>Your browser saves the updated <code>.zev</code> file directly to your downloads or storage destination.</li>
+                <li>Your browser saves the updated <code>.zsafe</code> file directly to your downloads or storage destination.</li>
             </ol>
 
             <h2 id="security-forensics">6. Anti-Forensic Benefits: Zero Disk Traces</h2>

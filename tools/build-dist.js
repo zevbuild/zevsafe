@@ -35,19 +35,19 @@ try {
 }
 
 // 1. Clean or create dist directory
-if (fs.existsSync(DIST_DIR)) {
+if (!fs.existsSync(DIST_DIR)) {
     try {
-        fs.rmSync(DIST_DIR, { recursive: true, force: true });
-    } catch (_) {
-        // Fallback for Windows file lock / sandbox permission boundary: clean contents
-        for (const item of fs.readdirSync(DIST_DIR)) {
-            try {
-                fs.rmSync(path.join(DIST_DIR, item), { recursive: true, force: true });
-            } catch (e) {}
-        }
+        fs.mkdirSync(DIST_DIR, { recursive: true });
+    } catch (e) {
+        // Handled if directory exists or created externally
+    }
+} else {
+    for (const item of fs.readdirSync(DIST_DIR)) {
+        try {
+            fs.rmSync(path.join(DIST_DIR, item), { recursive: true, force: true });
+        } catch (e) {}
     }
 }
-fs.mkdirSync(DIST_DIR, { recursive: true });
 
 // Helper: recursive copy using shared whitelist filter
 function copyDirFiltered(srcDir, destDir) {

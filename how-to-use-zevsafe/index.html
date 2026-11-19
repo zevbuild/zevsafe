@@ -78,7 +78,7 @@
         {
           "@type": "HowTo",
           "name": "How to Encrypt and Decrypt a Folder with ZevSafe",
-          "description": "Step-by-step instructions to encrypt an entire folder offline into a secure .zev vault and explore its contents.",
+          "description": "Step-by-step instructions to encrypt an entire folder offline into a secure .zsafe vault and explore its contents.",
           "totalTime": "PT1M",
           "step": [
             {
@@ -97,13 +97,13 @@
               "@type": "HowToStep",
               "position": 3,
               "name": "Encrypt & Download",
-              "text": "Click Encrypt & Download. Your browser creates a single portable .zev vault file."
+              "text": "Click Encrypt & Download. Your browser creates a single portable .zsafe vault file."
             },
             {
               "@type": "HowToStep",
               "position": 4,
               "name": "Explore and Play Media",
-              "text": "Drop your .zev file into the Unlock panel to preview photos, stream video/audio, read documents, or export files instantly."
+              "text": "Drop your .zsafe file into the Unlock panel to preview photos, stream video/audio, read documents, or export files instantly."
             }
           ]
         },
@@ -706,7 +706,7 @@
         <!-- 1. ENCRYPTING A FOLDER -->
         <section class="guide-section" id="simple-encrypt">
             <h2 class="guide-section-label">🔒 Step-by-Step: How to Lock (Encrypt) a Folder</h2>
-            <p class="guide-subtitle">Follow these simple steps to turn any folder of photos, videos, or documents into an impenetrable <code>.zev</code> vault file.</p>
+            <p class="guide-subtitle">Follow these simple steps to turn any folder of photos, videos, or documents into an impenetrable <code>.zsafe</code> vault file.</p>
             
             <div class="steps">
                 <div class="step-card step-card--purple">
@@ -753,7 +753,7 @@
                     <div class="step-num step-num--purple">6</div>
                     <div class="step-body">
                         <h3>Click "Encrypt &amp; Download"</h3>
-                        <p>Click the big purple button. Your computer compresses and encrypts the files locally using multi-core streaming. When finished, your browser automatically downloads a single file named <code>YourFolder.zev</code>. You're done!</p>
+                        <p>Click the big purple button. Your computer compresses and encrypts the files locally using multi-core streaming. When finished, your browser automatically downloads a single file named <code>YourFolder.zsafe</code>. You're done!</p>
                     </div>
                 </div>
             </div>
@@ -768,8 +768,8 @@
                 <div class="step-card step-card--teal">
                     <div class="step-num step-num--teal">1</div>
                     <div class="step-body">
-                        <h3>Drop Your .zev Vault File</h3>
-                        <p>In the <strong>Unlock a Vault</strong> card on the right, drag and drop your <code>.zev</code> file or click <strong>Select .zev File</strong>.</p>
+                        <h3>Drop Your .zsafe Vault File</h3>
+                        <p>In the <strong>Unlock a Vault</strong> card on the right, drag and drop your <code>.zsafe</code> file (or legacy <code>.zev</code> file) or click <strong>Select .zsafe File</strong>.</p>
                     </div>
                 </div>
 
@@ -834,7 +834,7 @@
 
                 <div class="tip-card tip-card--green">
                     <p class="tip-title tip-title--green">✅ 2. Safe for Cloud &amp; USB</p>
-                    <p>Your <code>.zev</code> vault is completely encrypted with military-grade AES-256-GCM. You can safely store it on Google Drive, Dropbox, or a shared flash drive without anyone reading it.</p>
+                    <p>Your <code>.zsafe</code> vault is completely encrypted with military-grade AES-256-GCM. You can safely store it on Google Drive, Dropbox, or a shared flash drive without anyone reading it.</p>
                 </div>
 
                 <div class="tip-card tip-card--blue">
@@ -994,7 +994,7 @@ StreamUnpacker.createBoundedChunkCache = <span class="hl-key">function</span>(ma
                 </p>
                 <ul class="guide-body-ul" style="margin-left: 1.2rem;">
                     <li><strong>App Shell Cache-First Strategy:</strong> Pre-caches application code (<code>HTML</code>, <code>CSS</code>, <code>JS</code>, icons) into <code>zevsafe-shell-v42</code> for instant, air-gapped offline loading without network access.</li>
-                    <li><strong>Strict Vault Bypass Rule:</strong> The Service Worker <em>never</em> caches sensitive <code>.zev</code> vault files. A case-insensitive filter (<code>url.pathname.toLowerCase().endsWith('.zev')</code>) bypasses the cache entirely.</li>
+                    <li><strong>Strict Vault Bypass Rule:</strong> The Service Worker <em>never</em> caches sensitive <code>.zsafe</code> or <code>.zev</code> vault files. A case-insensitive filter (<code>url.pathname.toLowerCase().endsWith('.zsafe') || url.pathname.toLowerCase().endsWith('.zev')</code>) bypasses the cache entirely.</li>
                     <li><strong>Synthetic Tier-2 Download Route:</strong> Intercepts <code>/_stream_download</code> with <code>Sec-Fetch-Site</code> validation, rejecting any cross-site request forgery attempts with <code>403 Forbidden</code>.</li>
                     <li><strong>Automatic Cache Invalidation:</strong> Whenever a new version is released, the Service Worker automatically purges previous cache generations and claims active clients.</li>
                 </ul>
@@ -1033,7 +1033,7 @@ StreamUnpacker.createBoundedChunkCache = <span class="hl-key">function</span>(ma
                     <div class="faq-body">
                         Yes! Open ZevSafe in Chrome on Android or Safari on iOS to unlock your files directly in the browser.<br><br>
                         For mobile users, ZevSafe is an installable, 100% offline Progressive Web App (PWA). You can install it directly from Chrome on Android (Tap ⋮ Menu → "Install app" / "Add to Home screen") or Safari on iOS (Share → "Add to Home Screen") with zero sideloading and instant offline launch.<br><br>
-                        <em>Note on OS File Associations:</em> Desktop Chrome and Edge support the W3C File Handling API, allowing you to double-click <code>.zev</code> files in your desktop file manager to open them in ZevSafe. On Android and iOS, files are opened via the in-app file browser or drag-and-drop.
+                        <em>Note on OS File Associations:</em> Desktop Chrome and Edge support the W3C File Handling API, allowing you to double-click <code>.zsafe</code> (or <code>.zev</code>) files in your desktop file manager to open them in ZevSafe. On Android and iOS, files are opened via the in-app file browser or drag-and-drop.
                     </div>
                 </div>
 

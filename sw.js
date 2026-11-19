@@ -8,7 +8,7 @@
 // ================================================================
 
 const APP_VERSION    = 'v81';
-const CONTENT_HASH   = '0eb90a1d';
+const CONTENT_HASH   = '194a68de';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -175,7 +175,8 @@ self.addEventListener('fetch', event => {
     if (url.protocol === 'blob:' || url.protocol === 'data:') return;
 
     // ── Security: NEVER cache .zev vault files ─────────────────
-    if (url.pathname.toLowerCase().endsWith('.zev')) return;
+    const lowerP = url.pathname.toLowerCase();
+    if (lowerP.endsWith('.zsafe') || lowerP.endsWith('.zevsafe') || lowerP.endsWith('.zev')) return;
 
     // ── Security: skip chrome-extension or non-http(s) ─────────
     if (!url.protocol.startsWith('http')) return;
@@ -359,7 +360,7 @@ const pendingDownloads = new Map();
  */
 function handleStreamDownload(url) {
     const downloadId = url.searchParams.get('id');
-    const queryFilename = url.searchParams.get('filename') || 'vault.zev';
+    const queryFilename = url.searchParams.get('filename') || 'vault.zsafe';
     const record = pendingDownloads.get(downloadId);
 
     const filename = record ? record.filename : queryFilename;
@@ -589,7 +590,7 @@ self.addEventListener('message', event => {
         self.skipWaiting();
     } else if (data.type === 'REGISTER_DOWNLOAD' || data.type === 'REGISTER_STREAM') {
         const downloadId = data.downloadId || data.id;
-        const filename = data.filename || 'download.zev';
+        const filename = data.filename || 'download.zsafe';
         const expectedSize = data.expectedSize || data.size || 0;
         const port = event.ports && event.ports[0];
         if (downloadId && port) {

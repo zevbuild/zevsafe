@@ -1,8 +1,9 @@
-# 📦 ZevSafe Binary Container Specification (`.zev`)
+# 📦 ZevSafe Binary Container Specification (`.zsafe` / `.zev`)
 
 > **Author:** [zevbuild](https://github.com/zevbuild)  
 > **Status:** Standard / Active Specification  
 > **Specification Version:** `3.0` (`ZV3\0`)  
+> **Primary Extension:** `.zsafe` (with 100% backward compatibility for legacy `.zev` vaults)  
 > **Interoperability Standard:** Bit-identical container specification shared across:
 > - **Web PWA:** [`zevsafe`](https://zevsafe.pages.dev) (`js/stream-crypto.js`, `js/stream-packer.js`, `js/stream-unpacker.js`, `js/worker-bridge.js`)
 > - **Native Android App:** [`app-zevsafe`](https://github.com/zevbuild/app-zevsafe) (`com.zevbuild.zevsafe`: `CryptoEngine.kt`, `V3DecryptedInputStream`)
@@ -12,7 +13,7 @@
 
 ## 1. Executive Summary & Design Principles
 
-The `.zev` container format is a zero-knowledge, authenticated cryptographic file container engineered to securely package individual files or complete directory hierarchies directly inside client environments (browsers, mobile devices, and air-gapped workstations) without transmitting data across networks.
+The `.zsafe` container format (maintaining 100% transparent backward compatibility with legacy `.zev` archives) is a zero-knowledge, authenticated cryptographic file container engineered to securely package individual files or complete directory hierarchies directly inside client environments (browsers, mobile devices, and air-gapped workstations) without transmitting data across networks.
 
 ### Core Architectural Invariants:
 1. **100% Air-Gapped & Client-Side:** No server-side processing, telemetry, external KMS dependencies, or cloud round-trips.

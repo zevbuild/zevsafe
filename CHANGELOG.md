@@ -38,7 +38,7 @@
 - `UI` & `Perf` (`index.html`, `styles.css`): Compact 3-Step Micro-Flow Hero Section Implementation (Option 1).
   - Reduced hero header vertical space by over 65% (from ~370px down to ~115px), bringing the interactive **Encrypt Folder** and **Decrypt Vault** cards immediately above the fold on all standard laptop and desktop screens.
   - Replaced long, multi-line cryptographic jargon headlines with a punchy single-line title: `Lock Any Folder Into an Encrypted Vault` paired with an inline gradient tag `100% In-Browser` and live status badge.
-  - Implemented the intuitive 3-Step Micro-Flow Visual Ribbon (`.hero-flow-ribbon`): `[ 1 📁 Select Folder or Files ] → [ 2 🔑 Choose Password or Key ] → [ 3 🛡️ Download Encrypted .zev]`, giving first-time users an instant, crystal-clear understanding of the application flow within 2 seconds.
+  - Implemented the intuitive 3-Step Micro-Flow Visual Ribbon (`.hero-flow-ribbon`): `[ 1 📁 Select Folder or Files ] → [ 2 🔑 Choose Password or Key ] → [ 3 🛡️ Download Encrypted .zsafe]`, giving first-time users an instant, crystal-clear understanding of the application flow within 2 seconds.
   - Condensed technical specifications (`AES-256-GCM`, `600,000 PBKDF2`, `100% Air-Gapped`, `5 GB Instant Streaming`) into an ultra-slim, single-line trust strip (`.hero-trust-strip`) with zero visual clutter.
   - Added full light theme overrides for the 3-step micro-flow ribbon and numbered indicators with WCAG AAA contrast conformance.
   - Retained 100% CSP compliance with zero inline `style="..."` attributes and passed 100% of all automated UI and security regression test suites.

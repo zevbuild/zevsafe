@@ -51,7 +51,7 @@ Once loaded, ZevSafe works **100% offline and air-gapped**. It employs **v3 Low-
 | ✍️ **Consolidated Knowledge Hub & Security Journal (`blog/`)** | Zero-knowledge publication hub containing 14 long-form guides covering daily user workflows (locking, VFS live editing, cinema streaming, optical paper-safe, USB air-gap backup kit, passphrase hygiene) and deep cryptographic disclosures (duress decoys, polyglot steganography, 2.4M PBKDF2 tiers, bit-rot salvage, ZV3 57-byte header specification with Argon2id 0x04 flag, multi-worker parallel crypto, multi-tier mobile storage, and zero-exfiltration air-gap defense). Equipped with the 10 Core Architectural Services directory grid, Security Invariants Matrix, instant client-side search, category filter pills, reading progress tracking, and embedded interactive widgets (PBKDF2 Work Factor Estimator & ZV3 Header Inspector). Precached in PWA and packaged into the 1-Click USB Air-Gap Backup Kit. |
 | 🛡️ **Argon2id Memory-Hard KDF (Phase 8)** | Pure client-side zero-dependency RFC 9106 Argon2id ($m=64\text{ MB}$, $t=3$, $p=4$, 256-bit AES-GCM output) rendering GPU and ASIC brute-force clusters economically infeasible. Container flag bit 2 (`0x04`) auto-detected by unpacker with seamless backward compatibility for PBKDF2 vaults. |
 | ♿ **Full Accessibility & WCAG 2.1 AA/AAA Hardening (Phase 7)** | Zero-dependency focus trap and modal inerting controller (`js/a11y-manager.js`), 100% accessible button and input names (WCAG 2.5.3 visible label matching), Decrypted Vault Explorer roving tabindex listbox with arrow navigation, polite/assertive live feedback regions for progress milestones and debounced password strength, calibrated high-contrast color tokens (&ge; 4.5:1 text, &ge; 3:1 controls), &ge; 44&times;44px touch targets, universal skip links across all 17 HTML pages, and automated headless Chrome CDP `axe-core` verification (0 critical/serious violations). |
-| 📲 **PWA Upgrade, File Handlers & Safe Update Engine (Phase 5)** | Vector-derived maskable icons (`192x192` & `512x512`) with 80% safe zone padding, Apple touch icons (`180x180`), W3C File Handling API associating `.zev` vaults on desktop Chrome/Edge (*desktop Chromium only; Android/iOS rely on file pickers*), real-UI install screenshots (`1280x800` & `780x1688`), centralized precache generator (`tools/build-sw.js` with SHA-256 content hashing), and zero-loss update banner (`#pwa-update-banner`) deferring reloads during active jobs or open vaults. |
+| 📲 **PWA Upgrade, File Handlers & Safe Update Engine (Phase 5)** | Vector-derived maskable icons (`192x192` & `512x512`) with 80% safe zone padding, Apple touch icons (`180x180`), W3C File Handling API associating `.zsafe`, `.zevsafe`, and `.zev` vaults on desktop Chrome/Edge (*desktop Chromium only; Android/iOS rely on file pickers*), real-UI install screenshots (`1280x800` & `780x1688`), centralized precache generator (`tools/build-sw.js` with SHA-256 content hashing), and zero-loss update banner (`#pwa-update-banner`) deferring reloads during active jobs or open vaults. |
 | 🔋 **Phone Reliability, Screen Wake Lock & Battery Guard (Phase 4)** | W3C Screen Wake Lock API integration (`withWakeLock`) preventing phone screen sleep during long multi-GB crypto/packaging tasks, auto-releasing on completion, error, cancel, vault lock, or panic; non-blocking origin browser storage quota advisory (`estimate()`); background tab throttling protection pausing decorative animations (`.tab-hidden`) while exempting active spinners; mobile touchscreen GPU blur removal (`backdrop-filter: none`); and WCAG AA high-contrast focus rings (`#0f766e` light, `#2dd4bf` dark). |
 | 🛡️ **Strict Content Security Policy & Zero-Inline Architecture (Phase 3)** | Hardened CSP on root deployment (`script-src 'self' 'wasm-unsafe-eval'; style-src 'self'`), 0 inline styles (migrated 284 inline attributes to 91 modular CSS classes), decoupled initialization runtime (`js/init.js`), isolated docs CSP via header detachment, zero-clutter `dist/` production builder, and 404 handler. |
 | 🎬 **Modular Mobile Cinema Player & Gestures (Phase 2)** | Extracted player CSS & JS into modular on-demand assets (\-120 KB first paint payload), phone touch ergonomics (&ge;28px scrubber, &ge;44&times;44px buttons, safe areas), double-tap seek accumulation (&plusmn;10s, &plusmn;20s, &plusmn;30s), explicit `window.ZevMedia` API, vault lock route destruction, and iOS pseudo-fullscreen. |
@@ -129,7 +129,7 @@ Import as AES-256-GCM CryptoKey
 AES-256-GCM Encrypt(ZipBytes, Key, IV)  ──►  Ciphertext + 128-bit Authentication Tag
         │
         ▼
-Assemble Single Portable Vault (.zev):
+Assemble Single Portable Vault (.zsafe / .zev):
 ┌──────────────┬──────────────┬───────────┬──────────────────┬────────────────┬──────────────────────────────┐
 │ Magic 'ZV2\0'│ Version 0x02 │ Flags (1) │ Salt (32 Bytes)  │ IV (12 Bytes)  │ Ciphertext + GCM Auth Tag    │
 │ 4 Bytes      │ 1 Byte       │ (0x01=Key)│                  │                │ (Variable Length)            │
@@ -155,7 +155,7 @@ PBKDF2-SHA256 (Password, Salt, 100,000 iterations)  ──►  256-bit AES-GCM K
 AES-256-GCM Encrypt  ──►  Ciphertext + 128-bit Authentication Tag
         │
         ▼
-Output File (.zev):
+Output File (.zsafe / .zev):
 ┌──────────────────────────────┬──────────────────────────────┬────────────────────────────────────────┐
 │ Salt (16 Bytes)              │ IV (12 Bytes)                │ Ciphertext + 128-bit GCM Auth Tag      │
 └──────────────────────────────┴──────────────────────────────┴────────────────────────────────────────┘
@@ -198,7 +198,7 @@ Output File (.zev):
 4. *(Optional)* Click **Select Keyfile** to bind a physical file (photo, document, random file) as an indispensable second factor.
 5. Click **Encrypt & Download**:
    - The 3-stage tracker shows compression and encryption progress in real time.
-   - Your encrypted vault (`yourfolder.zev`) automatically downloads.
+   - Your encrypted vault (`yourfolder.zsafe`) automatically downloads.
 6. The **Save Vault Password** dialog opens:
    - Click **📋 Copy** to copy your password.
    - Click **💾 Save Password** to save credentials directly to your browser's password manager.
@@ -206,7 +206,7 @@ Output File (.zev):
 
 ### 🔓 2. Decrypting a Vault
 
-1. Drag and drop your `.zev` vault file into the **Unlock a Vault** panel (or click "Select .zev File").
+1. Drag and drop your `.zsafe` or legacy `.zev` vault file into the **Unlock a Vault** panel (or click "Select .zsafe File").
 2. ZevSafe reads the header:
    - If the vault was encrypted with a keyfile, a prompt asks you to select your keyfile.
    - If it is a standard password-only vault, proceed directly.
@@ -260,7 +260,7 @@ Because ZevSafe performs all compression, key derivation, and cryptographic tran
 ### Need to Encrypt 25 GB to 100 GB+?
 For massive datasets that exceed browser JavaScript heap allocations:
 1. Click **💻 PC Setup (25+ GB)** in the navigation bar to download the pre-configured Windows toolkit.
-2. Drag and drop any folder onto **`Encrypt-Vault.bat`** (or drag a `.zev` file onto **`Decrypt-Vault.bat`**).
+2. Drag and drop any folder onto **`Encrypt-Vault.bat`** (or drag a `.zsafe` or `.zev` file onto **`Decrypt-Vault.bat`**).
 3. The PowerShell streaming engine (`encrypt.ps1` / `decrypt.ps1`) processes data chunk-by-chunk with **zero RAM footprint**, matching the exact v2 standard format.
 
 ---
@@ -276,7 +276,7 @@ For Android users requiring background encryption, system file manager associati
 - ⚡ **Full `ZV3\0` STREAM AEAD Compatibility:** Interoperates with vaults created in the browser or via desktop PowerShell toolkits.
 - 🎬 **ExoPlayer Cinema Media Player:** In-app streaming playback for multi-GB encrypted video and audio directly through AndroidX Media3 without temporary disk extraction.
 - ⚙️ **Persistent Background ForegroundService:** Lock multi-GB archives in the background with persistent notification progress, live speed telemetry, and wake-lock protection.
-- 📲 **System Share Sheet & File Integration:** Open `.zev` files directly from any file manager (`ACTION_VIEW`) or encrypt files/folders straight from Android's share menu (`ACTION_SEND`).
+- 📲 **System Share Sheet & File Integration:** Open `.zsafe` or `.zev` files directly from any file manager (`ACTION_VIEW`) or encrypt files/folders straight from Android's share menu (`ACTION_SEND`).
 
 ---
 
@@ -289,8 +289,8 @@ ZevSafe is a certified Progressive Web App. Install it once to use it as an offl
 2. Click the **Install** icon (➕ or computer display) in the URL address bar, or click **Install** on the bottom banner.
 3. Launch ZevSafe directly from your Start Menu, Taskbar, or Applications launcher.
 
-#### Desktop File Handling Integration (.zev Vault Associations)
-On desktop Chromium browsers (Google Chrome, Microsoft Edge, Opera), ZevSafe registers as an OS-level file handler for `.zev` vaults (`application/x-zevsafe-vault`). Double-clicking a `.zev` file in Windows Explorer, macOS Finder, or Linux file managers launches or switches to ZevSafe directly in Decrypt mode with the vault selected.
+#### Desktop File Handling Integration (.zsafe / .zev Vault Associations)
+On desktop Chromium browsers (Google Chrome, Microsoft Edge, Opera), ZevSafe registers as an OS-level file handler for `.zsafe`, `.zevsafe`, and `.zev` vaults (`application/x-zevsafe-vault`). Double-clicking a `.zsafe` or `.zev` file in Windows Explorer, macOS Finder, or Linux file managers launches or switches to ZevSafe directly in Decrypt mode with the vault selected.
 > **Platform Note:** The W3C File Handling API is supported on desktop Chromium browsers (Chrome & Edge on Windows, macOS, Linux, ChromeOS). Mobile browsers (Android and iOS) do not yet expose the File Handling API to PWAs; on Android and iOS, vaults are opened via the in-app file browser or drag-and-drop.
 
 #### Safe PWA Version Updates (Zero Work Loss)
@@ -404,9 +404,9 @@ Then visit `http://localhost:8080` in your web browser.
 ## ⚠️ Security Principles & Zero-Knowledge Guarantees
 
 - **Passphrase Sovereignty:** ZevSafe enforces a zero-knowledge architecture. There is no password recovery mechanism, reset link, or administrative backdoor. **If you lose your password or keyfile, your encrypted vault is mathematically unrecoverable.**
-- **Keyfile Protection:** When keyfile 2FA is enabled, the keyfile is combined with your password via SHA-256 XOR mixing. Always store your keyfile on a separate physical medium from your `.zev` vault.
+- **Keyfile Protection:** When keyfile 2FA is enabled, the keyfile is combined with your password via SHA-256 XOR mixing. Always store your keyfile on a separate physical medium from your `.zsafe` or `.zev` vault.
 - **Volatile Memory Only:** Decrypted files exist strictly in volatile browser RAM. Nothing is written to IndexedDB, LocalStorage, or disk unless you explicitly click a download or save button.
-- **Cache Isolation:** The Service Worker (`sw.js`) explicitly excludes `.zev` files and temporary `blob:` URLs from cache storage, ensuring decrypted data can never be persisted in browser cache.
+- **Cache Isolation:** The Service Worker (`sw.js`) explicitly excludes `.zsafe`, `.zevsafe`, and `.zev` files and temporary `blob:` URLs from cache storage, ensuring decrypted data can never be persisted in browser cache.
 - **Air-Gapped Operation:** All encryption operations take place on the local CPU via the browser's native C++ Web Crypto implementation. No telemetry, analytics, or external API calls are made.
 
 ---

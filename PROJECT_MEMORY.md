@@ -24,7 +24,7 @@ It consists of three bit-identically compatible platforms sharing the **`ZV3\0` 
 
 ## 2. Shared Binary Container Format (`ZV3\0`)
 
-Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other platform:
+Any `.zsafe` or `.zev` file created on Web, Android, or Desktop can be unlocked on any other platform:
 
 | Offset (B) | Size | Encoding | Field | Description |
 |---|---|---|---|---|
@@ -846,7 +846,7 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Replaced dense, multi-line cryptographic jargon headlines with a concise, punchy title: `Lock Any Folder Into an Encrypted Vault` paired with an inline gradient tag `100% In-Browser` and live status badge `Zero-Knowledge · Zero-Tracking · Client-Side Vaults`.
 - **Intuitive 3-Step Micro-Flow Visual Ribbon (`.hero-flow-ribbon`):**
   - Engineered a sleek visual flow ribbon illustrating the core 3-step mental model:
-    `[ 1 📁 Select Folder or Files ] → [ 2 🔑 Choose Password or Key ] → [ 3 🛡️ Download Encrypted .zev]`
+    `[ 1 📁 Select Folder or Files ] → [ 2 🔑 Choose Password or Key ] → [ 3 🛡️ Download Encrypted .zsafe]`
   - Features numbered micro-badges (`.hero-flow-num`), high-contrast icons, subtle glassmorphism backdrop (`rgba(255, 255, 255, 0.035)`, `backdrop-filter: blur(12px)`), and directional navigation arrows, allowing any first-time visitor to understand how ZevSafe works within 2 seconds.
 - **Ultra-Slim Trust & Specifications Strip (`.hero-trust-strip`):**
   - Streamlined technical specifications (`AES-256-GCM`, `600,000 PBKDF2`, `100% Air-Gapped`, `5 GB Instant Streaming`) into a single-line, lightweight inline trust row with zero visual clutter.

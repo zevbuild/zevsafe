@@ -9,7 +9,7 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
     <title>The Beginner’s Zero-Knowledge Guide: How to Lock, Decrypt &amp; Explore Vaults — ZevSafe Blog</title>
-    <meta name="description" content="Step-by-step beginner guide to ZevSafe: learn how to lock files and folders into an authenticated .zev vault, set secure passphrases, and explore decrypted archives directly in your browser.">
+    <meta name="description" content="Step-by-step beginner guide to ZevSafe: learn how to lock files and folders into an authenticated .zsafe vault, set secure passphrases, and explore decrypted archives directly in your browser.">
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="../blog.css">
 </head>
@@ -51,7 +51,7 @@
             <span class="blog-card-category guide blog-article-category-badge">🟢 How-To Guide #01</span>
             <h1 class="blog-article-title">The Beginner’s Zero-Knowledge Guide: How to Lock, Decrypt &amp; Explore Vaults</h1>
             <p class="blog-article-lead">
-                A complete visual manual for anyone who wants absolute privacy. Learn how to turn private files into encrypted .zev archives without touching the cloud or exposing passwords.
+                A complete visual manual for anyone who wants absolute privacy. Learn how to turn private files into encrypted .zsafe archives (compatible with .zev) without touching the cloud or exposing passwords.
             </p>
             <div class="blog-article-meta-row">
                 <div class="blog-author-group">
@@ -131,11 +131,11 @@
 
             <h2 id="step-4-decrypting">5. Step 4: Unlocking &amp; Exploring Your Vault</h2>
             <p>
-                When encryption finishes, your browser downloads a single <code>.zev</code> file (e.g., <code>Financial_Archive.zev</code>). To inspect or extract its contents:
+                When encryption finishes, your browser downloads a single <code>.zsafe</code> file (e.g., <code>Financial_Archive.zsafe</code>). To inspect or extract its contents:
             </p>
             <ol>
                 <li>Switch to the <strong>Unlock Vault</strong> screen in ZevSafe.</li>
-                <li>Drag and drop your <code>.zev</code> file into the unlock drop zone.</li>
+                <li>Drag and drop your <code>.zsafe</code> (or legacy <code>.zev</code>) file into the unlock drop zone.</li>
                 <li>Enter your master passphrase. If you configured a physical keyfile, attach it now.</li>
                 <li>Click <strong>Unlock Vault</strong>. ZevSafe verifies the 57-byte header and decrypts the tail manifest in under 300 ms.</li>
                 <li>The <strong>Web Vault Explorer</strong> opens, allowing you to browse directory trees, preview images in the lightbox, stream video without downloading, and extract individual files with 1-click.</li>
@@ -143,8 +143,8 @@
 
             <h2 id="security-invariants">6. Critical Rules for Safe Vault Management</h2>
             <ul>
-                <li><strong>The .zev File is Portable:</strong> You can store it on Google Drive, Dropbox, USB flash drives, or external SSDs. Because AES-256-GCM is military-grade, cloud providers cannot read the contents.</li>
-                <li><strong>Safe Renaming:</strong> You can safely rename the <code>.zev</code> file on disk (e.g., from <code>secret.zev</code> to <code>backup.zev</code>) — the internal structure remains 100% intact.</li>
+                <li><strong>The .zsafe File is Portable:</strong> You can store it on Google Drive, Dropbox, USB flash drives, or external SSDs. Because AES-256-GCM is military-grade, cloud providers cannot read the contents.</li>
+                <li><strong>Safe Renaming:</strong> You can safely rename the <code>.zsafe</code> file on disk (e.g., from <code>secret.zsafe</code> to <code>backup.zsafe</code>) — the internal structure remains 100% intact.</li>
                 <li><strong>Lock Session When Done:</strong> When you finish browsing in Vault Explorer, click the <strong>Lock Session</strong> button to immediately scrub encryption keys and zero out plaintext RAM.</li>
             </ul>
         </article>

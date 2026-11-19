@@ -139,7 +139,7 @@ async function saveVaultCredential(vaultIdentifier, masterPassword) {
     if (window.PasswordCredential &amp;&amp; navigator.credentials?.store) {
         try {
             const cred = new PasswordCredential({
-                id: vaultIdentifier, // e.g. "Financial_Archive.zev"
+                id: vaultIdentifier, // e.g. "Financial_Archive.zsafe"
                 password: masterPassword,
                 name: `ZevSafe Vault: ${vaultIdentifier}`
             });

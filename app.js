@@ -5212,7 +5212,7 @@ function canSafelyReload() {
 
 /**
  * W3C File Handling API consumer.
- * Handles opening .zev vault files directly from operating system file managers
+ * Handles opening .zsafe, .zevsafe, or .zev vault files directly from operating system file managers
  * (Desktop Chrome / Edge / Chromium browsers).
  */
 function initLaunchQueueConsumer() {
