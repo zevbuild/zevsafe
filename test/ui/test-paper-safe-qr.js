@@ -320,6 +320,47 @@ test('generatePaperSheetHTML with password renders Master Keycard badge & instru
     assert.ok(html.includes('Instant Unlock Master Keycard'), 'Must label QR as Instant Unlock Master Keycard');
 });
 
+test('scanImage decodes raw RGBA pixel data via pure-JS jsQR engine and extracts password', async () => {
+    const input = {
+        vaultName: 'Auto-Unlock-Test.zev',
+        saltHex: '8f2a99b14d027ca8105e63fba14290dd12345678abcdef0123456789abcdef01',
+        kdfIterations: 600000,
+        password: 'ZevSafePureJSScanVerification123'
+    };
+    const payloadStr = QREngine.buildPaperSafePayload(input);
+    const matrix = QREngine.generateQRMatrix(payloadStr, { ecLevel: 'M' });
+    const size = matrix.size;
+    const scale = 4;
+    const quiet = 4;
+    const fullSize = (size + quiet * 2) * scale;
+    const rgba = new Uint8ClampedArray(fullSize * fullSize * 4);
+    rgba.fill(255);
+
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            if (matrix.modules[r][c]) {
+                for (let dy = 0; dy < scale; dy++) {
+                    for (let dx = 0; dx < scale; dx++) {
+                        const py = (r + quiet) * scale + dy;
+                        const px = (c + quiet) * scale + dx;
+                        const idx = (py * fullSize + px) * 4;
+                        rgba[idx] = 0;
+                        rgba[idx + 1] = 0;
+                        rgba[idx + 2] = 0;
+                        rgba[idx + 3] = 255;
+                    }
+                }
+            }
+        }
+    }
+
+    const res = await QREngine.scanImage({ data: rgba, width: fullSize, height: fullSize });
+    assert.ok(res, 'scanImage must return decoded result object');
+    assert.strictEqual(res.rawValue, payloadStr, 'Decoded rawValue must match generated payload');
+    assert.ok(res.paperSafe, 'Must return parsed paperSafe object');
+    assert.strictEqual(res.paperSafe.password, 'ZevSafePureJSScanVerification123', 'Extracted password must match');
+});
+
 console.log('\n===============================================================');
 console.log(`  PAPER-SAFE QR SUITE: ${passCount}/${totalCount} PASSED (100%)`);
 console.log('===============================================================\n');

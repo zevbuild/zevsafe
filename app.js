@@ -242,6 +242,7 @@ const statusDot           = document.getElementById('status-dot');
 let selectedEncryptFiles      = [];
 let selectedEncryptFolderName = '';
 let selectedDecryptFile       = null;
+let pendingAutoDecryptOnSelect = false;
 
 // ── V2 STATE ──────────────────────────────────
 let v2KeyfileEncrypt = null;  // File object for encryption keyfile
@@ -1030,10 +1031,22 @@ async function onDecryptSelected(files) {
     decryptSelectedInfo.style.display = 'none';
     log(`Vault file "${selectedDecryptFile.name}" selected (${formatBytes(selectedDecryptFile.size || 0)}).`, 'info');
     showProgress();
+
+    // Auto-decrypt trigger if password was loaded via QR scan (or pending auto-decrypt)
+    const pwdInput = document.getElementById('decrypt-password');
+    if (pendingAutoDecryptOnSelect || (activeScannedPaperSafe && activeScannedPaperSafe.password && pwdInput && pwdInput.value)) {
+        pendingAutoDecryptOnSelect = false;
+        showToast(`⚡ Master Key ready! Decrypting "${selectedDecryptFile.name}"...`, 'success');
+        setTimeout(() => {
+            const btn = document.getElementById('btn-decrypt');
+            if (btn && !btn.disabled) btn.click();
+        }, 200);
+    }
 }
 
 function clearDecryptSelection() {
     selectedDecryptFile = null;
+    pendingAutoDecryptOnSelect = false;
     const decryptCredNameClr = document.getElementById('decrypt-credential-vault-name');
     if (decryptCredNameClr) decryptCredNameClr.value = '';
     const decryptCredPwdClr = document.getElementById('decrypt-credential-vault-password');
@@ -3577,11 +3590,15 @@ function applyPaperSafeParameters(p) {
     const bannerVault = document.getElementById('scanned-banner-vault');
     const bannerHint = document.getElementById('scanned-banner-hint');
     if (banner) {
-        if (bannerVault) bannerVault.textContent = p.vaultName;
+        if (bannerVault) bannerVault.textContent = p.vaultName || 'Scanned Password Key';
         if (bannerHint) {
-            const saltGroup = typeof QREngine !== 'undefined' ? QREngine.formatSaltFingerprint(p.saltHex) : p.saltHex;
+            const saltGroup = (typeof QREngine !== 'undefined' && p.saltHex) ? QREngine.formatSaltFingerprint(p.saltHex) : (p.saltHex || '');
             const pwStatus = p.password ? ' · <strong class="text-teal-bold">🔑 Password Auto-Filled</strong>' : '';
-            bannerHint.innerHTML = `Salt: <code>${saltGroup}</code> · KDF: <code>${p.kdfIterations.toLocaleString('en-US')}</code>${pwStatus}${p.hint ? ` · <em>Hint: ${escapeHtml(p.hint)}</em>` : ''}`;
+            if (p.isDirectPassword) {
+                bannerHint.innerHTML = `Direct Password QR · <strong class="text-teal-bold">🔑 Password Ready</strong>`;
+            } else {
+                bannerHint.innerHTML = `Salt: <code>${saltGroup}</code> · KDF: <code>${p.kdfIterations ? p.kdfIterations.toLocaleString('en-US') : '600,000'}</code>${pwStatus}${p.hint ? ` · <em>Hint: ${escapeHtml(p.hint)}</em>` : ''}`;
+            }
         }
         banner.style.display = 'block';
     }
@@ -3595,16 +3612,6 @@ function applyPaperSafeParameters(p) {
         pwdInput.focus();
         pwdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-
-    if (p.password && selectedDecryptFile) {
-        showToast(`⚡ Master Key applied! Decrypting "${selectedDecryptFile.name}"...`, 'success');
-        setTimeout(() => {
-            const btn = document.getElementById('btn-decrypt');
-            if (btn) btn.click();
-        }, 150);
-    } else if (p.password) {
-        showToast(`Master Key loaded for "${p.vaultName}"! Drop your vault file to unlock instantly.`, 'success');
-    }
 }
 
 async function openQRScannerModal() {
@@ -3613,6 +3620,13 @@ async function openQRScannerModal() {
             await loadScript('js/qr-engine.js');
         } catch (e) {
             console.warn('[ZevSafe] Failed to load QR engine:', e);
+        }
+    }
+    if (typeof jsQR === 'undefined') {
+        try {
+            await loadScript('js/jsqr.js');
+        } catch (e) {
+            console.warn('[ZevSafe] Failed to load jsQR engine:', e);
         }
     }
     const modal = document.getElementById('qr-scanner-modal');
@@ -3626,40 +3640,79 @@ async function openQRScannerModal() {
 
     if (!modal) return;
     activeScannedPaperSafe = null;
-    if (detectedCard) detectedCard.style.display = 'none';
+    if (detectedCard) {
+        detectedCard.classList.remove('is-active');
+        detectedCard.style.display = 'none';
+    }
     modal.classList.remove('d-none');
     modal.style.display = 'flex';
 
     async function handleFoundPayload(rawText) {
-        if (typeof QREngine === 'undefined') return false;
-        const parsed = QREngine.parsePaperSafePayload(rawText);
+        if (!rawText || typeof rawText !== 'string') return false;
+        stopCamera();
+
+        let parsed = null;
+        if (typeof QREngine !== 'undefined') {
+            parsed = QREngine.parsePaperSafePayload(rawText);
+        }
+
+        // Direct password QR fallback: If rawText is not a Paper-Safe certificate, treat it as a direct password!
         if (!parsed) {
-            showToast('Scanned QR code is not a valid ZevSafe Paper-Safe certificate.', 'warning');
-            return false;
+            const trimmed = rawText.trim();
+            if (trimmed.length > 0) {
+                parsed = {
+                    app: 'ZevSafe',
+                    version: 3,
+                    vaultName: selectedDecryptFile ? selectedDecryptFile.name : 'Scanned Password Key',
+                    saltHex: '',
+                    kdf: 'pbkdf2',
+                    kdfIterations: 600000,
+                    hint: '',
+                    keyfileRequired: false,
+                    createdDate: new Date().toISOString().split('T')[0],
+                    password: trimmed,
+                    isDirectPassword: true
+                };
+            } else {
+                showToast('Scanned QR code is empty or unreadable.', 'warning');
+                return false;
+            }
         }
 
         activeScannedPaperSafe = parsed;
-        if (detectedCard && detectedDetails) {
-            const saltGrouped = QREngine.formatSaltFingerprint(parsed.saltHex);
-            const kdfFormatted = parsed.kdfIterations.toLocaleString('en-US');
-            const hasPassword = Boolean(parsed.password);
 
-            detectedDetails.innerHTML = `
-                Vault: <strong class="text-white">${escapeHtml(parsed.vaultName)}</strong><br>
-                ${hasPassword ? `<span class="text-emerald-heavy">⚡ Master Key: Password Embedded (Instant Unlock Ready)</span><br>` : ''}
-                Salt: <span class="text-purple-mono">${escapeHtml(saltGrouped || parsed.saltHex.slice(0, 24))}...</span><br>
-                KDF: <span class="text-sky">${kdfFormatted} Rounds (PBKDF2)</span><br>
-                ${parsed.hint ? `Hint: <em class="text-amber">${escapeHtml(parsed.hint)}</em>` : ''}
-            `;
-            const btnApply = document.getElementById('btn-apply-scanned-qr');
-            if (btnApply) {
-                btnApply.textContent = hasPassword ? '⚡ Instant Unlock Vault Now ➔' : 'Apply Parameters & Unlock Vault ➔';
+        // Auto-Apply & Instant Unlock
+        if (parsed.password) {
+            applyPaperSafeParameters(parsed);
+            closeQRScannerModal();
+
+            if (selectedDecryptFile) {
+                showToast(`⚡ Master Key applied! Decrypting "${selectedDecryptFile.name}"...`, 'success');
+                setTimeout(() => {
+                    const btnDecrypt = document.getElementById('btn-decrypt');
+                    if (btnDecrypt && !btnDecrypt.disabled) {
+                        btnDecrypt.click();
+                    }
+                }, 150);
+            } else {
+                pendingAutoDecryptOnSelect = true;
+                showToast('🔑 Password loaded from QR code! Select or drop your .zev vault to decrypt.', 'success');
+                const dz = document.getElementById('decrypt-dropzone');
+                if (dz) dz.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            detectedCard.style.display = 'block';
+            return true;
+        } else {
+            // Standard Paper-Safe sheet (Salt + KDF provided, password handwritten)
+            applyPaperSafeParameters(parsed);
+            closeQRScannerModal();
+            showToast(`✔ Paper-Safe parameters for "${parsed.vaultName}" applied! Please enter your password.`, 'info');
+            const pwdInput = document.getElementById('decrypt-password');
+            if (pwdInput) {
+                pwdInput.focus();
+                pwdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return true;
         }
-        showToast(parsed.password ? '⚡ Master Key QR detected! Ready to unlock.' : 'Paper-Safe certificate detected!', 'success');
-        stopCamera();
-        return true;
     }
 
     async function startCamera() {
@@ -3691,16 +3744,17 @@ async function openQRScannerModal() {
     }
 
     function startDetectionLoop() {
-        if (!window.BarcodeDetector || !video) return;
-        const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+        if (!video) return;
 
         async function tick() {
             if (!currentScannerStream || !video || video.paused || video.ended) return;
             try {
-                const barcodes = await detector.detect(video);
-                if (barcodes && barcodes.length > 0) {
-                    const found = await handleFoundPayload(barcodes[0].rawValue);
-                    if (found) return;
+                if (typeof QREngine !== 'undefined') {
+                    const res = await QREngine.scanImage(video);
+                    if (res && res.rawValue) {
+                        const found = await handleFoundPayload(res.rawValue);
+                        if (found) return;
+                    }
                 }
             } catch (_) {}
             if (currentScannerStream && video && !video.paused && !video.ended) {
@@ -3754,45 +3808,23 @@ async function openQRScannerModal() {
     }
 
     async function processImageFile(file) {
-        if (!window.BarcodeDetector) {
-            showToast('Image QR decoding requires Chrome, Edge, or Android Webview. In Firefox, please paste the Paper-Safe code as text (Ctrl+V).', 'warning');
-            return;
-        }
-        let imgBitmap = null;
-        let objectUrl = null;
+        if (!file) return;
         try {
-            if (typeof createImageBitmap === 'function') {
-                imgBitmap = await createImageBitmap(file);
-            } else {
-                objectUrl = URL.createObjectURL(file);
-                imgBitmap = await new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = (err) => reject(err || new Error('Image load failed'));
-                    img.src = objectUrl;
-                });
+            if (typeof QREngine === 'undefined') {
+                await loadScript('js/qr-engine.js');
             }
-            const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
-            const barcodes = await detector.detect(imgBitmap);
-            if (barcodes && barcodes.length > 0) {
-                await handleFoundPayload(barcodes[0].rawValue);
+            if (typeof jsQR === 'undefined') {
+                await loadScript('js/jsqr.js');
+            }
+            const res = await QREngine.scanImage(file);
+            if (res && res.rawValue) {
+                await handleFoundPayload(res.rawValue);
             } else {
                 showToast('No QR code detected in this image. Try another photo or screenshot with clear contrast.', 'warning');
             }
         } catch (err) {
             console.error('[QR File Process Error]', err);
             showToast('Failed to decode image. Ensure image is clear and well-lit.', 'warning');
-        } finally {
-            if (imgBitmap && typeof imgBitmap.close === 'function') {
-                try {
-                    imgBitmap.close();
-                } catch (_) {}
-            }
-            if (objectUrl) {
-                try {
-                    URL.revokeObjectURL(objectUrl);
-                } catch (_) {}
-            }
         }
     }
 
@@ -3839,7 +3871,7 @@ async function openQRScannerModal() {
 
         // Text in clipboard
         const text = cd.getData('text/plain');
-        if (text && typeof QREngine !== 'undefined' && QREngine.isPaperSafePayload(text)) {
+        if (text && text.trim().length > 0) {
             e.preventDefault();
             await handleFoundPayload(text);
             return;
@@ -3878,7 +3910,7 @@ async function openQRScannerModal() {
             if (navigator.clipboard && navigator.clipboard.readText) {
                 try {
                     const text = await navigator.clipboard.readText();
-                    if (text && typeof QREngine !== 'undefined' && QREngine.isPaperSafePayload(text)) {
+                    if (text && text.trim().length > 0) {
                         await handleFoundPayload(text);
                         return;
                     }
@@ -3891,7 +3923,7 @@ async function openQRScannerModal() {
         };
     }
 
-    if (window.BarcodeDetector && navigator.mediaDevices) {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         startCamera();
     }
 }

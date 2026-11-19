@@ -2,6 +2,16 @@
 
 ## Version 8.30.0 (WEB-VERSION-81) — November 19, 2026
 
+- `Fix`, `New` & `UI` (`js/qr-engine.js`, `js/jsqr.js`, `app.js`, `index.html`, `styles.css`): Universal Dual-Engine QR Scanner & 1-Scan Auto-Decryption.
+  - Resolved fatal issue where scanning or uploading a Master Keycard QR or password QR code in the "Scan Paper QR" modal did not trigger decryption and produced zero user feedback.
+  - Eliminated CSS specificity lockout where `#qr-detected-card` in `index.html` was constrained by `.d-none` (`display: none !important;`), preventing JavaScript from revealing the scanned detection card and the "Apply Parameters & Unlock Vault ➔" button (`#btn-apply-scanned-qr`).
+  - Integrated offline pure-JS `jsQR` decoder (`js/jsqr.js`) alongside hardware `window.BarcodeDetector`, providing 100% universal camera and image QR scanning across desktop Chrome, Firefox, Safari, and mobile webviews without external dependencies.
+  - Implemented 1-Scan Auto-Decryption: scanning or pasting a Master Keycard QR or raw password QR now automatically applies the credentials, dismisses the modal, and initiates decryption immediately when a `.zev` vault is loaded.
+  - Added pending auto-decryption queue: if the QR is scanned before selecting a vault, the system flags `pendingAutoDecryptOnSelect = true` and guides the user to pick their `.zev` file, which then triggers auto-decryption instantaneously upon selection without secondary clicks.
+  - Added direct generic password QR support (`isDirectPassword: true`), enabling scanning of plaintext password QRs.
+  - Fixed mobile file chooser gating by replacing `display: none !important;` on `#qr-file-input` with accessible `.sr-only-file-input` styling.
+  - Added `test/ui/test-paper-safe-qr.js` Test 21 verifying pure-JS matrix decoding and password recovery (21/21 tests passed, 100%). Precached `js/jsqr.js` in Service Worker `sw.js` (87 precached assets).
+
 - `UI` & `Perf` (`index.html`, `styles.css`): Compact 3-Step Micro-Flow Hero Section Implementation (Option 1).
   - Reduced hero header vertical space by over 65% (from ~370px down to ~115px), bringing the interactive **Encrypt Folder** and **Decrypt Vault** cards immediately above the fold on all standard laptop and desktop screens.
   - Replaced long, multi-line cryptographic jargon headlines with a punchy single-line title: `Lock Any Folder Into an Encrypted Vault` paired with an inline gradient tag `100% In-Browser` and live status badge.

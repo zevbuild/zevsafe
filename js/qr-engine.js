@@ -1150,7 +1150,7 @@
     }
 
     // =========================================================================
-    // 7. OPTICAL SCANNER CONTROLLER (W3C BarcodeDetector API)
+    // 7. OPTICAL SCANNER CONTROLLER (Dual Engine: W3C BarcodeDetector + jsQR)
     // =========================================================================
 
     /**
@@ -1161,43 +1161,122 @@
     }
 
     /**
-     * Scan image source (video, img, canvas, blob/file) using BarcodeDetector
+     * Resolves the jsQR decoding function across browser and Node.js environments
+     */
+    function getJsQR() {
+        if (typeof jsQR === 'function') return jsQR;
+        if (typeof window !== 'undefined' && typeof window.jsQR === 'function') return window.jsQR;
+        if (typeof globalThis !== 'undefined' && typeof globalThis.jsQR === 'function') return globalThis.jsQR;
+        if (typeof require === 'function') {
+            try { return require('./jsqr.js'); } catch (_) {}
+            try { return require('jsqr'); } catch (_) {}
+        }
+        return null;
+    }
+
+    /**
+     * Scan image source (video, img, canvas, blob/file, ImageData, or raw pixel object)
+     * Uses W3C BarcodeDetector API when supported, with seamless pure-JS jsQR fallback.
      */
     async function scanImage(source) {
-        if (!isBarcodeDetectorSupported()) {
-            throw new Error('BarcodeDetector API is not supported in this browser. Please use manual entry or drag-and-drop on a supported browser (Chrome, Edge, Android).');
+        if (!source) return null;
+
+        // 1. Try hardware-accelerated W3C BarcodeDetector if available
+        if (isBarcodeDetectorSupported()) {
+            try {
+                const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+                let target = source;
+                let createdBitmap = null;
+                try {
+                    if (typeof Blob !== 'undefined' && source instanceof Blob) {
+                        if (typeof createImageBitmap === 'function') {
+                            createdBitmap = await createImageBitmap(source);
+                            target = createdBitmap;
+                        }
+                    }
+                    const barcodes = await detector.detect(target);
+                    if (barcodes && barcodes.length > 0) {
+                        const rawValue = barcodes[0].rawValue;
+                        return {
+                            rawValue,
+                            paperSafe: parsePaperSafePayload(rawValue)
+                        };
+                    }
+                } finally {
+                    if (createdBitmap && typeof createdBitmap.close === 'function') {
+                        try { createdBitmap.close(); } catch (_) {}
+                    }
+                }
+            } catch (_) {
+                // If BarcodeDetector encounters an error or format issue, seamlessly fall through to pure-JS engine
+            }
         }
 
-        const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
-        let target = source;
-        let createdBitmap = null;
-
-        try {
-            // If source is a Blob/File, convert to ImageBitmap
-            if (typeof Blob !== 'undefined' && source instanceof Blob) {
-                if (typeof createImageBitmap === 'function') {
-                    createdBitmap = await createImageBitmap(source);
-                    target = createdBitmap;
+        // 2. Pure-JS Fallback using jsQR (100% universal across all browsers and offline environments)
+        const jsQREngine = getJsQR();
+        if (jsQREngine) {
+            // Direct ImageData or { data, width, height } object
+            if (source.data && source.width > 0 && source.height > 0) {
+                const code = jsQREngine(source.data, source.width, source.height, { inversionAttempts: 'attemptBoth' });
+                if (code && code.data) {
+                    return {
+                        rawValue: code.data,
+                        paperSafe: parsePaperSafePayload(code.data)
+                    };
                 }
-            }
-
-            const barcodes = await detector.detect(target);
-            if (!barcodes || barcodes.length === 0) {
                 return null;
             }
 
-            const rawValue = barcodes[0].rawValue;
-            return {
-                rawValue,
-                paperSafe: parsePaperSafePayload(rawValue)
-            };
-        } finally {
-            if (createdBitmap && typeof createdBitmap.close === 'function') {
+            // Browser Canvas / Image / Video / Blob processing
+            if (typeof document !== 'undefined') {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                if (!ctx) return null;
+
+                let srcElement = source;
+                let objectUrl = null;
                 try {
-                    createdBitmap.close();
-                } catch (_) {}
+                    if (typeof Blob !== 'undefined' && source instanceof Blob) {
+                        objectUrl = URL.createObjectURL(source);
+                        srcElement = await new Promise((resolve, reject) => {
+                            const img = new Image();
+                            img.onload = () => resolve(img);
+                            img.onerror = reject;
+                            img.src = objectUrl;
+                        });
+                    }
+
+                    const width = srcElement.videoWidth || srcElement.naturalWidth || srcElement.width || 0;
+                    const height = srcElement.videoHeight || srcElement.naturalHeight || srcElement.height || 0;
+
+                    if (width > 0 && height > 0) {
+                        // Clamp to max 1600px for speed and memory bounding
+                        const maxDim = 1600;
+                        const scale = Math.min(1, maxDim / Math.max(width, height));
+                        canvas.width = Math.round(width * scale);
+                        canvas.height = Math.round(height * scale);
+                        ctx.drawImage(srcElement, 0, 0, canvas.width, canvas.height);
+
+                        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQREngine(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'attemptBoth' });
+                        if (code && code.data) {
+                            return {
+                                rawValue: code.data,
+                                paperSafe: parsePaperSafePayload(code.data)
+                            };
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[QR Scan Image Error]', e);
+                } finally {
+                    if (objectUrl) {
+                        try { URL.revokeObjectURL(objectUrl); } catch (_) {}
+                    }
+                }
             }
         }
+
+        return null;
     }
 
     // Export Public API

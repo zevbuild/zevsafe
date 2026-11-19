@@ -794,6 +794,27 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Implemented in-browser 512-bit CSPRNG keyfile generator (`generateKeyfileEncrypt()`) auto-downloading unique timestamped `.key` files without requiring pre-existing device files.
   - Resolved Windows Notepad line-ending incompatibility by enforcing standard `\r\n` line breaks in `buildPasswordRecoveryText()`, adding comprehensive KDF, iteration count, and salt hex telemetry.
 
+### 3.39 Universal Dual-Engine Optical QR Scanner & 1-Scan Auto-Decryption (`js/qr-engine.js`, `js/jsqr.js`, `app.js`, `index.html`, `styles.css`) [v8.30.0 / WEB-VERSION-81]
+- **Root Cause & Operational Issue Identification:**
+  - Resolved fatal UX failure where scanning or uploading a Master Keycard QR code or password QR in the "Scan Paper QR" modal produced zero response and failed to start vault decryption.
+  - **CSS Specificity Lockout:** `#qr-detected-card` in `index.html` carried `class="qr-detected-card d-none"`. Because `.d-none` defines `display: none !important;` in `styles.css`, JavaScript statements setting `detectedCard.style.display = 'block'` were completely overridden, keeping the scan detection card and `#btn-apply-scanned-qr` permanently invisible to the user.
+  - **Browser Compatibility Void:** Mobile and desktop browsers without native hardware `window.BarcodeDetector` (e.g. desktop Chrome, Firefox, Safari) silently aborted camera detection loops and file/paste processing without a pure-JS fallback decoder.
+  - **Mobile File Picker Gate:** `<input class="d-none" type="file" id="qr-file-input">` prevented mobile webview file and camera capture dialogs from firing due to browser click-event suppression on `display: none !important` elements.
+- **Universal Dual-Engine Scanner Architecture (`js/qr-engine.js`, `js/jsqr.js`):**
+  - Integrated local offline pure-JS `jsQR` fallback engine (`js/jsqr.js`) alongside `window.BarcodeDetector`.
+  - Upgraded `QREngine.scanImage(source)` to execute hardware `window.BarcodeDetector` first, automatically falling back to pure-JS `jsQR` across `HTMLVideoElement`, `HTMLCanvasElement`, `HTMLImageElement`, `File`/`Blob` objects, and raw RGBA `Uint8ClampedArray` buffers.
+  - Added standalone `test/ui/test-paper-safe-qr.js` Test 21 verifying pure-JS `jsQR` matrix decoding and password recovery (100% pass: 21/21 assertions).
+- **1-Scan Auto-Decryption Engine (`app.js`):**
+  - Implemented automated 1-scan parameter application and decryption execution upon QR detection:
+    - If the scanned QR is a Paper-Safe Master Keycard or raw password QR and a `.zev` vault is already selected, `handleFoundPayload()` automatically applies credentials, closes the modal, and triggers `#btn-decrypt.click()` after 200ms.
+    - If no vault file is selected yet, sets `pendingAutoDecryptOnSelect = true` and surfaces a helpful toast advising the user to select their `.zev` vault. The instant the file is dropped or selected (`onDecryptSelected()`), decryption triggers automatically without requiring further clicks.
+    - If the scanned QR is a standard salt/recovery sheet without an embedded password, parameters are auto-applied, the modal closes, and focus transfers directly to `#decrypt-password`.
+  - Added direct raw password QR detection (`isDirectPassword: true`), allowing users to scan generic password QRs or Wi-Fi/text QR credentials into the decryption password field.
+- **UI & Accessibility Refinements (`index.html`, `styles.css`):**
+  - Replaced `d-none` on `#qr-file-input` with accessible `.sr-only-file-input` so mobile file/camera dialogues open smoothly.
+  - Replaced `.d-none` on `#qr-detected-card` with dynamic `.is-active` CSS class matching BEM styling conventions with zero inline style violations.
+  - Added full Service Worker precache entry for `./js/jsqr.js` (87 total assets cached).
+
 ### 3.38 Compact 3-Step Micro-Flow Hero Section Implementation [v8.30.0 / WEB-VERSION-81]
 - **Landing Page Height Reduction (> 65% space saved):**
   - Resolved vertical real estate overload on desktop and laptop displays where the hero section previously consumed ~370px of vertical space, pushing the interactive **Encrypt Folder** and **Decrypt Vault** cards below the fold.
@@ -849,7 +870,7 @@ node test/test-security-csp-audit.js               #  18 tests: Strict CSP Direc
 
 # === Mobile, Platform & Storage Engines ===
 node test/crypto/test-android-encryption.js               #  33 tests: Android OPFS & Multi-Tier StreamSaver
-node test/test-paper-safe-qr.js                    #  20 tests: Paper-Safe Optical QR & Master Keycard
+node test/ui/test-paper-safe-qr.js                    #  21 tests: Paper-Safe Optical QR & Master Keycard
 node test/test-device-power.js                     #   5 tests: Device Hardware Power Profiler
 node test/test-explorer-folder-nav.js              #  41 tests: Decrypted Vault Explorer & Folder Tree
 node test/test-roadmap-plan.js                     #  11 tests: Strategic Roadmap & Master Plan
@@ -873,7 +894,7 @@ node test/test-phase7-a11y.js                     #  15 tests: WCAG 2.1 AA/AAA, 
 node test/pwa/test-milestone4-fixes.js             #  10 tests: Milestone 4 PWA, Storage Tiers & USB Air-Gap Kit
 node test/browser-verification-phase2.js           #   6 tests: Headless Chrome Phase 2 Media Player CDP
 node test/browser-verification-phase3.js           #  10 tests: Headless Chrome Phase 3 Strict CSP & 13 Modals
-# Total: 35 Test Suites | 1,267 Passing Tests (100% Pass)
+# Total: 35 Test Suites | 1,268 Passing Tests (100% Pass)
 ```
 
 Ensure 100% of tests pass before committing any changes.

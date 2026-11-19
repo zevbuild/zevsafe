@@ -728,6 +728,13 @@
                     </header>
                     <ul class="cl-bullets">
                         <li>
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div>
+                                <strong>Universal Dual-Engine QR Scanner &amp; 1-Scan Auto-Decryption (<code>js/qr-engine.js</code>, <code>js/jsqr.js</code>, <code>app.js</code>, <code>index.html</code>, <code>styles.css</code>):</strong>
+                                Resolved the issue where scanning or uploading a Master Keycard QR or password code in the "Scan Paper QR" modal produced no response and did not begin decryption. Eliminated CSS specificity conflicts (<code>.d-none</code> with <code>!important</code>) that hid the detected card and unlock actions, integrated the offline pure-JS <code>jsQR</code> engine alongside <code>window.BarcodeDetector</code> for 100% universal camera and image scanning across desktop Chrome, Firefox, Safari, and mobile webviews, and engineered instant 1-scan auto-decryption that applies credentials, closes the modal, and unlocks the vault immediately upon QR recognition. Supports pending auto-decryption if a vault has not yet been selected, generic plaintext password QRs, and mobile file/camera picker activation.
+                            </div>
+                        </li>
+                        <li>
                             <span class="cl-bullet cl-bullet--ui">UI</span>
                             <div>
                                 <strong>Compact 3-Step Micro-Flow Hero Section Implementation (<code>index.html</code>, <code>styles.css</code>):</strong>

@@ -7312,11 +7312,16 @@ body {
 }
 
 .qr-detected-card {
+    display: none;
     background: rgba(16, 185, 129, 0.09);
     border: 1px solid rgba(52, 211, 153, 0.35);
     border-radius: 10px;
     padding: 0.85rem 1rem;
     animation: fadeIn 0.2s ease-in-out;
+}
+
+.qr-detected-card.is-active {
+    display: block;
 }
 
 /* Dedicated Print Stylesheet */

@@ -1706,7 +1706,7 @@
 
                 <!-- Alternative: Image Drop Zone / File Picker / Clipboard Paste -->
                 <div class="qr-drop-zone" id="qr-image-dropzone" tabindex="0" role="button" aria-label="Drop QR image, click to browse, or paste from clipboard">
-                    <input class="d-none" type="file" id="qr-file-input" accept="image/*" aria-label="Select QR code image file to scan">
+                    <input class="sr-only-file-input" type="file" id="qr-file-input" accept="image/*" aria-label="Select QR code image file to scan">
                     <div class="style-qr-file-input" >
                         <span class="u-style-zm9udc1z" >📁</span>
                         <span class="u-style-zm9udc1z" >Drop QR photo or click to browse</span>
@@ -1722,7 +1722,7 @@
                 </div>
 
                 <!-- Detected Parameters Card (Hidden until scan success) -->
-                <div class="qr-detected-card d-none" id="qr-detected-card" >
+                <div class="qr-detected-card" id="qr-detected-card" >
                     <div class="u-flex-between" >
                         <strong class="u-style-y29sb3i6" >✔ Detected Paper-Safe Certificate</strong>
                         <span class="u-style-y29sb3i6"  id="qr-detected-format">ZV3 STREAM</span>
@@ -1737,7 +1737,7 @@
             </div>
             
             <div class="pw-modal-footer u-justify-between" >
-                <span class="u-style-zm9udc1z" >Decodes 100% locally on your device via W3C BarcodeDetector API.</span>
+                <span class="u-style-zm9udc1z" >Decodes 100% locally on your device via W3C BarcodeDetector &amp; pure-JS engine.</span>
                 <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-cancel-scanner">Cancel</button>
             </div>
         </div>
@@ -1980,11 +1980,12 @@
         </div>
     </div>
 
-    <!-- Lazy-loaded on demand via loadScript(): js/usb-backup-kit.js, js/qr-engine.js, jszip.min.js, js/passphrase-words.js -->
+    <!-- Lazy-loaded on demand via loadScript(): js/usb-backup-kit.js, js/qr-engine.js, js/jsqr.js, jszip.min.js, js/passphrase-words.js -->
     <noscript>
         <script src="jszip.min.js"></script>
         <script src="js/usb-backup-kit.js"></script>
         <script src="js/qr-engine.js"></script>
+        <script src="js/jsqr.js"></script>
     </noscript>
     <!-- Core Streaming Cryptography & Application Shell (Deferred for instantaneous First Paint) -->
     <script src="js/argon2id.js" defer></script>
