@@ -8,8 +8,8 @@
 
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
-    <title>The Beginner’s Zero-Knowledge Guide: How to Lock, Decrypt &amp; Explore Vaults — ZevSafe Blog</title>
-    <meta name="description" content="Step-by-step beginner guide to ZevSafe: learn how to lock files and folders into an authenticated .zsafe vault, set secure passphrases, and explore decrypted archives directly in your browser.">
+    <title>What is ZevSafe &amp; .zsafe? The Complete Guide to Locking &amp; Decrypting Offline Vaults — ZevSafe Blog</title>
+    <meta name="description" content="A comprehensive master guide to ZevSafe and the .zsafe container format. Learn what zero-knowledge encryption means, how .zsafe works, and step-by-step instructions to encrypt and decrypt files offline.">
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="../blog.css">
 </head>
@@ -42,16 +42,16 @@
             <li class="sep">/</li>
             <li><a href="../index.html">Blog</a></li>
             <li class="sep">/</li>
-            <li class="current">Beginner’s Guide</li>
+            <li class="current">What is ZevSafe &amp; .zsafe</li>
         </ul>
     </div>
 
     <main class="blog-article-layout" id="main-content">
         <header class="blog-article-header">
-            <span class="blog-card-category guide blog-article-category-badge">🟢 How-To Guide #01</span>
-            <h1 class="blog-article-title">The Beginner’s Zero-Knowledge Guide: How to Lock, Decrypt &amp; Explore Vaults</h1>
+            <span class="blog-card-category guide blog-article-category-badge">🟢 Masterclass Guide #01</span>
+            <h1 class="blog-article-title">What is ZevSafe &amp; .zsafe? The Complete Guide to Locking &amp; Decrypting Offline Vaults</h1>
             <p class="blog-article-lead">
-                A complete visual manual for anyone who wants absolute privacy. Learn how to turn private files into encrypted .zsafe archives (compatible with .zev) without touching the cloud or exposing passwords.
+                Everything you need to know about true zero-knowledge file encryption. Discover how ZevSafe works, how the authenticated <code>.zsafe</code> binary format keeps your documents uncrackable, and how to encrypt and decrypt files with zero cloud dependencies.
             </p>
             <div class="blog-article-meta-row">
                 <div class="blog-author-group">
@@ -59,93 +59,203 @@
                     <span>Written by <strong>zevbuild security team</strong></span>
                 </div>
                 <span>📅 November 2026</span>
-                <span>⏱️ 6 min read</span>
+                <span>⏱️ 8 min read</span>
                 <span>🔒 100% Client-Side</span>
+                <span>🛡️ AES-256-GCM + STREAM AEAD</span>
             </div>
         </header>
 
         <nav class="blog-toc" aria-label="Table of Contents">
             <div class="blog-toc-title">Table of Contents</div>
             <ul class="blog-toc-list">
-                <li><a href="#what-is-zero-knowledge">1. What Does "Zero-Knowledge" Actually Mean?</a></li>
-                <li><a href="#step-1-locking">2. Step 1: Locking Your First Folder or Files</a></li>
-                <li><a href="#step-2-passphrase">3. Step 2: Choosing an Unbreakable Passphrase</a></li>
-                <li><a href="#step-3-emergency-sheet">4. Step 3: Generating the Paper-Safe Emergency Sheet</a></li>
-                <li><a href="#step-4-decrypting">5. Step 4: Unlocking &amp; Exploring Your Vault</a></li>
-                <li><a href="#security-invariants">6. Critical Rules for Safe Vault Management</a></li>
+                <li><a href="#what-is-zevsafe">1. What is ZevSafe? (Architecture &amp; Core Philosophy)</a></li>
+                <li><a href="#what-is-zsafe">2. What is a .zsafe File? (Binary Structure &amp; Cryptography)</a></li>
+                <li><a href="#how-to-encrypt">3. How to Encrypt Files and Folders with ZevSafe</a></li>
+                <li><a href="#how-to-decrypt">4. How to Decrypt and Explore a .zsafe Vault</a></li>
+                <li><a href="#advanced-security">5. Advanced Security Tiers, Keyfile 2FA &amp; QR Cold Storage</a></li>
+                <li><a href="#security-invariants">6. Golden Rules for Zero-Knowledge Vault Sovereignty</a></li>
             </ul>
         </nav>
 
         <article class="blog-article-content">
-            <h2 id="what-is-zero-knowledge">1. What Does "Zero-Knowledge" Actually Mean?</h2>
+            <!-- SECTION 1: WHAT IS ZEVSAFE -->
+            <h2 id="what-is-zevsafe">1. What is ZevSafe? (Architecture &amp; Core Philosophy)</h2>
             <p>
-                In conventional cloud storage or web-based encryptors, your files or password hashes are transmitted across a network to a remote server. Even services that advertise "end-to-end encryption" often rely on remote key databases or closed-source backends.
+                <strong>ZevSafe</strong> is a 100% client-side, zero-knowledge, offline-first cryptographic security application designed to lock full folders, loose files, high-resolution media, and sensitive documents into impenetrable vaults.
             </p>
             <p>
-                <strong>ZevSafe is fundamentally different:</strong> It runs entirely inside your browser's local sandbox using the W3C Web Cryptography API (<code>crypto.subtle</code>). 
+                Unlike traditional cloud storage platforms (Dropbox, Google Drive, OneDrive) or online encryption utilities that require you to upload data to external servers, ZevSafe is built on a strict operational premise:
             </p>
             <div class="blog-callout security">
-                <div class="blog-callout-header">🛡️ The Zero-Knowledge Guarantee</div>
+                <div class="blog-callout-header">🛡️ The Core Philosophy: "Trust No One. Not Even Us."</div>
                 <p>
-                    Your files, passphrases, and decrypted contents <strong>never touch a server, disk, or remote API</strong>. You can disconnect your internet, turn on Airplane Mode, and ZevSafe will encrypt and decrypt 5 GB+ folders with zero network connectivity.
+                    <strong>Zero Servers. Zero Telemetry. Zero Analytics. Zero Network Calls.</strong><br>
+                    Every single cryptographic operation—compression, key derivation, chunk hashing, and Galois/Counter Mode authenticated encryption—happens exclusively on your local device CPU inside your web browser or installable Progressive Web App (PWA).
                 </p>
             </div>
-
-            <h2 id="step-1-locking">2. Step 1: Locking Your First Folder or Files</h2>
             <p>
-                To lock files or a complete directory structure:
+                You can disconnect your Wi-Fi, turn on Airplane Mode, or run ZevSafe in an air-gapped forensic workstation with no internet access. The application will continue to encrypt and decrypt multi-gigabyte vaults seamlessly.
             </p>
-            <ol>
-                <li>Open the <a href="../../index.html" class="inline-code">ZevSafe Portal</a> on any computer, tablet, or smartphone.</li>
-                <li>Select the <strong>Lock a Folder</strong> tab (or <strong>Lock Single File</strong>).</li>
-                <li>Drag and drop your folder into the drop zone, or click <strong>Browse Folder</strong> to select your directory via the native operating system picker.</li>
-                <li>ZevSafe reads your files directly in memory and shows a summary of total file count and uncompressed byte size.</li>
-            </ol>
 
-            <h2 id="step-2-passphrase">3. Step 2: Choosing an Unbreakable Passphrase</h2>
-            <p>
-                Your encryption key is derived directly from your password using <strong>PBKDF2-HMAC-SHA512</strong> with a minimum of <strong>600,000 iterations</strong>.
-            </p>
+            <h3>Why ZevSafe Outperforms Traditional Encryption Tools:</h3>
             <ul>
-                <li><strong>Manual Password:</strong> Type a master passphrase. The live entropy meter evaluates bit strength in real-time.</li>
-                <li><strong>CSPRNG Diceware Generator:</strong> Click the 🎲 icon to automatically generate a 6-word Diceware passphrase (e.g. <code>correct-horse-battery-staple-beacon-glory</code>) with over 77 bits of cryptographic entropy.</li>
+                <li><strong>No Software Installation Required:</strong> Runs in modern Chromium, Firefox, and Safari browsers via standard W3C Web Cryptography APIs (<code>window.crypto.subtle</code>).</li>
+                <li><strong>Installable Progressive Web App (PWA):</strong> Can be installed directly to your desktop or mobile home screen with one tap for instant, offline launch.</li>
+                <li><strong>Zero Memory Leaks &amp; Bounded Heap:</strong> Streams gigabytes of data in 4 MB chunks with an elastic background Web Worker pool (<code>js/worker-bridge.js</code>), keeping RAM consumption bounded below 150 MB across 5 GB+ files.</li>
+                <li><strong>Instant In-Memory Vault Explorer:</strong> Browse directories, stream high-bitrate video, view high-resolution photo galleries, and edit documents in-browser without extracting unencrypted files to your hard drive.</li>
             </ul>
+
+            <!-- SECTION 2: WHAT IS A .ZSAFE FILE -->
+            <h2 id="what-is-zsafe">2. What is a .zsafe File? (Binary Structure &amp; Cryptography)</h2>
+            <p>
+                A <strong><code>.zsafe</code></strong> file (e.g., <code>Financial_Archive_2026.zsafe</code>) is an authenticated cryptographic container format engineered under the <strong><code>ZV3\0</code> STREAM AEAD</strong> specification.
+            </p>
+            <p>
+                Standard compression archives (like plain <code>.zip</code> or <code>.tar</code>) store directory trees with visible filenames, modified timestamps, and directory structures even when encrypted with weak ZipCrypto or basic AES-CBC. In contrast, a <code>.zsafe</code> file obfuscates all metadata and protects data integrity through authenticated encryption.
+            </p>
+
+            <div class="blog-callout info">
+                <div class="blog-callout-header">📦 The Anatomy of a .zsafe File</div>
+                <p>
+                    Every <code>.zsafe</code> container consists of three distinct mathematical regions:
+                </p>
+                <ol>
+                    <li><strong>57-Byte Container Header:</strong> Identifies the schema version (<code>ZV3\0</code>), active flags (Keyfile 2FA, Argon2id KDF), 4 MB chunk size, 32-byte CSPRNG salt, 7-byte Base IV prefix, and the byte offset of the encrypted catalog.</li>
+                    <li><strong>STREAM AEAD Ciphertext Chunks:</strong> 4 MB blocks of payload data encrypted with <strong>AES-256-GCM</strong>. Each chunk is cryptographically bound to 42 bytes of Associated Authenticated Data (AAD) containing its sequence index and container salt.</li>
+                    <li><strong>Encrypted Tail Manifest:</strong> A sealed JSON catalog at the end of the file containing relative paths, original filenames, byte sizes, and timestamps, decrypted in under 300 ms.</li>
+                </ol>
+            </div>
+
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>Binary Specification · 57-Byte Container Header</span></div>
+                <pre><code>Offset (B) | Size | Encoding  | Field Name      | Cryptographic Purpose
+-----------+------+-----------+-----------------+---------------------------------------------
+0 .. 3     | 4 B  | ASCII     | MAGIC           | Constant: "ZV3\0" (0x5A 0x56 0x33 0x00)
+4          | 1 B  | Uint8     | VERSION         | Schema revision: 0x03
+5          | 1 B  | Uint8     | FLAGS           | Bit 0: Keyfile 2FA; Bit 1: Duress; Bit 2: Argon2id
+6 .. 9     | 4 B  | Uint32 BE | CHUNK_SIZE      | Stream chunk size: 4,194,304 bytes (4 MB)
+10 .. 41   | 32 B | Raw Bytes | SALT            | 256-bit CSPRNG salt for PBKDF2 / Argon2id
+42 .. 48   | 7 B  | Raw Bytes | BASE_IV_PREFIX  | 7-byte CSPRNG prefix for chunk nonce mixing
+49 .. 56   | 8 B  | Uint64 BE | MANIFEST_OFFSET | Big-endian byte offset of encrypted catalog</code></pre>
+            </div>
+
+            <h3>100% Backward Compatibility with Legacy .zev Files</h3>
+            <p>
+                ZevSafe was previously identified by the <code>.zev</code> file extension. To provide a unique, globally distinct ecosystem identity, the container extension was upgraded to <strong><code>.zsafe</code></strong>. All existing <code>.zev</code> and <code>.zevsafe</code> archives created in previous versions continue to be recognized, decrypted, played, and re-encrypted with <strong>100% bit-for-bit backward compatibility</strong>.
+            </p>
+
+            <!-- SECTION 3: HOW TO ENCRYPT -->
+            <h2 id="how-to-encrypt">3. How to Encrypt Files and Folders with ZevSafe</h2>
+            <p>
+                Locking private files into a <code>.zsafe</code> vault takes less than 30 seconds. Follow these 5 clear steps:
+            </p>
+
+            <div class="steps">
+                <div class="step-card step-card--purple">
+                    <div class="step-card-header">
+                        <span class="step-badge">Step 1</span>
+                        <h3 class="step-card-title">Select Files or Folder</h3>
+                    </div>
+                    <p>
+                        Open <a href="../../index.html" class="inline-code">zevsafe.pages.dev</a>. Click <strong>📁 Browse Folder</strong> to select an entire folder structure (preserving all subfolders and files), or click <strong>📄 Browse Files</strong> to select multiple loose documents or photos. You can also drag and drop your data directly onto the drop zone.
+                    </p>
+                </div>
+
+                <div class="step-card step-card--cyan">
+                    <div class="step-card-header">
+                        <span class="step-badge">Step 2</span>
+                        <h3 class="step-card-title">Set Master Passphrase</h3>
+                    </div>
+                    <p>
+                        Enter your master passphrase. The live entropy meter calculates your password strength in real time. For ultimate security, click the <strong>⚡ Generate</strong> button to generate a 6-word CSPRNG Diceware passphrase with over 77 bits of cryptographic entropy.
+                    </p>
+                </div>
+
+                <div class="step-card step-card--emerald">
+                    <div class="step-card-header">
+                        <span class="step-badge">Step 3</span>
+                        <h3 class="step-card-title">Configure Keyfile 2FA (Optional)</h3>
+                    </div>
+                    <p>
+                        To protect your vault even if your password is leaked, expand the <strong>🔑 Use Keyfile (Optional 2nd Factor)</strong> section. Click <strong>Select Keyfile</strong> to bind any local file (e.g. a family photo or document) as a mandatory second factor, or click <strong>⚡ Generate 512-bit Keyfile</strong>.
+                    </p>
+                </div>
+
+                <div class="step-card step-card--amber">
+                    <div class="step-card-header">
+                        <span class="step-badge">Step 4</span>
+                        <h3 class="step-card-title">Generate Recovery Sheet</h3>
+                    </div>
+                    <p>
+                        Click <strong>⬇️ Download Sheet</strong> or <strong>🖨️ Print Sheet</strong> to create an offline, physical cold-storage recovery sheet. This sheet records your 32-byte salt fingerprint and an optical QR code so you can restore your vault parameters offline.
+                    </p>
+                </div>
+            </div>
+
+            <h3>Final Step: Encrypt &amp; Download</h3>
+            <p>
+                Click <strong>🔒 Encrypt &amp; Download</strong>. The real-time progress tracker displays compression, chunk encryption, and manifest serialization. Your browser automatically downloads your sealed container as <code>&lt;foldername&gt;.zsafe</code>.
+            </p>
+
+            <!-- SECTION 4: HOW TO DECRYPT -->
+            <h2 id="how-to-decrypt">4. How to Decrypt and Explore a .zsafe Vault</h2>
+            <p>
+                Unlocking a <code>.zsafe</code> file requires no third-party software, decompression utilities, or command-line scripts:
+            </p>
+
+            <ol>
+                <li>
+                    <strong>Load the Vault:</strong> Open ZevSafe and switch to the <strong>Unlock a Vault</strong> panel. Drag and drop your <code>.zsafe</code> (or legacy <code>.zev</code>) file into the decrypt drop zone, or click <strong>📦 Select .zsafe File</strong>.
+                </li>
+                <li>
+                    <strong>Enter Credentials:</strong> Provide your master passphrase. If you configured a keyfile during encryption, attach it under the keyfile row.
+                </li>
+                <li>
+                    <strong>Optional 1-Scan QR Auto-Unlock:</strong> If you printed an optical Paper-Safe recovery sheet, click the <strong>📷 Scan Paper QR</strong> button. ZevSafe's dual-engine scanner recognizes your credentials and initiates decryption automatically.
+                </li>
+                <li>
+                    <strong>Click Unlock Vault:</strong> ZevSafe validates the 57-byte header, derives the 256-bit AES master key, and decrypts the tail manifest in under 300 ms.
+                </li>
+            </ol>
 
             <div class="blog-callout tip">
-                <div class="blog-callout-header">💡 Pro Tip: Never Reuse Passwords</div>
+                <div class="blog-callout-header">📂 In-Memory Web Vault Explorer Features</div>
                 <p>
-                    Because ZevSafe has no "Forgot Password" link and stores zero recovery data on any server, if you lose your password, your files are mathematically irrecoverable. Always store a backup!
+                    Once unlocked, ZevSafe launches the <strong>Decrypted Vault Explorer</strong> directly in browser RAM:
                 </p>
+                <ul>
+                    <li><strong>Cinema Video &amp; Floating Audio:</strong> Click <strong>▶️ Play</strong> on any video or audio file. ZevSafe streams high-bitrate media on-demand without loading the full video into memory.</li>
+                    <li><strong>Photo Lightbox:</strong> Click any photo to open the cinema lightbox with 1-click zoom, rotation, and slideshow navigation.</li>
+                    <li><strong>Live Document Editor:</strong> View code and text files with syntax line numbers and edit documents in-memory. Click <strong>🔒 Re-Encrypt (.zsafe)</strong> to save edits directly back into a sealed vault!</li>
+                    <li><strong>Individual or Bulk Export:</strong> Download single files or click <strong>Download Decrypted ZIP</strong> to extract the complete unencrypted directory.</li>
+                    <li><strong>Lock Session:</strong> When you finish, click <strong>🔒 Lock Session</strong> to immediately scrub all encryption keys and zero out plaintext buffers from memory.</li>
+                </ul>
             </div>
 
-            <h2 id="step-3-emergency-sheet">4. Step 3: Generating the Paper-Safe Emergency Sheet</h2>
+            <!-- SECTION 5: ADVANCED SECURITY -->
+            <h2 id="advanced-security">5. Advanced Security Tiers, Keyfile 2FA &amp; QR Cold Storage</h2>
             <p>
-                Before clicking encrypt, click the <strong>Generate Paper-Safe Recovery Sheet</strong> button. This generates a standalone, printable HTML cold-storage document containing:
+                ZevSafe provides defense-in-depth capabilities engineered for high-threat environments:
             </p>
             <ul>
-                <li>The unique 32-byte CSPRNG salt fingerprint in formatted 8-character blocks.</li>
-                <li>Key derivation tier settings and container version indicators.</li>
-                <li>An encoded optical QR code that can be scanned by camera or clipboard to restore settings.</li>
-                <li>Handwriting boxes for your Diceware words so you can keep an offline physical backup in a safe.</li>
+                <li><strong>Configurable KDF Work Factors:</strong>
+                    <ul>
+                        <li><em>Standard Security (600,000 PBKDF2 Rounds):</em> Pre-selected by default for instantaneous ~0.2s encryption with 6× the OWASP benchmark.</li>
+                        <li><em>Hardened Security (1,200,000 Rounds):</em> Recommended for multi-year cold storage archives.</li>
+                        <li><em>Maximum Security (2,400,000 Rounds):</em> 24× baseline resistance against state-sponsored parallel GPU/ASIC clusters.</li>
+                        <li><em>Ultra Security (Argon2id Memory-Hard KDF):</em> Allocates 64 MB of physical memory with $t=3, p=4$ per RFC 9106, rendering GPU brute-force economically impossible.</li>
+                    </ul>
+                </li>
+                <li><strong>Forensic Polyglot Camouflage:</strong> Conceal your <code>.zsafe</code> vault behind a genuine JPEG image or MP4 file. Photo viewers display a real photo, while ZevSafe unlocks the hidden vault.</li>
+                <li><strong>Duress Decoy Mode:</strong> Set an alternate duress password that unlocks an innocent decoy folder (e.g. recipes, travel photos) if forced to disclose credentials under coercion.</li>
             </ul>
 
-            <h2 id="step-4-decrypting">5. Step 4: Unlocking &amp; Exploring Your Vault</h2>
-            <p>
-                When encryption finishes, your browser downloads a single <code>.zsafe</code> file (e.g., <code>Financial_Archive.zsafe</code>). To inspect or extract its contents:
-            </p>
-            <ol>
-                <li>Switch to the <strong>Unlock Vault</strong> screen in ZevSafe.</li>
-                <li>Drag and drop your <code>.zsafe</code> (or legacy <code>.zev</code>) file into the unlock drop zone.</li>
-                <li>Enter your master passphrase. If you configured a physical keyfile, attach it now.</li>
-                <li>Click <strong>Unlock Vault</strong>. ZevSafe verifies the 57-byte header and decrypts the tail manifest in under 300 ms.</li>
-                <li>The <strong>Web Vault Explorer</strong> opens, allowing you to browse directory trees, preview images in the lightbox, stream video without downloading, and extract individual files with 1-click.</li>
-            </ol>
-
-            <h2 id="security-invariants">6. Critical Rules for Safe Vault Management</h2>
+            <!-- SECTION 6: GOLDEN RULES -->
+            <h2 id="security-invariants">6. Golden Rules for Zero-Knowledge Vault Sovereignty</h2>
             <ul>
-                <li><strong>The .zsafe File is Portable:</strong> You can store it on Google Drive, Dropbox, USB flash drives, or external SSDs. Because AES-256-GCM is military-grade, cloud providers cannot read the contents.</li>
-                <li><strong>Safe Renaming:</strong> You can safely rename the <code>.zsafe</code> file on disk (e.g., from <code>secret.zsafe</code> to <code>backup.zsafe</code>) — the internal structure remains 100% intact.</li>
-                <li><strong>Lock Session When Done:</strong> When you finish browsing in Vault Explorer, click the <strong>Lock Session</strong> button to immediately scrub encryption keys and zero out plaintext RAM.</li>
+                <li><strong>Passphrase Sovereignty:</strong> Because ZevSafe operates with true zero-knowledge, there is <strong>no password reset link, cloud recovery, or administrative backdoor</strong>. If you lose your password and keyfile, your data is mathematically unrecoverable.</li>
+                <li><strong>Physical Paper-Safe Backup:</strong> Always print or handwrite your Diceware passphrase and salt fingerprint on a paper emergency sheet and store it in a fireproof safe.</li>
+                <li><strong>Safe Storage on Any Cloud:</strong> Because AES-256-GCM is mathematically uncrackable when paired with strong passphrases, you can safely store your <code>.zsafe</code> files on Google Drive, Dropbox, USB flash drives, or external SSDs without cloud providers reading your data.</li>
             </ul>
         </article>
 
@@ -155,7 +265,7 @@
                     <span class="blog-nav-pagination-dir">&larr; Blog Hub</span>
                     <span class="blog-nav-pagination-title">All 14 Knowledge &amp; How-To Guides</span>
                 </a>
-                <a href="02-virtual-filesystem-live-editing.html" class="blog-nav-pagination-card" style="text-align: right;">
+                <a href="02-virtual-filesystem-live-editing.html" class="blog-nav-pagination-card">
                     <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
                     <span class="blog-nav-pagination-title">Virtual Filesystem &amp; In-Vault Live Editing</span>
                 </a>

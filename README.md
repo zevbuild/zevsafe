@@ -416,6 +416,7 @@ Then visit `http://localhost:8080` in your web browser.
 Created by **[zevbuild](https://github.com/zevbuild)** — dedicated to developing privacy-centric, zero-knowledge, and offline-first open source tools.
 
 Documentation & Guide: [how-to-use-zevsafe/](https://zevsafe.pages.dev/how-to-use-zevsafe/)  
+Security Journal & Blog: [blog/](https://zevsafe.pages.dev/blog/)  
 Changelog & Updates: [change-log/](https://zevsafe.pages.dev/change-log/)  
 Live Portal: [https://zevsafe.pages.dev](https://zevsafe.pages.dev)
 

@@ -10,6 +10,10 @@
   - Updated drop zone targets, file input accept attributes (`.zsafe,.zevsafe,.zev`), and PWA `file_handlers` in `manifest.json`.
   - Updated standalone Windows PowerShell CLI tools (`tools/encrypt.ps1`, `tools/decrypt.ps1`) and batch launchers (`tools/Decrypt-Vault.bat`) to create `.zsafe` vaults and accept `.zsafe`, `.zevsafe`, or `.zev` inputs.
 
+- `New` & `UI` (`blog/posts/01-beginners-zero-knowledge-guide.html`, `blog/index.html`): Masterclass Guide "What is ZevSafe & .zsafe? The Complete Guide to Locking & Decrypting Offline Vaults".
+  - Published comprehensive 6-part guide breaking down ZevSafe's zero-knowledge architecture, the authenticated `.zsafe` binary wire container format (`ZV3\0` STREAM AEAD), and step-by-step instructions to encrypt and decrypt files and folders offline.
+  - Detail covered: 57-byte header specifications, 4 MB AES-256-GCM chunking, PBKDF2/Argon2id work factor tiers, Diceware passphrases, Keyfile 2FA hardware mixing, optical Paper-Safe QR cold storage, and in-memory Web Vault Explorer playback.
+
 - `New` & `UI` (`index.html`, `blog/index.html`, `tools/shared-whitelist.js`, `sitemap.xml`): Final Production Release & Roadmap Retirement.
   - Formally transitioned ZevSafe into its final, standalone, feature-complete production release.
   - Concluded active development lifecycle: all core encryption, streaming, mobile OPFS, dual-engine QR recovery, 5 GB video cinema, photo inspection, and zero-knowledge features are 100% delivered.

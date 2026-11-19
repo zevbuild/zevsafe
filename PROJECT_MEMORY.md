@@ -871,6 +871,12 @@ Any `.zsafe` or `.zev` file created on Web, Android, or Desktop can be unlocked 
   - `tools/decrypt.ps1` and `tools/Decrypt-Vault.bat` accept `.zsafe`, `.zevsafe`, and `.zev` files.
   - `js/usb-backup-kit.js` documents `.zsafe` portability guarantees.
 
+### 3.43 Masterclass Guide: What is ZevSafe & .zsafe? (`blog/posts/01-beginners-zero-knowledge-guide.html`, `blog/index.html`) [v8.30.0 / WEB-VERSION-81]
+- **Foundational User Guide Overhaul:**
+  - Published comprehensive masterclass guide answering core user questions: *What is ZevSafe?*, *What is a .zsafe file?*, *How to encrypt files using ZevSafe?*, and *How to decrypt a .zsafe file?*.
+  - Documents the `ZV3\0` STREAM AEAD container format, 57-byte binary header, 4 MB chunking, Associated Authenticated Data (AAD) protection, Argon2id/PBKDF2 work factor tiers, Diceware passphrases, Keyfile 2FA hardware mixing, optical Paper-Safe QR cold storage, and the in-memory Web Vault Explorer.
+  - Synchronized `blog/index.html` featured card and article grid metadata, and refreshed Service Worker precache hashes.
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]
