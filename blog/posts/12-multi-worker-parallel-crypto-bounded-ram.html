@@ -9,9 +9,90 @@
     <link rel="manifest" href="../../manifest.json">
     <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
     <title>Multi-Worker Parallel Encryption (&lt;150MB RAM) — ZevSafe Blog</title>
-    <meta name="description" content="How ZevSafe encrypts 5 GB+ datasets in pure JavaScript: elastic WorkerPool scaling, credit-based flow control, and zero-copy transferable buffers under 150 MB RAM.">
+        <meta name="description" content="How ZevSafe encrypts 5 GB+ datasets in pure JavaScript: elastic WorkerPool scaling, credit-based flow control, and zero-copy transferable buffers under 150 MB RAM.">
+    <link rel="canonical" href="https://zevsafe.pages.dev/blog/posts/12-multi-worker-parallel-crypto-bounded-ram.html">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="zevbuild">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="ZevSafe">
+    <meta property="og:url" content="https://zevsafe.pages.dev/blog/posts/12-multi-worker-parallel-crypto-bounded-ram.html">
+    <meta property="og:title" content="Multi-Worker Parallel Encryption (&lt;150MB RAM) — ZevSafe Blog">
+    <meta property="og:description" content="How ZevSafe encrypts 5 GB+ datasets in pure JavaScript: elastic WorkerPool scaling, credit-based flow control, and zero-copy transferable buffers under 150 MB RAM.">
+    <meta property="og:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="ZevSafe - Zero-Knowledge Encryption">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://zevsafe.pages.dev/blog/posts/12-multi-worker-parallel-crypto-bounded-ram.html">
+    <meta name="twitter:title" content="Multi-Worker Parallel Encryption (&lt;150MB RAM) — ZevSafe Blog">
+    <meta name="twitter:description" content="How ZevSafe encrypts 5 GB+ datasets in pure JavaScript: elastic WorkerPool scaling, credit-based flow control, and zero-copy transferable buffers under 150 MB RAM.">
+    <meta name="twitter:image" content="https://zevsafe.pages.dev/assets/zevsafe-og.png">
+    <meta name="twitter:image:alt" content="ZevSafe - Zero-Knowledge Encryption">
+
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="../blog.css">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "TechArticle",
+                "@id": "https://zevsafe.pages.dev/blog/posts/12-multi-worker-parallel-crypto-bounded-ram.html#article",
+                "headline": "Multi-Worker Parallel Encryption (<150MB RAM)",
+                "description": "How ZevSafe encrypts 5 GB+ datasets in pure JavaScript: elastic WorkerPool scaling, credit-based flow control, and zero-copy transferable buffers under 150 MB RAM.",
+                "image": "https://zevsafe.pages.dev/assets/zevsafe-og.png",
+                "datePublished": "2026-11-19",
+                "dateModified": "2026-11-19",
+                "inLanguage": "en-US",
+                "mainEntityOfPage": "https://zevsafe.pages.dev/blog/posts/12-multi-worker-parallel-crypto-bounded-ram.html",
+                "author": {
+                    "@type": "Organization",
+                    "name": "zevbuild",
+                    "url": "https://github.com/zevbuild"
+                },
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "zevbuild",
+                    "url": "https://github.com/zevbuild",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://zevsafe.pages.dev/assets/zevsafe-logo.png"
+                    }
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "@id": "https://zevsafe.pages.dev/blog/posts/12-multi-worker-parallel-crypto-bounded-ram.html#breadcrumb",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Home",
+                        "item": "https://zevsafe.pages.dev/"
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "Blog",
+                        "item": "https://zevsafe.pages.dev/blog/"
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 3,
+                        "name": "Multi-Worker Parallel Encryption (<150MB RAM)",
+                        "item": "https://zevsafe.pages.dev/blog/posts/12-multi-worker-parallel-crypto-bounded-ram.html"
+                    }
+                ]
+            }
+        ]
+    }
+    </script>
 </head>
 <body class="blog-page">
     <a href="#main-content" class="skip-link">Skip to content</a>
@@ -166,7 +247,7 @@ function dispatchChunkToWorker(worker, chunkPayload) {
                     <span class="blog-nav-pagination-dir">&larr; Previous Guide</span>
                     <span class="blog-nav-pagination-title">ZV3 STREAM AEAD Binary Specification</span>
                 </a>
-                <a href="13-multi-tier-mobile-streaming-storage.html" class="blog-nav-pagination-card" style="text-align: right;">
+                <a href="13-multi-tier-mobile-streaming-storage.html" class="blog-nav-pagination-card blog-nav-pagination-card--next">
                     <span class="blog-nav-pagination-dir">Next Guide &rarr;</span>
                     <span class="blog-nav-pagination-title">Multi-Tier Mobile Streaming Pipeline</span>
                 </a>

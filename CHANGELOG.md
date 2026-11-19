@@ -2,6 +2,13 @@
 
 ## Version 8.30.0 (WEB-VERSION-81) — November 19, 2026 [FINAL PRODUCTION RELEASE]
 
+- `New` & `Security` (`index.html`, `blog/posts/*.html`, `blog/blog.css`, `sitemap.xml`, `sw.js`): Comprehensive SEO & Structured Data Expansion (JSON-LD & Open Graph).
+  - Updated `softwareVersion` to `"8.30.0"` and injected Schema.org `FAQPage` rich structured data into `index.html` covering core `.zsafe` container questions, backward compatibility, and zero-knowledge guarantees.
+  - Injected complete Open Graph (`og:*`), Twitter Cards (`twitter:*`), canonical URLs, and Schema.org `BlogPosting` / `TechArticle` JSON-LD structured data across all 18 articles in `blog/posts/*.html`.
+  - Converted inline styles in blog pagination to `.blog-nav-pagination-card--next` in `blog/blog.css`, maintaining strict 0-inline-style hygiene across all 18 articles.
+  - Optimized `sitemap.xml` with refreshed `2026-11-19` `<lastmod>` timestamps, `/` priority at `1.0`, `/blog/` and `/how-to-use-zevsafe/` at `0.9`, and individual guides at `0.85`.
+  - Recomputed deterministic Service Worker content hash (`e093bc5e`) and updated `dist/` distribution build.
+
 - `New`, `Security` & `UI` (`app.js`, `index.html`, `js/stream-saver.js`, `js/qr-engine.js`, `js/usb-backup-kit.js`, `manifest.json`, `tools/`): Primary Vault File Extension Upgrade to `.zsafe` with 100% Backward Compatibility.
   - Migrated primary vault container file extension from `.zev` to the unique, brand-aligned `.zsafe` extension (e.g. `personal_vault.zsafe`).
   - Updated all newly generated vaults to download and save as `.zsafe` by default across browser downloads, 5 GB OPFS mobile streaming, and desktop CLI tools.

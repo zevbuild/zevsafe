@@ -118,6 +118,17 @@ Any `.zsafe` or `.zev` file created on Web, Android, or Desktop can be unlocked 
 - **File Save Picker Cancellation Safety (`app.js`):** Handled `AbortError` when user dismisses the browser's native `showSaveFilePicker` dialog by resetting `btnEncrypt` state (`disabled = false`, removes loading class) and dismissing progress, preventing the UI from freezing.
 - **Drop Zone Uploaded File Summary & Metadata Visibility Resolution (`index.html`, `app.js`):** Resolved UI defect where uploading a `.zev` file or encryption source folder left the drop zone blank. Replaced class `d-none` on `#decrypt-selected-widget` and `#encrypt-selected-widget` with `style="display: none;"` to prevent `.d-none { display: none !important; }` from overriding JavaScript inline `display: flex;` assignments. Added explicit `classList.remove('d-none')` upon file selection and `classList.add('d-none')` on clear in `app.js`, ensuring file icons, names, and sizes (e.g. `cow.zev` · `11.2 MB`) render immediately in the active widget.
 
+### 3.5.3 Comprehensive SEO & Structured Data Architecture (v8.30.0)
+- **WebApplication & FAQPage JSON-LD (`index.html`):** Synchronized `softwareVersion` to `"8.30.0"` in the Schema.org `WebApplication` graph block. Injected rich Schema.org `FAQPage` JSON-LD structured data with 11 questions matching user-facing semantic `<details>` accordions in `<div class="seo-faq-list">` (covering `.zsafe` container format, backward compatibility with `.zev`, offline air-gapping, cloud storage security, and zero-knowledge recovery).
+- **Universal Head Metadata Across All 18 Blog Posts (`blog/posts/*.html`):**
+  - `<link rel="canonical" href="https://zevsafe.pages.dev/blog/posts/<filename>">`.
+  - Comprehensive Open Graph metadata (`og:type`, `og:site_name`, `og:url`, `og:title`, `og:description`, `og:image`, `og:image:width`, `og:image:height`, `og:image:alt`).
+  - Standardized Twitter Cards (`twitter:card`, `twitter:url`, `twitter:title`, `twitter:description`, `twitter:image`, `twitter:image:alt`).
+  - Schema.org `BlogPosting` and `TechArticle` JSON-LD structured data with author attribution (`zevbuild`), publisher logo, breadcrumb hierarchy (`Home > Blog > Article`), and publication/modification timestamps (`2026-11-19`).
+- **Zero Inline Styles in Blog Posts (`blog/blog.css`):** Replaced legacy inline styles on pagination buttons with the `.blog-nav-pagination-card--next` utility class, achieving 100% zero-inline-style hygiene across all 18 blog articles.
+- **Optimized Sitemap Routing & Priorities (`sitemap.xml`):** Refreshed all 35 routes to `<lastmod>2026-11-19</lastmod>`, with root `/` priority at `1.0`, `/blog/` and `/how-to-use-zevsafe/` at `0.9`, and individual knowledge and blog guides at `0.85`.
+- **Precache & Service Worker Hash Synchronization (`sw.js`, `dist/`):** Recomputed deterministic SHA-256 asset content hash (`e093bc5e`) across 89 precached assets and synchronized `dist/` production distribution tree.
+
 ### 3.6 Web Vault Explorer & Ephemeral Virtual Filesystem Architecture
 - **Hierarchical Directory Tree Engine (`getItemsInDirectory`):** Groups decrypted files at `explorerCurrentDir` into immediate subdirectories and direct files. Computes recursive file counts and total byte sizes per folder in $O(N)$ time with zero memory allocations beyond folder summaries.
 - **Interactive Breadcrumb Navigation (`renderBreadcrumbs`):** Renders navigable crumb pills (`📁 Vault Root / photos / vacation`) allowing instant jumping to parent directory levels.

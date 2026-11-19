@@ -69,7 +69,7 @@
           "operatingSystem": "Any (Windows, macOS, Linux, Android, iOS)",
           "browserRequirements": "Requires any modern browser with Web Crypto API support (Chrome, Edge, Firefox, Safari)",
           "description": "100% offline, zero-knowledge folder and file encryption using AES-256-GCM and PBKDF2-SHA512. Your files and passwords never leave your browser.",
-          "softwareVersion": "8.19.0",
+          "softwareVersion": "8.30.0",
           "image": "https://zevsafe.pages.dev/assets/zevsafe-og.png",
           "screenshot": "https://zevsafe.pages.dev/assets/zevsafe-og.png",
           "aggregateRating": {
@@ -152,6 +152,46 @@
           "@type": "FAQPage",
           "@id": "https://zevsafe.pages.dev/#faq",
           "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is ZevSafe?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "ZevSafe is a 100% client-side, zero-knowledge encryption application that runs completely in your web browser. It encrypts files and folders into authenticated .zsafe vaults using AES-256-GCM without uploading any data to remote servers."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is a .zsafe file?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A .zsafe file is an authenticated binary cryptographic container format based on the ZV3 STREAM AEAD specification. It secures both file contents and directory hierarchies, protecting against tampering, metadata inspection, and chunk swapping."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I open legacy .zev files?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. ZevSafe provides 100% bit-for-bit backward compatibility for legacy .zev and .zevsafe archives. Older vaults can be unlocked, explored, and played seamlessly."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is ZevSafe safe for cloud storage?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Because .zsafe vaults use military-grade AES-256-GCM authenticated encryption and PBKDF2/Argon2id key derivation, cloud storage providers cannot read or inspect the contents of your vault."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can ZevSafe recover lost passwords?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. ZevSafe enforces a zero-knowledge architecture with no administrative backdoors, master keys, or account resets. Users are encouraged to generate an offline Paper-Safe recovery sheet."
+              }
+            },
             {
               "@type": "Question",
               "name": "How does ZevSafe encrypt folders without uploading them?",
@@ -1033,6 +1073,41 @@
                 </header>
 
                 <div class="seo-faq-list">
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">What is ZevSafe?</summary>
+                        <div class="seo-faq-content">
+                            ZevSafe is a 100% client-side, zero-knowledge encryption application that runs completely in your web browser. It encrypts files and folders into authenticated .zsafe vaults using AES-256-GCM without uploading any data to remote servers.
+                        </div>
+                    </details>
+
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">What is a .zsafe file?</summary>
+                        <div class="seo-faq-content">
+                            A .zsafe file is an authenticated binary cryptographic container format based on the ZV3 STREAM AEAD specification. It secures both file contents and directory hierarchies, protecting against tampering, metadata inspection, and chunk swapping.
+                        </div>
+                    </details>
+
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">Can I open legacy .zev files?</summary>
+                        <div class="seo-faq-content">
+                            Yes. ZevSafe provides 100% bit-for-bit backward compatibility for legacy .zev and .zevsafe archives. Older vaults can be unlocked, explored, and played seamlessly.
+                        </div>
+                    </details>
+
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">Is ZevSafe safe for cloud storage?</summary>
+                        <div class="seo-faq-content">
+                            Yes. Because .zsafe vaults use military-grade AES-256-GCM authenticated encryption and PBKDF2/Argon2id key derivation, cloud storage providers cannot read or inspect the contents of your vault.
+                        </div>
+                    </details>
+
+                    <details class="seo-faq-item">
+                        <summary class="seo-faq-summary">Can ZevSafe recover lost passwords?</summary>
+                        <div class="seo-faq-content">
+                            No. ZevSafe enforces a zero-knowledge architecture with no administrative backdoors, master keys, or account resets. Users are encouraged to generate an offline Paper-Safe recovery sheet.
+                        </div>
+                    </details>
+
                     <details class="seo-faq-item">
                         <summary class="seo-faq-summary">How does ZevSafe encrypt folders without uploading them?</summary>
                         <div class="seo-faq-content">
