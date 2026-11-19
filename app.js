@@ -665,7 +665,8 @@ function onEncryptSelected(files, folderName) {
 
     if (encryptDzInner && encryptSelectedWidget) {
         encryptDzInner.style.display = 'none';
-        encryptSelectedWidget.classList.remove('d-none');
+        encryptSelectedWidget.classList.remove('d-none', 'is-hidden');
+        encryptSelectedWidget.classList.add('is-active');
         encryptSelectedWidget.style.display = 'flex';
         encryptSelectedName.textContent = folderName;
         encryptSelectedMeta.textContent = `${files.length} file(s) · ${formatBytes(totalSize)}`;
@@ -688,6 +689,7 @@ function clearEncryptSelection() {
 
     if (encryptDzInner && encryptSelectedWidget) {
         encryptDzInner.style.display = '';
+        encryptSelectedWidget.classList.remove('is-active');
         encryptSelectedWidget.classList.add('d-none');
         encryptSelectedWidget.style.display = 'none';
     }
@@ -1022,7 +1024,8 @@ async function onDecryptSelected(files) {
 
     if (decryptDzInner && decryptSelectedWidget) {
         decryptDzInner.style.display = 'none';
-        decryptSelectedWidget.classList.remove('d-none');
+        decryptSelectedWidget.classList.remove('d-none', 'is-hidden');
+        decryptSelectedWidget.classList.add('is-active');
         decryptSelectedWidget.style.display = 'flex';
         decryptSelectedName.textContent = selectedDecryptFile.name;
         decryptSelectedMeta.textContent = formatBytes(selectedDecryptFile.size || 0);
@@ -1058,6 +1061,7 @@ function clearDecryptSelection() {
 
     if (decryptDzInner && decryptSelectedWidget) {
         decryptDzInner.style.display = '';
+        decryptSelectedWidget.classList.remove('is-active');
         decryptSelectedWidget.classList.add('d-none');
         decryptSelectedWidget.style.display = 'none';
     }
@@ -4091,12 +4095,20 @@ function updateKeyfileBadge(side, file) {
     if (!badge) return;
     if (file) {
         badge.textContent = `🗝️ ${file.name}`;
+        badge.classList.remove('d-none', 'is-hidden');
         badge.style.display = 'inline-flex';
-        if (clearBtn) clearBtn.style.display = 'flex';
+        if (clearBtn) {
+            clearBtn.classList.remove('d-none', 'is-hidden');
+            clearBtn.style.display = 'flex';
+        }
     } else {
         badge.textContent = '';
+        badge.classList.add('d-none');
         badge.style.display = 'none';
-        if (clearBtn) clearBtn.style.display = 'none';
+        if (clearBtn) {
+            clearBtn.classList.add('d-none');
+            clearBtn.style.display = 'none';
+        }
     }
 }
 
@@ -4128,10 +4140,13 @@ function initV2UI() {
     const keyfileToggleBtn  = document.getElementById('btn-keyfile-toggle');
     const keyfileBody       = document.getElementById('v2-keyfile-body');
     if (keyfileToggleBtn && keyfileBody) {
-        keyfileToggleBtn.addEventListener('click', () => {
+        keyfileToggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             const isOpen = keyfileToggleBtn.getAttribute('aria-expanded') === 'true';
             const nowOpen = !isOpen;
             keyfileToggleBtn.setAttribute('aria-expanded', String(nowOpen));
+            keyfileBody.classList.remove('is-hidden', 'd-none');
+            keyfileBody.classList.toggle('is-open', nowOpen);
             keyfileBody.style.display = nowOpen ? 'block' : 'none';
             // Clear keyfile state when user collapses the section
             if (!nowOpen) {

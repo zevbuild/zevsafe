@@ -815,6 +815,18 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - Replaced `.d-none` on `#qr-detected-card` with dynamic `.is-active` CSS class matching BEM styling conventions with zero inline style violations.
   - Added full Service Worker precache entry for `./js/jsqr.js` (87 total assets cached).
 
+### 3.40 2FA Keyfile Section Expand & File Picker Activation Resolution (`styles.css`, `index.html`, `app.js`) [v8.30.0 / WEB-VERSION-81]
+- **Root Cause & Expansion Failure Identification:**
+  - Resolved critical issue where clicking the **"Use Keyfile (Optional 2nd Factor)"** pill (`#btn-keyfile-toggle`) set `aria-expanded="true"` and added inline `style="display: block;"` to `#v2-keyfile-body`, but the container failed to expand visually.
+  - `#v2-keyfile-body` carried `class="is-hidden"`. Because `.is-hidden { display: none !important; }` in `styles.css` carries `!important`, JavaScript's `keyfileBody.style.display = 'block'` was completely overridden, keeping the keyfile container permanently collapsed.
+  - The file input element inside `#v2-keyfile-body` (`#v2-keyfile-input-encrypt`) and on the decrypt side (`#v2-keyfile-input-decrypt`) carried `class="d-none"`, which suppressed native file picker dialogues on mobile and webview browsers.
+- **Architectural Remediation:**
+  - **CSS Class Architecture (`styles.css`):** Defined `.v2-keyfile-body { display: none; margin-top: 10px; animation: fadeIn 0.2s ease-in-out; }` with explicit `.v2-keyfile-body.is-open { display: block !important; }`.
+  - **Markup Hygiene (`index.html`):** Removed `class="is-hidden"` from `#v2-keyfile-body` (now `<div id="v2-keyfile-body" class="v2-keyfile-body">`) and updated `#v2-keyfile-input-encrypt`, `#v2-keyfile-input-decrypt`, `#polyglot-cover-input`, and `#duress-folder-input` from `d-none` to accessible `.sr-only-file-input`.
+  - **Dynamic Toggle Engine (`app.js`):** Updated `btn-keyfile-toggle` click handler to call `e.preventDefault()`, remove `is-hidden` and `d-none`, and toggle `.is-open` alongside `style.display`.
+  - **Keyfile Badge & Clear Button Visibility (`app.js`):** Updated `updateKeyfileBadge()` to explicitly toggle `classList.remove('d-none', 'is-hidden')` so the `🗝️ keyfile.name` pill and clear button display immediately upon file selection or random key generation.
+  - **Drop Zone Summary Synchronization:** Removed `is-hidden` from `#encrypt-selected-widget` and `#decrypt-selected-widget`, defining `.selected-files-widget.is-active { display: flex !important; }` for reliable file name and size badge display across all viewports.
+
 ### 3.38 Compact 3-Step Micro-Flow Hero Section Implementation [v8.30.0 / WEB-VERSION-81]
 - **Landing Page Height Reduction (> 65% space saved):**
   - Resolved vertical real estate overload on desktop and laptop displays where the hero section previously consumed ~370px of vertical space, pushing the interactive **Encrypt Folder** and **Decrypt Vault** cards below the fold.

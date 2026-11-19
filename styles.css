@@ -3385,7 +3385,7 @@ body {
    SELECTED FILES WIDGET (dashboard control for uploads)
    ===================================================== */
 .selected-files-widget {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 1rem;
     background: rgba(255, 255, 255, 0.04);
@@ -3403,6 +3403,10 @@ body {
     animation: widgetFadeIn 0.2s ease;
     z-index: 5;
     pointer-events: auto;
+}
+
+.selected-files-widget.is-active {
+    display: flex !important;
 }
 
 .selected-files-widget:hover {
@@ -3691,6 +3695,16 @@ body {
 }
 .btn-keyfile-toggle[aria-expanded="true"] .btn-keyfile-toggle-chevron {
     transform: rotate(180deg);
+}
+
+/* ── Keyfile Collapsible Body ───────────────────────── */
+.v2-keyfile-body {
+    display: none;
+    margin-top: 10px;
+    animation: fadeIn 0.2s ease-in-out;
+}
+.v2-keyfile-body.is-open {
+    display: block !important;
 }
 
 /* ── Keyfile Row & Buttons ──────────────────────────── */

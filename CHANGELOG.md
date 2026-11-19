@@ -2,6 +2,14 @@
 
 ## Version 8.30.0 (WEB-VERSION-81) — November 19, 2026
 
+- `Fix` & `UI` (`styles.css`, `index.html`, `app.js`): 2FA Keyfile Section Expand & File Picker Activation Resolution.
+  - Resolved issue where clicking the "Use Keyfile (Optional 2nd Factor)" pill (`#btn-keyfile-toggle`) set `aria-expanded="true"` and `style="display: block;"`, but the container failed to expand.
+  - Eliminated CSS specificity conflict where `.is-hidden { display: none !important; }` on `#v2-keyfile-body` overrode JavaScript `style.display = 'block'`.
+  - Defined explicit `.v2-keyfile-body` with `.v2-keyfile-body.is-open { display: block !important; }` in `styles.css`.
+  - Replaced `d-none` with accessible `.sr-only-file-input` on `#v2-keyfile-input-encrypt`, `#v2-keyfile-input-decrypt`, `#polyglot-cover-input`, and `#duress-folder-input`, restoring file picker dialog activation on mobile and desktop browsers.
+  - Updated `updateKeyfileBadge()` to remove `d-none` and `is-hidden` when a keyfile is selected or generated, ensuring the keyfile badge and clear button display immediately.
+  - Synchronized `.selected-files-widget.is-active` in `styles.css` for instant dropped file/vault summary display.
+
 - `Fix`, `New` & `UI` (`js/qr-engine.js`, `js/jsqr.js`, `app.js`, `index.html`, `styles.css`): Universal Dual-Engine QR Scanner & 1-Scan Auto-Decryption.
   - Resolved fatal issue where scanning or uploading a Master Keycard QR or password QR code in the "Scan Paper QR" modal did not trigger decryption and produced zero user feedback.
   - Eliminated CSS specificity lockout where `#qr-detected-card` in `index.html` was constrained by `.d-none` (`display: none !important;`), preventing JavaScript from revealing the scanned detection card and the "Apply Parameters & Unlock Vault ➔" button (`#btn-apply-scanned-qr`).

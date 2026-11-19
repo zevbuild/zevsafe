@@ -499,7 +499,7 @@
                             <input class="sr-only-file-input" type="file" id="encrypt-folder-input" webkitdirectory directory multiple autocomplete="off" aria-label="Choose folder to encrypt">
                         </div>
                         <!-- Uploaded files summary widget -->
-                        <div class="selected-files-widget is-hidden" id="encrypt-selected-widget">
+                        <div class="selected-files-widget" id="encrypt-selected-widget">
                             <span class="sf-icon">📁</span>
                             <div class="sf-info">
                                 <span class="sf-name" id="encrypt-selected-name">folder_name</span>
@@ -580,11 +580,11 @@
                             <span class="btn-keyfile-toggle-chevron" id="keyfile-toggle-chevron">▾</span>
                         </button>
                         <!-- Collapsible body — hidden by default -->
-                        <div id="v2-keyfile-body" class="is-hidden">
+                        <div id="v2-keyfile-body" class="v2-keyfile-body">
                             <div class="v2-keyfile-row v2-keyfile-row--spaced">
                                 <label id="v2-keyfile-label-encrypt" class="btn-keyfile">
                                     📄Select File
-                                    <input class="d-none" type="file" id="v2-keyfile-input-encrypt" aria-label="Select hardware or offline keyfile for encryption">
+                                    <input class="sr-only-file-input" type="file" id="v2-keyfile-input-encrypt" aria-label="Select hardware or offline keyfile for encryption">
                                 </label>
                                 <button type="button" class="btn-keyfile btn-keyfile--generate" id="btn-generate-keyfile-encrypt" title="Generate a secure 512-bit random keyfile in-browser" aria-label="Generate secure keyfile">⚡Generate Key</button>
                                 <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-encrypt" title="Remove keyfile" aria-label="Remove encryption keyfile">✕</button>
@@ -639,7 +639,7 @@
                             <div class="v2-keyfile-row" >
                                 <label class="btn-keyfile" >
                                     <span>Pick Cover Photo</span>
-                                    <input class="d-none" type="file" id="polyglot-cover-input" accept="image/jpeg,image/png,image/webp,video/mp4,audio/mpeg" aria-label="Select polyglot cover carrier file">
+                                    <input class="sr-only-file-input" type="file" id="polyglot-cover-input" accept="image/jpeg,image/png,image/webp,video/mp4,audio/mpeg" aria-label="Select polyglot cover carrier file">
                                 </label>
                                 <button type="button" class="btn-keyfile btn-keyfile--generate" id="btn-generate-cover" >
                                     Generate Minimal Cover
@@ -686,7 +686,7 @@
                             <div class="v2-keyfile-row" >
                                 <label class="btn-keyfile" >
                                     <span>📁 Pick Decoy Folder</span>
-                                    <input class="d-none" type="file" id="duress-folder-input" webkitdirectory directory multiple aria-label="Select decoy files folder for duress vault">
+                                    <input class="sr-only-file-input" type="file" id="duress-folder-input" webkitdirectory directory multiple aria-label="Select decoy files folder for duress vault">
                                 </label>
                                 <button type="button" class="btn-keyfile btn-keyfile--generate" id="btn-generate-decoy" >
                                     ⚡ Generate Realistic Decoy
@@ -744,7 +744,7 @@
                             <input class="sr-only-file-input" type="file" id="decrypt-file-input" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Choose .zev vault file to decrypt">
                         </div>
                         <!-- Decrypt file summary widget -->
-                        <div class="selected-files-widget selected-files-widget--teal is-hidden" id="decrypt-selected-widget">
+                        <div class="selected-files-widget selected-files-widget--teal" id="decrypt-selected-widget">
                             <span class="sf-icon">📦</span>
                             <div class="sf-info">
                                 <span class="sf-name" id="decrypt-selected-name">vault_name.zev</span>
@@ -793,7 +793,7 @@
                         <div class="v2-keyfile-row">
                             <label id="v2-keyfile-label-decrypt" class="btn-keyfile btn-keyfile--teal">
                                 📄Select Keyfile
-                                <input class="d-none" type="file" id="v2-keyfile-input-decrypt" aria-label="Select hardware or offline keyfile for decryption">
+                                <input class="sr-only-file-input" type="file" id="v2-keyfile-input-decrypt" aria-label="Select hardware or offline keyfile for decryption">
                             </label>
                             <button class="btn-keyfile-clear d-none" id="v2-keyfile-clear-decrypt" title="Remove keyfile"  aria-label="Remove decryption keyfile">✕</button>
                         </div>

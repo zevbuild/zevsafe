@@ -728,6 +728,13 @@
                     </header>
                     <ul class="cl-bullets">
                         <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>2FA Keyfile Section Expand &amp; File Picker Activation (<code>styles.css</code>, <code>index.html</code>, <code>app.js</code>):</strong>
+                                Resolved the issue where clicking the "Use Keyfile (Optional 2nd Factor)" pill (<code>#btn-keyfile-toggle</code>) set <code>aria-expanded="true"</code> but failed to visually expand the keyfile container. Eliminated the <code>display: none !important;</code> conflict caused by legacy <code>.is-hidden</code>, defined dedicated <code>.v2-keyfile-body.is-open { display: block !important; }</code> rules in <code>styles.css</code>, and replaced hidden file input classes with accessible <code>.sr-only-file-input</code> to guarantee file dialog opening on mobile and desktop devices.
+                            </div>
+                        </li>
+                        <li>
                             <span class="cl-bullet cl-bullet--new">New</span>
                             <div>
                                 <strong>Universal Dual-Engine QR Scanner &amp; 1-Scan Auto-Decryption (<code>js/qr-engine.js</code>, <code>js/jsqr.js</code>, <code>app.js</code>, <code>index.html</code>, <code>styles.css</code>):</strong>
