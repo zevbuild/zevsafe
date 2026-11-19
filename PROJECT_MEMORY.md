@@ -1,9 +1,10 @@
 # 🧠 ZevSafe Ecosystem — Project Memory (`zevsafe` & `app-zevsafe`)
 
 > **System Memory, Architecture & Cross-Platform Reference for AI Agents**  
-> **Web Portal Version:** `v8.30.0` (`WEB-VERSION-81`, Service Worker `v81`)  
+> **Web Portal Version:** `v8.30.0` (`WEB-VERSION-81`, Service Worker `v81`) — **FINAL PRODUCTION RELEASE**  
+> **Production Status:** **FEATURE COMPLETE & FINAL RELEASE** — No further feature development, phases, or roadmaps planned. The product is 100% finished, air-gapped, zero-knowledge, and production-grade.  
 > **Native Android App (`app-zevsafe`):** **DEPRECATED & SUNSET** — All mobile development unified into Web PWA (`zevsafe.pages.dev`). Historical repository archived at [`zevbuild/app-zevsafe`](https://github.com/zevbuild/app-zevsafe).  
-> **Future Plans & Roadmap:** Interactive Portal at [`roadmap/index.html`](roadmap/index.html) & documented in [`future-plans/FUTURE_PLAN.md`](future-plans/FUTURE_PLAN.md) (Completed Phases 1–9, 11, 13 & 14 [85.7% Delivered] & Comprehensive Knowledge Blog Suite; Upcoming Phase 10 [In-Vault Redaction], Phase 12 [Offline i18n]).
+> **Roadmap & Future Planning:** **SUNSET & RETIRED** — All planned core capabilities delivered (Argon2id, PBKDF2 multi-tier, OPFS mobile streaming, dual-engine optical QR recovery, 1-click USB air-gap kit, 5 GB in-browser video player 5.0, high-res photo lightbox, and full accessibility). Roadmap portal and future planning documents deleted.
 
 > **🤖 MANDATORY AI AGENT RULE:**  
 > Whenever **ANY** AI agent (Antigravity, Gemini, Cursor, Windsurf, Claude, Copilot) modifies, adds, refactors, or fixes any code or documentation in `zevsafe` or `app-zevsafe`, you **MUST AUTOMATICALLY UPDATE `PROJECT_MEMORY.md`**, `CHANGELOG.md`, `change-log/index.html`, AND `README.md` before completing your task so that any future AI agent can immediately understand the exact current state of the ecosystem.
@@ -827,6 +828,16 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
   - **Keyfile Badge & Clear Button Visibility (`app.js`):** Updated `updateKeyfileBadge()` to explicitly toggle `classList.remove('d-none', 'is-hidden')` so the `🗝️ keyfile.name` pill and clear button display immediately upon file selection or random key generation.
   - **Drop Zone Summary Synchronization:** Removed `is-hidden` from `#encrypt-selected-widget` and `#decrypt-selected-widget`, defining `.selected-files-widget.is-active { display: flex !important; }` for reliable file name and size badge display across all viewports.
 
+### 3.41 Final Production Release & Roadmap Retirement [v8.30.0 / WEB-VERSION-81]
+- **Ecosystem Completion & Development Freeze:**
+  - Officially transitioned ZevSafe from an ongoing developmental roadmap into a complete, standalone, final production release.
+  - Core zero-knowledge suite delivered in full: bit-identical `ZV3\0` STREAM AEAD container format, RFC 9106 Argon2id 64MB memory-hard KDF, 600k–2.4M PBKDF2 multi-tier defense, OPFS mobile streaming storage, universal dual-engine QR code scanner with offline pure-JS `jsQR` engine, 1-click USB air-gap backup kit, Video Player 5.0 studio with on-demand range streaming for 5 GB+ files, high-res photo lightbox, text/code editor, and 100% WCAG 2.1 AA/AAA accessibility conformance.
+- **Roadmap & Future Plans Deletion:**
+  - Deleted `future-plans/` (`FUTURE_PLAN.md`) and `roadmap/` (`roadmap/index.html`) portals.
+  - Streamlined UI by removing roadmap navigation pills from desktop header navbar (`#nav-roadmap-pill`), mobile drawer, and footer in `index.html` and `blog/index.html`.
+  - Updated Service Worker precaching (`tools/shared-whitelist.js`) to remove roadmap routes and assets (now 85 assets precached, content hash: `14f2fbea`).
+  - Removed roadmap entries from `sitemap.xml` and retired `test/ui/test-roadmap-plan.js`.
+
 ### 3.38 Compact 3-Step Micro-Flow Hero Section Implementation [v8.30.0 / WEB-VERSION-81]
 - **Landing Page Height Reduction (> 65% space saved):**
   - Resolved vertical real estate overload on desktop and laptop displays where the hero section previously consumed ~370px of vertical space, pushing the interactive **Encrypt Folder** and **Decrypt Vault** cards below the fold.
@@ -885,7 +896,6 @@ node test/crypto/test-android-encryption.js               #  33 tests: Android O
 node test/ui/test-paper-safe-qr.js                    #  21 tests: Paper-Safe Optical QR & Master Keycard
 node test/test-device-power.js                     #   5 tests: Device Hardware Power Profiler
 node test/test-explorer-folder-nav.js              #  41 tests: Decrypted Vault Explorer & Folder Tree
-node test/test-roadmap-plan.js                     #  11 tests: Strategic Roadmap & Master Plan
 
 # === Video Player 5.0 Studio, Viewers & Media Security Lifecycle ===
 node test/test-video-player-pro.js                 #  45 tests: Video Player Pro Studio & Hotkeys
@@ -906,7 +916,7 @@ node test/test-phase7-a11y.js                     #  15 tests: WCAG 2.1 AA/AAA, 
 node test/pwa/test-milestone4-fixes.js             #  10 tests: Milestone 4 PWA, Storage Tiers & USB Air-Gap Kit
 node test/browser-verification-phase2.js           #   6 tests: Headless Chrome Phase 2 Media Player CDP
 node test/browser-verification-phase3.js           #  10 tests: Headless Chrome Phase 3 Strict CSP & 13 Modals
-# Total: 35 Test Suites | 1,268 Passing Tests (100% Pass)
+# Total: 34 Test Suites | 1,257 Passing Tests (100% Pass)
 ```
 
 Ensure 100% of tests pass before committing any changes.

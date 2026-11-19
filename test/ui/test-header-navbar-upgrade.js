@@ -59,7 +59,7 @@ runTest('1.3: Navigation links are grouped in .nav-links-group with badge pills'
     assert.ok(indexHtml.includes('class="nav-badge-pill nav-badge-pill--purple"'), 'Must contain purple badge pill');
     assert.ok(indexHtml.includes('class="nav-badge-pill nav-badge-pill--green"'), 'Must contain green badge pill');
     assert.ok(indexHtml.includes('class="nav-badge-pill nav-badge-pill--muted"'), 'Must contain muted badge pill');
-    assert.ok(indexHtml.includes('id="nav-roadmap-pill"'), 'Must preserve #nav-roadmap-pill');
+    assert.ok(indexHtml.includes('href="./change-log/"'), 'Must contain changelog link');
 });
 
 runTest('1.4: Action buttons are grouped in .nav-actions-deck with divider', () => {

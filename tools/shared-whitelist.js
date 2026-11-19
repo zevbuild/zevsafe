@@ -35,10 +35,8 @@ const DIRS_TO_COPY = [
     'blog',
     'change-log',
     'device-power',
-    'future-plans',
     'how-to-use-zevsafe',
     'knowledge',
-    'roadmap',
     'security-audit',
     'tools'
 ];
@@ -60,8 +58,8 @@ function isDistFileAllowed(relPath) {
     if (base.startsWith('.')) return false;
     if (base.includes('.test.') || base.includes('.spec.')) return false;
 
-    // Skip internal markdown files unless in future-plans (published doc)
-    if (base.endsWith('.md') && !normalized.includes('future-plans')) return false;
+    // Skip internal markdown files
+    if (base.endsWith('.md')) return false;
 
     return true;
 }
@@ -76,7 +74,6 @@ function computeShellAssets(rootDir) {
 
     // Standalone subpages
     const subpages = [
-        'roadmap',
         'device-power',
         'blog',
         'knowledge',
@@ -182,8 +179,6 @@ function computeShellAssets(rootDir) {
 // 6. Compute SECTION_ROUTES
 function computeSectionRoutes(rootDir) {
     const routes = [
-        'roadmap',
-        'master-plan',
         'device-power',
         'know-your-device-power',
         'how-to-use-zevsafe',

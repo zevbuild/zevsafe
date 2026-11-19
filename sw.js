@@ -8,7 +8,7 @@
 // ================================================================
 
 const APP_VERSION    = 'v81';
-const CONTENT_HASH   = 'a7b9147c';
+const CONTENT_HASH   = '7f95f95b';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -17,8 +17,6 @@ const ALL_CACHES     = [SHELL_CACHE];
 const SHELL_ASSETS = [
     './',
     './index.html',
-    './roadmap/',
-    './roadmap/index.html',
     './device-power/',
     './device-power/index.html',
     './blog/',
@@ -230,8 +228,6 @@ self.addEventListener('fetch', event => {
  * 4. Section-specific offline fallbacks so Chrome never redirects to homepage erroneously.
  */
 const SECTION_ROUTES = [
-    'roadmap',
-    'master-plan',
     'device-power',
     'know-your-device-power',
     'how-to-use-zevsafe',

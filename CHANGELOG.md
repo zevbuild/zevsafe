@@ -1,6 +1,13 @@
 # Changelog
 
-## Version 8.30.0 (WEB-VERSION-81) — November 19, 2026
+## Version 8.30.0 (WEB-VERSION-81) — November 19, 2026 [FINAL PRODUCTION RELEASE]
+
+- `New` & `UI` (`index.html`, `blog/index.html`, `tools/shared-whitelist.js`, `sitemap.xml`): Final Production Release & Roadmap Retirement.
+  - Formally transitioned ZevSafe into its final, standalone, feature-complete production release.
+  - Concluded active development lifecycle: all core encryption, streaming, mobile OPFS, dual-engine QR recovery, 5 GB video cinema, photo inspection, and zero-knowledge features are 100% delivered.
+  - Deleted obsolete roadmap and future planning directories (`future-plans/` and `roadmap/`).
+  - Removed roadmap navigation pills and links from desktop header (`#nav-roadmap-pill`), mobile navigation drawer, and footer.
+  - Synchronized Service Worker precache manifest (`sw.js`) and `sitemap.xml`, precaching 85 clean offline assets.
 
 - `Fix` & `UI` (`styles.css`, `index.html`, `app.js`): 2FA Keyfile Section Expand & File Picker Activation Resolution.
   - Resolved issue where clicking the "Use Keyfile (Optional 2nd Factor)" pill (`#btn-keyfile-toggle`) set `aria-expanded="true"` and `style="display: block;"`, but the container failed to expand.

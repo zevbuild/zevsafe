@@ -195,7 +195,6 @@ const subpageDirs = [
     'change-log',
     'device-power',
     'how-to-use-zevsafe',
-    'roadmap',
     'security-audit',
     'knowledge'
 ];
@@ -213,12 +212,10 @@ const mandatoryItems = [
     'css/media-player.css',
     'jszip.min.js',
     'knowledge/index.html',
-    'roadmap/index.html',
     'security-audit/index.html',
     'change-log/index.html',
     'device-power/index.html',
     'how-to-use-zevsafe/index.html',
-    'future-plans/FUTURE_PLAN.md',
     'robots.txt',
     'sitemap.xml',
     'favicon.svg',

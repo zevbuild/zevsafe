@@ -118,12 +118,6 @@
         <priority>0.85</priority>
     </url>
     <url>
-        <loc>https://zevsafe.pages.dev/roadmap/</loc>
-        <lastmod>2026-11-07</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.85</priority>
-    </url>
-    <url>
         <loc>https://zevsafe.pages.dev/device-power/</loc>
         <lastmod>2026-11-07</lastmod>
         <changefreq>monthly</changefreq>
