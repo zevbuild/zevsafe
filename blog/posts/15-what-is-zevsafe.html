@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>What is ZevSafe? The 100% Client-Side, Zero-Knowledge Privacy Suite — ZevSafe Blog</title>
+    <meta name="description" content="An in-depth introduction to ZevSafe: what it is, its zero-knowledge philosophy, air-gapped browser architecture, and why your data never touches a server.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html" class="blog-nav-link">Main App</a></li>
+                <li><a href="../index.html" class="blog-nav-link active">All Articles</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html" class="blog-nav-link">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">What is ZevSafe?</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category guide blog-article-category-badge">🟢 Architecture Guide #15</span>
+            <h1 class="blog-article-title">What is ZevSafe? The 100% Client-Side, Zero-Knowledge Privacy Suite</h1>
+            <p class="blog-article-lead">
+                Discover the engineering, design principles, and cryptographic guarantees behind ZevSafe—a browser-based security suite built to encrypt and explore files with zero cloud uploads and zero telemetry.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild security team</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 5 min read</span>
+                <span>🔒 Zero-Knowledge</span>
+                <span>⚡ 100% Client-Side</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#core-definition">1. What is ZevSafe? The Executive Overview</a></li>
+                <li><a href="#zero-knowledge-principle">2. The Zero-Knowledge Guarantee: "Trust No One. Not Even Us."</a></li>
+                <li><a href="#how-it-works">3. How It Works: Native W3C Web Cryptography</a></li>
+                <li><a href="#pwa-offline">4. Progressive Web App (PWA) &amp; Offline Air-Gapped Mode</a></li>
+                <li><a href="#key-capabilities">5. Key Capabilities: Beyond Simple Encryption</a></li>
+                <li><a href="#why-it-matters">6. Why Client-Side Sovereignty Matters Today</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="core-definition">1. What is ZevSafe? The Executive Overview</h2>
+            <p>
+                <strong>ZevSafe</strong> is a modern, 100% client-side cryptographic application that enables anyone to pack entire folders, photo galleries, video archives, and confidential documents into a single, highly secure encrypted container called a <strong><code>.zsafe</code></strong> vault.
+            </p>
+            <p>
+                In an era where personal data is routinely ingested by centralized cloud servers for telemetry, AI model training, and advertising, ZevSafe offers an uncompromised alternative: an enterprise-grade encryption suite that runs <strong>entirely inside your browser's local sandbox</strong> without any server dependencies.
+            </p>
+
+            <h2 id="zero-knowledge-principle">2. The Zero-Knowledge Guarantee: "Trust No One. Not Even Us."</h2>
+            <p>
+                Many cloud services advertise "end-to-end encryption," yet require you to create accounts, store encrypted blobs on their servers, and rely on closed-source backend key management.
+            </p>
+            <p>
+                ZevSafe takes a radically different architectural path founded on the <strong>Zero-Knowledge Principle</strong>:
+            </p>
+            <div class="blog-callout security">
+                <div class="blog-callout-header">🛡️ True Zero-Knowledge Invariants</div>
+                <ul>
+                    <li><strong>Zero Server Uploads:</strong> Your files never leave your device. Network traffic during encryption and decryption is exactly zero bytes.</li>
+                    <li><strong>No User Accounts or Passwords on Record:</strong> ZevSafe has no database. There are no logins, usernames, tracking cookies, or password recovery backdoors.</li>
+                    <li><strong>Zero Telemetry:</strong> No analytics libraries, third-party trackers, or pingbacks are loaded.</li>
+                    <li><strong>Mathematically Enforced Sovereignty:</strong> If you lose your master passphrase and keyfile, nobody—not even the creators of ZevSafe—can unlock your vault.</li>
+                </ul>
+            </div>
+
+            <h2 id="how-it-works">3. How It Works: Native W3C Web Cryptography</h2>
+            <p>
+                Instead of running unverified third-party WebAssembly binaries or insecure JavaScript math libraries, ZevSafe delegates all intensive cryptographic algorithms directly to the browser's built-in <strong>W3C Web Cryptography API</strong> (<code>window.crypto.subtle</code>).
+            </p>
+            <p>
+                These routines execute in native C++ and machine code with hardware acceleration (AES-NI instructions on Intel/AMD CPUs and ARM Cryptography Extensions on Apple Silicon and Snapdragon chips).
+            </p>
+            <ul>
+                <li><strong>Elastic Worker Pool:</strong> ZevSafe spawns multiple background Web Workers (<code>js/worker-bridge.js</code>) to compress, hash, and encrypt data in parallel without freezing the user interface.</li>
+                <li><strong>Bounded Memory Management:</strong> By streaming data in 4 MB chunks, ZevSafe can encrypt a 10 GB video collection in a mobile browser tab with less than 150 MB of RAM usage.</li>
+            </ul>
+
+            <h2 id="pwa-offline">4. Progressive Web App (PWA) &amp; Offline Air-Gapped Mode</h2>
+            <p>
+                ZevSafe is a certified <strong>Progressive Web App (PWA)</strong>. When you visit <a href="https://zevsafe.pages.dev" class="inline-code">zevsafe.pages.dev</a>, the Service Worker automatically caches all application assets locally.
+            </p>
+            <div class="blog-callout tip">
+                <div class="blog-callout-header">✈️ Airplane Mode Verified</div>
+                <p>
+                    You can install ZevSafe to your Windows desktop, macOS dock, Android home screen, or iOS device. Once installed, you can disconnect your computer from the internet completely or use it in an air-gapped facility. It launches instantly and functions identically offline.
+                </p>
+            </div>
+
+            <h2 id="key-capabilities">5. Key Capabilities: Beyond Simple Encryption</h2>
+            <p>
+                ZevSafe is more than just a file locker—it is a complete, in-browser confidential workspace:
+            </p>
+            <ol>
+                <li><strong>In-Memory Decrypted Vault Explorer:</strong> Browse folder hierarchies and file trees directly in RAM without extracting unencrypted files onto disk.</li>
+                <li><strong>Zero-RAM Cinema Deck &amp; Floating Audio:</strong> Stream 4K/1080p video and listen to audiobooks directly from encrypted vaults on demand.</li>
+                <li><strong>High-Resolution Photo Lightbox:</strong> Inspect photo archives with instant pan, zoom, and rotation controls.</li>
+                <li><strong>Live Document Editing:</strong> Read and edit markdown, text, or code with line numbers, then click <em>Re-Encrypt</em> to seal updates directly back into a <code>.zsafe</code> file.</li>
+                <li><strong>Hardware 2FA Keyfile Mixing:</strong> Combine a physical photo or document with your password for true two-factor cryptographic protection.</li>
+                <li><strong>Optical Paper-Safe Recovery:</strong> Generate cold-storage paper emergency sheets with camera-scannable QR codes.</li>
+            </ol>
+
+            <h2 id="why-it-matters">6. Why Client-Side Sovereignty Matters Today</h2>
+            <p>
+                Data breaches, ransomware, and warrantless mass surveillance thrive on centralized servers. By keeping encryption 100% client-side and publishing an open, verifiable container specification (<code>ZV3\0</code>), ZevSafe gives users absolute ownership of their digital privacy.
+            </p>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="../index.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Blog Hub</span>
+                    <span class="blog-nav-pagination-title">All Knowledge &amp; Service Manuals</span>
+                </a>
+                <a href="16-what-is-zsafe-file.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">Next Article &rarr;</span>
+                    <span class="blog-nav-pagination-title">What is a .zsafe File? The Container Format</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog &amp; Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

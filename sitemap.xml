@@ -106,6 +106,30 @@
         <priority>0.85</priority>
     </url>
     <url>
+        <loc>https://zevsafe.pages.dev/blog/posts/15-what-is-zevsafe.html</loc>
+        <lastmod>2026-11-19</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+    <url>
+        <loc>https://zevsafe.pages.dev/blog/posts/16-what-is-zsafe-file.html</loc>
+        <lastmod>2026-11-19</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+    <url>
+        <loc>https://zevsafe.pages.dev/blog/posts/17-how-to-encrypt-files-using-zevsafe.html</loc>
+        <lastmod>2026-11-19</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+    <url>
+        <loc>https://zevsafe.pages.dev/blog/posts/18-how-to-decrypt-zsafe-file.html</loc>
+        <lastmod>2026-11-19</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+    <url>
         <loc>https://zevsafe.pages.dev/how-to-use-zevsafe/</loc>
         <lastmod>2026-11-07</lastmod>
         <changefreq>weekly</changefreq>

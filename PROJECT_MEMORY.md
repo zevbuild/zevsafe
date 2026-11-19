@@ -871,11 +871,14 @@ Any `.zsafe` or `.zev` file created on Web, Android, or Desktop can be unlocked 
   - `tools/decrypt.ps1` and `tools/Decrypt-Vault.bat` accept `.zsafe`, `.zevsafe`, and `.zev` files.
   - `js/usb-backup-kit.js` documents `.zsafe` portability guarantees.
 
-### 3.43 Masterclass Guide: What is ZevSafe & .zsafe? (`blog/posts/01-beginners-zero-knowledge-guide.html`, `blog/index.html`) [v8.30.0 / WEB-VERSION-81]
-- **Foundational User Guide Overhaul:**
-  - Published comprehensive masterclass guide answering core user questions: *What is ZevSafe?*, *What is a .zsafe file?*, *How to encrypt files using ZevSafe?*, and *How to decrypt a .zsafe file?*.
-  - Documents the `ZV3\0` STREAM AEAD container format, 57-byte binary header, 4 MB chunking, Associated Authenticated Data (AAD) protection, Argon2id/PBKDF2 work factor tiers, Diceware passphrases, Keyfile 2FA hardware mixing, optical Paper-Safe QR cold storage, and the in-memory Web Vault Explorer.
-  - Synchronized `blog/index.html` featured card and article grid metadata, and refreshed Service Worker precache hashes.
+### 3.43 Dedicated 4-Part Knowledge Series on ZevSafe, .zsafe, Encryption & Decryption (`blog/posts/15-18`, `blog/index.html`) [v8.30.0 / WEB-VERSION-81]
+- **Standalone Architectural & How-To Articles:**
+  - Published 4 independent, highly detailed blog articles:
+    - **Article 15 (`15-what-is-zevsafe.html`):** *What is ZevSafe? The 100% Client-Side Privacy Suite* — Architecture, zero-knowledge philosophy, air-gapped browser execution, W3C WebCrypto primitives, PWA offline capabilities.
+    - **Article 16 (`16-what-is-zsafe-file.html`):** *What is a .zsafe File? The Authenticated Container Format Explained* — Binary layout, 57-byte header byte-by-byte layout, 4 MB STREAM AEAD chunking, AAD sequence tamper resistance, and legacy `.zev` backward compatibility.
+    - **Article 17 (`17-how-to-encrypt-files-using-zevsafe.html`):** *How to Encrypt Files & Folders Using ZevSafe* — Folder tree selection, 6-word Diceware generator, Keyfile 2FA, work factor defense tiers (600k–2.4M PBKDF2 and 64MB Argon2id), Paper-Safe QR sheets, and `.zsafe` vault downloads.
+    - **Article 18 (`18-how-to-decrypt-zsafe-file.html`):** *How to Decrypt and Explore a .zsafe File* — Drop zone selection, Paper-Safe QR 1-scan auto-decryption, sub-300ms header demuxing, on-demand video streaming, photo lightbox, in-RAM document editing, and forensic memory scrubbing.
+  - Expanded `blog/index.html` directory to 18 articles, updated `sitemap.xml`, and refreshed Service Worker precache hashes to 89 assets.
 
 ---
 

@@ -8,7 +8,7 @@
 // ================================================================
 
 const APP_VERSION    = 'v81';
-const CONTENT_HASH   = '13e8cddb';
+const CONTENT_HASH   = '459944fd';
 const SHELL_CACHE    = `zevsafe-shell-${APP_VERSION}-${CONTENT_HASH}`;
 
 const ALL_CACHES     = [SHELL_CACHE];
@@ -37,6 +37,10 @@ const SHELL_ASSETS = [
     './blog/posts/12-multi-worker-parallel-crypto-bounded-ram.html',
     './blog/posts/13-multi-tier-mobile-streaming-storage.html',
     './blog/posts/14-zero-exfiltration-airgap-defense.html',
+    './blog/posts/15-what-is-zevsafe.html',
+    './blog/posts/16-what-is-zsafe-file.html',
+    './blog/posts/17-how-to-encrypt-files-using-zevsafe.html',
+    './blog/posts/18-how-to-decrypt-zsafe-file.html',
     './knowledge/',
     './knowledge/index.html',
     './knowledge/knowledge.css',

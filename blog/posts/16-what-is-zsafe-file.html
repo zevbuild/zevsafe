@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08091a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self';">
+
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+    <title>What is a .zsafe File? The Authenticated Container Format Explained — ZevSafe Blog</title>
+    <meta name="description" content="A comprehensive deep-dive into the .zsafe container format: its 57-byte header, STREAM AEAD chunking, AES-256-GCM authentication, and legacy .zev backward compatibility.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+</head>
+<body class="blog-page">
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="blog-reading-progress"></div>
+
+    <nav class="blog-navbar" aria-label="Main Navigation">
+        <div class="blog-navbar-inner">
+            <a href="../index.html" class="blog-brand-group">
+                <div class="blog-brand-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="blog-brand-title">
+                    ZevSafe <span class="blog-brand-badge">Journal</span>
+                </div>
+            </a>
+            <ul class="blog-nav-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog &amp; Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+                <li><a href="../../index.html" class="blog-nav-btn">Launch Vault</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="blog-breadcrumb-bar">
+        <ul class="blog-breadcrumbs">
+            <li><a href="../../index.html">Home</a></li>
+            <li class="sep">/</li>
+            <li><a href="../index.html">Blog</a></li>
+            <li class="sep">/</li>
+            <li class="current">What is a .zsafe File?</li>
+        </ul>
+    </div>
+
+    <main class="blog-article-layout" id="main-content">
+        <header class="blog-article-header">
+            <span class="blog-card-category guide blog-article-category-badge">🟣 Specification Guide #16</span>
+            <h1 class="blog-article-title">What is a .zsafe File? The Authenticated Container Format Explained</h1>
+            <p class="blog-article-lead">
+                Explore the technical anatomy of the <code>.zsafe</code> file extension: how it encrypts directory structures, guarantees tamper resistance with AES-256-GCM AEAD, and maintains 100% backward compatibility with legacy <code>.zev</code> vaults.
+            </p>
+            <div class="blog-article-meta-row">
+                <div class="blog-author-group">
+                    <div class="blog-author-avatar">Z</div>
+                    <span>Written by <strong>zevbuild security team</strong></span>
+                </div>
+                <span>📅 November 2026</span>
+                <span>⏱️ 6 min read</span>
+                <span>📦 ZV3\0 Specification</span>
+                <span>🛡️ AES-256-GCM</span>
+            </div>
+        </header>
+
+        <nav class="blog-toc" aria-label="Table of Contents">
+            <div class="blog-toc-title">Table of Contents</div>
+            <ul class="blog-toc-list">
+                <li><a href="#what-is-zsafe">1. What is a .zsafe File?</a></li>
+                <li><a href="#why-zsafe">2. Why .zsafe Over Standard ZIP or Encrypted Disks?</a></li>
+                <li><a href="#binary-structure">3. The 3-Region Binary Container Structure</a></li>
+                <li><a href="#header-breakdown">4. The 57-Byte Container Header Layout</a></li>
+                <li><a href="#tamper-resistance">5. Tamper Resistance &amp; Chunk Authentication (AAD)</a></li>
+                <li><a href="#backward-compatibility">6. 100% Compatibility with Legacy .zev Archives</a></li>
+            </ul>
+        </nav>
+
+        <article class="blog-article-content">
+            <h2 id="what-is-zsafe">1. What is a .zsafe File?</h2>
+            <p>
+                A <strong><code>.zsafe</code></strong> file (e.g. <code>Personal_Vault.zsafe</code>) is an authenticated, zero-knowledge cryptographic file container. It packages arbitrary files and complex nested directories into a single portable binary file that can only be unlocked with the correct master passphrase (and optional keyfile).
+            </p>
+            <p>
+                Operating under the <strong><code>ZV3\0</code> STREAM AEAD</strong> container specification, a <code>.zsafe</code> file is bit-for-bit identical across all platforms: a vault created in Google Chrome on Windows can be opened seamlessly on an Android phone, Mac, or offline Linux laptop.
+            </p>
+
+            <h2 id="why-zsafe">2. Why .zsafe Over Standard ZIP or Encrypted Disks?</h2>
+            <p>
+                Most everyday encryption tools suffer from significant structural vulnerabilities:
+            </p>
+            <ul>
+                <li><strong>Plain ZIP / Encrypted RAR:</strong> Even when encrypted, traditional archive formats leak metadata—file names, folder structures, and uncompressed sizes remain readable in plaintext to anyone who inspects the file.</li>
+                <li><strong>BitLocker / VeraCrypt Containers:</strong> Require kernel-level drivers, administrator permissions, fixed pre-allocated disk capacities, and cannot be streamed or opened directly inside a web browser.</li>
+                <li><strong>ZevSafe <code>.zsafe</code> Vaults:</strong>
+                    <ul>
+                        <li>Zero metadata leakage: folder structures, file names, and timestamps are sealed inside an encrypted tail manifest.</li>
+                        <li>Dynamic sizing: file size matches the actual data without pre-allocated dummy blocks.</li>
+                        <li>Direct browser execution: unlocks instantly in pure Web Crypto without root permissions.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h2 id="binary-structure">3. The 3-Region Binary Container Structure</h2>
+            <p>
+                Every valid <code>.zsafe</code> container consists of three contiguous byte regions:
+            </p>
+            <div class="blog-callout info">
+                <div class="blog-callout-header">🏗️ Container Layout</div>
+                <ol>
+                    <li><strong>57-Byte Header:</strong> Stores container flags, salt parameters, chunk dimensions, and a 64-bit pointer to the manifest.</li>
+                    <li><strong>STREAM AEAD Payload:</strong> The encrypted data payload, split into uniform 4 MB chunks. Each chunk is encrypted with AES-256-GCM.</li>
+                    <li><strong>Sealed Tail Manifest Catalog:</strong> An encrypted JSON catalog storing the directory tree, decoded in under 300 ms upon authentication.</li>
+                </ol>
+            </div>
+
+            <h2 id="header-breakdown">4. The 57-Byte Container Header Layout</h2>
+            <p>
+                Every <code>.zsafe</code> file begins with exactly 57 unencrypted header bytes (<code>V3_HEADER_SIZE = 57</code>):
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>Binary Specification · 57-Byte Container Header Layout</span></div>
+                <pre><code>Offset (B) | Size | Encoding  | Field Name      | Description
+-----------+------+-----------+-----------------+----------------------------------------
+0 .. 3     | 4 B  | ASCII     | MAGIC           | Constant: "ZV3\0" (0x5A 0x56 0x33 0x00)
+4          | 1 B  | Uint8     | VERSION         | Container schema version (0x03)
+5          | 1 B  | Uint8     | FLAGS           | Bit 0: Keyfile 2FA; Bit 1: Duress; Bit 2: Argon2id
+6 .. 9     | 4 B  | Uint32 BE | CHUNK_SIZE      | Default: 4,194,304 bytes (4 MB)
+10 .. 41   | 32 B | Raw Bytes | SALT            | CSPRNG salt for Argon2id (64MB) / PBKDF2-SHA512
+42 .. 48   | 7 B  | Raw Bytes | BASE_IV_PREFIX  | CSPRNG 7-byte prefix for chunk IV derivation
+49 .. 56   | 8 B  | Uint64 BE | MANIFEST_OFFSET | Big-endian byte offset of encrypted tail catalog</code></pre>
+            </div>
+
+            <h2 id="tamper-resistance">5. Tamper Resistance &amp; Chunk Authentication (AAD)</h2>
+            <p>
+                A critical flaw in naive chunked encryption schemes is <strong>chunk swapping</strong> or <strong>truncation attacks</strong>, where an attacker reorders chunks or deletes blocks.
+            </p>
+            <p>
+                ZevSafe eliminates this threat through <strong>Associated Authenticated Data (AAD)</strong>. Before encrypting each 4 MB block, ZevSafe constructs a 42-byte AAD binding:
+            </p>
+            <div class="blog-code-container">
+                <div class="blog-code-header"><span>AAD Framing · Chunk-Level Integrity Binding</span></div>
+                <pre><code>Chunk AAD Layout (42 Bytes):
+[ Magic (4B) | Version (1B) | Salt (32B) | ChunkIndex (4B BE) | IsLast (1B) ]</code></pre>
+            </div>
+            <p>
+                Because this 42-byte buffer is authenticated by AES-256-GCM, any attempt to swap Chunk 2 with Chunk 3 or delete the final chunk causes authentication to fail immediately during decryption.
+            </p>
+
+            <h2 id="backward-compatibility">6. 100% Compatibility with Legacy .zev Archives</h2>
+            <p>
+                Prior to the <code>.zsafe</code> release, ZevSafe container files used the <code>.zev</code> extension. To avoid breaking user vaults, ZevSafe maintains <strong>100% backward compatibility</strong>:
+            </p>
+            <ul>
+                <li>Both <code>.zsafe</code> and <code>.zev</code> files are accepted by drop zones, file dialogs, and PWA file handlers.</li>
+                <li>The decryption pipeline auto-detects legacy v1, v2 (<code>ZV2\0</code>), and v3 (<code>ZV3\0</code>) vaults.</li>
+                <li>Existing <code>.zev</code> archives unlock, stream video, and unpack identically with zero conversion required.</li>
+            </ul>
+        </article>
+
+        <footer class="blog-article-footer">
+            <div class="blog-nav-pagination">
+                <a href="15-what-is-zevsafe.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">&larr; Previous Article</span>
+                    <span class="blog-nav-pagination-title">What is ZevSafe? Privacy Suite</span>
+                </a>
+                <a href="17-how-to-encrypt-files-using-zevsafe.html" class="blog-nav-pagination-card">
+                    <span class="blog-nav-pagination-dir">Next Article &rarr;</span>
+                    <span class="blog-nav-pagination-title">How to Encrypt Files Using ZevSafe</span>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <footer class="blog-footer">
+        <div class="blog-footer-inner">
+            <div class="blog-brand-title">ZevSafe <span class="blog-brand-badge">Open Source Cryptography</span></div>
+            <p>100% Client-Side · Zero Server Uploads · Strict Air-Gap Architecture</p>
+            <ul class="blog-footer-links">
+                <li><a href="../../index.html">Main App</a></li>
+                <li><a href="../index.html">Blog &amp; Knowledge Hub</a></li>
+                <li><a href="../../how-to-use-zevsafe/index.html">User Guide</a></li>
+            </ul>
+        </div>
+    </footer>
+    <script src="../blog.js"></script>
+</body>
+</html>

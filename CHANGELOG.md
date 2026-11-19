@@ -10,9 +10,13 @@
   - Updated drop zone targets, file input accept attributes (`.zsafe,.zevsafe,.zev`), and PWA `file_handlers` in `manifest.json`.
   - Updated standalone Windows PowerShell CLI tools (`tools/encrypt.ps1`, `tools/decrypt.ps1`) and batch launchers (`tools/Decrypt-Vault.bat`) to create `.zsafe` vaults and accept `.zsafe`, `.zevsafe`, or `.zev` inputs.
 
-- `New` & `UI` (`blog/posts/01-beginners-zero-knowledge-guide.html`, `blog/index.html`): Masterclass Guide "What is ZevSafe & .zsafe? The Complete Guide to Locking & Decrypting Offline Vaults".
-  - Published comprehensive 6-part guide breaking down ZevSafe's zero-knowledge architecture, the authenticated `.zsafe` binary wire container format (`ZV3\0` STREAM AEAD), and step-by-step instructions to encrypt and decrypt files and folders offline.
-  - Detail covered: 57-byte header specifications, 4 MB AES-256-GCM chunking, PBKDF2/Argon2id work factor tiers, Diceware passphrases, Keyfile 2FA hardware mixing, optical Paper-Safe QR cold storage, and in-memory Web Vault Explorer playback.
+- `New` & `UI` (`blog/posts/15-what-is-zevsafe.html`, `blog/posts/16-what-is-zsafe-file.html`, `blog/posts/17-how-to-encrypt-files-using-zevsafe.html`, `blog/posts/18-how-to-decrypt-zsafe-file.html`, `blog/index.html`, `sitemap.xml`): Dedicated 4-Part Knowledge Series on ZevSafe, .zsafe, Encryption, and Decryption.
+  - Published 4 standalone, in-depth blog articles covering every core pillar independently:
+    1. **Article 15 ("What is ZevSafe? The 100% Client-Side Privacy Suite"):** Zero-knowledge philosophy, air-gapped browser architecture, W3C WebCrypto primitives, PWA offline capabilities, and why data never leaves local devices.
+    2. **Article 16 ("What is a .zsafe File? The Authenticated Container Format Explained"):** Complete `ZV3\0` STREAM AEAD container anatomy, 57-byte header byte-by-byte layout, 4 MB chunking, Associated Authenticated Data (AAD) tamper resistance, and legacy `.zev` backward compatibility.
+    3. **Article 17 ("How to Encrypt Files & Folders Using ZevSafe"):** Step-by-step tutorial on folder selection, Diceware passphrases, hardware Keyfile 2FA, work factor defense tiers (600k–2.4M PBKDF2 and 64MB Argon2id), optical Paper-Safe QR sheets, and downloading `.zsafe` vaults.
+    4. **Article 18 ("How to Decrypt and Explore a .zsafe File"):** Complete walkthrough on vault unlocking, Paper-Safe QR 1-scan auto-decryption, sub-300ms header demuxing, on-demand video streaming, photo lightbox inspection, in-RAM document editing, and forensic memory scrubbing upon session lock.
+  - Updated `blog/index.html` article directory (18 total articles), synchronized `sitemap.xml`, and expanded Service Worker precache manifest to 89 assets.
 
 - `New` & `UI` (`index.html`, `blog/index.html`, `tools/shared-whitelist.js`, `sitemap.xml`): Final Production Release & Roadmap Retirement.
   - Formally transitioned ZevSafe into its final, standalone, feature-complete production release.
