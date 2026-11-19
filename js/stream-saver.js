@@ -33,7 +33,7 @@
     const MAX_FALLBACK_GUARDRAIL_BYTES = 150 * 1024 * 1024; // 150 MB Safety Guardrail
 
     // ── Filename Sanitizer (Tests 2.19.3, 2.19.4) ────────────────────
-    function sanitizeFilename(name, fallback = 'vault.zev') {
+    function sanitizeFilename(name, fallback = 'vault.zsafe') {
         if (!name || typeof name !== 'string' || name.trim().length === 0) return fallback;
         return name.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
     }
@@ -128,10 +128,13 @@
         const cleanName = sanitizeFilename(filename);
         const ext = cleanName.toLowerCase().split('.').pop();
         let types = [];
-        if (ext === 'zev') {
+        if (ext === 'zsafe' || ext === 'zevsafe' || ext === 'zev') {
             types = [{
-                description: 'ZevSafe Encrypted Vault (*.zev)',
-                accept: { 'application/octet-stream': ['.zev'] }
+                description: 'ZevSafe Encrypted Vault (*.zsafe, *.zevsafe, *.zev)',
+                accept: {
+                    'application/x-zsafe-vault': ['.zsafe', '.zevsafe', '.zev'],
+                    'application/octet-stream': ['.zsafe', '.zevsafe', '.zev']
+                }
             }];
         } else if (ext === 'zip') {
             types = [{

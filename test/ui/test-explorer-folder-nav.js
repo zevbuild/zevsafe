@@ -1422,35 +1422,22 @@ const catalogFiles = [
     console.log('  ✔ 40. Phase 9 Visual Paper-Safe & Optical QR Code Recovery verified');
 
     // -------------------------------------------------------------------------
-    // TEST 41: Master Plan & Strategic Roadmap Portal (v8.11.0 / WEB-VERSION-62)
+    // TEST 41: Final Production Release & Strategic Portal Architecture
     // -------------------------------------------------------------------------
-    const roadmapFilePath = path.resolve(__dirname, '../../roadmap/index.html');
-    assert.strictEqual(fs.existsSync(roadmapFilePath), true, 'roadmap/index.html exists');
-    const roadmapContent = fs.readFileSync(roadmapFilePath, 'utf8');
-    assert.strictEqual(roadmapContent.includes("default-src 'self'"), true, 'roadmap/index.html has strict CSP');
-    assert.strictEqual(roadmapContent.includes('id="rm-drawer"'), true, 'roadmap/index.html has rm-drawer');
-    assert.strictEqual(roadmapContent.includes('data-status="delivered"'), true, 'roadmap/index.html has delivered phases');
+    const changeLogPath = path.resolve(__dirname, '../../change-log/index.html');
+    assert.strictEqual(fs.existsSync(changeLogPath), true, 'change-log/index.html exists');
+    const changeLogContent = fs.readFileSync(changeLogPath, 'utf8');
+    assert.strictEqual(changeLogContent.includes("default-src 'self'"), true, 'change-log/index.html has strict CSP');
 
     const indexForRoadmap = fs.readFileSync(indexPath, 'utf8');
-    assert.strictEqual(indexForRoadmap.includes('id="nav-roadmap-pill"'), true, 'index.html has #nav-roadmap-pill');
-    assert.strictEqual(indexForRoadmap.includes('12 / 14'), true, 'index.html displays 12 / 14');
-    assert.strictEqual(indexForRoadmap.includes('href="./roadmap/"'), true, 'index.html links to ./roadmap/');
+    assert.strictEqual(indexForRoadmap.includes('href="./change-log/"'), true, 'index.html links to ./change-log/');
 
     const swForRoadmap = fs.readFileSync(swPath, 'utf8');
-    assert.strictEqual(swForRoadmap.includes("'./roadmap/'"), true, 'sw.js precaches ./roadmap/');
-    assert.strictEqual(swForRoadmap.includes("'./roadmap/index.html'"), true, 'sw.js precaches ./roadmap/index.html');
-    assert.strictEqual(swForRoadmap.includes("'roadmap'"), true, 'sw.js includes roadmap in SECTION_ROUTES');
+    assert.strictEqual(swForRoadmap.includes("'./change-log/'"), true, 'sw.js precaches ./change-log/');
     const verMatch3 = swForRoadmap.match(/APP_VERSION\s*=\s*'v(\d+)';/);
     assert.ok(verMatch3 && parseInt(verMatch3[1], 10) >= 62, 'sw.js has APP_VERSION >= v62');
 
-    const usbForRoadmap = fs.readFileSync(path.resolve(__dirname, '../../js/usb-backup-kit.js'), 'utf8');
-    assert.strictEqual(usbForRoadmap.includes("'roadmap/index.html'"), true, 'usb-backup-kit.js includes roadmap/index.html');
-
-    const sitemapPathRoadmap = path.resolve(__dirname, '../../sitemap.xml');
-    const sitemapForRoadmap = fs.readFileSync(sitemapPathRoadmap, 'utf8');
-    assert.strictEqual(sitemapForRoadmap.includes('https://zevsafe.pages.dev/roadmap/'), true, 'sitemap.xml includes roadmap URL');
-
-    console.log('  ✔ 41. Master Plan & Strategic Roadmap Portal verified');
+    console.log('  ✔ 41. Final Production Release & Strategic Portal Architecture verified');
 
 
 })().then(() => {

@@ -143,8 +143,8 @@
             {
               "@type": "HowToStep",
               "position": 4,
-              "name": "Save Encrypted .zev Vault",
-              "text": "Save your single encrypted .zev vault to disk, cloud, or USB flash drive. Unlocks offline on any device."
+              "name": "Save Encrypted .zsafe Vault",
+              "text": "Save your single encrypted .zsafe vault to disk, cloud, or USB flash drive. Unlocks offline on any device."
             }
           ]
         },
@@ -415,7 +415,7 @@
                     <div class="hero-flow-step">
                         <span class="hero-flow-num">3</span>
                         <span class="hero-flow-icon">🛡️</span>
-                        <span class="hero-flow-text">Download Encrypted .zev</span>
+                        <span class="hero-flow-text">Download Encrypted .zsafe</span>
                     </div>
                 </div>
 
@@ -717,28 +717,28 @@
                 <div class="card-inner">
                     <div class="card-tag card-tag--teal"><span class="card-tag-dot"></span> DECRYPT</div>
                     <h2 class="card-title">Decrypt Folder</h2>
-                    <p class="card-desc">Restore your original folder from a <code>.zev</code> vault file with your password.</p>
+                    <p class="card-desc">Restore your original folder from a <code>.zsafe</code> vault file with your password.</p>
 
                     <!-- Desktop / Mobile drop zone -->
                     <div class="drop-zone" id="decrypt-drop-zone" role="region"
-                         aria-label="Drop .zev vault file to decrypt">
+                         aria-label="Drop .zsafe vault file to decrypt">
                         <div class="drop-zone-inner" id="decrypt-dz-inner">
                             <div class="drop-icon-wrap">
                                 <span class="drop-icon">📦</span>
                                 <div class="drop-ring drop-ring--teal"></div>
                             </div>
-                            <p class="drop-primary">Drop .zev file here</p>
+                            <p class="drop-primary">Drop .zsafe file here</p>
                             <p class="drop-secondary">or</p>
-                            <button type="button" class="btn-browse btn-browse--teal" id="btn-browse-decrypt">📦 Select .zev File</button>
+                            <button type="button" class="btn-browse btn-browse--teal" id="btn-browse-decrypt">📦 Select .zsafe File</button>
                             <!-- Hidden File Inputs -->
-                            <input class="sr-only-file-input" type="file" id="decrypt-file-input-dz" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Select .zev vault file to decrypt">
-                            <input class="sr-only-file-input" type="file" id="decrypt-file-input" accept=".zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Choose .zev vault file to decrypt">
+                            <input class="sr-only-file-input" type="file" id="decrypt-file-input-dz" accept=".zsafe,.zevsafe,.zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Select .zsafe vault file to decrypt">
+                            <input class="sr-only-file-input" type="file" id="decrypt-file-input" accept=".zsafe,.zevsafe,.zev,.jpg,.jpeg,.png,.webp,.mp4,.mp3" autocomplete="off" aria-label="Choose .zsafe vault file to decrypt">
                         </div>
                         <!-- Decrypt file summary widget -->
                         <div class="selected-files-widget selected-files-widget--teal" id="decrypt-selected-widget">
                             <span class="sf-icon">📦</span>
                             <div class="sf-info">
-                                <span class="sf-name" id="decrypt-selected-name">vault_name.zev</span>
+                                <span class="sf-name" id="decrypt-selected-name">vault_name.zsafe</span>
                                 <span class="sf-meta" id="decrypt-selected-meta">0 KB</span>
                             </div>
                             <button class="sf-clear-btn sf-clear-btn--teal" id="btn-clear-decrypt" type="button" aria-label="Clear selection" title="Clear selection">✕</button>
@@ -1123,8 +1123,8 @@
                 </div>
                 <div class="explorer-header-actions">
                     <button class="explorer-btn-verify" id="btn-explorer-verify" title="Verify vault cryptographic integrity and bit-rot across all chunks">🛡️ Verify Vault</button>
-                    <button class="explorer-btn-reencrypt" id="btn-explorer-reencrypt" title="Re-encrypt vault directly into a .zev file with active session key">
-                        🔒 Re-Encrypt (.zev)
+                    <button class="explorer-btn-reencrypt" id="btn-explorer-reencrypt" title="Re-encrypt vault directly into a .zsafe file with active session key">
+                        🔒 Re-Encrypt (.zsafe)
                     </button>
                     <button class="explorer-btn-download-all" id="btn-explorer-download-all" title="Download all files as a ZIP archive">
                         ⬇️ Download All (ZIP)

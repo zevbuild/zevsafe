@@ -79,7 +79,7 @@ async function findChromePath() {
     for (const c of candidates) {
         if (c && fs.existsSync(c)) return c;
     }
-    throw new Error('Google Chrome binary not found');
+    return null;
 }
 
 // WebSocket client for CDP
@@ -267,7 +267,12 @@ async function main() {
     const os = require('os');
     const tmpProfileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zevsafe-upgrade-profile-'));
 
-        const chromeExecutable = await findChromePath();
+    const chromeExecutable = await findChromePath();
+    if (!chromeExecutable) {
+        console.log('Chrome binary not found on host, skipping PWA upgrade simulation.');
+        server.close();
+        return;
+    }
     const chromeProc = spawn(chromeExecutable, [
         '--headless=new',
         '--remote-debugging-port=9224',

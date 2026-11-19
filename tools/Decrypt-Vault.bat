@@ -10,7 +10,7 @@ echo.
 set "TARGET_FILE=%~1"
 
 if "%TARGET_FILE%"=="" (
-    echo Drag and drop a .zev vault file here or enter its path:
+    echo Drag and drop a .zsafe, .zevsafe, or .zev vault file here or enter its path:
     set /p "TARGET_FILE=Path: "
 )
 
@@ -18,7 +18,7 @@ if "%TARGET_FILE%"=="" (
 set "TARGET_FILE=%TARGET_FILE:"=%"
 
 if "%TARGET_FILE%"=="" (
-    echo [ERROR] No .zev file specified. Exiting.
+    echo [ERROR] No vault file specified. Exiting.
     pause
     exit /b 1
 )

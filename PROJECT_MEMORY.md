@@ -855,6 +855,22 @@ Any `.zev` file created on Web, Android, or Desktop can be unlocked on any other
 - **Test Integrity & Regression Verification:**
   - Preserved all required semantic classes (`.hero-security-badge`, `.hero-trust-strip`, `.trust-pill--highlight`), passing 100% of all automated test suites (`test-header-navbar-upgrade.js`, `test-security-csp-audit.js`, `test-dist-completeness.js`).
 
+### 3.42 Primary Vault File Extension Upgrade to .zsafe with 100% Backward Compatibility (`js/`, `app.js`, `index.html`, `manifest.json`, `tools/`) [v8.30.0 / WEB-VERSION-81]
+- **Unique Ecosystem Branding:**
+  - Migrated primary vault container file extension from legacy `.zev` to the distinctive, brand-aligned **`.zsafe`** extension (e.g., `financial_records.zsafe`).
+- **Complete End-to-End Default Output:**
+  - All newly encrypted vaults created across standard browser encryption, 5 GB OPFS mobile streaming, StreamSaver downloads, and standalone Windows desktop batch tools default to `${folderName}.zsafe`.
+  - Re-encryption within the Vault Explorer produces `${baseName}_updated.zsafe`.
+  - Optical Paper-Safe QR certificates and cold-storage recovery keys reference `.zsafe`.
+- **100% Backward Compatibility for Legacy `.zev` & `.zevsafe` Archives:**
+  - Upgraded filename normalization and folder extraction regular expressions to `/\.(zsafe|zevsafe|zev)$/i` across all decrypt, recovery, salvage, and re-encryption handlers.
+  - Operating system file pickers (`<input accept="...">`), File System Access API picker filters, drag-and-drop targets, and PWA `file_handlers` in `manifest.json` accept `.zsafe`, `.zevsafe`, and `.zev` interchangeably.
+  - Legacy `.zev` vaults decrypt, play media, and extract with zero user friction or conversion steps required.
+- **Desktop Batch CLI Tools & USB Air-Gap Kit:**
+  - `tools/encrypt.ps1` produces `$folderName.zsafe`.
+  - `tools/decrypt.ps1` and `tools/Decrypt-Vault.bat` accept `.zsafe`, `.zevsafe`, and `.zev` files.
+  - `js/usb-backup-kit.js` documents `.zsafe` portability guarantees.
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]

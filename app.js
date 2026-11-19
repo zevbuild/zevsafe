@@ -288,7 +288,7 @@ function initDeviceUI() {
         if (encryptDropText) encryptDropText.textContent = 'Tap to select files';
 
         const decryptDropText = document.querySelector('#decrypt-drop-zone .drop-primary');
-        if (decryptDropText) decryptDropText.textContent = 'Tap to select .zev file';
+        if (decryptDropText) decryptDropText.textContent = 'Tap to select .zsafe file';
 
         // Default to encrypt tab on tablet and mobile
         if (window.innerWidth <= 820) switchTab('encrypt', false);
@@ -1984,7 +1984,7 @@ function buildPasswordRecoveryText(record) {
     // ── Vault format line (never show 'undefined') ─────────────────────────
     const versionLine  = record.version       || 'v3 streaming';
     const folderLine   = record.folderName    || 'ZevSafe vault';
-    const vaultLine    = record.vaultFilename || `${folderLine}.zev`;
+    const vaultLine    = record.vaultFilename || `${folderLine}.zsafe`;
     const passwordLine = record.password      || '(not recorded)';
 
     // ── KDF / cryptographic details ────────────────────────────────────────
@@ -2727,7 +2727,7 @@ btnEncrypt.addEventListener('click', async () => {
             log(`🔒 v3 STREAM AEAD mode: ${kdfTierName} · 4 MB Chunks · AES-256-GCM · Peak RAM < 150 MB` + (v2KeyfileEncrypt ? ' · Keyfile active' : ''), 'info');
             updateProgress('Initializing streaming engine...', 5);
 
-            const filename = `${selectedEncryptFolderName}.zev`;
+            const filename = `${selectedEncryptFolderName}.zsafe`;
             recoveryRecord.vaultFilename = filename;
             recoveryRecord.version = 'v3 streaming (5 GB)';
 
@@ -2960,7 +2960,7 @@ btnEncrypt.addEventListener('click', async () => {
             encBlob = new Blob([headerBytes, ciphertext], { type: 'application/octet-stream' });
             const totalVaultLength = V2_HEADER_SIZE + ciphertext.byteLength;
 
-            filename = `${selectedEncryptFolderName}.zev`;
+            filename = `${selectedEncryptFolderName}.zsafe`;
             recoveryRecord.vaultFilename = filename;
             triggerDownload(encBlob, filename);
             ProgressTracker.onSaveDone(filename, totalVaultLength, 'v2');  // ← real output stats
@@ -3002,7 +3002,7 @@ btnEncrypt.addEventListener('click', async () => {
             encBlob = new Blob([headerBytes, ciphertext], { type: 'application/octet-stream' });
             const totalVaultLength = 28 + ciphertext.byteLength;
 
-            filename = `${selectedEncryptFolderName}.zev`;
+            filename = `${selectedEncryptFolderName}.zsafe`;
             recoveryRecord.vaultFilename = filename;
             triggerDownload(encBlob, filename);
             ProgressTracker.onSaveDone(filename, totalVaultLength, 'v1');  // ← real output stats
@@ -3042,7 +3042,7 @@ btnDecrypt.addEventListener('click', async () => {
     return await withWakeLock(async () => {
     if (!selectedDecryptFile) {
         shakeField('decrypt-drop-zone');
-        showToast('Please select or drop a .zev vault file to decrypt.', 'warning');
+        showToast('Please select or drop a .zsafe vault file to decrypt.', 'warning');
         return;
     }
 
@@ -3070,7 +3070,7 @@ btnDecrypt.addEventListener('click', async () => {
         // Read header first (57 bytes) to avoid loading multi-GB vault into arrayBuffer
         const headerSlice = await selectedDecryptFile.slice(0, 57).arrayBuffer();
         if (headerSlice.byteLength < 44) {
-            throw new Error('File is too small to be a valid vault — may be corrupted or not a .zev file.');
+            throw new Error('File is too small to be a valid vault — may be corrupted or not a .zsafe file.');
         }
 
         const isV3 = headerSlice.byteLength >= 57 &&
@@ -3088,7 +3088,7 @@ btnDecrypt.addEventListener('click', async () => {
             }
 
             const catalog = await StreamUnpacker.readVaultManifest(selectedDecryptFile, password, keyfileBytes);
-            const folderName = selectedDecryptFile.name.replace(/\.zev$/i, '');
+            const folderName = selectedDecryptFile.name.replace(/\.(zsafe|zevsafe|zev)$/i, '');
             const masterKey = catalog.masterKey;
 
             // Zero-Knowledge: wipe plaintext password from input element immediately
@@ -3206,7 +3206,7 @@ btnDecrypt.addEventListener('click', async () => {
         if (typeof JSZip === 'undefined') await loadScript('jszip.min.js');
         const unzipped = await JSZip.loadAsync(decryptedBuffer);
 
-        const folderName    = selectedDecryptFile.name.replace(/\.zev$/i, '');
+        const folderName    = selectedDecryptFile.name.replace(/\.(zsafe|zevsafe|zev)$/i, '');
         const decryptedBlob = new Blob([decryptedBuffer], { type: 'application/zip' });
         ProgressTracker.onSaveDone(`${folderName}_decrypted.zip`, decryptedBuffer.byteLength, vaultIsV2 ? 'v2' : 'v1');  // ← real output
 
@@ -3340,7 +3340,7 @@ function showPasswordSavePrompt(recordOrPassword) {
     const record = typeof recordOrPassword === 'string'
         ? {
             folderName: selectedEncryptFolderName || 'ZevSafe vault',
-            vaultFilename: selectedEncryptFolderName ? `${selectedEncryptFolderName}.zev` : 'ZevSafe vault',
+            vaultFilename: selectedEncryptFolderName ? `${selectedEncryptFolderName}.zsafe` : 'ZevSafe vault',
             version: 'unknown',
             password: recordOrPassword,
             keyfileRequired: false,
@@ -3357,7 +3357,7 @@ function showPasswordSavePrompt(recordOrPassword) {
         }
         [
             ['Folder', record.folderName],
-            ['Vault', record.vaultFilename || `${record.folderName}.zev`],
+            ['Vault', record.vaultFilename || `${record.folderName}.zsafe`],
             ['Keyfile', record.keyfileRequired ? `${record.keyfileName || 'Required'} required` : 'Not required']
         ].forEach(([label, value]) => {
             const row = document.createElement('div');
@@ -3411,7 +3411,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
     if (!modal || !container) return;
 
     const passwordVal = record?.password || document.getElementById('pw-save-display')?.value || document.getElementById('encrypt-password')?.value || '';
-    const vaultName = record?.vaultFilename || (record?.folderName ? `${record.folderName}.zev` : 'ZevSafe-Vault.zev');
+    const vaultName = record?.vaultFilename || (record?.folderName ? `${record.folderName}.zsafe` : 'ZevSafe-Vault.zsafe');
     let saltHex = record?.saltHex;
     if (!saltHex || saltHex.length < 32) {
         const tmpSalt = new Uint8Array(32);
@@ -3568,7 +3568,7 @@ async function openPaperSafeModal(record = lastPasswordRecoveryRecord) {
                     createdDate: new Date().toISOString().split('T')[0]
                 });
                 const blob = new Blob([standaloneHTML], { type: 'text/html;charset=utf-8' });
-                const safeName = sanitizeFilenamePart(vaultName.replace(/\.zev$/i, ''));
+                const safeName = sanitizeFilenamePart(vaultName.replace(/\.(zevsafe|zev)$/i, ''));
                 triggerDownload(blob, `${safeName}_paper_safe_certificate.html`);
                 showToast('Standalone Paper-Safe HTML certificate downloaded!', 'success');
             }
@@ -3700,7 +3700,7 @@ async function openQRScannerModal() {
                 }, 150);
             } else {
                 pendingAutoDecryptOnSelect = true;
-                showToast('🔑 Password loaded from QR code! Select or drop your .zev vault to decrypt.', 'success');
+                showToast('🔑 Password loaded from QR code! Select or drop your .zsafe vault to decrypt.', 'success');
                 const dz = document.getElementById('decrypt-dropzone');
                 if (dz) dz.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
@@ -5228,10 +5228,10 @@ function initLaunchQueueConsumer() {
 
         if (!fileObj || !fileObj.name) return;
 
-        // Check .zev extension case-insensitively
-        if (!/\.zev$/i.test(fileObj.name)) {
+        // Check .zsafe, .zevsafe, or .zev extension case-insensitively
+        if (!/\.(zsafe|zevsafe|zev)$/i.test(fileObj.name)) {
             if (typeof showToast === 'function') {
-                showToast(`⚠️ Only .zev vault files can be opened (got "${fileObj.name}").`, 'warning');
+                showToast(`⚠️ Only .zsafe, .zevsafe, or .zev vault files can be opened (got "${fileObj.name}").`, 'warning');
             }
             return;
         }
@@ -6234,7 +6234,7 @@ async function launchVaultSalvage(explicitFile = null, explicitPw = null) {
     return await withWakeLock(async () => {
     const file = explicitFile || (selectedDecryptFile) || (currentV3Vault ? currentV3Vault.file : null);
     if (!file) {
-        showToast('Please select a .zev vault file to salvage.', 'warning');
+        showToast('Please select a .zsafe vault file to salvage.', 'warning');
         return;
     }
 
@@ -6350,7 +6350,7 @@ async function downloadSalvageZip() {
         zip.file(f.path, f.data);
     }
     const blob = await zip.generateAsync({ type: 'blob' });
-    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.zev$/i, '') : 'salvaged_vault';
+    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.(zevsafe|zev)$/i, '') : 'salvaged_vault';
     triggerDownload(blob, `${vaultName}_rescued.zip`);
     showToast('Downloaded rescued ZIP archive!', 'success');
     });
@@ -6367,7 +6367,7 @@ function downloadSalvageReport() {
         return;
     }
     const blob = new Blob([lastSalvageResult.results.reportText], { type: 'text/plain;charset=utf-8' });
-    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.zev$/i, '') : 'salvaged_vault';
+    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.(zevsafe|zev)$/i, '') : 'salvaged_vault';
     triggerDownload(blob, `${vaultName}_salvage_report.txt`);
     showToast('Downloaded salvage audit report!', 'success');
 }
@@ -6383,7 +6383,7 @@ async function openExplorerFromSalvage() {
         zip.file(f.path, f.data);
     }
     const blob = await zip.generateAsync({ type: 'blob' });
-    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.zev$/i, '') : 'salvaged_vault';
+    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.(zevsafe|zev)$/i, '') : 'salvaged_vault';
 
     const modal = document.getElementById('vault-salvage-modal');
     if (modal) {
@@ -6920,19 +6920,19 @@ function stopExplorerIdleWatcher() {
 }
 
 // =====================================================
-// 🔒 IN-VAULT DIRECT RE-ENCRYPTION TO .ZEV
+// 🔒 IN-VAULT DIRECT RE-ENCRYPTION TO .ZSAFE
 // =====================================================
 
 /**
  * In-Vault Direct Re-Encryption: Packages all files currently in the vault
  * (incorporating modified or newly created files from editedFiles) and streams
- * an updated .zev container using the active master password/key.
+ * an updated .zsafe container using the active master password/key.
  */
 async function reEncryptVaultToZev() {
     return await withWakeLock(async () => {
     if (!currentDecryptedFolderName) return;
     const reencryptBtn = document.getElementById('btn-explorer-reencrypt');
-    const origBtnText = reencryptBtn ? reencryptBtn.textContent : '🔒 Re-Encrypt (.zev)';
+    const origBtnText = reencryptBtn ? reencryptBtn.textContent : '🔒 Re-Encrypt (.zsafe)';
 
     const activePassword = (currentV3Vault && currentV3Vault.password) ||
         (decryptPassword ? decryptPassword.value : '');
@@ -6943,8 +6943,8 @@ async function reEncryptVaultToZev() {
     }
 
     const keyfileBytes = currentV3Vault ? currentV3Vault.keyfileBytes : (v2KeyfileDecrypt ? new Uint8Array(await v2KeyfileDecrypt.arrayBuffer()) : null);
-    const baseName = (currentDecryptedFolderName || 'vault').replace(/\.zev$/i, '');
-    const outZevName = `${baseName}_updated.zev`;
+    const baseName = (currentDecryptedFolderName || 'vault').replace(/\.(zsafe|zevsafe|zev)$/i, '');
+    const outZevName = `${baseName}_updated.zsafe`;
 
     try {
         if (reencryptBtn) {
@@ -7548,7 +7548,7 @@ async function downloadPcSetupToolkit() {
 
         const encryptBatContent = `@echo off\r\ntitle ZevSafe 25GB+ Vault Encryptor\r\nsetlocal EnableDelayedExpansion\r\n\r\necho ===================================================\r\necho   ZevSafe - 25GB+ Zero-RAM Folder Encryptor (PC)\r\necho ===================================================\r\necho.\r\n\r\nset "TARGET_FOLDER=%~1"\r\n\r\nif "%TARGET_FOLDER%"=="" (\r\n    echo Drag and drop a folder here or enter its path:\r\n    set /p "TARGET_FOLDER=Path: "\r\n)\r\n\r\nset "TARGET_FOLDER=%TARGET_FOLDER:"=%"\r\n\r\nif "%TARGET_FOLDER%"=="" (\r\n    echo [ERROR] No folder specified. Exiting.\r\n    pause\r\n    exit /b 1\r\n)\r\n\r\npowershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0encrypt.ps1" "%TARGET_FOLDER%"\r\n\r\necho.\r\necho ===================================================\r\necho   Process finished. Press any key to exit.\r\necho ===================================================\r\npause >nul`;
 
-        const decryptBatContent = `@echo off\r\ntitle ZevSafe 25GB+ Vault Decryptor\r\nsetlocal EnableDelayedExpansion\r\n\r\necho ===================================================\r\necho   ZevSafe - 25GB+ Zero-RAM Vault Decryptor (PC)\r\necho ===================================================\r\necho.\r\n\r\nset "TARGET_FILE=%~1"\r\n\r\nif "%TARGET_FILE%"=="" (\r\n    echo Drag and drop a .zev vault file here or enter its path:\r\n    set /p "TARGET_FILE=Path: "\r\n)\r\n\r\nset "TARGET_FILE=%TARGET_FILE:"=%"\r\n\r\nif "%TARGET_FILE%"=="" (\r\n    echo [ERROR] No .zev file specified. Exiting.\r\n    pause\r\n    exit /b 1\r\n)\r\n\r\npowershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0decrypt.ps1" "%TARGET_FILE%"\r\n\r\necho.\r\necho ===================================================\r\necho   Process finished. Press any key to exit.\r\necho ===================================================\r\npause >nul`;
+        const decryptBatContent = `@echo off\r\ntitle ZevSafe 25GB+ Vault Decryptor\r\nsetlocal EnableDelayedExpansion\r\n\r\necho ===================================================\r\necho   ZevSafe - 25GB+ Zero-RAM Vault Decryptor (PC)\r\necho ===================================================\r\necho.\r\n\r\nset "TARGET_FILE=%~1"\r\n\r\nif "%TARGET_FILE%"=="" (\r\n    echo Drag and drop a .zsafe, .zevsafe, or .zev vault file here or enter its path:\r\n    set /p "TARGET_FILE=Path: "\r\n)\r\n\r\nset "TARGET_FILE=%TARGET_FILE:"=%"\r\n\r\nif "%TARGET_FILE%"=="" (\r\n    echo [ERROR] No vault file specified. Exiting.\r\n    pause\r\n    exit /b 1\r\n)\r\n\r\npowershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0decrypt.ps1" "%TARGET_FILE%"\r\n\r\necho.\r\necho ===================================================\r\necho   Process finished. Press any key to exit.\r\necho ===================================================\r\npause >nul`;
 
         let encPs1 = '';
         let decPs1 = '';
@@ -7570,10 +7570,10 @@ HOW TO USE (NO MANUAL CONFIGURATION REQUIRED):
 1. TO ENCRYPT A FOLDER:
    - Drag and drop any folder onto "Encrypt-Vault.bat" (or double click it).
    - Enter your secure password when prompted.
-   - It will stream and create your ".zev" vault directly on your drive with 0 RAM limits!
+   - It will stream and create your ".zsafe" vault directly on your drive with 0 RAM limits!
 
 2. TO DECRYPT A VAULT:
-   - Drag and drop your ".zev" file onto "Decrypt-Vault.bat" (or double click it).
+   - Drag and drop your ".zsafe", ".zevsafe", or ".zev" file onto "Decrypt-Vault.bat" (or double click it).
    - Enter your password to restore your original folder!
 
 COMPATIBILITY:
@@ -7617,7 +7617,7 @@ function initPcSetupButton() {
  */
 
 async function saveVaultCredential(vaultIdentifier, password) {
-    const vaultId = (vaultIdentifier || (selectedEncryptFolderName ? `${selectedEncryptFolderName}.zev` : 'ZevSafe Vault')).trim();
+    const vaultId = (vaultIdentifier || (selectedEncryptFolderName ? `${selectedEncryptFolderName}.zsafe` : 'ZevSafe Vault')).trim();
     const pwd = password || (encryptPassword ? encryptPassword.value : '');
 
     if (!pwd) {
@@ -7716,7 +7716,7 @@ function initPasswordManagerIntegration() {
     btnSavePwd?.addEventListener('click', async (e) => {
         e.preventDefault();
         const pwd = encryptPassword ? encryptPassword.value : '';
-        const vaultId = selectedEncryptFolderName ? `${selectedEncryptFolderName}.zev` : (selectedEncryptFiles && selectedEncryptFiles[0] ? selectedEncryptFiles[0].name : 'ZevSafe Vault');
+        const vaultId = selectedEncryptFolderName ? `${selectedEncryptFolderName}.zsafe` : (selectedEncryptFiles && selectedEncryptFiles[0] ? selectedEncryptFiles[0].name : 'ZevSafe Vault');
         await saveVaultCredential(vaultId, pwd);
     });
 

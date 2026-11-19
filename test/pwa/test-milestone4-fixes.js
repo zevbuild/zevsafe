@@ -67,13 +67,13 @@ async function main() {
         }
     });
 
-    await runTest('4.1.3: AIRGAP_ASSET_PATHS contains zero duplicate entries and has exactly 63 items', () => {
+    await runTest('4.1.3: AIRGAP_ASSET_PATHS contains zero duplicate entries and has exactly 62 items', () => {
         const seen = new Set();
         for (const p of kit.AIRGAP_ASSET_PATHS) {
             assert.ok(!seen.has(p), `Duplicate entry detected in AIRGAP_ASSET_PATHS: ${p}`);
             seen.add(p);
         }
-        assert.strictEqual(kit.AIRGAP_ASSET_PATHS.length, 63, `Expected 63 assets, got ${kit.AIRGAP_ASSET_PATHS.length}`);
+        assert.strictEqual(kit.AIRGAP_ASSET_PATHS.length, 62, `Expected 62 assets, got ${kit.AIRGAP_ASSET_PATHS.length}`);
     });
 
     // ── Fix 4.2: Guard matchMedia and Catch Prompt Rejection in js/init.js ───

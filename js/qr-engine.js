@@ -817,7 +817,7 @@
             return {
                 app: 'ZevSafe',
                 version: parsed.v || 3,
-                vaultName: parsed.n || 'Unnamed-Vault.zev',
+                vaultName: parsed.n || 'Unnamed-Vault.zsafe',
                 saltHex: cleanSalt,
                 kdf: parsed.k === 'argon2id' ? 'argon2id' : 'pbkdf2',
                 kdfIterations: parsed.k === 'argon2id' ? 'argon2id' : (Number(parsed.k) || 600000),
@@ -853,7 +853,7 @@
         const kdfRounds = isArgon
             ? 'Argon2id (RFC 9106 · 64MB RAM / 3 Passes / 4 Lanes)'
             : `${Number(data.kdfIterations || 600000).toLocaleString('en-US')} Rounds (PBKDF2-SHA512)`;
-        const vaultName = escapeHtml(data.vaultName || 'ZevSafe-Vault.zev');
+        const vaultName = escapeHtml(data.vaultName || 'ZevSafe-Vault.zsafe');
         const hintText = escapeHtml(data.hint ? data.hint : 'None provided');
         const keyfileText = data.keyfileRequired ? 'REQUIRED (2FA Keyfile)' : 'Not Required (Password Only)';
         const dateText = escapeHtml(data.createdDate || new Date().toISOString().split('T')[0]);

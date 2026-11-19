@@ -43,7 +43,7 @@ async function runM5IntegrationTests() {
     // 1. Filename sanitization and header encoding
     test('1. sanitizeFilename strips dangerous path chars', () => {
         assert.strictEqual(StreamSaverAdapter.sanitizeFilename('test/file:name*?.zev'), 'test_file_name__.zev');
-        assert.strictEqual(StreamSaverAdapter.sanitizeFilename(''), 'vault.zev');
+        assert.strictEqual(StreamSaverAdapter.sanitizeFilename(''), 'vault.zsafe');
     });
 
     test('2. encodeContentDisposition formats RFC 5987 header', () => {

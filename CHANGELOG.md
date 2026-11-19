@@ -2,6 +2,14 @@
 
 ## Version 8.30.0 (WEB-VERSION-81) — November 19, 2026 [FINAL PRODUCTION RELEASE]
 
+- `New`, `Security` & `UI` (`app.js`, `index.html`, `js/stream-saver.js`, `js/qr-engine.js`, `js/usb-backup-kit.js`, `manifest.json`, `tools/`): Primary Vault File Extension Upgrade to `.zsafe` with 100% Backward Compatibility.
+  - Migrated primary vault container file extension from `.zev` to the unique, brand-aligned `.zsafe` extension (e.g. `personal_vault.zsafe`).
+  - Updated all newly generated vaults to download and save as `.zsafe` by default across browser downloads, 5 GB OPFS mobile streaming, and desktop CLI tools.
+  - Maintained 100% transparent backward compatibility for all existing `.zev` and `.zevsafe` vault files across decryption, streaming media playback, and in-vault explorer extraction.
+  - Upgraded regular expression stripping patterns to `/\.(zsafe|zevsafe|zev)$/i` across all decrypt, salvage, and recovery pipelines.
+  - Updated drop zone targets, file input accept attributes (`.zsafe,.zevsafe,.zev`), and PWA `file_handlers` in `manifest.json`.
+  - Updated standalone Windows PowerShell CLI tools (`tools/encrypt.ps1`, `tools/decrypt.ps1`) and batch launchers (`tools/Decrypt-Vault.bat`) to create `.zsafe` vaults and accept `.zsafe`, `.zevsafe`, or `.zev` inputs.
+
 - `New` & `UI` (`index.html`, `blog/index.html`, `tools/shared-whitelist.js`, `sitemap.xml`): Final Production Release & Roadmap Retirement.
   - Formally transitioned ZevSafe into its final, standalone, feature-complete production release.
   - Concluded active development lifecycle: all core encryption, streaming, mobile OPFS, dual-engine QR recovery, 5 GB video cinema, photo inspection, and zero-knowledge features are 100% delivered.

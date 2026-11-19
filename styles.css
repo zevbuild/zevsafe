@@ -6977,7 +6977,8 @@ body {
 .btn-max-security-pill:active {
     transform: translateY(0);
 }
-.btn-max-security-pill[aria-expanded="true"] {
+.btn-max-security-pill[aria-expanded="true"],
+.btn-max-security-pill.is-active {
     background: rgba(168, 85, 247, 0.18);
     border-color: rgba(168, 85, 247, 0.5);
 }

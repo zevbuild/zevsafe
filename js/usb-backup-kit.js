@@ -81,7 +81,6 @@
         'js/image-viewer.js',
         'js/media-player.js',
         'js/passphrase-words.js',
-        'roadmap/index.html',
         'device-power/index.html',
         'blog/index.html',
         'blog/blog.css',
@@ -197,7 +196,7 @@ HOW TO RUN ON ANY COMPUTER (AIR-GAPPED OR OFFLINE):
    - You can also open "index.html" directly in modern browsers (Chrome, Edge, Firefox, Safari).
 
 PORTABILITY GUARANTEE:
-Any .zev vault created using this offline kit is bit-identical and universally
+Any .zsafe, .zevsafe, or .zev vault created using this offline kit is bit-identical and universally
 compatible with the web version, native Android app, and PC batch toolkit.
 ================================================================================
 `;

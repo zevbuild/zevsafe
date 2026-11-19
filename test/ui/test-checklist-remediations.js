@@ -144,7 +144,7 @@ runTest('Item 11.5 & 11.7: StreamUnpacker bounded cache zeroizes evicted chunks'
 runTest('Item 12.3: All 17 user-facing HTML files contain Open Graph and Twitter Card tags', () => {
     const pages = [
         'index.html',
-        'roadmap/index.html',
+        'blog/index.html',
         'device-power/index.html',
         'how-to-use-zevsafe/index.html',
         'security-audit/index.html',

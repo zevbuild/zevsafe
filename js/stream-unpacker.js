@@ -1131,9 +1131,17 @@
             },
             set(key, val) {
                 if (map.has(key)) {
+                    const oldVal = map.get(key);
+                    if (oldVal && typeof oldVal.fill === 'function' && oldVal !== val) {
+                        oldVal.fill(0);
+                    }
                     map.delete(key);
                 } else if (map.size >= limit) {
                     const oldestKey = map.keys().next().value;
+                    const oldestVal = map.get(oldestKey);
+                    if (oldestVal && typeof oldestVal.fill === 'function' && oldestVal !== val) {
+                        oldestVal.fill(0);
+                    }
                     map.delete(oldestKey);
                 }
                 map.set(key, val);
@@ -1871,7 +1879,7 @@
             '           ZevSafe Fault-Tolerant Vault Salvage & Recovery Report               ',
             '================================================================================',
             `Date:                  ${new Date().toISOString()}`,
-            `Vault File:            ${opts.vaultName || 'vault.zev'}`,
+            `Vault File:            ${opts.vaultName || 'vault.zsafe'}`,
             `Container Version:     v${header.version} (ZV3\\0 Streaming AEAD)`,
             `Total Catalog Entries: ${totalEntries}`,
             `Successfully Rescued:  ${rescuedFiles.length} (${rescueRate}%)`,

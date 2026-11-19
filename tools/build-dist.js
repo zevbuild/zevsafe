@@ -36,7 +36,16 @@ try {
 
 // 1. Clean or create dist directory
 if (fs.existsSync(DIST_DIR)) {
-    fs.rmSync(DIST_DIR, { recursive: true, force: true });
+    try {
+        fs.rmSync(DIST_DIR, { recursive: true, force: true });
+    } catch (_) {
+        // Fallback for Windows file lock / sandbox permission boundary: clean contents
+        for (const item of fs.readdirSync(DIST_DIR)) {
+            try {
+                fs.rmSync(path.join(DIST_DIR, item), { recursive: true, force: true });
+            } catch (e) {}
+        }
+    }
 }
 fs.mkdirSync(DIST_DIR, { recursive: true });
 

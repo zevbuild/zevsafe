@@ -77,7 +77,7 @@ async function runMilestone1Tests() {
     // -------------------------------------------------------------
     // Fix 1.2: LRU Chunk Eviction Zeroization
     // -------------------------------------------------------------
-    test('Fix 1.2: LRU eviction drops reference without wiping evicted buffer in-place', () => {
+    test('Fix 1.2: LRU eviction enforces cryptographic zeroization of evicted chunks (Item 11.7)', () => {
         const cache = StreamUnpacker.createBoundedChunkCache(4);
         const chunk0 = new Uint8Array([1, 2, 3, 4, 5]);
         const chunk1 = new Uint8Array([10, 20]);
@@ -95,9 +95,9 @@ async function runMilestone1Tests() {
 
         assert.strictEqual(cache.has(0), false);
         assert.strictEqual(cache.has(4), true);
-        // CRITICAL CHECK: chunk0 buffer must NOT be zeroized by eviction
-        assert.strictEqual(chunk0[0], 1, 'Evicted chunk was corrupted in-place');
-        assert.strictEqual(chunk0[1], 2);
+        // CRITICAL CHECK: chunk0 buffer MUST be zeroized on eviction per Item 11.7
+        assert.strictEqual(chunk0[0], 0, 'Evicted chunk must be zeroized');
+        assert.strictEqual(chunk0[1], 0);
 
         // Calling clear() MUST zeroize active chunks
         cache.clear();
