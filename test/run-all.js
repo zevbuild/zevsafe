@@ -222,6 +222,12 @@ const SUITE_CATALOG = [
         name: 'Headless Chrome Phase 3 Strict CSP',
         description: 'CDP verification with real _headers CSP, zero console errors, 13 modal dialog state cycles'
     },
+    {
+        file: 'test-single-file-download.js',
+        category: 'ui',
+        name: 'Single Files Download & Extraction Fixes',
+        description: 'Verifies safe revokeAfterDelay (60s), MIME typing, single-file direct download, and bounded cache safety'
+    },
 
     // ── PWA Suites ───────────────────────────────────────────────────────────
     {

@@ -891,6 +891,23 @@ Any `.zsafe` or `.zev` file created on Web, Android, or Desktop can be unlocked 
     - **Article 18 (`18-how-to-decrypt-zsafe-file.html`):** *How to Decrypt and Explore a .zsafe File* — Drop zone selection, Paper-Safe QR 1-scan auto-decryption, sub-300ms header demuxing, on-demand video streaming, photo lightbox, in-RAM document editing, and forensic memory scrubbing.
   - Expanded `blog/index.html` directory to 18 articles, updated `sitemap.xml`, and refreshed Service Worker precache hashes to 89 assets.
 
+### 3.44 Single File Decrypted Vault Download, MIME Resolution & Safe Blob Revocation (`app.js`, `js/document-viewer.js`, `test/ui/test-single-file-download.js`) [v8.30.0 / WEB-VERSION-81]
+- **Root Cause 1: Premature Blob URL Revocation (`revokeAfterDelay`):**
+  - Previously, `triggerDownload` scheduled blob URL revocation after only 3,000 ms (3 seconds). When users had the browser setting "Ask where to save each file before downloading" enabled or downloaded on slower mobile/external media, lingering in the native OS file picker past 3 seconds meant the blob URL was prematurely destroyed, resulting in browser errors (`Download failed: Network error` or `File not found`).
+  - Increased `revokeAfterDelay` default timer from 3,000 ms to 60,000 ms (60 seconds) and registered active URLs in `activeBlobUrls` for clean tracking, ensuring ample time for OS disk writes to complete.
+- **Root Cause 2: Untyped Blob Extraction & MIME Resolution (`getDecryptedFileBlob`):**
+  - `getDecryptedFileBlob` extracted files into blobs using `new Blob([extracted.data || extracted])` without an explicit MIME type (`type: ""`), causing some mobile and desktop browsers to fail to trigger native download handlers or save without proper extensions.
+  - Resolved file MIME types via `getMediaMimeType(filePath) || 'application/octet-stream'` and wrapped non-Blob raw buffers (`Uint8Array`/`ArrayBuffer`), ensuring every generated Blob carries an explicit MIME type.
+- **Root Cause 3: Single-File Vault UX Trap (`openV3VaultExplorer`, `openVaultExplorer`):**
+  - When a user encrypted and subsequently unlocked a vault containing only a single file, the primary action button `#btn-explorer-download-all` previously forced the single file into a `.zip` archive (`filename_decrypted.zip`), requiring users to manually decompress it.
+  - Added single-file auto-detection in `openV3VaultExplorer` and `openVaultExplorer`: when `currentDecryptedFileList.length === 1`, `#btn-explorer-download-all` dynamically adapts to `⬇️ Download File` (`Download ${singleFile.name}`), downloading the original uncompressed file directly with its native filename.
+- **Root Cause 4: Filename Dot & Space Preservation:**
+  - Preserved raw `file.name` in `_createExplorerGridFileCard` and `_createExplorerListFileRow` downloads and Document Viewer `textDlBtn` handlers, preventing leading dots (`.env`, `.gitignore`) from being stripped or spaces converted into underscores.
+- **Root Cause 5: In-Vault Direct Re-Encryption Key Mismatch:**
+  - `WorkerBridge.startEncryption` returns `res.vault` and `res.vaultBytes`, but `reEncryptVaultToZev` checked `res.encryptedBlob` / `res.encryptedBytes`. Updated property checks so direct re-encrypted vault downloads trigger smoothly when `streamWriter` is null.
+- **Automated Test Battery Expansion:**
+  - Created dedicated regression suite `test/ui/test-single-file-download.js` with 10 comprehensive checkpoints (MIME typing, 60s revocation, buffer wrapping, single-file direct download) and registered it in `test/run-all.js`, expanding the test suite to **37 test suites** (100% pass rate).
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]
@@ -903,7 +920,7 @@ Any `.zsafe` or `.zev` file created on Web, Android, or Desktop can be unlocked 
 
 ## 5. Mandatory Verification & Automated Test Battery
 
-The ZevSafe test suite comprises **34 test suites** and **1,257+ passing automated assertions** across low-level cryptographic streaming, memory-hard Argon2id KDF, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, and WCAG accessibility.
+The ZevSafe test suite comprises **37 test suites** and **1,267+ passing automated assertions** across low-level cryptographic streaming, memory-hard Argon2id KDF, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, single file downloads, and WCAG accessibility.
 
 Whenever ANY code or documentation is touched, run the automated test suites and ensure **100% pass rate**:
 

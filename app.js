@@ -1937,21 +1937,31 @@ function clearLogs() {
     logOutput.innerHTML = '';
 }
 
-/** Revoke an object URL after a short delay to prevent memory leaks */
-function revokeAfterDelay(url, delayMs = 3000) {
-    setTimeout(() => URL.revokeObjectURL(url), delayMs);
+/** Revoke an object URL after a safe delay to prevent memory leaks while allowing slow downloads/Save As dialogs */
+function revokeAfterDelay(url, delayMs = 60000) {
+    setTimeout(() => {
+        try { URL.revokeObjectURL(url); } catch (_) {}
+        if (typeof activeBlobUrls !== 'undefined' && activeBlobUrls) {
+            activeBlobUrls.delete(url);
+        }
+    }, delayMs);
 }
 
-/** Trigger a file download and clean up the blob URL */
+/** Trigger a file download and clean up the blob URL safely */
 function triggerDownload(blob, filename) {
-    const url = URL.createObjectURL(blob);
+    if (!blob) return;
+    const actualBlob = (blob instanceof Blob) ? blob : new Blob([blob], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(actualBlob);
+    if (typeof activeBlobUrls !== 'undefined' && activeBlobUrls) {
+        activeBlobUrls.add(url);
+    }
     const link = document.createElement('a');
     link.href = url;
-    link.download = filename;
+    link.download = filename || 'download';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    revokeAfterDelay(url); // fix: revoke blob URL to avoid memory leak
+    revokeAfterDelay(url, 60000);
 }
 
 function sanitizeFilenamePart(value, fallback = 'zevsafe-vault') {
@@ -4252,10 +4262,23 @@ let currentV3Vault = null; // { folderName, catalog, file, password, keyfileByte
  */
 async function getDecryptedFileBlob(filePath) {
     if (currentV3Vault && currentV3Vault.editedFiles && currentV3Vault.editedFiles.has(filePath)) {
-        return currentV3Vault.editedFiles.get(filePath);
+        const edited = currentV3Vault.editedFiles.get(filePath);
+        return (edited instanceof Blob) ? edited : new Blob([edited]);
     }
     if (currentDecryptedZip) {
-        return await currentDecryptedZip.file(filePath).async('blob');
+        let zipEntry = currentDecryptedZip.file(filePath);
+        if (!zipEntry) {
+            const cleanPath = filePath.replace(/^\/+/, '');
+            zipEntry = currentDecryptedZip.file(cleanPath);
+        }
+        if (!zipEntry) {
+            const match = Object.keys(currentDecryptedZip.files).find(k => k.toLowerCase() === filePath.toLowerCase() || k.endsWith('/' + filePath));
+            if (match) zipEntry = currentDecryptedZip.file(match);
+        }
+        if (zipEntry) {
+            return await zipEntry.async('blob');
+        }
+        throw new Error(`File not found in archive: ${filePath}`);
     }
     if (currentV3Vault && typeof StreamUnpacker !== 'undefined') {
         const entry = currentV3Vault.catalog.files.find(f => f.path === filePath);
@@ -4274,7 +4297,9 @@ async function getDecryptedFileBlob(filePath) {
                 chunkCache: currentV3Vault.chunkCache
             }
         );
-        return new Blob([extracted.data || extracted]);
+        const dataBytes = extracted.data || extracted;
+        const mimeType = (typeof getMediaMimeType === 'function' ? getMediaMimeType(filePath) : '') || 'application/octet-stream';
+        return new Blob([dataBytes], { type: mimeType });
     }
     throw new Error('No decrypted archive or vault loaded');
 }
@@ -4409,6 +4434,17 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
     const toolbar = document.getElementById('explorer-toolbar');
     if (toolbar) {
         toolbar.style.display = currentDecryptedFileList.length > 1 ? 'flex' : 'none';
+    }
+
+    const dlAllBtn = document.getElementById('btn-explorer-download-all');
+    if (dlAllBtn) {
+        if (currentDecryptedFileList.length === 1) {
+            dlAllBtn.textContent = '⬇️ Download File';
+            dlAllBtn.title = `Download ${currentDecryptedFileList[0].name}`;
+        } else {
+            dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+            dlAllBtn.title = 'Download all files as a ZIP archive';
+        }
     }
 
     updateCategoryFilterCounts();
@@ -4939,6 +4975,7 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
     currentDecryptedFolderName = folderName;
     currentDecryptedZip = zipInstance;
     currentDecryptedBlob = fullZipBlob;
+    currentV3Vault = null;
     explorerSelectedFiles.clear();
     explorerCurrentDir = '';
 
@@ -5013,6 +5050,17 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
     const toolbar = document.getElementById('explorer-toolbar');
     if (toolbar) {
         toolbar.style.display = currentDecryptedFileList.length > 1 ? 'flex' : 'none';
+    }
+
+    const dlAllBtn = document.getElementById('btn-explorer-download-all');
+    if (dlAllBtn) {
+        if (currentDecryptedFileList.length === 1) {
+            dlAllBtn.textContent = '⬇️ Download File';
+            dlAllBtn.title = `Download ${currentDecryptedFileList[0].name}`;
+        } else {
+            dlAllBtn.textContent = '⬇️ Download All (ZIP)';
+            dlAllBtn.title = 'Download all files as a ZIP archive';
+        }
     }
 
     updateCategoryFilterCounts();
@@ -5698,7 +5746,7 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
         try {
             dlBtn.textContent = '⏳';
             const fileBlob = await getDecryptedFileBlob(file.path);
-            triggerDownload(fileBlob, sanitizeFilenamePart(file.name, 'file'));
+            triggerDownload(fileBlob, file.name || sanitizeFilenamePart(file.name, 'file'));
             dlBtn.textContent = '✅';
             setTimeout(() => { dlBtn.innerHTML = '⬇️'; }, 2000);
         } catch (err) {
@@ -5875,7 +5923,7 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
         try {
             dlBtn.textContent = '⏳ ...';
             const fileBlob = await getDecryptedFileBlob(file.path);
-            triggerDownload(fileBlob, sanitizeFilenamePart(file.name, 'file'));
+            triggerDownload(fileBlob, file.name || sanitizeFilenamePart(file.name, 'file'));
             dlBtn.textContent = '✅ Saved';
             setTimeout(() => { dlBtn.innerHTML = '⬇️ Save'; }, 2000);
         } catch (err) {
@@ -6350,7 +6398,7 @@ async function downloadSalvageZip() {
         zip.file(f.path, f.data);
     }
     const blob = await zip.generateAsync({ type: 'blob' });
-    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.(zevsafe|zev)$/i, '') : 'salvaged_vault';
+    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.(zsafe|zevsafe|zev)$/i, '') : 'salvaged_vault';
     triggerDownload(blob, `${vaultName}_rescued.zip`);
     showToast('Downloaded rescued ZIP archive!', 'success');
     });
@@ -6367,7 +6415,7 @@ function downloadSalvageReport() {
         return;
     }
     const blob = new Blob([lastSalvageResult.results.reportText], { type: 'text/plain;charset=utf-8' });
-    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.(zevsafe|zev)$/i, '') : 'salvaged_vault';
+    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.(zsafe|zevsafe|zev)$/i, '') : 'salvaged_vault';
     triggerDownload(blob, `${vaultName}_salvage_report.txt`);
     showToast('Downloaded salvage audit report!', 'success');
 }
@@ -6383,7 +6431,7 @@ async function openExplorerFromSalvage() {
         zip.file(f.path, f.data);
     }
     const blob = await zip.generateAsync({ type: 'blob' });
-    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.(zevsafe|zev)$/i, '') : 'salvaged_vault';
+    const vaultName = (lastSalvageResult.file && lastSalvageResult.file.name) ? lastSalvageResult.file.name.replace(/\.(zsafe|zevsafe|zev)$/i, '') : 'salvaged_vault';
 
     const modal = document.getElementById('vault-salvage-modal');
     if (modal) {
@@ -7005,8 +7053,9 @@ async function reEncryptVaultToZev() {
                             await streamWriter.finalize();
                         } else if (res.encryptedBlob) {
                             triggerDownload(res.encryptedBlob, outZevName);
-                        } else if (res.encryptedBytes) {
-                            triggerDownload(new Blob([res.encryptedBytes], { type: 'application/octet-stream' }), outZevName);
+                        } else if (res.vault || res.vaultBytes || res.encryptedBytes) {
+                            const rawBytes = res.vault || res.vaultBytes || res.encryptedBytes;
+                            triggerDownload(new Blob([rawBytes], { type: 'application/octet-stream' }), outZevName);
                         }
                         if (reencryptBtn) reencryptBtn.textContent = '✅ Saved!';
                         showToast(`Vault re-encrypted & saved as "${outZevName}"`, 'success');
@@ -7207,6 +7256,26 @@ function _initExplorerFileActionControls() {
     dlAllBtn?.addEventListener('click', async () => {
         return await withWakeLock(async () => {
             if (!currentDecryptedFolderName) return;
+
+            // Direct single-file extraction fast-path when vault contains exactly 1 file
+            if (currentDecryptedFileList && currentDecryptedFileList.length === 1) {
+                const singleFile = currentDecryptedFileList[0];
+                dlAllBtn.textContent = '⏳ Extracting...';
+                try {
+                    const blob = await getDecryptedFileBlob(singleFile.path);
+                    triggerDownload(blob, singleFile.name);
+                    dlAllBtn.textContent = '✅ Downloaded!';
+                    log(`✅ Downloaded single file: "${singleFile.name}"`, 'success');
+                    setTimeout(() => { dlAllBtn.textContent = '⬇️ Download File'; }, 2000);
+                    return;
+                } catch (singleErr) {
+                    console.error('[Download Single File Error]', singleErr);
+                    showToast(`Download failed: ${singleErr.message}`, 'error');
+                    dlAllBtn.textContent = '⬇️ Download File';
+                    return;
+                }
+            }
+
             const outName = `${currentDecryptedFolderName}_decrypted.zip`;
             const hasEditedFiles = (currentV3Vault && currentV3Vault.editedFiles && currentV3Vault.editedFiles.size > 0);
 

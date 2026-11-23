@@ -1,6 +1,14 @@
 # Changelog
 
-## Version 8.30.0 (WEB-VERSION-81) — November 19, 2026 [FINAL PRODUCTION RELEASE]
+## Version 8.30.0 (WEB-VERSION-81) — November 23, 2026 [FINAL PRODUCTION RELEASE]
+
+- `Fix` (`app.js`, `js/document-viewer.js`, `test/ui/test-single-file-download.js`): Single File Decrypted Vault Download, MIME Resolution & Safe Blob Revocation.
+  - Resolved premature Blob URL revocation in `revokeAfterDelay` where the legacy 3,000 ms (3-second) timeout caused browser downloads to fail ("Network error" / "File not found") when users spent more than 3 seconds in native OS "Save As" file picker dialogs or on slower storage devices; increased default revocation timer to 60,000 ms (60 seconds) and registered active URLs in `activeBlobUrls` for clean tracking.
+  - Resolved untyped blob extraction in `getDecryptedFileBlob` by dynamically resolving MIME types via `getMediaMimeType(filePath) || 'application/octet-stream'` and wrapping raw non-Blob data buffers, ensuring mobile and desktop operating systems properly detect file formats and file extensions upon download.
+  - Eliminated UX trap for single-file vaults: when unlocking a vault containing only a single file, the Vault Explorer header button `#btn-explorer-download-all` automatically switches label and title to `⬇️ Download File` (`Download ${singleFile.name}`), triggering direct extraction and download of the original uncompressed file with its native filename instead of forcing it into a `.zip` archive.
+  - Fixed exact filename preservation in `_createExplorerGridFileCard`, `_createExplorerListFileRow`, and Document Viewer `textDlBtn` download handler, preventing leading dots from being stripped (`.env`, `.gitignore`) or spaces converted into underscores.
+  - Fixed direct re-encryption download in `reEncryptVaultToZev` by mapping `WorkerBridge.startEncryption` response properties (`res.vault` and `res.vaultBytes`) so in-vault re-encrypted files download immediately when `streamWriter` is null.
+  - Created dedicated automated regression suite `test/ui/test-single-file-download.js` covering 10 distinct download and extraction verification checkpoints (100% pass), expanding the automated test harness to 37 comprehensive test suites.
 
 - `New` & `Security` (`index.html`, `blog/posts/*.html`, `blog/blog.css`, `sitemap.xml`, `sw.js`): Comprehensive SEO & Structured Data Expansion (JSON-LD & Open Graph).
   - Updated `softwareVersion` to `"8.30.0"` and injected Schema.org `FAQPage` rich structured data into `index.html` covering core `.zsafe` container questions, backward compatibility, and zero-knowledge guarantees.

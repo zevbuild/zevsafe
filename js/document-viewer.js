@@ -555,7 +555,8 @@
 
         textDlBtn?.addEventListener('click', () => {
             if (currentTextBlob && currentTextFilename) {
-                triggerDownload(currentTextBlob, sanitizeFilenamePart(currentTextFilename, 'document'));
+                const safeName = currentTextFilename || (typeof sanitizeFilenamePart === 'function' ? sanitizeFilenamePart(currentTextFilename, 'document') : 'document.txt');
+                triggerDownload(currentTextBlob, safeName);
                 showToast(`Saved "${currentTextFilename}"`, 'success');
             }
         });
