@@ -908,6 +908,20 @@ Any `.zsafe` or `.zev` file created on Web, Android, or Desktop can be unlocked 
 - **Automated Test Battery Expansion:**
   - Created dedicated regression suite `test/ui/test-single-file-download.js` with 10 comprehensive checkpoints (MIME typing, 60s revocation, buffer wrapping, single-file direct download) and registered it in `test/run-all.js`, expanding the test suite to **37 test suites** (100% pass rate).
 
+### 3.45 Production Brand & Logo Asset Suite — Concept 3: Biometric Iris & Safe Dial (`assets/branding/`, `tools/generate-branding-assets.js`, `test/ui/test-branding-assets.js`) [v8.30.0 / WEB-VERSION-81]
+- **Design Identity (Concept 3):**
+  - Engineered the complete 23-asset branding suite based on the **Biometric Iris & Safe Dial** visual identity.
+  - Combines outer precision combination safe hash dial rings (symbolizing cryptographic PBKDF2 iterations and Argon2id passes) with counter-rotating biometric aperture arcs (`#3987FF` to `#24D5C5` gradient) and a central zero-knowledge cryptographic key seed.
+- **Directory Hierarchy (`assets/branding/`):**
+  - `logos/`: `logo-horizontal-dark.svg`, `logo-horizontal-light.svg`, `logo-horizontal-dark.png` (800×200), `logo-vertical-dark.svg`, `logo-vertical-dark.png` (600×600), `wordmark-dark.svg`, `wordmark-light.svg`.
+  - `icons/`: `favicon.ico` (multi-res binary container: 16, 32, 48px), `favicon-16x16.png`, `favicon-32x32.png`, `favicon-48x48.png`, `favicon.svg`, `safari-pinned-tab.svg` (monochrome `#000000` on alpha).
+  - `pwa/`: `apple-touch-icon.png` (180×180), `android-chrome-192x192.png`, `android-chrome-512x512.png`, `maskable-icon-512x512.png` (certified 80% safe zone geometry).
+  - `social/`: `og-image-zevsafe.jpg` (1200×630, 1.91:1 Open Graph banner), `twitter-card.jpg` (1200×600, 2:1 Twitter Large Card), `avatar-square-800x800.png` (800×800 1:1 profile avatar).
+  - `watermarks/`: `chart-watermark-stamp.png` (400×400, 25% opacity with circular security seal text path), `push-notification-icon.png` (96×96 Web Push badge).
+- **Automated Generation & Verification:**
+  - Standalone Node.js CDP generator script `tools/generate-branding-assets.js` rasterizing SVGs via headless Microsoft Edge canvas at pixel-perfect DPI.
+  - Automated test suite `test/ui/test-branding-assets.js` covering 24 validation checkpoints (file existence, PNG/JPG/ICO magic headers, and exact dimensions), expanding the test harness to **38 automated test suites** (100% pass rate).
+
 ---
 
 ## 4. Companion Android App Architecture (`app-zevsafe`) [Sunset Status]
@@ -920,7 +934,7 @@ Any `.zsafe` or `.zev` file created on Web, Android, or Desktop can be unlocked 
 
 ## 5. Mandatory Verification & Automated Test Battery
 
-The ZevSafe test suite comprises **37 test suites** and **1,267+ passing automated assertions** across low-level cryptographic streaming, memory-hard Argon2id KDF, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, single file downloads, and WCAG accessibility.
+The ZevSafe test suite comprises **38 test suites** and **1,291+ passing automated assertions** across low-level cryptographic streaming, memory-hard Argon2id KDF, adversarial challengers, browser reliability, CSP security, distribution completeness, PWA upgrade automation, single file downloads, branding assets architecture, and WCAG accessibility.
 
 Whenever ANY code or documentation is touched, run the automated test suites and ensure **100% pass rate**:
 

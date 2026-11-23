@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <defs>
+    <linearGradient id="irisGradV" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3987FF" />
+      <stop offset="100%" stop-color="#24D5C5" />
+    </linearGradient>
+    <radialGradient id="irisGlowV" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#24D5C5" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#24D5C5" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background Base Rounded Card -->
+  <rect width="600" height="600" rx="48" fill="#071426" />
+
+  <!-- Ambient Glow behind Emblem -->
+  <circle cx="300" cy="240" r="180" fill="url(#irisGlowV)" />
+
+  <!-- ── Centered Biometric Iris & Safe Dial Emblem ── -->
+  <g transform="translate(300, 240)">
+    <!-- Outer Precision Dial Ring (Radial Hash Ticks) -->
+    <circle cx="0" cy="0" r="132" fill="none" stroke="#1E293B" stroke-width="5" stroke-dasharray="5,9" />
+    <circle cx="0" cy="0" r="132" fill="none" stroke="url(#irisGradV)" stroke-width="7" stroke-dasharray="14,146" stroke-linecap="round" />
+
+    <!-- Outer Interlocking Biometric Aperture Arcs -->
+    <path d="M 0 -105 A 105 105 0 0 1 105 0 A 105 105 0 0 1 36 98"
+          fill="none" stroke="url(#irisGradV)" stroke-width="22" stroke-linecap="round" />
+    <path d="M 0 105 A 105 105 0 0 1 -105 0 A 105 105 0 0 1 -36 -98"
+          fill="none" stroke="url(#irisGradV)" stroke-width="22" stroke-linecap="round" />
+
+    <!-- Inner Concentric Dial Ring -->
+    <circle cx="0" cy="0" r="68" fill="none" stroke="#1E293B" stroke-width="3" stroke-dasharray="3,7" />
+
+    <!-- Vault Core Pupil & Aperture Cutout -->
+    <circle cx="0" cy="0" r="54" fill="#071426" stroke="url(#irisGradV)" stroke-width="9" />
+    <circle cx="0" cy="0" r="26" fill="url(#irisGradV)" />
+    
+    <!-- Central Cryptographic Key Seed -->
+    <circle cx="0" cy="0" r="9" fill="#071426" />
+    <circle cx="0" cy="0" r="4" fill="#24D5C5" />
+  </g>
+
+  <!-- ── Typography: ZevSafe ── -->
+  <text x="300" y="450"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="76"
+        font-weight="800"
+        letter-spacing="-1.5"
+        fill="#F8FAFC">Zev<tspan fill="#24D5C5">Safe</tspan></text>
+
+  <!-- ── Tagline ── -->
+  <text x="300" y="495"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="16"
+        font-weight="600"
+        letter-spacing="3"
+        fill="#94A3B8">100% IN-BROWSER ENCRYPTION</text>
+</svg>

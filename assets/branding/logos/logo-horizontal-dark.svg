@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <defs>
+    <linearGradient id="irisGradH" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3987FF" />
+      <stop offset="100%" stop-color="#24D5C5" />
+    </linearGradient>
+    <radialGradient id="irisGlowH" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#24D5C5" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#24D5C5" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background Soft Ambient Glow -->
+  <circle cx="100" cy="100" r="85" fill="url(#irisGlowH)" />
+
+  <!-- ── Biometric Iris & Safe Dial Emblem ── -->
+  <g transform="translate(100, 100)">
+    <!-- Outer Precision Dial Ring (Radial Hash Ticks) -->
+    <circle cx="0" cy="0" r="74" fill="none" stroke="#1E293B" stroke-width="3" stroke-dasharray="3,5" />
+    <circle cx="0" cy="0" r="74" fill="none" stroke="url(#irisGradH)" stroke-width="4" stroke-dasharray="8,82" stroke-linecap="round" />
+
+    <!-- Outer Interlocking Biometric Aperture Arcs -->
+    <path d="M 0 -58 A 58 58 0 0 1 58 0 A 58 58 0 0 1 20 54"
+          fill="none" stroke="url(#irisGradH)" stroke-width="12" stroke-linecap="round" />
+    <path d="M 0 58 A 58 58 0 0 1 -58 0 A 58 58 0 0 1 -20 -54"
+          fill="none" stroke="url(#irisGradH)" stroke-width="12" stroke-linecap="round" />
+
+    <!-- Inner Concentric Dial Ring -->
+    <circle cx="0" cy="0" r="38" fill="none" stroke="#1E293B" stroke-width="2" stroke-dasharray="2,4" />
+
+    <!-- Vault Core Pupil & Aperture Cutout -->
+    <circle cx="0" cy="0" r="30" fill="#080D1A" stroke="url(#irisGradH)" stroke-width="5" />
+    <circle cx="0" cy="0" r="14" fill="url(#irisGradH)" />
+    
+    <!-- Central Cryptographic Key Seed -->
+    <circle cx="0" cy="0" r="5" fill="#080D1A" />
+    <circle cx="0" cy="0" r="2" fill="#24D5C5" />
+  </g>
+
+  <!-- ── Typography: ZevSafe ── -->
+  <text x="210" y="112"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="68"
+        font-weight="800"
+        letter-spacing="-1.5"
+        fill="#F8FAFC">Zev<tspan fill="#24D5C5">Safe</tspan></text>
+
+  <!-- ── Tagline ── -->
+  <text x="214" y="148"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="15"
+        font-weight="600"
+        letter-spacing="2.5"
+        fill="#94A3B8">ZERO-KNOWLEDGE CLIENT-SIDE VAULT</text>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
+  <!-- Web Push Notification Icon: Monochrome White on Alpha Mask -->
+  <g transform="translate(48, 48)">
+    <circle cx="0" cy="0" r="42" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="2,3" />
+    <path d="M 0 -33 A 33 33 0 0 1 33 0 A 33 33 0 0 1 12 31"
+          fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" />
+    <path d="M 0 33 A 33 33 0 0 1 -33 0 A 33 33 0 0 1 -12 -31"
+          fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" />
+    <circle cx="0" cy="0" r="17" fill="none" stroke="#FFFFFF" stroke-width="3" />
+    <circle cx="0" cy="0" r="8" fill="#FFFFFF" />
+  </g>
+</svg>

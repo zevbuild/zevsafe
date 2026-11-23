@@ -148,7 +148,10 @@ function computeShellAssets(rootDir) {
             if (f.toLowerCase().includes('screenshot')) continue;
             if (f.startsWith('.')) continue;
             if (f.endsWith('.md')) continue;
-            assets.push(`./assets/${f}`);
+            const fullPath = path.join(assetsDir, f);
+            if (fs.statSync(fullPath).isFile()) {
+                assets.push(`./assets/${f}`);
+            }
         }
     }
 

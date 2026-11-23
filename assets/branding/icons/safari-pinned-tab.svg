@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Apple Safari Pinned Tab Icon: Pure Monochrome Black Vector (#000000) -->
+  <g transform="translate(50, 50)">
+    <!-- Outer Dial Ticks -->
+    <circle cx="0" cy="0" r="44" fill="none" stroke="#000000" stroke-width="2" stroke-dasharray="2,3" />
+    <circle cx="0" cy="0" r="44" fill="none" stroke="#000000" stroke-width="3" stroke-dasharray="5,49" stroke-linecap="round" />
+
+    <!-- Biometric Aperture Arcs -->
+    <path d="M 0 -35 A 35 35 0 0 1 35 0 A 35 35 0 0 1 12 33"
+          fill="none" stroke="#000000" stroke-width="7" stroke-linecap="round" />
+    <path d="M 0 35 A 35 35 0 0 1 -35 0 A 35 35 0 0 1 -12 -33"
+          fill="none" stroke="#000000" stroke-width="7" stroke-linecap="round" />
+
+    <!-- Inner Dial & Vault Core -->
+    <circle cx="0" cy="0" r="23" fill="none" stroke="#000000" stroke-width="1.5" stroke-dasharray="1.5,2.5" />
+    <circle cx="0" cy="0" r="18" fill="none" stroke="#000000" stroke-width="3" />
+    <circle cx="0" cy="0" r="9" fill="#000000" />
+    <circle cx="0" cy="0" r="3" fill="#ffffff" />
+  </g>
+</svg>

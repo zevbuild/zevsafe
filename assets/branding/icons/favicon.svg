@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="favIrisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3987FF" />
+      <stop offset="100%" stop-color="#24D5C5" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#071426" />
+  <g transform="translate(64, 64)">
+    <circle cx="0" cy="0" r="48" fill="none" stroke="#1E293B" stroke-width="2" stroke-dasharray="2,3" />
+    <path d="M 0 -38 A 38 38 0 0 1 38 0 A 38 38 0 0 1 14 36"
+          fill="none" stroke="url(#favIrisGrad)" stroke-width="8" stroke-linecap="round" />
+    <path d="M 0 38 A 38 38 0 0 1 -38 0 A 38 38 0 0 1 -14 -36"
+          fill="none" stroke="url(#favIrisGrad)" stroke-width="8" stroke-linecap="round" />
+    <circle cx="0" cy="0" r="20" fill="#071426" stroke="url(#favIrisGrad)" stroke-width="3" />
+    <circle cx="0" cy="0" r="10" fill="url(#favIrisGrad)" />
+    <circle cx="0" cy="0" r="3" fill="#24D5C5" />
+  </g>
+</svg>

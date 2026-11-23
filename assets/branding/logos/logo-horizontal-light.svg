@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <defs>
+    <linearGradient id="irisGradHL" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#0D9488" />
+    </linearGradient>
+  </defs>
+
+  <!-- ── Biometric Iris & Safe Dial Emblem (Light Mode) ── -->
+  <g transform="translate(100, 100)">
+    <!-- Outer Precision Dial Ring (Radial Hash Ticks) -->
+    <circle cx="0" cy="0" r="74" fill="none" stroke="#E2E8F0" stroke-width="3" stroke-dasharray="3,5" />
+    <circle cx="0" cy="0" r="74" fill="none" stroke="url(#irisGradHL)" stroke-width="4" stroke-dasharray="8,82" stroke-linecap="round" />
+
+    <!-- Outer Interlocking Biometric Aperture Arcs -->
+    <path d="M 0 -58 A 58 58 0 0 1 58 0 A 58 58 0 0 1 20 54"
+          fill="none" stroke="url(#irisGradHL)" stroke-width="12" stroke-linecap="round" />
+    <path d="M 0 58 A 58 58 0 0 1 -58 0 A 58 58 0 0 1 -20 -54"
+          fill="none" stroke="url(#irisGradHL)" stroke-width="12" stroke-linecap="round" />
+
+    <!-- Inner Concentric Dial Ring -->
+    <circle cx="0" cy="0" r="38" fill="none" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="2,4" />
+
+    <!-- Vault Core Pupil & Aperture Cutout -->
+    <circle cx="0" cy="0" r="30" fill="#FFFFFF" stroke="url(#irisGradHL)" stroke-width="5" />
+    <circle cx="0" cy="0" r="14" fill="url(#irisGradHL)" />
+    
+    <!-- Central Cryptographic Key Seed -->
+    <circle cx="0" cy="0" r="5" fill="#FFFFFF" />
+    <circle cx="0" cy="0" r="2" fill="#0D9488" />
+  </g>
+
+  <!-- ── Typography: ZevSafe (Light Mode) ── -->
+  <text x="210" y="112"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="68"
+        font-weight="800"
+        letter-spacing="-1.5"
+        fill="#0B192C">Zev<tspan fill="#0D9488">Safe</tspan></text>
+
+  <!-- ── Tagline (Light Mode) ── -->
+  <text x="214" y="148"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="15"
+        font-weight="600"
+        letter-spacing="2.5"
+        fill="#64748B">ZERO-KNOWLEDGE CLIENT-SIDE VAULT</text>
+</svg>

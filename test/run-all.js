@@ -228,6 +228,12 @@ const SUITE_CATALOG = [
         name: 'Single Files Download & Extraction Fixes',
         description: 'Verifies safe revokeAfterDelay (60s), MIME typing, single-file direct download, and bounded cache safety'
     },
+    {
+        file: 'test-branding-assets.js',
+        category: 'ui',
+        name: 'Brand & Logo Assets Architecture',
+        description: 'Verifies existence, format signatures, pixel dimensions, and multi-res ICO for Concept 3: Biometric Iris & Safe Dial'
+    },
 
     // ── PWA Suites ───────────────────────────────────────────────────────────
     {
