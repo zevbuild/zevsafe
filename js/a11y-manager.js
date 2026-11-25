@@ -359,7 +359,7 @@
         if ((e.key === 'a' || e.key === 'A') && (e.ctrlKey || e.metaKey)) {
             if (isInputFocused) return;
             e.preventDefault();
-            const selectAllBtn = document.getElementById('explorer-btn-select-all');
+            const selectAllBtn = document.getElementById('explorer-select-all') || document.getElementById('explorer-btn-select-all');
             if (selectAllBtn) {
                 selectAllBtn.click();
             } else {
@@ -369,6 +369,30 @@
                 });
             }
             return;
+        }
+
+        // 4b. Backspace: Navigate up to parent folder
+        if (e.key === 'Backspace' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            if (isInputFocused) return;
+            const isMediaActive = Boolean(document.getElementById('vault-media-modal') && !document.getElementById('vault-media-modal').classList.contains('d-none'));
+            if (isMediaActive) return;
+            const parentItem = containerEl.querySelector('.explorer-parent-item, .explorer-grid-parent');
+            if (parentItem) {
+                e.preventDefault();
+                parentItem.click();
+            }
+            return;
+        }
+
+        // 4c. Space: Toggle checkbox on currently focused file row or card
+        if (e.key === ' ' && !isInputFocused && currentActive) {
+            if (e.target.matches('button, input, a')) return;
+            const cb = currentActive.querySelector('.explorer-item-cb, .explorer-grid-cb');
+            if (cb) {
+                e.preventDefault();
+                cb.click();
+                return;
+            }
         }
 
         // 5. ?: Open hotkeys cheatsheet

@@ -1439,10 +1439,68 @@ const catalogFiles = [
 
     console.log('  ✔ 41. Final Production Release & Strategic Portal Architecture verified');
 
+    // -------------------------------------------------------------------------
+    // TEST 42: Vault File Explorer UI Upgrade (Emblems, Badges, Highlighting, d-none Sync)
+    // -------------------------------------------------------------------------
+    const explorerHtml = fs.readFileSync(indexPath, 'utf8');
+    assert.strictEqual(explorerHtml.includes('id="explorer-search-kbd"'), true, 'index.html contains search Ctrl+F kbd hint');
+    assert.strictEqual(explorerHtml.includes('id="btn-batch-clear"'), true, 'index.html contains batch clear button');
+    assert.strictEqual(explorerHtml.includes('class="explorer-ram-chip"'), true, 'index.html contains zero-disk RAM badge');
+    assert.strictEqual(explorerHtml.includes('class="explorer-filter-count"'), true, 'index.html contains filter count chips');
+
+    const explorerAppJs = fs.readFileSync(path.resolve(__dirname, '../../app.js'), 'utf8');
+    assert.strictEqual(explorerAppJs.includes('function _getFileExtLabel('), true, 'app.js defines _getFileExtLabel');
+    assert.strictEqual(explorerAppJs.includes('function _createExplorerTypeBadge('), true, 'app.js defines _createExplorerTypeBadge');
+    assert.strictEqual(explorerAppJs.includes('function _appendHighlightedFilename('), true, 'app.js defines XSS-safe _appendHighlightedFilename');
+    assert.strictEqual(explorerAppJs.includes("breadcrumbsNav.classList.remove('d-none')"), true, 'renderBreadcrumbs removes d-none');
+    assert.strictEqual(explorerAppJs.includes("filterTabsContainer.classList.toggle('d-none'"), true, 'updateCategoryFilterCounts toggles d-none');
+    assert.strictEqual(explorerAppJs.includes("batchBar.classList.remove('d-none')"), true, 'updateBatchBar removes d-none');
+    assert.strictEqual(explorerAppJs.includes("batchBar.classList.add('d-none')"), true, 'updateBatchBar adds d-none');
+    assert.strictEqual(explorerAppJs.includes("explorer-item--selected"), true, 'list rows apply selected state class');
+    assert.strictEqual(explorerAppJs.includes("explorer-grid-card--selected"), true, 'grid cards apply selected state class');
+
+    const explorerCss = fs.readFileSync(path.resolve(__dirname, '../../styles.css'), 'utf8');
+    assert.strictEqual(explorerCss.includes('.explorer-type-badge'), true, 'styles.css defines .explorer-type-badge');
+    assert.strictEqual(explorerCss.includes('.explorer-grid-emblem'), true, 'styles.css defines .explorer-grid-emblem');
+    assert.strictEqual(explorerCss.includes('.explorer-grid-ext'), true, 'styles.css defines .explorer-grid-ext');
+    assert.strictEqual(explorerCss.includes('.explorer-ext-pill'), true, 'styles.css defines .explorer-ext-pill');
+    assert.strictEqual(explorerCss.includes('.explorer-search-highlight'), true, 'styles.css defines .explorer-search-highlight');
+    assert.strictEqual(explorerCss.includes('.explorer-empty-card'), true, 'styles.css defines .explorer-empty-card');
+    assert.strictEqual(explorerCss.includes('.explorer-body--dragover'), true, 'styles.css defines .explorer-body--dragover');
+
+    console.log('  ✔ 42. Vault File Explorer UI Upgrade verified');
+
+    // -------------------------------------------------------------------------
+    // TEST 43: Explorer Power Upgrades (Storage Meter, Batch Delete, Folder Import, Lazy Thumbs, Shortcuts)
+    // -------------------------------------------------------------------------
+    assert.strictEqual(explorerHtml.includes('id="explorer-storage-bar"'), true, 'index.html contains #explorer-storage-bar');
+    assert.strictEqual(explorerHtml.includes('id="btn-batch-delete"'), true, 'index.html contains #btn-batch-delete');
+    assert.strictEqual(explorerHtml.includes('id="btn-explorer-add-folder"'), true, 'index.html contains #btn-explorer-add-folder');
+    assert.strictEqual(explorerHtml.includes('id="explorer-add-folder-input"'), true, 'index.html contains #explorer-add-folder-input');
+    assert.strictEqual(explorerHtml.includes('class="explorer-kbd-strip"'), true, 'index.html contains keyboard shortcut strip');
+
+    assert.strictEqual(explorerAppJs.includes('function updateStorageBreakdownBar('), true, 'app.js defines updateStorageBreakdownBar');
+    assert.strictEqual(explorerAppJs.includes('function batchDeleteSelected('), true, 'app.js defines batchDeleteSelected');
+    assert.strictEqual(explorerAppJs.includes('function revokeGridThumbUrls('), true, 'app.js defines revokeGridThumbUrls');
+    assert.strictEqual(explorerAppJs.includes('function _scheduleGridPhotoThumbnail('), true, 'app.js defines _scheduleGridPhotoThumbnail');
+    assert.strictEqual(explorerAppJs.includes('file.webkitRelativePath'), true, 'addFilesToVault supports nested folder imports');
+
+    const a11yExplorerJs = fs.readFileSync(path.resolve(__dirname, '../../js/a11y-manager.js'), 'utf8');
+    assert.strictEqual(a11yExplorerJs.includes("e.key === 'Backspace'"), true, 'a11y-manager handles Backspace parent navigation');
+    assert.strictEqual(a11yExplorerJs.includes("e.key === ' '"), true, 'a11y-manager handles Space checkbox toggle');
+    assert.strictEqual(a11yExplorerJs.includes("document.getElementById('explorer-select-all')"), true, 'a11y-manager Ctrl+A targets #explorer-select-all');
+
+    assert.strictEqual(explorerCss.includes('.explorer-storage-bar'), true, 'styles.css defines .explorer-storage-bar');
+    assert.strictEqual(explorerCss.includes('.explorer-btn-batch-del'), true, 'styles.css defines .explorer-btn-batch-del');
+    assert.strictEqual(explorerCss.includes('.explorer-btn-add-folder'), true, 'styles.css defines .explorer-btn-add-folder');
+    assert.strictEqual(explorerCss.includes('.explorer-grid-thumb-img'), true, 'styles.css defines .explorer-grid-thumb-img');
+    assert.strictEqual(explorerCss.includes('.explorer-kbd-strip'), true, 'styles.css defines .explorer-kbd-strip');
+
+    console.log('  ✔ 43. Explorer Power Upgrades (Storage Bar, Batch Delete, Folder Import, Lazy Thumbs, Shortcuts) verified');
 
 })().then(() => {
     console.log('===============================================================');
-    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 41/41 PASSED    ');
+    console.log('  EXPLORER FOLDER NAVIGATION & SECURITY SUITE: 43/43 PASSED    ');
     console.log('===============================================================');
 }).catch(err => {
     console.error('Test 41 failed:', err);

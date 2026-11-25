@@ -734,6 +734,27 @@
                         <li>
                             <span class="cl-bullet cl-bullet--new">New</span>
                             <div>
+                                <strong>Vault File Explorer Power Upgrades — Storage Meter, Batch Delete, Folder Import, Lazy Thumbnails &amp; Shortcuts (<code>index.html</code>, <code>styles.css</code>, <code>app.js</code>, <code>js/a11y-manager.js</code>, <code>test/ui/test-explorer-folder-nav.js</code>):</strong>
+                                Added a segmented <strong>Vault Storage Breakdown Bar</strong> (<code>#explorer-storage-bar</code>) with clickable category chips, <strong><code>🗑️ Delete Selected</code></strong> (<code>batchDeleteSelected</code>) inside the batch bar for multi-file deletion, nested <strong><code>📂 Add Folder</code></strong> imports preserving directory structure, memory-bounded lazy photo thumbnails in Grid View (<code>&le; 3 MB</code> cap &amp; automatic blob URL revocation on navigation/lock), and power keyboard shortcuts (<code>Backspace</code> up-folder, <code>Space</code> checkbox toggle, fixed <code>Ctrl+A</code> select-all) with a desktop shortcut hint bar. Verified by Test 43 in <code>test-explorer-folder-nav.js</code> (43/43 passed).
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--ui">UI</span>
+                            <div>
+                                <strong>Complete Decrypted Vault File Explorer UI Upgrade (<code>index.html</code>, <code>styles.css</code>, <code>app.js</code>, <code>test/ui/test-explorer-folder-nav.js</code>):</strong>
+                                Expanded desktop Vault Explorer canvas to <code>1020px</code> with deeper glassmorphic elevation, uniform header action pills, <code>Ctrl+F</code> search focus shortcut, and segmented List/Grid controls. Fixed <code>.d-none</code> visibility toggling on breadcrumbs, category filter tabs, batch bar, and search clear controls. Added category-coded file type icon badges (<code>.explorer-type-badge</code>), uppercase extension chips, XSS-safe search highlighting, selected row/card states, live batch size readout with clear selection button, polished empty state cards with quick recovery actions, and mobile-optimized stacked list rows. Verified in <code>test-explorer-folder-nav.js</code> (42/42 passing).
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--fix">Fix</span>
+                            <div>
+                                <strong>Multi-Chunk Cache Eviction Protection, OS-Safe Filename Downloads &amp; .zev to .zsafe Re-Encryption (<code>js/stream-unpacker.js</code>, <code>js/worker-bridge.js</code>, <code>app.js</code>, <code>test/ui/test-single-file-download.js</code>):</strong>
+                                Resolved critical cache eviction race in <code>StreamUnpacker.extractSingleFile</code> where extracting multi-chunk files (&gt; 16 MB) triggered bounded LRU zeroization (<code>.fill(0)</code>) on earlier chunks while the active span was still being concatenated, causing false-positive CRC-32 checksum failures (<code>CRC-32 checksum mismatch ... expected 0x..., calculated 0x...</code>) that aborted single-file downloads and in-vault <code>.zev</code> &rarr; <code>.zsafe</code> re-encryption. Decoupled active extraction buffers from LRU cache eviction using independent buffer clones. Corrected fallback chunk end calculations in <code>WorkerBridge.extractSingleFile</code> to include ZIP Local File Header overhead (<code>30 + nameLen + extraLen</code>). Added <code>sanitizeDownloadFilename</code> in <code>app.js</code> to clean illegal OS characters (<code>&lt; &gt; : " / \ | ? *</code>) and preserved <code>currentDecryptedPassword</code> for direct legacy vault re-encryption. Verified with 14/14 tests in <code>test-single-file-download.js</code> (38/38 suites passing at 100%).
+                            </div>
+                        </li>
+                        <li>
+                            <span class="cl-bullet cl-bullet--new">New</span>
+                            <div>
                                 <strong>Complete Production Brand &amp; Logo Asset Suite — Concept 3: Biometric Iris &amp; Safe Dial (<code>assets/branding/</code>, <code>tools/generate-branding-assets.js</code>, <code>test/ui/test-branding-assets.js</code>):</strong>
                                 Delivered a comprehensive 23-asset branding suite based on the selected <strong>Biometric Iris &amp; Safe Dial</strong> identity, uniting precision combination safe dial hash rings with counter-rotating biometric aperture arcs and a central cryptographic seed key. Includes vector SVGs (horizontal dark/light, vertical dark, wordmarks, Safari pinned tab, watermark stamp, and push notification icon), rasterized high-DPI PNGs (800×200 horizontal logo, 600×600 vertical emblem, 800×800 square avatar, 400×400 security watermark stamp, 96×96 push badge), multi-resolution binary <code>favicon.ico</code> (16, 32, 48px), PWA icons (180×180 Apple touch icon, 192×192 &amp; 512×512 Android icons, and 512×512 certified adaptive maskable icon with 80% safe zone), and high-impact social cards (1200×630 Open Graph and 1200×600 Twitter Large Card). Verified by automated test suite <code>test/ui/test-branding-assets.js</code> (24/24 passed), expanding test coverage to 38 test suites.
                             </div>

@@ -1186,7 +1186,7 @@
     </div>
 
     <!-- ── DECRYPTED VAULT FILE EXPLORER MODAL ── -->
-    <div class="explorer-modal-overlay d-none" id="vault-explorer-modal"  role="dialog" aria-modal="true" aria-labelledby="explorer-modal-title">
+    <div class="explorer-modal-overlay d-none" id="vault-explorer-modal" role="dialog" aria-modal="true" aria-labelledby="explorer-modal-title">
         <div class="explorer-modal">
             <header class="explorer-header">
                 <div class="explorer-title-wrap">
@@ -1194,32 +1194,42 @@
                         <span class="explorer-badge">🔓 Decrypted Vault</span>
                         <h3 id="explorer-modal-title" class="explorer-title">Vault Explorer</h3>
                     </div>
-                    <span class="explorer-meta" id="explorer-modal-meta">0 files · 0 KB</span>
+                    <div class="explorer-meta-row">
+                        <span class="explorer-meta" id="explorer-modal-meta">0 files · 0 KB</span>
+                        <span class="explorer-ram-chip">⚡ Zero-Disk RAM</span>
+                    </div>
                 </div>
                 <div class="explorer-header-actions">
-                    <button class="explorer-btn-verify" id="btn-explorer-verify" title="Verify vault cryptographic integrity and bit-rot across all chunks">🛡️ Verify Vault</button>
-                    <button class="explorer-btn-reencrypt" id="btn-explorer-reencrypt" title="Re-encrypt vault directly into a .zsafe file with active session key">
+                    <button type="button" class="explorer-btn-verify" id="btn-explorer-verify" title="Verify vault cryptographic integrity and bit-rot across all chunks">🛡️ Verify Vault</button>
+                    <button type="button" class="explorer-btn-reencrypt" id="btn-explorer-reencrypt" title="Re-encrypt vault directly into a .zsafe file with active session key">
                         🔒 Re-Encrypt (.zsafe)
                     </button>
-                    <button class="explorer-btn-download-all" id="btn-explorer-download-all" title="Download all files as a ZIP archive">
+                    <button type="button" class="explorer-btn-download-all" id="btn-explorer-download-all" title="Download all files as a ZIP archive">
                         ⬇️ Download All (ZIP)
                     </button>
-                    <button class="explorer-btn-close" id="btn-close-explorer" title="Close Explorer" aria-label="Close Explorer">✕</button>
+                    <button type="button" class="explorer-btn-close" id="btn-close-explorer" title="Close Explorer (Esc)" aria-label="Close Explorer">✕</button>
                 </div>
             </header>
+
+            <!-- Storage Category Breakdown Bar -->
+            <div class="explorer-storage-wrap d-none" id="explorer-storage-wrap" aria-label="Vault storage breakdown by category">
+                <div class="explorer-storage-bar" id="explorer-storage-bar" role="presentation"></div>
+                <div class="explorer-storage-legend" id="explorer-storage-legend"></div>
+            </div>
 
             <!-- Search and Action Toolbar -->
             <div class="explorer-toolbar" id="explorer-toolbar">
                 <div class="explorer-search-wrap">
-                    <span class="explorer-search-icon">🔍</span>
-                    <input type="text" id="explorer-search-input" class="explorer-search-input" placeholder="Search files in vault..." autocomplete="off" spellcheck="false" aria-label="Search files in vault">
-                    <button class="explorer-search-clear d-none" id="btn-clear-explorer-search" title="Clear search"  aria-label="Clear file search">✕</button>
+                    <span class="explorer-search-icon" aria-hidden="true">🔍</span>
+                    <input type="text" id="explorer-search-input" class="explorer-search-input" placeholder="Search files or folders in vault..." autocomplete="off" spellcheck="false" aria-label="Search files in vault">
+                    <kbd class="explorer-search-kbd" id="explorer-search-kbd" aria-hidden="true">Ctrl+F</kbd>
+                    <button type="button" class="explorer-search-clear d-none" id="btn-clear-explorer-search" title="Clear search" aria-label="Clear file search">✕</button>
                 </div>
 
                 <div class="explorer-controls-wrap">
                     <!-- Sort dropdown -->
                     <div class="explorer-sort-wrap">
-                        <span class="explorer-sort-label">Sort:</span>
+                        <span class="explorer-sort-label">Sort</span>
                         <select id="explorer-sort-select" class="explorer-sort-select" aria-label="Sort files">
                             <option value="name-asc">Name (A-Z)</option>
                             <option value="name-desc">Name (Z-A)</option>
@@ -1231,14 +1241,13 @@
 
                     <!-- View Toggle: List / Grid -->
                     <div class="explorer-view-toggle" role="group" aria-label="View mode">
-                        <button class="explorer-view-btn explorer-view-btn--active" id="btn-view-list" title="List View" aria-pressed="true" aria-label="Switch to list view">☰</button>
-                        <button class="explorer-view-btn" id="btn-view-grid" title="Grid View" aria-pressed="false" aria-label="Switch to grid view">⊞</button>
+                        <button type="button" class="explorer-view-btn explorer-view-btn--active" id="btn-view-list" title="List View" aria-pressed="true" aria-label="Switch to list view">☰</button>
+                        <button type="button" class="explorer-view-btn" id="btn-view-grid" title="Grid View" aria-pressed="false" aria-label="Switch to grid view">⊞</button>
                     </div>
 
-                    <!-- Create New Text File in Active Directory -->
                     <!-- Auto-Lock Timer selector -->
                     <div class="explorer-autolock-wrap" title="Auto-lock vault session after inactivity">
-                        <span class="explorer-autolock-label">⏱️ Auto-lock:</span>
+                        <span class="explorer-autolock-label">⏱️</span>
                         <select id="explorer-autolock-select" class="explorer-autolock-select" aria-label="Auto-lock timeout">
                             <option value="0">Off</option>
                             <option value="5" selected>5 min</option>
@@ -1247,43 +1256,46 @@
                         </select>
                     </div>
 
-                    <!-- Create New Text File in Active Directory -->
-                    <!-- Add External Files into Active Directory -->
-                    <button class="explorer-btn-add-files" id="btn-explorer-add-files" title="Import files from device into current folder">➕ Add Files</button>
-                    <input class="sr-only-file-input" type="file" id="explorer-add-files-input" multiple autocomplete="off" aria-label="Select files to add into current vault directory">
-
-                    <!-- Create New Text File in Active Directory -->
-                    <button class="explorer-btn-new-file" id="btn-explorer-new-file" title="Create new text file in current folder">➕ New Note</button>
+                    <!-- Quick Add & Create Actions -->
+                    <div class="explorer-quick-actions">
+                        <button type="button" class="explorer-btn-add-files" id="btn-explorer-add-files" title="Import files from device into current folder">➕ Add Files</button>
+                        <button type="button" class="explorer-btn-add-folder" id="btn-explorer-add-folder" title="Import an entire folder preserving subfolders">📂 Add Folder</button>
+                        <input class="sr-only-file-input" type="file" id="explorer-add-files-input" multiple autocomplete="off" aria-label="Select files to add into current vault directory">
+                        <input class="sr-only-file-input" type="file" id="explorer-add-folder-input" webkitdirectory directory multiple autocomplete="off" aria-label="Select a folder to import into current vault directory">
+                        <button type="button" class="explorer-btn-new-file" id="btn-explorer-new-file" title="Create new text file in current folder">📝 New Note</button>
+                    </div>
                 </div>
             </div>
 
             <!-- Category Filter Tabs (shown when multiple categories exist) -->
-            <div class="explorer-filter-tabs d-none" id="explorer-filter-tabs" role="tablist" aria-label="Filter by file type" >
-                <button class="explorer-filter-tab explorer-filter-tab--active" data-filter="all" id="tab-filter-all" role="tab" aria-selected="true">All (<span id="filter-count-all">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="video" id="tab-filter-video" role="tab" aria-selected="false">🎬 Videos (<span id="filter-count-video">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="audio" id="tab-filter-audio" role="tab" aria-selected="false">🎵 Audio (<span id="filter-count-audio">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="photo" id="tab-filter-photo" role="tab" aria-selected="false">🖼️ Photos (<span id="filter-count-photo">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="doc" id="tab-filter-doc" role="tab" aria-selected="false">📄 Docs (<span id="filter-count-doc">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="code" id="tab-filter-code" role="tab" aria-selected="false">💻 Code (<span id="filter-count-code">0</span>)</button>
-                <button class="explorer-filter-tab" data-filter="archive" id="tab-filter-archive" role="tab" aria-selected="false">📦 Archives (<span id="filter-count-archive">0</span>)</button>
+            <div class="explorer-filter-tabs d-none" id="explorer-filter-tabs" role="tablist" aria-label="Filter by file type">
+                <button type="button" class="explorer-filter-tab explorer-filter-tab--active" data-filter="all" id="tab-filter-all" role="tab" aria-selected="true">All <span class="explorer-filter-count" id="filter-count-all">0</span></button>
+                <button type="button" class="explorer-filter-tab" data-filter="video" id="tab-filter-video" role="tab" aria-selected="false">🎬 Videos <span class="explorer-filter-count" id="filter-count-video">0</span></button>
+                <button type="button" class="explorer-filter-tab" data-filter="audio" id="tab-filter-audio" role="tab" aria-selected="false">🎵 Audio <span class="explorer-filter-count" id="filter-count-audio">0</span></button>
+                <button type="button" class="explorer-filter-tab" data-filter="photo" id="tab-filter-photo" role="tab" aria-selected="false">🖼️ Photos <span class="explorer-filter-count" id="filter-count-photo">0</span></button>
+                <button type="button" class="explorer-filter-tab" data-filter="doc" id="tab-filter-doc" role="tab" aria-selected="false">📄 Docs <span class="explorer-filter-count" id="filter-count-doc">0</span></button>
+                <button type="button" class="explorer-filter-tab" data-filter="code" id="tab-filter-code" role="tab" aria-selected="false">💻 Code <span class="explorer-filter-count" id="filter-count-code">0</span></button>
+                <button type="button" class="explorer-filter-tab" data-filter="archive" id="tab-filter-archive" role="tab" aria-selected="false">📦 Archives <span class="explorer-filter-count" id="filter-count-archive">0</span></button>
             </div>
 
             <!-- Explorer Breadcrumbs Navigation (vault root / active folder) -->
-            <nav class="explorer-breadcrumbs d-none" id="explorer-breadcrumbs" aria-label="Vault file path" >
+            <nav class="explorer-breadcrumbs d-none" id="explorer-breadcrumbs" aria-label="Vault file path">
                 <span class="breadcrumb-item breadcrumb-item--root" id="breadcrumb-root">📁 Vault Root</span>
             </nav>
 
             <!-- Batch Selection Action Bar (hidden until items selected) -->
-            <div class="explorer-batch-bar d-none" id="explorer-batch-bar" >
+            <div class="explorer-batch-bar d-none" id="explorer-batch-bar">
                 <div class="explorer-batch-info">
                     <label class="explorer-checkbox-wrap">
                         <input type="checkbox" id="explorer-select-all" aria-label="Select all visible files">
                         <span>Select All</span>
                     </label>
-                    <span id="explorer-selected-count">0 files selected</span>
+                    <span class="explorer-selected-pill" id="explorer-selected-count">0 files selected</span>
                 </div>
                 <div class="explorer-batch-actions">
-                    <button class="explorer-btn-batch-dl" id="btn-batch-download" title="Download selected files">⬇️ Download Selected</button>
+                    <button type="button" class="explorer-btn-batch-clear" id="btn-batch-clear" title="Clear selection">✕ Clear</button>
+                    <button type="button" class="explorer-btn-batch-del" id="btn-batch-delete" title="Delete selected files from vault">🗑️ Delete Selected</button>
+                    <button type="button" class="explorer-btn-batch-dl" id="btn-batch-download" title="Download selected files">⬇️ Download Selected</button>
                 </div>
             </div>
 
@@ -1294,8 +1306,19 @@
 
             <!-- Explorer Footer -->
             <footer class="explorer-footer">
-                <span class="explorer-footer-hint" id="explorer-footer-hint">🔒 Decrypted in your browser. All files stay on your device.</span>
-                <button class="pw-modal-btn pw-modal-btn--secondary" id="btn-done-explorer">Close</button>
+                <div class="explorer-footer-meta">
+                    <span class="explorer-footer-hint" id="explorer-footer-hint">🔒 Decrypted in your browser. Drag &amp; drop files here to add to vault.</span>
+                    <div class="explorer-kbd-strip" aria-hidden="true">
+                        <span><kbd>Ctrl+F</kbd> Search</span>
+                        <span><kbd>Ctrl+A</kbd> Select All</span>
+                        <span><kbd>Space</kbd> Check</span>
+                        <span><kbd>Backspace</kbd> Up</span>
+                        <span><kbd>F2</kbd> Rename</span>
+                        <span><kbd>D</kbd> Save</span>
+                        <span><kbd>Del</kbd> Delete</span>
+                    </div>
+                </div>
+                <button type="button" class="pw-modal-btn pw-modal-btn--secondary" id="btn-done-explorer">Close</button>
             </footer>
         </div>
     </div>

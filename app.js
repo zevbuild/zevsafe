@@ -1947,6 +1947,16 @@ function revokeAfterDelay(url, delayMs = 60000) {
     }, delayMs);
 }
 
+/** Sanitize filename for operating system compatibility (< > : " / \ | ? * removed) */
+function sanitizeDownloadFilename(filename) {
+    if (!filename || typeof filename !== 'string') return 'download';
+    const cleaned = filename
+        .replace(/[\x00-\x1F\x7F]/g, '')
+        .replace(/[<>:"/\\|?*]/g, '_')
+        .trim();
+    return cleaned || 'download';
+}
+
 /** Trigger a file download and clean up the blob URL safely */
 function triggerDownload(blob, filename) {
     if (!blob) return;
@@ -1955,9 +1965,10 @@ function triggerDownload(blob, filename) {
     if (typeof activeBlobUrls !== 'undefined' && activeBlobUrls) {
         activeBlobUrls.add(url);
     }
+    const safeFilename = sanitizeDownloadFilename(filename || 'download');
     const link = document.createElement('a');
     link.href = url;
-    link.download = filename || 'download';
+    link.download = safeFilename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -3224,7 +3235,7 @@ btnDecrypt.addEventListener('click', async () => {
         updateProgress('✅ Decryption complete!', 100);
 
         // Open the in-browser Decrypted Vault File Explorer so the user can choose to download individual files or the full ZIP
-        openVaultExplorer(folderName, unzipped, decryptedBlob);
+        openVaultExplorer(folderName, unzipped, decryptedBlob, password, keyfileBytes);
 
         // Reset decrypt selection & keyfile
         clearDecryptSelection();
@@ -4370,11 +4381,16 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
     const modalMeta = document.getElementById('explorer-modal-meta');
     const searchInput = document.getElementById('explorer-search-input');
     const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+    const searchKbd = document.getElementById('explorer-search-kbd');
 
     if (!modal) return;
 
     if (searchInput) searchInput.value = '';
-    if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+    if (clearSearchBtn) {
+        clearSearchBtn.classList.add('d-none');
+        clearSearchBtn.style.display = 'none';
+    }
+    if (searchKbd) searchKbd.classList.remove('d-none');
 
     currentDecryptedFileList = [];
     currentMediaPlaylist = [];
@@ -4433,7 +4449,7 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
 
     const toolbar = document.getElementById('explorer-toolbar');
     if (toolbar) {
-        toolbar.style.display = currentDecryptedFileList.length > 1 ? 'flex' : 'none';
+        toolbar.style.display = currentDecryptedFileList.length >= 1 ? 'flex' : 'none';
     }
 
     const dlAllBtn = document.getElementById('btn-explorer-download-all');
@@ -4447,6 +4463,7 @@ function openV3VaultExplorer(folderName, catalog, vaultFile, password = null, ke
         }
     }
 
+    updateStorageBreakdownBar();
     updateCategoryFilterCounts();
     updateBatchBar();
     renderExplorerFileList('');
@@ -4651,6 +4668,7 @@ function renderBreadcrumbs(isSearch = false, query = '') {
     if (!breadcrumbsNav) return;
 
     breadcrumbsNav.innerHTML = '';
+    breadcrumbsNav.classList.remove('d-none');
     breadcrumbsNav.style.display = 'flex';
 
     if (isSearch && query) {
@@ -4663,15 +4681,20 @@ function renderBreadcrumbs(isSearch = false, query = '') {
         rootBtn.addEventListener('click', () => {
             const searchInput = document.getElementById('explorer-search-input');
             const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+            const searchKbd = document.getElementById('explorer-search-kbd');
             if (searchInput) searchInput.value = '';
-            if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+            if (clearSearchBtn) {
+                clearSearchBtn.classList.add('d-none');
+                clearSearchBtn.style.display = 'none';
+            }
+            if (searchKbd) searchKbd.classList.remove('d-none');
             renderExplorerFileList('');
         });
         breadcrumbsNav.appendChild(rootBtn);
 
         const sep = document.createElement('span');
         sep.className = 'breadcrumb-sep';
-        sep.textContent = '/';
+        sep.textContent = '›';
         breadcrumbsNav.appendChild(sep);
 
         const searchSpan = document.createElement('span');
@@ -4683,12 +4706,18 @@ function renderBreadcrumbs(isSearch = false, query = '') {
         clearBtn.type = 'button';
         clearBtn.className = 'breadcrumb-btn-clear';
         clearBtn.title = 'Clear search';
+        clearBtn.setAttribute('aria-label', 'Clear search');
         clearBtn.textContent = '✕';
         clearBtn.addEventListener('click', () => {
             const searchInput = document.getElementById('explorer-search-input');
             const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+            const searchKbd = document.getElementById('explorer-search-kbd');
             if (searchInput) searchInput.value = '';
-            if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+            if (clearSearchBtn) {
+                clearSearchBtn.classList.add('d-none');
+                clearSearchBtn.style.display = 'none';
+            }
+            if (searchKbd) searchKbd.classList.remove('d-none');
             renderExplorerFileList('');
         });
         breadcrumbsNav.appendChild(clearBtn);
@@ -4715,19 +4744,19 @@ function renderBreadcrumbs(isSearch = false, query = '') {
 
             const sep = document.createElement('span');
             sep.className = 'breadcrumb-sep';
-            sep.textContent = '/';
+            sep.textContent = '›';
             breadcrumbsNav.appendChild(sep);
 
             if (isLast) {
                 const currentSpan = document.createElement('span');
                 currentSpan.className = 'breadcrumb-item breadcrumb-item--current';
-                currentSpan.textContent = seg;
+                currentSpan.textContent = `📂 ${seg}`;
                 breadcrumbsNav.appendChild(currentSpan);
             } else {
                 const segBtn = document.createElement('button');
                 segBtn.type = 'button';
                 segBtn.className = 'breadcrumb-item';
-                segBtn.textContent = seg;
+                segBtn.textContent = `📂 ${seg}`;
                 segBtn.title = `Navigate to ${accumulatedPath}`;
                 const targetPath = accumulatedPath;
                 segBtn.addEventListener('click', () => navigateToDir(targetPath));
@@ -4744,9 +4773,8 @@ function renderBreadcrumbs(isSearch = false, query = '') {
         breadcrumbsNav.appendChild(sep);
 
         const catBadge = document.createElement('span');
-        catBadge.className = 'breadcrumb-item breadcrumb-item--current';
-        catBadge.style.color = 'var(--purple-light, #a78bfa)';
-        catBadge.textContent = `Category: ${explorerFilterCategory.toUpperCase()}`;
+        catBadge.className = 'breadcrumb-item breadcrumb-item--current breadcrumb-item--category';
+        catBadge.textContent = `Filter: ${explorerFilterCategory.toUpperCase()}`;
         breadcrumbsNav.appendChild(catBadge);
     }
 }
@@ -4764,9 +4792,14 @@ function navigateToDir(dirPath) {
 
     const searchInput = document.getElementById('explorer-search-input');
     const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+    const searchKbd = document.getElementById('explorer-search-kbd');
     if (searchInput && searchInput.value) {
         searchInput.value = '';
-        if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+        if (clearSearchBtn) {
+            clearSearchBtn.classList.add('d-none');
+            clearSearchBtn.style.display = 'none';
+        }
+        if (searchKbd) searchKbd.classList.remove('d-none');
     }
 
     const selectAllCb = document.getElementById('explorer-select-all');
@@ -4854,9 +4887,11 @@ function updateCategoryFilterCounts() {
         if (el) el.textContent = counts[key];
         if (tab && key !== 'all') {
             if (counts[key] > 0) {
+                tab.classList.remove('d-none');
                 tab.style.display = '';
                 nonZeroCats++;
             } else {
+                tab.classList.add('d-none');
                 tab.style.display = 'none';
             }
         }
@@ -4865,8 +4900,96 @@ function updateCategoryFilterCounts() {
     const filterTabsContainer = document.getElementById('explorer-filter-tabs');
     if (filterTabsContainer) {
         // Only show category bar if multiple files AND at least 2 distinct categories with files
-        filterTabsContainer.style.display = (currentDecryptedFileList.length > 1 && nonZeroCats > 1) ? 'flex' : 'none';
+        const shouldShow = (currentDecryptedFileList.length > 1 && nonZeroCats > 1);
+        filterTabsContainer.classList.toggle('d-none', !shouldShow);
+        filterTabsContainer.style.display = shouldShow ? 'flex' : 'none';
     }
+}
+
+/**
+ * Updates the segmented Vault Storage Breakdown Bar and header meta stats.
+ */
+function updateStorageBreakdownBar() {
+    const wrap = document.getElementById('explorer-storage-wrap');
+    const bar = document.getElementById('explorer-storage-bar');
+    const legend = document.getElementById('explorer-storage-legend');
+    const modalMeta = document.getElementById('explorer-modal-meta');
+
+    const totalFiles = currentDecryptedFileList.length;
+    const totalBytes = currentDecryptedFileList.reduce((sum, f) => sum + (f.size || 0), 0);
+    if (modalMeta && currentDecryptedFolderName) {
+        const fileWord = totalFiles === 1 ? 'file' : 'files';
+        const modeTag = currentV3Vault ? ' · v3 Streaming' : '';
+        modalMeta.textContent = `${totalFiles} ${fileWord} · ${formatBytes(totalBytes)}${modeTag}`;
+    }
+
+    if (!wrap || !bar || !legend) return;
+
+    if (totalFiles === 0 || totalBytes <= 0) {
+        wrap.classList.add('d-none');
+        wrap.style.display = 'none';
+        bar.innerHTML = '';
+        legend.innerHTML = '';
+        return;
+    }
+
+    const catMeta = [
+        { key: 'video', label: 'Videos', icon: '🎬' },
+        { key: 'photo', label: 'Photos', icon: '🖼️' },
+        { key: 'audio', label: 'Audio', icon: '🎵' },
+        { key: 'doc', label: 'Docs', icon: '📄' },
+        { key: 'code', label: 'Code', icon: '💻' },
+        { key: 'archive', label: 'Archives', icon: '📦' },
+        { key: 'other', label: 'Other', icon: '📎' }
+    ];
+
+    const byteSums = { video: 0, photo: 0, audio: 0, doc: 0, code: 0, archive: 0, other: 0 };
+    for (const f of currentDecryptedFileList) {
+        const cat = getFileCategory(f.name);
+        const key = byteSums[cat] !== undefined ? cat : 'other';
+        byteSums[key] += (f.size || 0);
+    }
+
+    bar.innerHTML = '';
+    legend.innerHTML = '';
+
+    let activeCats = 0;
+    for (const meta of catMeta) {
+        const bytes = byteSums[meta.key];
+        if (bytes <= 0) continue;
+        activeCats++;
+        const pct = Math.max(1, Math.round((bytes / totalBytes) * 100));
+
+        const seg = document.createElement('span');
+        seg.className = `explorer-storage-seg explorer-storage-seg--${meta.key}`;
+        seg.style.flexGrow = String(bytes);
+        seg.title = `${meta.icon} ${meta.label}: ${formatBytes(bytes)} (${pct}%)`;
+        bar.appendChild(seg);
+
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = `explorer-storage-chip explorer-storage-chip--${meta.key}`;
+        chip.title = `Filter ${meta.label} (${formatBytes(bytes)})`;
+        const dot = document.createElement('span');
+        dot.className = `explorer-storage-dot explorer-storage-dot--${meta.key}`;
+        chip.appendChild(dot);
+        if (typeof document.createTextNode === 'function') {
+            chip.appendChild(document.createTextNode(`${meta.label} ${pct}%`));
+        } else {
+            chip.textContent = `${meta.label} ${pct}%`;
+        }
+        if (meta.key !== 'other') {
+            chip.addEventListener('click', () => {
+                const targetTab = document.getElementById(`tab-filter-${meta.key}`);
+                if (targetTab) targetTab.click();
+            });
+        }
+        legend.appendChild(chip);
+    }
+
+    const showBar = activeCats > 0 && totalFiles > 1;
+    wrap.classList.toggle('d-none', !showBar);
+    wrap.style.display = showBar ? 'flex' : 'none';
 }
 
 function updateBatchBar() {
@@ -4877,9 +5000,18 @@ function updateBatchBar() {
 
     const count = explorerSelectedFiles.size;
     if (count > 0) {
+        let totalSelectedBytes = 0;
+        for (const path of explorerSelectedFiles) {
+            const f = currentDecryptedFileList.find(x => x.path === path);
+            if (f && f.size) totalSelectedBytes += f.size;
+        }
+        batchBar.classList.remove('d-none');
         batchBar.style.display = 'flex';
-        if (selectedCountEl) selectedCountEl.textContent = `${count} file(s) selected`;
+        const fileWord = count === 1 ? 'file' : 'files';
+        const sizeLabel = totalSelectedBytes > 0 ? ` · ${formatBytes(totalSelectedBytes)}` : '';
+        if (selectedCountEl) selectedCountEl.textContent = `${count} ${fileWord} selected${sizeLabel}`;
     } else {
+        batchBar.classList.add('d-none');
         batchBar.style.display = 'none';
         if (selectAllCb) selectAllCb.checked = false;
     }
@@ -4946,6 +5078,41 @@ async function batchDownloadSelected() {
     });
 }
 
+/**
+ * Deletes all currently selected files in the explorer session after single confirmation.
+ */
+function batchDeleteSelected() {
+    if (explorerSelectedFiles.size === 0 || (!currentDecryptedZip && !currentV3Vault)) return;
+    const pathsToDelete = Array.from(explorerSelectedFiles);
+    const count = pathsToDelete.length;
+    if (!confirm(`Delete ${count} selected ${count === 1 ? 'file' : 'files'} from this vault session?`)) {
+        return;
+    }
+
+    const deleteSet = new Set(pathsToDelete);
+    for (const filePath of pathsToDelete) {
+        if (currentV3Vault) {
+            if (!currentV3Vault.deletedFiles) currentV3Vault.deletedFiles = new Set();
+            currentV3Vault.deletedFiles.add(filePath);
+            if (currentV3Vault.editedFiles) currentV3Vault.editedFiles.delete(filePath);
+        } else if (currentDecryptedZip) {
+            currentDecryptedZip.remove(filePath);
+        }
+    }
+
+    currentDecryptedFileList = currentDecryptedFileList.filter(f => !deleteSet.has(f.path));
+    currentMediaPlaylist = currentMediaPlaylist.filter(f => !deleteSet.has(f.path));
+    currentImagePlaylist = currentImagePlaylist.filter(f => !deleteSet.has(f.path));
+    explorerSelectedFiles.clear();
+
+    updateStorageBreakdownBar();
+    updateCategoryFilterCounts();
+    updateBatchBar();
+    renderExplorerFileList(document.getElementById('explorer-search-input')?.value || '');
+    showToast(`🗑️ Removed ${count} selected ${count === 1 ? 'file' : 'files'} from vault session.`, 'info');
+    log(`🗑️ Batch removed ${count} file(s) from vault session.`, 'info');
+}
+
 function sortFileList(files, mode) {
     const list = [...files];
     switch (mode) {
@@ -4968,13 +5135,18 @@ function sortFileList(files, mode) {
     }
 }
 
+let currentDecryptedPassword = null;
+let currentDecryptedKeyfileBytes = null;
+
 /**
  * Open and populate the Decrypted Vault File Explorer modal.
  */
-function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
+function openVaultExplorer(folderName, zipInstance, fullZipBlob, password = null, keyfileBytes = null) {
     currentDecryptedFolderName = folderName;
     currentDecryptedZip = zipInstance;
     currentDecryptedBlob = fullZipBlob;
+    currentDecryptedPassword = password || null;
+    currentDecryptedKeyfileBytes = keyfileBytes || null;
     currentV3Vault = null;
     explorerSelectedFiles.clear();
     explorerCurrentDir = '';
@@ -4984,12 +5156,17 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
     const modalMeta = document.getElementById('explorer-modal-meta');
     const searchInput = document.getElementById('explorer-search-input');
     const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+    const searchKbd = document.getElementById('explorer-search-kbd');
 
     if (!modal) return;
 
     // Reset search
     if (searchInput) searchInput.value = '';
-    if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+    if (clearSearchBtn) {
+        clearSearchBtn.classList.add('d-none');
+        clearSearchBtn.style.display = 'none';
+    }
+    if (searchKbd) searchKbd.classList.remove('d-none');
 
     // Parse all files from JSZip
     currentDecryptedFileList = [];
@@ -5049,7 +5226,7 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
 
     const toolbar = document.getElementById('explorer-toolbar');
     if (toolbar) {
-        toolbar.style.display = currentDecryptedFileList.length > 1 ? 'flex' : 'none';
+        toolbar.style.display = currentDecryptedFileList.length >= 1 ? 'flex' : 'none';
     }
 
     const dlAllBtn = document.getElementById('btn-explorer-download-all');
@@ -5063,6 +5240,7 @@ function openVaultExplorer(folderName, zipInstance, fullZipBlob) {
         }
     }
 
+    updateStorageBreakdownBar();
     updateCategoryFilterCounts();
     updateBatchBar();
     renderExplorerFileList('');
@@ -5146,7 +5324,8 @@ function lockVaultSession() {
     }
     // Release active screen wake locks immediately
     releaseWakeLock(true);
-    // Revoke all player sessions & stream routes immediately on lock
+    // Revoke all player sessions, thumbnail previews & stream routes immediately on lock
+    if (typeof revokeGridThumbUrls === 'function') revokeGridThumbUrls();
     revokeAllPlayerMediaSessions();
     stopExplorerIdleWatcher();
     closeAudioDock();
@@ -5504,34 +5683,162 @@ function _filterAndSortExplorerItems(query) {
 }
 
 /**
+ * Extract uppercase short extension badge (e.g. MP4, PNG, PDF) from a filename.
+ */
+function _getFileExtLabel(filename) {
+    if (!filename || typeof filename !== 'string') return '';
+    const dotIdx = filename.lastIndexOf('.');
+    if (dotIdx <= 0 || dotIdx === filename.length - 1) return '';
+    const ext = filename.slice(dotIdx + 1).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    return ext ? ext.slice(0, 5) : '';
+}
+
+/**
+ * Create a styled category-coded icon badge container for explorer rows/cards.
+ */
+function _createExplorerTypeBadge(filename, categoryOverride = '', extraClass = '') {
+    const cat = categoryOverride || getFileCategory(filename) || 'other';
+    const wrap = document.createElement('div');
+    wrap.className = `explorer-type-badge explorer-type-badge--${cat}${extraClass ? ' ' + extraClass : ''}`;
+    wrap.setAttribute('aria-hidden', 'true');
+    const glyph = document.createElement('span');
+    glyph.className = 'explorer-type-glyph';
+    glyph.textContent = categoryOverride === 'folder' ? '📁' : (categoryOverride === 'parent' ? '⬆️' : getFileIcon(filename));
+    wrap.appendChild(glyph);
+    return wrap;
+}
+
+/**
+ * Safely render a filename into an element with XSS-proof search query highlights.
+ */
+function _appendHighlightedFilename(targetEl, filename, query = '') {
+    const text = String(filename || '');
+    const q = String(query || '').trim();
+    const createText = (str) => (typeof document.createTextNode === 'function' ? document.createTextNode(str) : str);
+    const appendText = (str) => {
+        const node = createText(str);
+        if (typeof node === 'string') {
+            targetEl.textContent = (targetEl.textContent || '') + node;
+        } else {
+            targetEl.appendChild(node);
+        }
+    };
+    if (!q) {
+        appendText(text);
+        return;
+    }
+    const lowerText = text.toLowerCase();
+    const lowerQuery = q.toLowerCase();
+    let startIdx = 0;
+    let matchIdx = lowerText.indexOf(lowerQuery, startIdx);
+    if (matchIdx === -1) {
+        appendText(text);
+        return;
+    }
+    while (matchIdx !== -1) {
+        if (matchIdx > startIdx) {
+            appendText(text.slice(startIdx, matchIdx));
+        }
+        const mark = document.createElement('mark');
+        mark.className = 'explorer-search-highlight';
+        mark.textContent = text.slice(matchIdx, matchIdx + lowerQuery.length);
+        targetEl.appendChild(mark);
+        startIdx = matchIdx + lowerQuery.length;
+        matchIdx = lowerText.indexOf(lowerQuery, startIdx);
+    }
+    if (startIdx < text.length) {
+        appendText(text.slice(startIdx));
+    }
+}
+
+/**
  * Render empty state placeholder when folder or search result contains zero items.
  */
 function _renderExplorerEmptyState(listEl, isSearching, query) {
     const empty = document.createElement('div');
     empty.className = 'explorer-empty';
+
+    const card = document.createElement('div');
+    card.className = 'explorer-empty-card';
+
+    const iconEl = document.createElement('div');
+    iconEl.className = 'explorer-empty-icon';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'explorer-empty-title';
+
+    const subEl = document.createElement('div');
+    subEl.className = 'explorer-empty-sub';
+
     if (isSearching) {
-        empty.textContent = `No files match "${query}" in this view.`;
+        iconEl.textContent = '🔍';
+        titleEl.textContent = `No files match "${query}"`;
+        subEl.textContent = 'Try another filename keyword or clear the search filter.';
+        card.appendChild(iconEl);
+        card.appendChild(titleEl);
+        card.appendChild(subEl);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.id = 'btn-empty-clear-search';
+        clearBtn.className = 'explorer-empty-action-btn';
+        clearBtn.textContent = '✕ Clear Search';
+        clearBtn.addEventListener('click', () => {
+            const searchInput = document.getElementById('explorer-search-input');
+            const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+            const searchKbd = document.getElementById('explorer-search-kbd');
+            if (searchInput) searchInput.value = '';
+            if (clearSearchBtn) {
+                clearSearchBtn.classList.add('d-none');
+                clearSearchBtn.style.display = 'none';
+            }
+            if (searchKbd) searchKbd.classList.remove('d-none');
+            renderExplorerFileList('');
+        });
+        card.appendChild(clearBtn);
     } else if (explorerFilterCategory !== 'all') {
-        empty.textContent = `No ${explorerFilterCategory} files found in this location.`;
+        iconEl.textContent = '🗂️';
+        titleEl.textContent = `No ${explorerFilterCategory} files in this view`;
+        subEl.textContent = 'Switch back to All files or navigate to another folder.';
+        card.appendChild(iconEl);
+        card.appendChild(titleEl);
+        card.appendChild(subEl);
+
+        const resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.id = 'btn-empty-reset-filter';
+        resetBtn.className = 'explorer-empty-action-btn';
+        resetBtn.textContent = '↺ Show All Types';
+        resetBtn.addEventListener('click', () => {
+            const allTab = document.getElementById('tab-filter-all');
+            if (allTab) allTab.click();
+        });
+        card.appendChild(resetBtn);
     } else {
         const parentDir = explorerCurrentDir.includes('/')
             ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
             : '';
         const parentName = parentDir ? parentDir.split('/').pop() : 'Vault Root';
-        empty.innerHTML = `
-            <div class="explorer-empty-icon">📁</div>
-            <div class="explorer-empty-title">This folder is empty.</div>
-            ${explorerCurrentDir ? `<button type="button" class="explorer-file-view-btn explorer-btn-empty-up" id="btn-empty-up">⬆️ Back to ${escapeHtml(parentName)}</button>` : ''}
-        `;
+        iconEl.textContent = '📁';
+        titleEl.textContent = 'This folder is empty';
+        subEl.textContent = 'Drag & drop files here or click Add Files to import into this folder.';
+        card.appendChild(iconEl);
+        card.appendChild(titleEl);
+        card.appendChild(subEl);
+
+        if (explorerCurrentDir) {
+            const upBtn = document.createElement('button');
+            upBtn.type = 'button';
+            upBtn.id = 'btn-empty-up';
+            upBtn.className = 'explorer-file-view-btn explorer-btn-empty-up';
+            upBtn.textContent = `⬆️ Back to ${parentName}`;
+            upBtn.addEventListener('click', () => navigateToDir(parentDir));
+            card.appendChild(upBtn);
+        }
     }
+
+    empty.appendChild(card);
     listEl.appendChild(empty);
-    const upBtn = document.getElementById('btn-empty-up');
-    if (upBtn) {
-        const parentDir = explorerCurrentDir.includes('/')
-            ? explorerCurrentDir.substring(0, explorerCurrentDir.lastIndexOf('/'))
-            : '';
-        upBtn.addEventListener('click', () => navigateToDir(parentDir));
-    }
 }
 
 /**
@@ -5543,11 +5850,16 @@ function _renderExplorerParentItem(listEl, parentDir, parentName, viewMode) {
         upCard.className = 'explorer-grid-card explorer-grid-parent';
         upCard.tabIndex = 0;
         upCard.title = `Up to parent folder (${parentName})`;
-        upCard.innerHTML = `
-            <div class="explorer-grid-icon">⬆️</div>
-            <div class="explorer-grid-name">.. [Parent]</div>
-            <div class="explorer-grid-meta">Up to ${escapeHtml(parentName)}</div>
-        `;
+        const emblem = _createExplorerTypeBadge('', 'parent', 'explorer-grid-emblem');
+        const nameEl = document.createElement('div');
+        nameEl.className = 'explorer-grid-name';
+        nameEl.textContent = '.. [Parent]';
+        const metaEl = document.createElement('div');
+        metaEl.className = 'explorer-grid-meta';
+        metaEl.textContent = `Up to ${parentName}`;
+        upCard.appendChild(emblem);
+        upCard.appendChild(nameEl);
+        upCard.appendChild(metaEl);
         upCard.addEventListener('click', () => navigateToDir(parentDir));
         upCard.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(parentDir); }
@@ -5560,7 +5872,7 @@ function _renderExplorerParentItem(listEl, parentDir, parentName, viewMode) {
         upRow.title = `Up to parent folder (${parentName})`;
         upRow.innerHTML = `
             <div class="explorer-item-left">
-                <span class="explorer-item-icon">⬆️</span>
+                <div class="explorer-type-badge explorer-type-badge--parent" aria-hidden="true"><span class="explorer-type-glyph">⬆️</span></div>
                 <div class="explorer-item-info">
                     <span class="explorer-item-name">.. [Parent Folder]</span>
                     <span class="explorer-item-path">Return to ${escapeHtml(parentName)}</span>
@@ -5590,12 +5902,30 @@ function _renderExplorerSubfolders(listEl, displayFolders, viewMode) {
             card.setAttribute('role', 'option');
             card.setAttribute('aria-label', `Folder: ${folder.name}, ${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}`);
             card.title = `Open folder: ${folder.name}`;
-            card.innerHTML = `
-                <div class="explorer-grid-icon">📁</div>
-                <div class="explorer-grid-name explorer-folder-name">${escapeHtml(folder.name)}</div>
-                <div class="explorer-grid-meta">${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}</div>
-                <div class="explorer-grid-size">${folder.totalBytes > 0 ? formatBytes(folder.totalBytes) : ''}</div>
-            `;
+
+            const extTag = document.createElement('span');
+            extTag.className = 'explorer-grid-ext explorer-grid-ext--folder';
+            extTag.textContent = 'DIR';
+
+            const emblem = _createExplorerTypeBadge('', 'folder', 'explorer-grid-emblem');
+
+            const nameEl = document.createElement('div');
+            nameEl.className = 'explorer-grid-name explorer-folder-name';
+            nameEl.textContent = folder.name;
+
+            const metaEl = document.createElement('div');
+            metaEl.className = 'explorer-grid-meta';
+            metaEl.textContent = `${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'}`;
+
+            const sizeEl = document.createElement('div');
+            sizeEl.className = 'explorer-grid-size';
+            sizeEl.textContent = folder.totalBytes > 0 ? formatBytes(folder.totalBytes) : '';
+
+            card.appendChild(extTag);
+            card.appendChild(emblem);
+            card.appendChild(nameEl);
+            card.appendChild(metaEl);
+            card.appendChild(sizeEl);
             card.addEventListener('click', () => navigateToDir(folder.path));
             card.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToDir(folder.path); }
@@ -5610,7 +5940,7 @@ function _renderExplorerSubfolders(listEl, displayFolders, viewMode) {
             row.title = `Open folder: ${folder.name}`;
             row.innerHTML = `
                 <div class="explorer-item-left">
-                    <span class="explorer-item-icon">📁</span>
+                    <div class="explorer-type-badge explorer-type-badge--folder" aria-hidden="true"><span class="explorer-type-glyph">📁</span></div>
                     <div class="explorer-item-info">
                         <span class="explorer-item-name explorer-folder-name">${escapeHtml(folder.name)}</span>
                         <span class="explorer-item-path">${folder.fileCount} file${folder.fileCount === 1 ? '' : 's'} · ${formatBytes(folder.totalBytes)}</span>
@@ -5629,18 +5959,99 @@ function _renderExplorerSubfolders(listEl, displayFolders, viewMode) {
     });
 }
 
+const activeGridThumbUrls = new Set();
+let gridThumbObserver = null;
+const MAX_GRID_THUMB_BYTES = 3 * 1024 * 1024; // 3 MB per image cap for memory safety
+const MAX_GRID_THUMB_COUNT = 24;
+
+function revokeGridThumbUrls() {
+    if (gridThumbObserver) {
+        try { gridThumbObserver.disconnect(); } catch (_) {}
+        gridThumbObserver = null;
+    }
+    for (const url of activeGridThumbUrls) {
+        if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+            try { URL.revokeObjectURL(url); } catch (_) {}
+        }
+        if (typeof activeBlobUrls !== 'undefined' && activeBlobUrls) {
+            activeBlobUrls.delete(url);
+        }
+    }
+    activeGridThumbUrls.clear();
+}
+
+function _scheduleGridPhotoThumbnail(emblemEl, file) {
+    if (!emblemEl || !file || explorerViewMode !== 'grid') return;
+    if (!file.size || file.size > MAX_GRID_THUMB_BYTES) return;
+    if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') return;
+
+    const loadThumb = async () => {
+        if (!emblemEl.isConnected || explorerViewMode !== 'grid') return;
+        if (activeGridThumbUrls.size >= MAX_GRID_THUMB_COUNT) return;
+        try {
+            const blob = await getDecryptedFileBlob(file.path);
+            if (!emblemEl.isConnected || explorerViewMode !== 'grid') return;
+            if (activeGridThumbUrls.size >= MAX_GRID_THUMB_COUNT) return;
+            const thumbUrl = URL.createObjectURL(blob);
+            activeGridThumbUrls.add(thumbUrl);
+            if (typeof activeBlobUrls !== 'undefined' && activeBlobUrls) {
+                activeBlobUrls.add(thumbUrl);
+            }
+            const img = document.createElement('img');
+            img.className = 'explorer-grid-thumb-img';
+            img.alt = '';
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.onload = () => {
+                if (emblemEl.isConnected) {
+                    emblemEl.classList.add('explorer-grid-emblem--has-thumb');
+                }
+            };
+            img.onerror = () => {
+                activeGridThumbUrls.delete(thumbUrl);
+                if (typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(thumbUrl);
+                if (typeof activeBlobUrls !== 'undefined' && activeBlobUrls) activeBlobUrls.delete(thumbUrl);
+            };
+            img.src = thumbUrl;
+            emblemEl.appendChild(img);
+        } catch (_) {
+            // Silently fall back to styled photo emblem
+        }
+    };
+
+    if (typeof IntersectionObserver === 'function') {
+        if (!gridThumbObserver) {
+            gridThumbObserver = new IntersectionObserver((entries, obs) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        obs.unobserve(entry.target);
+                        if (typeof entry.target._loadThumb === 'function') {
+                            entry.target._loadThumb();
+                        }
+                    }
+                }
+            }, { rootMargin: '120px' });
+        }
+        emblemEl._loadThumb = loadThumb;
+        gridThumbObserver.observe(emblemEl);
+    } else {
+        loadThumb();
+    }
+}
+
 /**
  * Create a grid card element for a single file.
  */
-function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
+function _createExplorerGridFileCard(file, isFolderMode, isSearching, query = '') {
     const isSelected = explorerSelectedFiles.has(file.path);
     const mediaCategory = getMediaCategory(file.name);
     const isPhoto = getFileCategory(file.name) === 'photo';
     const isTextDoc = isTextOrCodeFile(file.name);
     const isPdf = isPdfFile(file.name);
+    const extLabel = _getFileExtLabel(file.name);
 
     const card = document.createElement('div');
-    card.className = 'explorer-grid-card';
+    card.className = `explorer-grid-card${isSelected ? ' explorer-grid-card--selected' : ''}`;
     card.setAttribute('role', 'option');
     card.setAttribute('aria-selected', isSelected ? 'true' : 'false');
     card.setAttribute('aria-label', `File: ${file.name}, ${file.size > 0 ? formatBytes(file.size) : ''}`);
@@ -5653,18 +6064,36 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
     cb.addEventListener('change', () => {
         if (cb.checked) explorerSelectedFiles.add(file.path);
         else explorerSelectedFiles.delete(file.path);
+        card.classList.toggle('explorer-grid-card--selected', cb.checked);
+        card.setAttribute('aria-selected', cb.checked ? 'true' : 'false');
         updateBatchBar();
     });
     card.appendChild(cb);
 
-    const icon = document.createElement('div');
-    icon.className = 'explorer-grid-icon';
-    icon.textContent = getFileIcon(file.name);
-    card.appendChild(icon);
+    if (extLabel) {
+        const extBadge = document.createElement('span');
+        extBadge.className = 'explorer-grid-ext';
+        extBadge.textContent = extLabel;
+        card.appendChild(extBadge);
+    }
+
+    const emblem = _createExplorerTypeBadge(file.name, '', 'explorer-grid-emblem');
+    if (isPhoto) {
+        _scheduleGridPhotoThumbnail(emblem, file);
+    }
+    card.appendChild(emblem);
 
     const name = document.createElement('div');
     name.className = 'explorer-grid-name';
-    name.innerHTML = escapeHtml(file.name) + (file.isEdited ? ' <span class="explorer-item-badge--edited" title="Modified in this session">Edited</span>' : '');
+    _appendHighlightedFilename(name, file.name, isSearching ? query : '');
+    if (file.isEdited) {
+        const editedSpan = document.createElement('span');
+        editedSpan.className = 'explorer-item-badge--edited';
+        editedSpan.title = 'Modified in this session';
+        editedSpan.textContent = 'Edited';
+        name.appendChild(document.createTextNode(' '));
+        name.appendChild(editedSpan);
+    }
     name.title = file.path;
     card.appendChild(name);
 
@@ -5674,7 +6103,6 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
         pathEl.className = 'explorer-grid-path';
         pathEl.textContent = `📁 ${file.dirPath}/`;
         pathEl.title = `Navigate to folder ${file.dirPath}`;
-        pathEl.style.cursor = 'pointer';
         pathEl.addEventListener('click', (e) => {
             e.stopPropagation();
             navigateToDir(file.dirPath);
@@ -5692,6 +6120,7 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
 
     if (mediaCategory) {
         const playBtn = document.createElement('button');
+        playBtn.type = 'button';
         playBtn.className = 'explorer-file-play-btn';
         playBtn.title = `Play ${file.name}`;
         playBtn.setAttribute('aria-label', `Play ${file.name}`);
@@ -5703,6 +6132,7 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
         actions.appendChild(playBtn);
     } else if (isPhoto) {
         const viewBtn = document.createElement('button');
+        viewBtn.type = 'button';
         viewBtn.className = 'explorer-file-view-btn';
         viewBtn.title = `View ${file.name}`;
         viewBtn.setAttribute('aria-label', `View ${file.name}`);
@@ -5714,6 +6144,7 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
         actions.appendChild(viewBtn);
     } else if (isPdf) {
         const pdfBtn = document.createElement('button');
+        pdfBtn.type = 'button';
         pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
         pdfBtn.title = `View ${file.name} PDF document`;
         pdfBtn.setAttribute('aria-label', `View ${file.name} PDF document`);
@@ -5725,6 +6156,7 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
         actions.appendChild(pdfBtn);
     } else if (isTextDoc) {
         const readBtn = document.createElement('button');
+        readBtn.type = 'button';
         readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
         readBtn.title = `Read ${file.name}`;
         readBtn.setAttribute('aria-label', `Read ${file.name}`);
@@ -5737,6 +6169,7 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
     }
 
     const dlBtn = document.createElement('button');
+    dlBtn.type = 'button';
     dlBtn.className = 'explorer-file-dl-btn';
     dlBtn.title = `Download ${file.name}`;
     dlBtn.setAttribute('aria-label', `Download ${file.name}`);
@@ -5757,6 +6190,7 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
     });
 
     const renameBtn = document.createElement('button');
+    renameBtn.type = 'button';
     renameBtn.className = 'explorer-file-rename-btn';
     renameBtn.title = `Rename ${file.name}`;
     renameBtn.setAttribute('aria-label', `Rename ${file.name}`);
@@ -5768,6 +6202,7 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
     actions.appendChild(renameBtn);
 
     const delBtn = document.createElement('button');
+    delBtn.type = 'button';
     delBtn.className = 'explorer-file-del-btn';
     delBtn.title = `Delete ${file.name} from vault`;
     delBtn.setAttribute('aria-label', `Delete ${file.name} from vault`);
@@ -5783,7 +6218,7 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
 
     // Clicking card previews directly
     if (mediaCategory || isPhoto || isTextDoc || isPdf) {
-        card.style.cursor = 'pointer';
+        card.classList.add('explorer-item-clickable');
         card.addEventListener('click', (e) => {
             if (e.target.closest('button') || e.target.closest('input')) return;
             if (mediaCategory) openMediaPlayerByPath(file.path);
@@ -5799,15 +6234,16 @@ function _createExplorerGridFileCard(file, isFolderMode, isSearching) {
 /**
  * Create a list row element for a single file.
  */
-function _createExplorerListFileRow(file, isFolderMode, isSearching) {
+function _createExplorerListFileRow(file, isFolderMode, isSearching, query = '') {
     const isSelected = explorerSelectedFiles.has(file.path);
     const mediaCategory = getMediaCategory(file.name);
     const isPhoto = getFileCategory(file.name) === 'photo';
     const isTextDoc = isTextOrCodeFile(file.name);
     const isPdf = isPdfFile(file.name);
+    const extLabel = _getFileExtLabel(file.name);
 
     const row = document.createElement('div');
-    row.className = 'explorer-item';
+    row.className = `explorer-item${isSelected ? ' explorer-item--selected' : ''}`;
     row.setAttribute('role', 'option');
     row.setAttribute('aria-selected', isSelected ? 'true' : 'false');
     row.setAttribute('aria-label', `File: ${file.name}, ${file.size > 0 ? formatBytes(file.size) : ''}`);
@@ -5825,36 +6261,56 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
         e.stopPropagation();
         if (cb.checked) explorerSelectedFiles.add(file.path);
         else explorerSelectedFiles.delete(file.path);
+        row.classList.toggle('explorer-item--selected', cb.checked);
+        row.setAttribute('aria-selected', cb.checked ? 'true' : 'false');
         updateBatchBar();
     });
     left.appendChild(cb);
 
-    const icon = document.createElement('span');
-    icon.className = 'explorer-item-icon';
-    icon.textContent = getFileIcon(file.name);
-    left.appendChild(icon);
+    const emblem = _createExplorerTypeBadge(file.name);
+    left.appendChild(emblem);
 
     const info = document.createElement('div');
     info.className = 'explorer-item-info';
 
     const name = document.createElement('span');
     name.className = 'explorer-item-name';
-    name.innerHTML = escapeHtml(file.name) + (file.isEdited ? ' <span class="explorer-item-badge--edited" title="Modified in this session">Edited</span>' : '');
+    _appendHighlightedFilename(name, file.name, isSearching ? query : '');
+    if (file.isEdited) {
+        const editedSpan = document.createElement('span');
+        editedSpan.className = 'explorer-item-badge--edited';
+        editedSpan.title = 'Modified in this session';
+        editedSpan.textContent = 'Edited';
+        name.appendChild(document.createTextNode(' '));
+        name.appendChild(editedSpan);
+    }
     name.title = file.path;
     info.appendChild(name);
 
-    // Show directory badge if searching or not in standard folder mode
-    if (file.dirPath && (!isFolderMode || isSearching)) {
-        const pathEl = document.createElement('span');
-        pathEl.className = 'explorer-item-path';
-        pathEl.textContent = `📁 ${file.dirPath}/`;
-        pathEl.title = `Navigate to folder ${file.dirPath}`;
-        pathEl.style.cursor = 'pointer';
-        pathEl.addEventListener('click', (e) => {
-            e.stopPropagation();
-            navigateToDir(file.dirPath);
-        });
-        info.appendChild(pathEl);
+    // Meta line under name: extension pill + directory badge (if searching/filtered)
+    if (extLabel || (file.dirPath && (!isFolderMode || isSearching))) {
+        const metaLine = document.createElement('div');
+        metaLine.className = 'explorer-item-meta-line';
+
+        if (extLabel) {
+            const extPill = document.createElement('span');
+            extPill.className = 'explorer-ext-pill';
+            extPill.textContent = extLabel;
+            metaLine.appendChild(extPill);
+        }
+
+        if (file.dirPath && (!isFolderMode || isSearching)) {
+            const pathEl = document.createElement('span');
+            pathEl.className = 'explorer-item-path explorer-item-clickable';
+            pathEl.textContent = `📁 ${file.dirPath}/`;
+            pathEl.title = `Navigate to folder ${file.dirPath}`;
+            pathEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigateToDir(file.dirPath);
+            });
+            metaLine.appendChild(pathEl);
+        }
+        info.appendChild(metaLine);
     }
 
     left.appendChild(info);
@@ -5869,6 +6325,7 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
 
     if (mediaCategory) {
         const playBtn = document.createElement('button');
+        playBtn.type = 'button';
         playBtn.className = 'explorer-file-play-btn';
         playBtn.title = `Play ${file.name} directly in browser`;
         playBtn.setAttribute('aria-label', `Play ${file.name} directly in browser`);
@@ -5880,6 +6337,7 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
         right.appendChild(playBtn);
     } else if (isPhoto) {
         const viewBtn = document.createElement('button');
+        viewBtn.type = 'button';
         viewBtn.className = 'explorer-file-view-btn';
         viewBtn.title = `View ${file.name} in high-res lightbox`;
         viewBtn.setAttribute('aria-label', `View ${file.name} in high-res lightbox`);
@@ -5891,6 +6349,7 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
         right.appendChild(viewBtn);
     } else if (isPdf) {
         const pdfBtn = document.createElement('button');
+        pdfBtn.type = 'button';
         pdfBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
         pdfBtn.title = `View ${file.name} PDF document`;
         pdfBtn.setAttribute('aria-label', `View ${file.name} PDF document`);
@@ -5902,6 +6361,7 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
         right.appendChild(pdfBtn);
     } else if (isTextDoc) {
         const readBtn = document.createElement('button');
+        readBtn.type = 'button';
         readBtn.className = 'explorer-file-view-btn explorer-file-view-btn--doc';
         readBtn.title = `Read ${file.name} document`;
         readBtn.setAttribute('aria-label', `Read ${file.name} document`);
@@ -5914,6 +6374,7 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
     }
 
     const dlBtn = document.createElement('button');
+    dlBtn.type = 'button';
     dlBtn.className = 'explorer-file-dl-btn';
     dlBtn.title = `Download ${file.name}`;
     dlBtn.setAttribute('aria-label', `Save ${file.name}`);
@@ -5934,6 +6395,7 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
     });
 
     const renameBtn = document.createElement('button');
+    renameBtn.type = 'button';
     renameBtn.className = 'explorer-file-rename-btn';
     renameBtn.title = `Rename ${file.name}`;
     renameBtn.setAttribute('aria-label', `Rename ${file.name}`);
@@ -5945,6 +6407,7 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
     right.appendChild(renameBtn);
 
     const delBtn = document.createElement('button');
+    delBtn.type = 'button';
     delBtn.className = 'explorer-file-del-btn';
     delBtn.title = `Delete ${file.name} from vault`;
     delBtn.setAttribute('aria-label', `Delete ${file.name} from vault`);
@@ -5959,7 +6422,7 @@ function _createExplorerListFileRow(file, isFolderMode, isSearching) {
 
     // Allow clicking row to play media or view document
     if (mediaCategory || isPhoto || isTextDoc || isPdf) {
-        row.style.cursor = 'pointer';
+        row.classList.add('explorer-item-clickable');
         row.title = isPhoto ? 'Click to view photo' : (isPdf ? 'Click to view PDF' : (isTextDoc ? 'Click to read document' : 'Click to play media'));
         row.addEventListener('click', (e) => {
             if (e.target.closest('button') || e.target.closest('input')) return;
@@ -5984,6 +6447,7 @@ function renderExplorerFileList(query = '') {
     const selectAllCb = document.getElementById('explorer-select-all');
     if (!listEl) return;
 
+    revokeGridThumbUrls();
     listEl.innerHTML = '';
     listEl.className = `explorer-body ${explorerViewMode === 'grid' ? 'explorer-body--grid' : 'explorer-body--list'}`;
     listEl.setAttribute('role', 'listbox');
@@ -6026,9 +6490,9 @@ function renderExplorerFileList(query = '') {
     // 6. Render Files (with PDF, media, image, text viewers, download buttons, checkboxes)
     displayFiles.forEach(file => {
         if (explorerViewMode === 'grid') {
-            listEl.appendChild(_createExplorerGridFileCard(file, isFolderMode, isSearching));
+            listEl.appendChild(_createExplorerGridFileCard(file, isFolderMode, isSearching, query));
         } else {
-            listEl.appendChild(_createExplorerListFileRow(file, isFolderMode, isSearching));
+            listEl.appendChild(_createExplorerListFileRow(file, isFolderMode, isSearching, query));
         }
     });
 
@@ -6473,10 +6937,27 @@ async function addFilesToVault(files) {
     let addedCount = 0;
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const cleanName = sanitizeFilenamePart(file.name, 'file');
+        const rawRel = file.webkitRelativePath && typeof file.webkitRelativePath === 'string'
+            ? file.webkitRelativePath.replace(/\\/g, '/').replace(/^\/+/, '')
+            : '';
+        let relativeSubPath = '';
+        let cleanName = sanitizeFilenamePart(file.name, 'file');
+        if (rawRel && rawRel.includes('/')) {
+            const segments = rawRel.split('/').filter(s => s && s !== '.' && s !== '..');
+            if (segments.length > 0) {
+                const safeSegs = segments.map((seg, idx) =>
+                    idx === segments.length - 1
+                        ? sanitizeDownloadFilename(seg)
+                        : sanitizeFilenamePart(seg, 'folder')
+                );
+                cleanName = safeSegs[safeSegs.length - 1];
+                relativeSubPath = safeSegs.join('/');
+            }
+        }
+        const entryRelPath = relativeSubPath || cleanName;
         const targetPath = explorerCurrentDir
-            ? `${explorerCurrentDir.replace(/\/+$/, '')}/${cleanName}`
-            : cleanName;
+            ? `${explorerCurrentDir.replace(/\/+$/, '')}/${entryRelPath}`
+            : entryRelPath;
 
         if (currentV3Vault) {
             currentV3Vault.editedFiles.set(targetPath, file);
@@ -6520,6 +7001,7 @@ async function addFilesToVault(files) {
         addedCount++;
     }
 
+    updateStorageBreakdownBar();
     updateCategoryFilterCounts();
     updateBatchBar();
     renderExplorerFileList(document.getElementById('explorer-search-input')?.value || '');
@@ -6552,6 +7034,7 @@ function deleteVaultFile(filePath) {
     currentMediaPlaylist = currentMediaPlaylist.filter(f => f.path !== filePath);
     currentImagePlaylist = currentImagePlaylist.filter(f => f.path !== filePath);
 
+    updateStorageBreakdownBar();
     updateCategoryFilterCounts();
     updateBatchBar();
     renderExplorerFileList(document.getElementById('explorer-search-input')?.value || '');
@@ -6636,6 +7119,7 @@ async function renameVaultFile(oldPath) {
             window.currentImagePlaylist = currentImagePlaylist;
         }
 
+        updateStorageBreakdownBar();
         updateCategoryFilterCounts();
         updateBatchBar();
         renderExplorerFileList(document.getElementById('explorer-search-input')?.value || '');
@@ -6983,6 +7467,7 @@ async function reEncryptVaultToZev() {
     const origBtnText = reencryptBtn ? reencryptBtn.textContent : '🔒 Re-Encrypt (.zsafe)';
 
     const activePassword = (currentV3Vault && currentV3Vault.password) ||
+        currentDecryptedPassword ||
         (decryptPassword ? decryptPassword.value : '');
 
     if (!activePassword) {
@@ -6990,7 +7475,9 @@ async function reEncryptVaultToZev() {
         return;
     }
 
-    const keyfileBytes = currentV3Vault ? currentV3Vault.keyfileBytes : (v2KeyfileDecrypt ? new Uint8Array(await v2KeyfileDecrypt.arrayBuffer()) : null);
+    const keyfileBytes = (currentV3Vault && currentV3Vault.keyfileBytes) ||
+        currentDecryptedKeyfileBytes ||
+        (v2KeyfileDecrypt ? new Uint8Array(await v2KeyfileDecrypt.arrayBuffer()) : null);
     const baseName = (currentDecryptedFolderName || 'vault').replace(/\.(zsafe|zevsafe|zev)$/i, '');
     const outZevName = `${baseName}_updated.zsafe`;
 
@@ -7097,25 +7584,54 @@ if (typeof window !== 'undefined') {
 function _initExplorerSearchAndFilterControls() {
     const searchInput = document.getElementById('explorer-search-input');
     const clearSearchBtn = document.getElementById('btn-clear-explorer-search');
+    const searchKbd = document.getElementById('explorer-search-kbd');
     const sortSelect = document.getElementById('explorer-sort-select');
     const viewListBtn = document.getElementById('btn-view-list');
     const viewGridBtn = document.getElementById('btn-view-grid');
     const selectAllCb = document.getElementById('explorer-select-all');
+    const batchClearBtn = document.getElementById('btn-batch-clear');
+    const batchDelBtn = document.getElementById('btn-batch-delete');
     const batchDlBtn = document.getElementById('btn-batch-download');
     const filterTabs = document.querySelectorAll('.explorer-filter-tab');
 
     // Search
     searchInput?.addEventListener('input', () => {
         const val = searchInput.value;
-        if (clearSearchBtn) clearSearchBtn.style.display = val ? 'block' : 'none';
+        if (clearSearchBtn) {
+            clearSearchBtn.classList.toggle('d-none', !val);
+            clearSearchBtn.style.display = val ? 'inline-flex' : 'none';
+        }
+        if (searchKbd) searchKbd.classList.toggle('d-none', Boolean(val));
         renderExplorerFileList(val);
     });
 
     clearSearchBtn?.addEventListener('click', () => {
-        searchInput.value = '';
+        if (searchInput) searchInput.value = '';
+        clearSearchBtn.classList.add('d-none');
         clearSearchBtn.style.display = 'none';
+        if (searchKbd) searchKbd.classList.remove('d-none');
         renderExplorerFileList('');
+        searchInput?.focus();
     });
+
+    // Keyboard Ctrl+F focuses explorer search when modal is open without blocking inner viewers
+    if (!document._explorerShortcutAttached) {
+        document._explorerShortcutAttached = true;
+        document.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('vault-explorer-modal');
+            if (!modal || modal.classList.contains('d-none') || modal.style.display === 'none') return;
+            const textModal = document.getElementById('vault-text-modal');
+            if (textModal && !textModal.classList.contains('d-none') && textModal.style.display !== 'none') return;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+                const inp = document.getElementById('explorer-search-input');
+                if (inp) {
+                    e.preventDefault();
+                    inp.focus();
+                    inp.select();
+                }
+            }
+        });
+    }
 
     // Sort
     sortSelect?.addEventListener('change', () => {
@@ -7185,7 +7701,15 @@ function _initExplorerSearchAndFilterControls() {
         renderExplorerFileList(searchInput ? searchInput.value : '');
     });
 
-    // Batch download
+    // Clear selection
+    batchClearBtn?.addEventListener('click', () => {
+        explorerSelectedFiles.clear();
+        updateBatchBar();
+        renderExplorerFileList(searchInput ? searchInput.value : '');
+    });
+
+    // Batch delete & Batch download
+    batchDelBtn?.addEventListener('click', batchDeleteSelected);
     batchDlBtn?.addEventListener('click', batchDownloadSelected);
 }
 
@@ -7196,6 +7720,8 @@ function _initExplorerFileActionControls() {
     const dlAllBtn = document.getElementById('btn-explorer-download-all');
     const addFilesBtn = document.getElementById('btn-explorer-add-files');
     const addFilesInput = document.getElementById('explorer-add-files-input');
+    const addFolderBtn = document.getElementById('btn-explorer-add-folder');
+    const addFolderInput = document.getElementById('explorer-add-folder-input');
     const newFileBtn = document.getElementById('btn-explorer-new-file');
     const reencryptBtn = document.getElementById('btn-explorer-reencrypt');
     const autoLockSelect = document.getElementById('explorer-autolock-select');
@@ -7210,22 +7736,32 @@ function _initExplorerFileActionControls() {
         }
     });
 
+    addFolderBtn?.addEventListener('click', () => addFolderInput?.click());
+    addFolderInput?.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            addFilesToVault(e.target.files);
+            e.target.value = '';
+        }
+    });
+
     // Drag and drop files onto explorer modal to import
     if (modal) {
         modal.addEventListener('dragover', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (explorerFileListEl) explorerFileListEl.style.outline = '2px dashed #2dd4bf';
+            if (explorerFileListEl) explorerFileListEl.classList.add('explorer-body--dragover');
         });
         modal.addEventListener('dragleave', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (explorerFileListEl) explorerFileListEl.style.outline = 'none';
+            if (explorerFileListEl && (!e.relatedTarget || !modal.contains(e.relatedTarget))) {
+                explorerFileListEl.classList.remove('explorer-body--dragover');
+            }
         });
         modal.addEventListener('drop', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (explorerFileListEl) explorerFileListEl.style.outline = 'none';
+            if (explorerFileListEl) explorerFileListEl.classList.remove('explorer-body--dragover');
             if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                 addFilesToVault(e.dataTransfer.files);
             }

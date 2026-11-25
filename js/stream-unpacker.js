@@ -1281,7 +1281,9 @@
         for (let i = chunkStart; i <= chunkEnd; i++) {
             // Check cache if available
             if (chunkCache && chunkCache.has(i)) {
-                decryptedChunks.push(chunkCache.get(i));
+                const cached = chunkCache.get(i);
+                // Retain an independent slice for active span assembly so LRU eviction zeroization cannot corrupt it
+                decryptedChunks.push(new Uint8Array(cached.slice(0)));
                 continue;
             }
 
@@ -1307,8 +1309,11 @@
 
             if (chunkCache) {
                 chunkCache.set(i, plainChunk);
+                // Retain an independent slice for active span assembly so LRU eviction zeroization cannot corrupt it
+                decryptedChunks.push(new Uint8Array(plainChunk.slice(0)));
+            } else {
+                decryptedChunks.push(plainChunk);
             }
-            decryptedChunks.push(plainChunk);
         }
 
         // 5. Concatenate decrypted chunk span

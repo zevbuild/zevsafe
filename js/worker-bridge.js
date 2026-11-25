@@ -2279,9 +2279,11 @@
 
             const startOffset = Number(entry.offset !== undefined ? entry.offset : (entry.localHeaderOffset || 0));
             const compSize = Number(entry.compressedSize !== undefined ? entry.compressedSize : (entry.size || 0));
+            const nameLen = (entry.path || entry.name) ? new TextEncoder().encode(entry.path || entry.name).length : 64;
+            const headerOverhead = 30 + nameLen + (entry.extraLen || 0);
 
             const chunkStart = Math.max(0, entry.chunkStart !== undefined ? entry.chunkStart : Math.floor(startOffset / chunkSize));
-            const fallbackEnd = Math.max(chunkStart, Math.floor((startOffset + Math.max(0, compSize - 1)) / chunkSize));
+            const fallbackEnd = Math.max(chunkStart, Math.floor((startOffset + headerOverhead + Math.max(0, compSize - 1)) / chunkSize));
             const chunkEnd = Math.min(lastChunkIndex, entry.chunkEnd !== undefined ? entry.chunkEnd : fallbackEnd);
 
             const chunkBuffers = [];
